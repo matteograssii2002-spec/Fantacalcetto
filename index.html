@@ -32,6 +32,8 @@
   .overlay,.sheet,.ls-body,.statmodal{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   body{background:radial-gradient(120% 60% at 50% -10%, rgba(61,139,255,.18), transparent 60%),radial-gradient(90% 50% at 50% 110%, rgba(61,139,255,.08), transparent 55%),var(--bg);height:100%}
   .app{position:fixed;top:0;left:0;right:0;margin:0 auto;width:100%;max-width:var(--maxw);height:100dvh;height:var(--app-h,100dvh);display:flex;flex-direction:column;overflow:hidden}
+  /* tutti gli overlay a tutto schermo: stessa altezza reale di .app (fix iOS standalone) */
+  .overlay,#splash,#maint,.pag,.ls-open,.sheet-bg,.statmodal-bg{height:var(--app-h,100dvh)}
   .scrollwrap{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:14px}
   .num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
 
@@ -1079,8 +1081,8 @@
 /* ============================================================
    👇 INCOLLA QUI LE TUE 2 CHIAVI (Supabase → Project Settings → API)
    ============================================================ */
-const SUPABASE_URL  = 'https://lfvpseusbsyzniugczbx.supabase.co';        // es. https://abcdxyz.supabase.co
-const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chiave "anon public"
+const SUPABASE_URL  = 'INCOLLA_URL_QUI';        // es. https://abcdxyz.supabase.co
+const SUPABASE_ANON = 'INCOLLA_ANON_KEY_QUI';   // chiave "anon public"
 /* ============================================================ */
 
 /* --- ALTEZZA APP a tutto schermo (fix iOS standalone) -----------------------
@@ -1098,6 +1100,27 @@ const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chi
   window.addEventListener('orientationchange', function(){ setAppHeight(); setTimeout(setAppHeight,200); setTimeout(setAppHeight,500); });
   window.addEventListener('pageshow', setAppHeight);
   window.addEventListener('load', setAppHeight);
+})();
+
+/* --- DEBUG ALTEZZA (temporaneo, rimuovibile) --------------------------------
+   Mostra in alto a sx i numeri reali: ih=innerHeight, sh=screen.height,
+   app=altezza effettiva resa di .app. Serve solo a diagnosticare il vuoto;
+   lo togliamo appena risolto. ----------------------------------------------- */
+(function(){
+  function mount(){
+    if(document.getElementById('hdbg')) return;
+    var d=document.createElement('div'); d.id='hdbg';
+    d.style.cssText='position:fixed;left:6px;top:calc(2px + env(safe-area-inset-top));z-index:99999;font:10px/1.2 ui-monospace,monospace;color:#9fe;background:rgba(0,0,0,.55);padding:2px 6px;border-radius:6px;pointer-events:none';
+    document.body.appendChild(d); upd();
+  }
+  function upd(){
+    var d=document.getElementById('hdbg'); if(!d) return;
+    var a=document.querySelector('.app'); var ah=a?Math.round(a.getBoundingClientRect().height):0;
+    var sh=(window.screen&&window.screen.height)||0;
+    d.textContent='ih:'+window.innerHeight+' sh:'+sh+' app:'+ah;
+  }
+  if(document.readyState!=='loading') mount(); else document.addEventListener('DOMContentLoaded',mount);
+  window.addEventListener('resize',upd); setInterval(upd,1000);
 })();
 
 // Chiave pubblica per le notifiche push (la privata sta nel secret della Edge Function su Supabase)
