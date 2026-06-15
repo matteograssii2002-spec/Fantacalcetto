@@ -1081,8 +1081,8 @@
 /* ============================================================
    👇 INCOLLA QUI LE TUE 2 CHIAVI (Supabase → Project Settings → API)
    ============================================================ */
-const SUPABASE_URL  = 'https://lfvpseusbsyzniugczbx.supabase.co';        // es. https://abcdxyz.supabase.co
-const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chiave "anon public"
+const SUPABASE_URL  = 'INCOLLA_URL_QUI';        // es. https://abcdxyz.supabase.co
+const SUPABASE_ANON = 'INCOLLA_ANON_KEY_QUI';   // chiave "anon public"
 /* ============================================================ */
 
 /* --- ALTEZZA APP a tutto schermo (fix iOS standalone) -----------------------
@@ -1093,7 +1093,14 @@ const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chi
    non rimpicciolisce l'app mentre si scrive. -------------------------------- */
 (function(){
   function setAppHeight(){
-    try{ document.documentElement.style.setProperty('--app-h', window.innerHeight + 'px'); }catch(_){}
+    var h = window.innerHeight;
+    // iOS PWA installata: innerHeight è "corto" (esclude la status bar) → la webview
+    // reale è screen.height. Solo qui lo uso; su browser/desktop resta innerHeight.
+    var standalone = (window.navigator && window.navigator.standalone === true);
+    if(standalone && window.screen && window.screen.height){
+      h = Math.max(window.innerHeight, window.screen.height);
+    }
+    try{ document.documentElement.style.setProperty('--app-h', h + 'px'); }catch(_){}
   }
   setAppHeight();
   window.addEventListener('resize', setAppHeight);
@@ -1102,26 +1109,6 @@ const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chi
   window.addEventListener('load', setAppHeight);
 })();
 
-/* --- DEBUG ALTEZZA (temporaneo, rimuovibile) --------------------------------
-   Mostra in alto a sx i numeri reali: ih=innerHeight, sh=screen.height,
-   app=altezza effettiva resa di .app. Serve solo a diagnosticare il vuoto;
-   lo togliamo appena risolto. ----------------------------------------------- */
-(function(){
-  function mount(){
-    if(document.getElementById('hdbg')) return;
-    var d=document.createElement('div'); d.id='hdbg';
-    d.style.cssText='position:fixed;left:6px;top:calc(2px + env(safe-area-inset-top));z-index:99999;font:10px/1.2 ui-monospace,monospace;color:#9fe;background:rgba(0,0,0,.55);padding:2px 6px;border-radius:6px;pointer-events:none';
-    document.body.appendChild(d); upd();
-  }
-  function upd(){
-    var d=document.getElementById('hdbg'); if(!d) return;
-    var a=document.querySelector('.app'); var ah=a?Math.round(a.getBoundingClientRect().height):0;
-    var sh=(window.screen&&window.screen.height)||0;
-    d.textContent='ih:'+window.innerHeight+' sh:'+sh+' app:'+ah;
-  }
-  if(document.readyState!=='loading') mount(); else document.addEventListener('DOMContentLoaded',mount);
-  window.addEventListener('resize',upd); setInterval(upd,1000);
-})();
 
 // Chiave pubblica per le notifiche push (la privata sta nel secret della Edge Function su Supabase)
 const VAPID_PUBLIC = 'BIVh1NLu5K0JVdcOrjGp_LeNc3XZRhMdIs1gAuTLCcs-rnH873A8bB-77NQpro3YmWzI3sgBLboKcB00SDLZoqc';
