@@ -176,7 +176,7 @@ RPC = {
     "list_solo_managers()": "(admin) profili solo-manager della lega con flag voto.",
     "apply_credit_changes(md)/_apply_credits_core(md)": "crediti alla chiusura col NUOVO metodo a ranking (vedi MATCHDAY_LIFECYCLE.crediti_chiusura).",
     "close_due_matchdays()": "NUOVA (service_role). Chiude TUTTE le leghe con giornate scadute (kickoff+25h), applica crediti, restituisce (closed_id,closed_label,closed_league). Chiamata dal cron in notify.ts.",
-    "get_poll_results()": "(admin) medie del VECCHIO sondaggio esterno (credit_poll) della propria lega. Legacy, ancora usata dalla card 'Risultati sondaggio valori'.",
+    "get_poll_results()": "(admin) medie del VECCHIO sondaggio esterno (credit_poll). Legacy: la card 'Risultati sondaggio valori' e' stata RIMOSSA, la funzione resta in DB ma non e' piu' chiamata in-app.",
     "--- CREDITI / SONDAGGIO VALORI INTERNO ---": "",
     "set_credit_mode(p_mode)": "(admin) imposta leagues.credit_mode 'manual'|'poll'; 'poll' apre il sondaggio (value_poll_open=true), 'manual' lo chiude.",
     "submit_value_poll(p_ratings jsonb)": "qualsiasi membro: upsert dei propri voti {player_id:voto} in value_poll (richiede value_poll_open=true).",
@@ -228,7 +228,7 @@ FEATURES = {
     "voti": "voto 1-10 ANCHE MEZZI (es. 7.5) via tastierino numerico (.voteinp, inputmode decimal, arrotonda a 0.5). NON si salvano da soli: tasto 'Invia voti' (#submitVotesBtn) -> submitVotes() upserta tutti i presenti. + nomination MVP (niente SEGA). Vota solo chi ha giocato.",
     "lega": "tendina: Classifica generale (solo giornate chiuse, frecce posizione 24h) / Classifica marcatori / ogni giornata (tap squadra -> formazione). Le giornate non iniziate non compaiono. ALLA PRIMA APERTURA dopo una chiusura fresca (<=24h) la classifica si ANIMA (vedi CLASSIFICA_ANIMATA).",
     "impostazioni": "A PAGINE (drill-in iOS): lista #setMenu con .navrow Profilo / Notifiche / Regolamento / 🔒 Area amministratore; setNav(id) mostra una .setpage alla volta (.subback per tornare). La riga admin (#adminRow) solo all'admin.",
-    "impostazioni_admin": "Area amministratore a 2 livelli: ⚽ PARTITA (Modalita' portiere rotazione/fisso, Presenze admin/giocatori, Giornata con apertura auto/manuale + apri/chiudi/reset; NON c'e' piu' 'Crea le squadre') e 🏆 LEGA (Invita, Gestione giocatori, 💰 Crediti giocatori [Manuale/Sondaggio + avanzamento + 'Chiudi e calcola'], Risultati sondaggio [legacy esterno], Voto soli-manager, Manutenzione). Bonus/malus = pannello partita live.",
+    "impostazioni_admin": "Area amministratore a 2 livelli: ⚽ PARTITA (Modalita' portiere rotazione/fisso, Presenze admin/giocatori, Giornata con apertura auto/manuale + apri/chiudi/reset; NON c'e' piu' 'Crea le squadre') e 🏆 LEGA (Invita, Gestione giocatori, 💰 Crediti giocatori [Manuale/Sondaggio + avanzamento + 'Chiudi e calcola'], Voto soli-manager, Manutenzione). Bonus/malus = pannello partita live.",
     "wizard_creazione": "Chi CREA una lega, dopo l'onboarding, vede #rulesSetup (Le regole della tua lega): Apertura (man/auto+giorno/ora), Portiere (rot/fisso), Presenze (admin/giocatori), 💰 Crediti giocatori (Manuale/Sondaggio) con spiegazioni. saveRulesSetup -> set_league_schedule/set_gk_mode/set_presence_mode/set_credit_mode. Solo al creatore (flag justCreatedLeague). Tutto poi modificabile in Impostazioni.",
     "ux": "Campo centrale evidenziato dentro la barra; fix PWA iOS apre in cima; 'Tu' solo personaggio iniziale.",
 }
@@ -268,7 +268,7 @@ GOTCHAS = [
 # SONDAGGIO VALORI ESTERNO (sondaggio.html) — LEGACY / MIGRATO
 # ---------------------------------------------------------------------------
 POLL = {
-    "stato": "LEGACY. Era la pagina esterna inviata al gruppo. I voti della lega 1 sono stati MIGRATI in value_poll (migrazione_lega1_sondaggio.sql), quindi sondaggio.html e' RIMOVIBILE da GitHub. Sostituito dal sondaggio INTERNO e per-lega (vedi VALUE_POLL). Tabella credit_poll + get_poll_results restano (innocue, ancora dietro la card 'Risultati sondaggio valori').",
+    "stato": "LEGACY. Era la pagina esterna inviata al gruppo. I voti della lega 1 sono stati MIGRATI in value_poll (migrazione_lega1_sondaggio.sql), quindi sondaggio.html e' RIMOVIBILE da GitHub. Sostituito dal sondaggio INTERNO e per-lega (vedi VALUE_POLL). Tabella credit_poll + get_poll_results restano in DB (innocue); la card 'Risultati sondaggio valori' e' stata RIMOSSA dall'app.",
     "scopo": "Pagina separata: vota ogni giocatore 1-10. SOLO voto.",
     "privacy": "Chi ha il link puo' solo votare; voti non leggibili (RLS senza policy dirette). Medie viste SOLO dall'admin via get_poll_results().",
     "file": "sondaggio.html (su Vercel). Stesse chiavi Supabase. Un voto per dispositivo.",

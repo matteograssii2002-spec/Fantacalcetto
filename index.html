@@ -1023,11 +1023,6 @@
         </div>
         <div id="creditPollBox"></div>
       </div>
-      <div class="set-card" id="pollCard" style="border-color:rgba(234,178,74,.28)">
-        <h3>Risultati sondaggio valori <span class="lockpill" style="color:var(--gold)">admin</span></h3>
-        <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Medie dei voti raccolti col sondaggio. Solo tu le vedi.</p>
-        <button class="set-btn" onclick="openPollResults()">📊 Vedi risultati</button>
-      </div>
       <div class="set-card" id="voterCard" style="border-color:rgba(234,178,74,.28)">
         <h3>Voto ai soli-manager <span class="lockpill" style="color:var(--gold)">admin</span></h3>
         <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Di norma vota solo chi ha giocato. Qui puoi dare il voto anche a chi fa solo il manager (guarda ma non gioca). Tocca per abilitare/disabilitare.</p>
@@ -1105,8 +1100,8 @@
 /* ============================================================
    👇 INCOLLA QUI LE TUE 2 CHIAVI (Supabase → Project Settings → API)
    ============================================================ */
-const SUPABASE_URL  = 'https://lfvpseusbsyzniugczbx.supabase.co';        // es. https://abcdxyz.supabase.co
-const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chiave "anon public"
+const SUPABASE_URL  = 'INCOLLA_URL_QUI';        // es. https://abcdxyz.supabase.co
+const SUPABASE_ANON = 'INCOLLA_ANON_KEY_QUI';   // chiave "anon public"
 /* ============================================================ */
 
 
@@ -2036,7 +2031,6 @@ function applyProfile(){
   document.getElementById('adminCard').style.display=profile.is_admin?'block':'none';
   document.getElementById('manageCard').style.display=profile.is_admin?'block':'none';
   const pc=document.getElementById('presCard'); if(pc)pc.style.display=(profile.is_admin&&!presenceSelf)?'block':'none';
-  const plc=document.getElementById('pollCard'); if(plc)plc.style.display=profile.is_admin?'block':'none';
   const vtc=document.getElementById('voterCard'); if(vtc)vtc.style.display=profile.is_admin?'block':'none';
   const mtc=document.getElementById('maintCard'); if(mtc)mtc.style.display=profile.is_admin?'block':'none';
   const arow=document.getElementById('adminRow'); if(arow)arow.style.display=profile.is_admin?'flex':'none';
@@ -2059,17 +2053,6 @@ function openPlayerStats(id){
   document.getElementById('statModal').classList.add('open');
 }
 function closeStatModal(){document.getElementById('statBg').classList.remove('open');document.getElementById('statModal').classList.remove('open');}
-async function openPollResults(){
-  document.getElementById('sheetTitle').textContent='Risultati sondaggio';
-  document.getElementById('sheetHint').textContent='Media dei voti (1–10) · più alto = vale di più';
-  document.getElementById('sheetList').innerHTML='<div class="empty-note">Carico…</div>';
-  openSheet();
-  const {data,error}=await sb.rpc('get_poll_results');
-  if(error){document.getElementById('sheetList').innerHTML='<div class="empty-note">'+(String(error.message).includes('forbidden')?'Solo admin.':('Errore: '+error.message))+'</div>';return;}
-  if(!data||!data.length){document.getElementById('sheetList').innerHTML='<div class="empty-note">Ancora nessun voto raccolto.</div>';return;}
-  document.getElementById('sheetList').innerHTML=data.map((r,i)=>`<div class="opt"><div class="icocircle">${i+1}</div><div class="info"><b>${r.player}</b><span>${r.n} voti</span></div><span class="pr" style="color:var(--gold)">${Number(r.avg).toFixed(1)}</span></div>`).join('');
-}
-
 /* ---------- ABILITA AL VOTO (manager-solo) ---------- */
 async function renderVoters(){
   const box=document.getElementById('voterList'); if(!box)return;
