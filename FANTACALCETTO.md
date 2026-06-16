@@ -788,3 +788,154 @@ L'app è diffondibile: **ogni gruppo = una lega privata**. Chi si registra **cre
 - `notify.ts` — auto-chiusura via `close_due_matchdays`, invii per-lega.
 - `leghe_step1.sql`, `leghe_step2.sql` — sistema leghe.
 - (Ricorda sempre: re-incollare le 2 chiavi Supabase a ogni upload di `index.html`.)
+
+### 21.9 Sicurezza chiavi (nota)
+Su GitHub vanno **solo** `index.html`, `sw.js`, le icone e `sondaggio.html`. **Mai** `notify.ts` né chiavi/secret: un repo pubblico rende la chiave "bruciata" anche se la rimuovi (resta nella cronologia e i bot la leggono in secondi) → va **ruotata**. Le chiavi VAPID e il `CRON_SECRET` stanno **solo** nei Secret della Edge Function `notify`. *(Il 2026-06-14 le chiavi sono state ruotate dopo un commit accidentale di `notify.ts` segnalato da GitGuardian: nuove VAPID + nuovo `CRON_SECRET` nel job pg_cron `fanta-reminder`. La `VAPID_PUBLIC` in `index.html` inizia con `BIVh1NLu...`.)*
+
+---
+
+## 22. Aggiornamenti recenti — config lega (apertura auto / portiere / presenze), impostazioni a pagine, banner notifiche, wizard creazione
+
+Sessione di rifinitura UX + tre nuove regole di lega configurabili. **Tutta la config sta in nuove colonne su `leagues`**, letta da tutti gli utenti all'avvio via `get_league_schedule()` (nome storico: ora ritorna anche portiere/presenze) e scritta solo dall'admin via RPC dedicate.
+
+### 22.1 Impostazioni a pagine (drill-in stile iOS)
+Le Impostazioni non sono più una lista unica: ora sono **pagine navigabili**. Si entra in `#setMenu` (lista) con righe `.navrow` → **Profilo · Notifiche · Regolamento · 🔒 Area amministratore**; toccando una riga si entra nella sua `.setpage` (con `.subback` "‹ Indietro"). L'Area amministratore è un secondo livello: **⚽ Partita** (Modalità portiere, Presenze, Giornata) e **🏆 Lega** (Invita, Gestione giocatori, Risultati sondaggio, Voto soli-manager, Manutenzione). Funzione `setNav(id)` mostra una `.setpage` alla volta; la riga admin (`#adminRow`) appare solo all'admin (in `applyProfile`). Entrando da `go('settings')` si riparte sempre da `setMenu`.
+
+### 22.2 Apertura giornata: automatica (ricorrente) o manuale
+Nuova scelta admin in **Partita → Giornata** (`renderOpenMode`): **✋ Manuale** (come prima, apri tu con data/ora) o **🤖 Automatica**. In automatica scegli **giorno della settimana + ora**: la giornata si apre **da sola 48h prima** del fischio d'inizio, ricorrente ogni settimana. Calcolo lato server nel fuso **Europe/Rome**. Lo scheduler `notify.ts` (cron ogni 10 min) chiama `open_due_matchdays()` che apre e manda la push "aperta". Non al secondo esatto: entro ~10 min dallo scoccare delle 48h. Per una settimana diversa l'admin passa a Manuale e apre a mano (la programmazione resta salvata). Stato client: `leagueSched`/`schedDraft`; colonne `leagues.auto_open`, `auto_weekday` (0=Dom..6=Sab, come `getDay`), `auto_time`.
+
+### 22.3 Modalità portiere: rotazione o fisso (ruolo POR)
+Nuova scelta admin in **Partita → Modalità portiere** (`renderGkMode`/`setGkMode`): **🔄 Rotazione** (default, **invariata**: chiunque nello slot `g1`) o **🧤 Fisso**. In modalità **fisso**: nella scheda giocatore (Gestione giocatori) compare il ruolo **Portiere (POR)**; lo slot porta (`g1`) nel picker accetta **solo** i presenti con `role==='POR'` (`openPickerSheet` filtra). **I punteggi NON cambiano**: il bonus/malus portiere resta legato allo **slot g1** (posizionale), quindi `scoreOf`/`get_standings` sono invariati. Helper `roleLabel(r)` (ATT/DIF/POR). Stato `gkFixed`; colonna `leagues.gk_fixed`. Onboarding self-signup resta ATT/DIF: il ruolo POR lo assegna l'admin.
+
+### 22.4 Modalità presenze: admin o giocatori
+Nuova scelta admin in **Partita → Presenze** (`renderPresenceMode`/`setPresenceMode`): **🙋 Admin** (default, **invariata**: l'admin segna dal riquadro "Chi gioca questa giornata") o **👥 Giocatori**.
+In modalità **giocatori**: la card admin "Chi gioca" si **nasconde** e compare in **Home** (tra l'hero "Pronto a schierare?" e la Classifica) una card `.hpcard` **"Giornata X aperta! · Ci sei?"** con **✓ Ci sono / ✕ Salto** (`renderHomePresence`). La card esce **solo ai giocatori** (chi ha una card giocatore: `myPlayer()`), **non** ai soli-manager; appare solo a giornata **open** e **prima del blocco formazioni** (kickoff−1h, `!lineupLocked`), e **sparisce** allo scadere. Il toggle chiama l'RPC `set_my_presence(present)` che, lato server, consente al **solo proprietario** della propria card di inserirsi/togliersi da `matchday_players` (perché la write su quella tabella è `is_admin()`-only). Conseguenze identiche al solito (schierabile/non, opaco nel mercato). Stato `presenceSelf`; colonna `leagues.presence_self`.
+
+### 22.5 Banner notifiche mensile
+Oltre al modale alla primissima apertura (`maybeAskPush`, invariato), c'è un **banner** in cima all'app (`#notifBanner`, `.nbanner`) che invita ad attivare le notifiche **solo a chi non le ha attive** e **al massimo una volta ogni 30 giorni** (`maybeShowNotifBanner`, `localStorage fc_notif_banner`). Mira a `Notification.permission==='default'` (attivabile con un tap); esclude i "bloccati a livello iOS" (non ri-promptabili). Tasti **Attiva** (`bannerEnable`→`enablePush`) e **✕** (`dismissNotifBanner`).
+
+### 22.6 Wizard "regole" alla creazione lega
+Chi **crea** una lega, dopo aver fatto il suo giocatore+squadra (onboarding), vede l'overlay **`#rulesSetup`** "Le regole della tua lega" con 3 scelte (ognuna con spiegazione breve): **Apertura** (Manuale/Automatica + giorno/ora se auto), **Portiere** (Rotazione/Fisso), **Presenze** (Admin/Giocatori). `saveRulesSetup()` chiama `set_league_schedule` + `set_gk_mode` + `set_presence_mode`. Mostrato **solo al creatore** (flag `justCreatedLeague`, impostato in `lgCreateBtn`, non nel join). Per la lega #1 già esistente **non appare**: ci sono solo i campi modificabili nelle Impostazioni. Tutte le regole restano sempre modificabili in Impostazioni.
+
+### 22.7 SQL — `config_lega.sql` (idempotente, sostituisce i file SQL config precedenti)
+Colonne su `leagues`: `auto_open bool`, `auto_weekday smallint`, `auto_time time`, `gk_fixed bool`, `presence_self bool`.
+Funzioni (security definer, `set search_path=public`):
+- `get_league_schedule()` → `(auto_open, auto_weekday, auto_time, gk_fixed, presence_self)` per la propria lega (grant `authenticated`). **Ritorno cambiato** → va **droppata** prima di ricrearla.
+- `set_league_schedule(p_auto bool, p_weekday int, p_time text)` — admin.
+- `set_gk_mode(p_fixed bool)` — admin.
+- `set_presence_mode(p_self bool)` — admin.
+- `set_my_presence(p_present bool)` — il giocatore segna **la propria** presenza; richiede `presence_self=true`, giornata open, prima di kickoff−1h, e card con `owner_id=auth.uid()`.
+- `next_weekly_kickoff(wd int, tm time)` → prossimo fischio settimanale in Europe/Rome.
+- `open_due_matchdays()` (service_role) → apre le giornate programmate 48h prima; idempotente (salta se c'è già una giornata non chiusa o lo stesso kickoff); ritorna `(opened_id, opened_label, opened_league, opened_kickoff)`.
+
+### 22.8 `notify.ts` — apertura automatica nello scheduler
+Aggiunta `runAutoOpen()` chiamata nel ramo cron (prima di reminder e auto-close): invoca `open_due_matchdays()` e per ogni giornata aperta manda la push **"<Giornata> aperta! ⚽"** alla lega giusta. Risposta cron ora `{opened, reminders, closed}`. Resto invariato.
+
+### 22.9 File toccati
+- `index.html` — impostazioni a pagine (`setNav`/`.setpage`/`.navrow`), apertura auto/manuale (`renderOpenMode`, `loadSchedule`), modalità portiere (`renderGkMode`, ruolo POR, `roleLabel`, `openPickerSheet`), modalità presenze (`renderPresenceMode`, `renderHomePresence`, `setMyPresence`, card `.hpcard` in Home), banner notifiche (`maybeShowNotifBanner`), wizard creazione (`#rulesSetup`, `saveRulesSetup`, `justCreatedLeague`). `loadSchedule()` ora chiamata all'avvio per **tutti** (serve portiere/presenze a ogni utente).
+- `config_lega.sql` — tutta la config lega (sostituisce `apertura_automatica.sql`).
+- `notify.ts` — `runAutoOpen`.
+- `elimina_lega_test.sql` — utility per cancellare una lega di test (guardia su lega #1), per provare il wizard senza lasciare leghe spazzatura.
+- (Ricorda: re-incollare le 2 chiavi Supabase a ogni upload di `index.html`.)
+
+### 22.10 Note di coerenza
+- Punteggi **invariati** anche con portiere fisso (bonus portiere = slot `g1`, non ruolo).
+- Presenze sempre in `matchday_players`; cambia **chi** può scriverle (admin diretto vs `set_my_presence` per il giocatore).
+- `get_league_schedule()` è di fatto il "league config read" usato da tutti; le tre modalità sono lette in `loadSchedule()`.
+
+## 23. Aggiornamenti recenti — Pagellone (storie) + Classifica ANIMATA alla chiusura
+
+> Sessione dedicata a due cose: (1) la **classifica animata** quando una giornata si chiude, (2) il fix del **layout a tutto schermo** (barra in fondo). **Nessun SQL e nessun PNG**: tutto JS/CSS dentro `index.html`, usando dati che le RPC già forniscono.
+
+### 23.1 Pagellone di fine giornata (contesto, già esistente)
+Il **Pagellone** è un visore "a storie" (`#pag`, full-screen) aperto da `openRecap(mdId, auto)`:
+- carica `get_matchday_recap(md)`; `buildRecapCards(d)` costruisce l'elenco delle scene (numbers, capo, topflop, movers, modules, winner, mvp, …) con **cover** prima e **share** ultima;
+- `showRecapCard(i)` mostra una scena alla volta (tap dx = avanti, sx = indietro, swipe giù = chiudi); `countUp()` anima i numeri delle singole scene;
+- auto-apertura una volta per giornata via `maybeShowRecap()` (flag `localStorage fc_recap_seen_<mdId>`, init `fc_recap_init`); riapribile a mano dalla Home ("Rivivi l'ultima giornata").
+
+### 23.2 Classifica animata — cosa fa
+Quando una giornata si chiude, la classifica non si riordina più "di colpo": si **anima** in 3 momenti.
+1. **Riordino righe (FLIP):** le squadre scivolano fluide dalla vecchia alla nuova posizione (`transform`, gira su GPU).
+2. **Count-up punti:** il totale di ogni squadra sale animato dal valore *precedente* a quello nuovo.
+3. **Frecce:** ad assestamento avvenuto compaiono ▲+n (verde) / ▼−n (rosso); poi **restano** statiche come le mostra oggi `moveArrow()` (finestra 24h). Niente fade-out.
+
+### 23.3 Dove appare (due posti **indipendenti**)
+- **Pagellone:** nuova **scena finale** `{t:'standings'}` ("La classifica adesso"), inserita in `buildRecapCards` **prima** di `share` (solo se `standings.length`). Anima la **prima volta** che la scena viene mostrata; poi statica.
+- **Scheda Lega:** la **prima apertura** della Lega dopo la chiusura (vista "Classifica generale"), agganciata in `go('classifica')` → `maybeAnimateLega()`.
+- I due posti sono **scollegati**: l'effetto avviene in entrambi.
+
+### 23.4 Regola anti-ripetizione — due flag `localStorage` separati
+- `fc_lb_anim_pag_<mdId>` → animazione nel **Pagellone** già vista;
+- `fc_lb_anim_lega_<mdId>` → animazione in **Lega** già vista.
+Ogni schermata controlla il suo flag, anima una volta, poi lo segna. Stile identico ai flag esistenti (`fc_recap_seen_*`, `fc_push_asked`, …).
+
+### 23.5 "Prima" e "dopo" senza query extra
+- **Dopo** = `standings` correnti (da `get_standings()`), già ordinate, con `delta` per riga.
+- **Posizione precedente** di ogni squadra = `posizione_attuale + delta`.
+- **Totale precedente** (per il count-up) = `totale_attuale − punti_di_giornata`, dove i punti di giornata arrivano da `get_standings_md(md)` (mappa `manager_id → punti`).
+- Per sapere se la chiusura è "fresca" (≤24h) si legge `matchdays.closed_at` (aggiunto al `select` di `loadMatchdaysList`).
+
+### 23.6 Requisiti tecnici / dettagli "pro"
+- **`data-id = manager_id`** su ogni riga: serve al FLIP per riconoscere la stessa squadra prima/dopo (le righe si ricostruiscono con `innerHTML`). Per questo `loadStandings()` ora mappa anche `manager_id` (era assente).
+- Schema FLIP: misura posizioni attuali per id → ridisegna nel nuovo ordine → spostamento inverso istantaneo → rilascio con transizione su `transform`. A fine animazione i `transform` inline vengono **puliti** (nessun conflitto con `.tapd`).
+- **Numeri tabulari** (`font-variant-numeric:tabular-nums`) così le cifre non ballano mentre salgono.
+- **`prefers-reduced-motion`:** chi ha le animazioni ridotte vede direttamente il risultato finale (frecce già visibili), ma i flag vengono **comunque** segnati come "visto".
+- **Skeleton loader** (righe grigie pulsanti) in `renderLB` e `renderMini` mentre i dati caricano (`standingsLoaded`).
+- **Mini-classifica Home** = **statica** (solo `data-id`, numeri tabulari, skeleton): niente scorrimento (è top-3, l'effetto entra/esce-dal-podio sarebbe sporco).
+
+### 23.7 Casi limite gestiti
+- **Prima giornata chiusa in assoluto** (`delta` tutti 0): niente riordino, solo count-up (da 0 al totale), nessuna freccia → automatico.
+- **Pagelloni vecchi:** la scena classifica esce **statica** (il `delta` valido c'è solo per l'ultima chiusura nelle 24h, quindi su giornate vecchie `delta=0` → niente frecce/riordino, ma chiusura comunque elegante).
+- **Lega oltre le 24h:** niente animazione (coerente con le frecce che lì non esistono più), classifica statica.
+- Parità in classifica, solo-manager, tante squadre (scroll): ok. Mai righe rotte/vuote (l'ordine "vecchio" si misura e si sostituisce in modo sincrono, mai dipinto).
+
+### 23.8 Funzioni nuove (in `index.html`)
+`lbRowHTML(t,i,pts,withArrow)` (riga condivisa statica/animata), `moveArrowR(d)` (freccia con classe `.rv` per il reveal), `skeletonRows(kind,n)`, `prefersReduce()`, `lbFresh()` (chiusura ≤24h via `closed_at`), `mdPointsMap(mdId)` (RPC `get_standings_md` → mappa punti), `lbBuildAnimRows()`, `countUpFromTo(el,from,to,dur)`, `lbAnimate(container,rows,mdPts)` (il motore FLIP+count-up+frecce), `maybeAnimateLega()` (trigger Lega), `renderRecapStandings()` (trigger Pagellone). Variabile `standingsLoaded`.
+
+### 23.9 Innesti nel codice esistente (cosa NON ho rotto)
+- `doCloseMatchday`: dopo la chiusura ricarica anche `loadStandings()` + `loadMatchdaysList()` (così `latestClosedMd()`/`standings`/`closed_at` sono freschi). Flusso di chiusura, `clearRoundLocal()` e `moveArrow()` **invariati**.
+- `buildRecapCards`: la scena `standings` NON conta come "contenuto interessante" → l'auto-apertura del Pagellone resta come prima.
+- `renderLB` (vista generale) e `renderMini`: ora emettono `data-id` + numero in `.num` (struttura identica statica/animata) + skeleton.
+
+### 23.10 Layout a tutto schermo (barra in fondo) — nota
+Una redesign precedente aveva reso `.app` un **guscio `position:fixed`** con scroller interno (`.scrollwrap`): su **iOS PWA** questo manda in tilt il `bottom:0` dei `position:fixed` (innerHeight/`dvh` sottostimano l'altezza reale → barra "galleggiante"; forzando `screen.height` la barra veniva **tagliata**). Numeri reali misurati su iPhone: `innerHeight≈793`, `screen.height≈852`. **Soluzione:** tornare all'impianto **scroll-pagina** (quello che sul telefono andava bene): `body` scrolla, `.app` blocco normale `min-height:100dvh` con `padding-bottom` per la barra, `.topbar` `position:sticky`, `.nav` `position:fixed;bottom:0` centrata. Rimosso ogni tentativo JS di misurare l'altezza. Lezione: per le full-screen su iOS-PWA, lo **scroll del `body`** è più affidabile del guscio fisso.
+
+### 23.11 File toccati
+- `index.html` — tutto qui (motore animazione + scena Pagellone + skeleton + ripristino layout). Nessun altro file.
+- (Ricorda: re-incollare le 2 chiavi Supabase a ogni upload; **niente SQL, niente PNG**.)
+
+---
+
+## 24. Aggiornamenti recenti — restyle barre, crediti via sondaggio interno, generatore separato
+
+Sessione di giugno 2026. Tre blocchi: (a) restyle delle barre, (b) metodo crediti con **sondaggio valori interno e per-lega**, (c) **rimozione del generatore squadre** dall'app verso un tool separato.
+
+### 24.1 Restyle barra in alto e in basso
+- **Topbar**: da `position:sticky` a **`position:fixed`** (non rimbalza più con lo scroll), **sfondo blu pieno** (`var(--bg)`, niente più gradiente/trasparenza né `backdrop-filter`), sottile `border-bottom`. Per non finire sotto la barra, `.scrollwrap` ha `padding-top: calc(66px + env(safe-area-inset-top))`.
+- **Nav in basso**: sfondo blu pieno, niente blur, **più bassa** (ridotte `.nav` padding, `.nav-inner` padding, **`.nav .ic` da 46→32→34px**). Poi resa **piatta come le app di riferimento** (OneFootball/Amazon/Booking): tolto il riquadro/pillola (`.nav-inner` senza background/border/radius), **tolto il pulsante centrale blu** del Campo (ora icona uguale alle altre, attivo solo via colore), icone un po' più grandi (`svg` 21→26px), `border-top` sottile. `.app` padding-bottom adeguato (74px).
+
+### 24.2 Crediti giocatori: Manuale o Sondaggio (interno, per-lega)
+Nuova colonna **`leagues.credit_mode`** (`'manual'|'poll'`) + **`leagues.value_poll_open`** bool. Scelta nel **wizard #rulesSetup** (4ª regola «💰 Crediti giocatori») e in **Impostazioni → Lega → Crediti giocatori** (`set_credit_mode`).
+- **Manuale**: come prima, l'admin imposta `players.cost` nella scheda giocatore.
+- **Sondaggio** (nuovo, sostituisce quello esterno):
+  - Tabella **`value_poll`** (`league_id+voter_id` PK, `ratings jsonb {player_id:voto}`), RLS senza policy dirette.
+  - **Votano TUTTI i membri** (anche soli-manager); si valutano **tutte le card giocatori** della lega (no manager), **escluso il proprio personaggio**; voto **1–10 con mezzi voti**.
+  - **Home**: card `#homeValuePoll` sotto l'hero (se `credit_mode=poll` e `value_poll_open`) → `openValuePoll()` apre l'overlay `#valuePoll` (riusa `.ls-open`); `select` 1..10 per giocatore; «Invia i voti» → `submit_value_poll`.
+  - **Chiusura = admin** con contatore «X di Y membri hanno votato» (+ «✓ tutti!»): «Chiudi e calcola i crediti» → `close_value_poll_and_apply()`.
+  - **Formula**: media voti per giocatore (default 6 se nessun voto), poi `cost = clamp(round(20 * v^2.4 / media(v^2.4)), 5, 55)`. Calibrata su 100cr/5: medio ~20, i **5 più forti insieme >100** (non comprabili), già 3 forti sfondano. I `cost` restano **modificabili a mano**.
+  - Funzioni: `set_credit_mode`, `submit_value_poll`, `get_my_value_poll`, `get_credit_config`, `close_value_poll_and_apply`. Stato letto all'avvio per tutti via `loadCreditConfig()`.
+- **SQL**: `sondaggio_valori.sql` (additivo: 2 colonne + tabella + 5 funzioni; non tocca dati esistenti, eseguibile anche a campionato in corso).
+
+### 24.3 Migrazione del sondaggio esterno nella lega 1
+`migrazione_lega1_sondaggio.sql` (una tantum, dopo `sondaggio_valori.sql`): porta i voti di `credit_poll` (sondaggio.html, per nome) dentro `value_poll` per la **lega 1**, applicando gli alias dei nomi (Davide D→Davi Kakà, Rouge→Davi Rouge, Francesco Pio→Fra, Lorenzo→Lore Chiesa, Luca→Luchino, Gabry→Gabri), poi **calcola e applica i crediti** e imposta `credit_mode='poll'`, `value_poll_open=false`. Rilanciabile (ripulisce prima). **Dopo: `sondaggio.html` è rimovibile da GitHub.** La tabella `credit_poll` e `get_poll_results` restano (innocue, ancora dietro la vecchia card «Risultati sondaggio valori»).
+
+### 24.4 Generatore squadre rimosso dall'app → tool separato
+«Crea le squadre» **rimosso dall'app** (non adatto all'uso diffuso: altre leghe fanno le squadre da sé o hanno giocatori non del fanta). Tolti: card in Impostazioni, funzioni (`openTeamMaker`/`tmGenerate`/`tmMove`/`tmCol`/`renderTeamMaker`/`pollValueFor`/`tmStrength`), `POLL_ALIAS`, variabili `tmA/tmB/pollMap`, e il campo **Valore** nella scheda giocatore. La colonna `players.valore` resta in DB (innocua, preservata sugli edit) ma non è più usata/editabile in-app. CSS `.tm-*` lasciato (morto, innocuo).
+Nuovo file **`crea_squadre.html`**: tool **personale offline** (nessun backend/chiave) — rosa salvata in `localStorage`, bilanciamento per forza+ruolo, tap-to-move, «Rigenera». Tool privato di Teo (non serve su GitHub).
+
+### 24.5 File toccati
+- `index.html` — restyle barre, sondaggio valori interno (wizard/home/overlay/admin), rimozione generatore + campo Valore.
+- `sondaggio_valori.sql` — colonne+tabella+funzioni del sondaggio interno.
+- `migrazione_lega1_sondaggio.sql` — migrazione una tantum del sondaggio esterno (lega 1).
+- `crea_squadre.html` — tool separato (generatore squadre offline).
+- (Ricorda: re-incollare le 2 chiavi Supabase a ogni upload di `index.html`.)
