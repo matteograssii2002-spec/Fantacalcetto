@@ -944,25 +944,42 @@ Nuovo file **`crea_squadre.html`**: tool **personale offline** (nessun backend/c
 
 ## 25. Aggiornamenti recenti — chiusura davvero automatica, frecce in Lega, Pagellone semplificato
 
-> Sessione di rifinitura. Dove in conflitto con sezioni precedenti, **vale questa**. Tutto in `index.html`, tranne la verifica del timer di chiusura che è lato Supabase (vedi 25.1).
+> Dove in conflitto con sezioni precedenti, **vale questa**. Tutto in `index.html`, tranne la verifica del timer di chiusura (lato Supabase, 25.1).
 
 ### 25.1 Chiusura giornata AUTOMATICA (due livelli)
-Obiettivo: la giornata si chiude da sola **alla scadenza dei voti** (kickoff + 25h = fine finestra voti), aggiornando classifica + crediti e facendo partire il Pagellone, **senza che l'admin prema il tasto**.
-- **Livello 1 — lato server (vero "app chiusa"):** lo scheduler `pg_cron` (`fanta-reminder`, ogni 10 min) chiama `notify.ts` → `runAutoClose()` → RPC **`close_due_matchdays()`** che chiude le giornate scadute, applica i crediti e manda la push "chiusa". Questo è il meccanismo principale e **deve essere attivo su Supabase**. Se non scatta, di solito **il cron non è programmato** (o il `CRON_SECRET` nel job non combacia con quello nei Secret della function dopo la rotazione del 14/06). File **`timer_chiusura.sql`**: diagnosi (funzione presente? cron presente?) + (ri)attivazione idempotente del job + test al volo `select * from close_due_matchdays();`. Servono `<PROGETTO>` (da Settings→API→Project URL) e `<CRON_SECRET>` (Edge Functions→notify→Secrets).
-- **Livello 2 — rete di sicurezza lato client (admin):** in `startCountdown()`/`tick()`, se l'admin apre l'app e la finestra voti è scaduta (`now>voteClose`, `isFinite`), la giornata si chiude da sola via `doCloseMatchday(true)` (guardia `_autoClosing` anti-doppioni). Sul ramo `auto` ora `doCloseMatchday` chiama anche `maybeShowRecap()` → Pagellone automatico. Idempotente con il server (`status==='closed'` + `cost_applied`).
-- Il **tasto "Chiudi la giornata adesso"** resta solo come chiusura **anticipata** (facoltativa); non è più necessario per il funzionamento normale.
+La giornata si chiude da sola alla **scadenza voti** (kickoff + 25h), aggiornando classifica + crediti e facendo partire il Pagellone, **senza che l'admin prema il tasto**.
+- **Lato server (vero "app chiusa"):** `pg_cron` `fanta-reminder` (ogni 10 min) → `notify.ts` `runAutoClose()` → RPC `close_due_matchdays()`. Deve essere attivo su Supabase. File **`timer_chiusura.sql`**: diagnosi (funzione/cron presenti?) + (ri)attivazione idempotente del job + test. Servono `<PROGETTO>` e `<CRON_SECRET>`. *(Verificato funzionante dall'utente.)*
+- **Rete di sicurezza lato client (admin):** in `tick()`, se l'admin apre l'app con finestra voti scaduta, chiude via `doCloseMatchday(true)` (guardia `_autoClosing`); sul ramo `auto` chiama `maybeShowRecap()`. Idempotente col server.
+- Il tasto "Chiudi adesso" resta solo come chiusura **anticipata** manuale.
 
 ### 25.2 Frecce classifica colorate anche in Lega
-Le frecce ▲/▼ (verde/rossa, finestra 24h) c'erano già ma in Lega stavano **dentro** il nome squadra `<b>` con `overflow:hidden;text-overflow:ellipsis;white-space:nowrap` → con nomi lunghi venivano **tagliate**. Fix in `lbRowHTML`: la `<span class="mvw">` (freccia) è ora **sorella** del nome (`.who`), prima di `.tot`, con CSS `.lb-row>.mvw{flex:none;margin-left:-6px}` → sempre visibile e colorata. Vale per la **Classifica generale** in Lega e per la **scena classifica del Pagellone** (entrambe usano `lbRowHTML`). La mini-classifica in Home era già ok (struttura diversa, `renderMini`): **invariata**. Il motore animato (`lbAnimate`) trova ancora `.mvw` via `[data-id] .mvw`: **invariato**.
+In Lega le frecce ▲/▼ stavano dentro il nome `<b>` troncato (`overflow:hidden`) → tagliate. Fix in `lbRowHTML`: `<span class="mvw">` ora **sorella** del nome, prima di `.tot`, con `.lb-row>.mvw{flex:none;margin-left:-6px}`. Vale per Classifica generale Lega + scena classifica Pagellone. Home (`renderMini`) invariata. `lbAnimate` trova ancora `.mvw`.
 
 ### 25.3 Pagellone — scene più chiare
-- **Tolto** «5 vincitori vs 5 sconfitti» (lo split `n.winners/n.losers`, peraltro con etichetta vecchia +2/−1) e la vecchia scena unica «Capitani & MVP» con i nomi oscuri **"Fascia d'oro" / "Fascia gelata"**.
-- **Scena `captains` riscritta** (titolo «La fascia da capitano», eyebrow oro) con sottotitolo esplicativo «Il capitano vale doppio sul voto: ecco chi l'ha scelto meglio e chi peggio» e due colonne chiare: **✅ Capitano più azzeccato** / **❌ Capitano sfortunato**, ognuna con «scelto da {squadra}» + punti. Dati invariati (`ex.captains.top/flop` da `loadRecapExtra`).
-- **MVP** ora è una **scena a sé** (`{t:'mvp'}`, già esistente: avatar grande oro + nome + nomination), non più infilata nella scena capitani.
-- **Vincitore** ora è la scena pulita `{t:'winner'}` (trofeo + squadra + punti + 🥄 cucchiaio di legno), al posto della vecchia `verdict`. Coriandoli + vibrazione estesi a `winner` (oltre a `mvp`/`verdict`).
-- **Flusso scene** ora: cover → you → topflop → **captains** → **mvp** → **winner** → forma → standings → share. Le scene non più referenziate (`verdict`, vecchia `captains`) restano inerti in `renderRecapHTML` (morte, innocue). La share-card (`buildShareCard`) usa `d.winner/d.mvp/d.capocannoniere`: **invariata**.
+Tolto «5 vincitori vs 5 sconfitti» e i nomi oscuri «Fascia d'oro/gelata». Scena `captains` riscritta («La fascia da capitano» + sottotitolo «Il capitano vale doppio sul voto…», colonne ✅ Capitano più azzeccato / ❌ Capitano sfortunato, «scelto da {squadra}»). MVP e Vincitore ora scene dedicate (`mvp`, `winner` con cucchiaio). Flusso: cover → you → topflop → captains → mvp → winner → forma → standings → share. Scene `verdict`/vecchia `captains` inerti.
 
 ### 25.4 File toccati
-- `index.html` — chiusura automatica client (admin) + Pagellone auto, freccia Lega fuori dal nome (+CSS), scena capitani riscritta, MVP/vincitore come scene dedicate.
-- `timer_chiusura.sql` — diagnosi + (ri)attivazione del cron di chiusura lato server (il vero "app chiusa").
-- (Ricorda: re-incollare le 2 chiavi Supabase a ogni upload di `index.html`. Niente PNG.)
+- `index.html`, `timer_chiusura.sql`. (Reincollare le 2 chiavi a ogni upload. Niente PNG.)
+
+---
+
+## 26. Aggiornamenti recenti — podio MVP, chiusura "hanno votato tutti", classifica sempre animata nel Pagellone, punti arrotondati
+
+> Dove in conflitto con sezioni precedenti, **vale questa**. `index.html` + **`podio_e_chiusura_voti.sql`** (2 funzioni nuove, additive).
+
+### 26.1 Podio MVP (2º e 3º più votati)
+Sotto l'MVP, nella scena `mvp`, compaiono il **2º e 3º più nominati** (🥈/🥉, avatar + nome + n. nomination). Dati da nuova RPC **`get_mvp_podium(md)`** (security definer, top-3 per `count(*)` su `nominations.mvp_player_id`, tie = id più basso; il 1º coincide con l'MVP). Client: `loadRecapExtra` la chiama in parallelo e salva `ex.mvpPodium=[1º,2º,3º]`; la scena usa `slice(1,3)`. CSS `.mvp-podium/.mvp-prow/.mvp-pmedal/.mvp-pav/.mvp-pnm/.mvp-pv`. Se l'RPC non c'è ancora (SQL non eseguito) degrada: nessun podio, nessun errore.
+
+### 26.2 Chiusura anticipata: quando hanno votato TUTTI
+Oltre alle 25h, la giornata si chiude **appena tutti gli aventi diritto hanno votato** (es. se alle 16 han votato tutti, si chiude alle 16, non aspetta le 21). Nuova RPC **`close_if_all_voted(p_md)`** (security definer, ritorna bool): chiude + applica crediti via `_apply_credits_core` **solo** se (a) è la propria lega (`my_league()`), (b) c'è ≥1 voto, (c) **nessun** avente-diritto manca all'appello. "Avente diritto" = stessa regola di `canIVote`: **admin** della lega · **extra_voters** · chi ha un **proprio personaggio presente** (`players.owner_id=p.id` in `matchday_players`). "Ha votato" = ≥1 riga in `votes`. Client: chiamata in coda a `submitVotes()`; se torna true → reload giornata/classifica + `clearRoundLocal()` + `maybeShowRecap()` (Pagellone). Idempotente (guardie `status<>'closed'` + `cost_applied`). Backstop 25h lato server invariato. **Nota:** dipende dalla funzione interna `_apply_credits_core(md)` (esistente, usata anche da `close_due_matchdays`/`apply_credit_changes`).
+
+### 26.3 Pagellone: classifica SEMPRE animata (Lega solo la prima volta)
+`renderRecapStandings()` ora anima **ogni volta** che si apre la scena classifica del Pagellone (per l'ultima giornata chiusa): rimosso il flag `fc_lb_anim_pag_<md>`. Si anima quando `isLatest && !prefersReduce()`; pagelloni vecchi o reduced-motion = statici. La **Lega** invece resta **solo la prima volta** (`maybeAnimateLega` + flag `fc_lb_anim_lega_<md>`): **invariata**.
+
+### 26.4 Classifica con punti arrotondati (ordine per valore vero)
+Nelle **classifiche** i punti si mostrano **interi** (`Math.round`): Home mini, Lega «Classifica generale» (`lbRowHTML`), Lega «di giornata» (`mdStandings`), scena classifica Pagellone, e il count-up animato (`countUpFromTo` ora su interi). L'**ordine** resta per **valore vero** con la virgola (le RPC `get_standings`/`get_standings_md` fanno `ORDER BY points desc` sul valore reale), quindi a pari arrotondato vince chi ha il decimale più alto (es. 79,3 sopra 78,9, entrambi mostrati «79»). `countUp` delle altre scene (data-count con `dec`) invariato.
+
+### 26.5 File toccati
+- `index.html` — podio MVP (scena + CSS + fetch), `close_if_all_voted` in `submitVotes`, `renderRecapStandings` sempre animata, arrotondamenti classifica + `countUpFromTo`.
+- `podio_e_chiusura_voti.sql` — `get_mvp_podium(md)` + `close_if_all_voted(p_md)` (additive, idempotenti).
+- (Reincollare le 2 chiavi Supabase a ogni upload di `index.html`. Niente PNG.)
