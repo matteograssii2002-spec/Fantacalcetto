@@ -491,3 +491,36 @@ LAYOUT_FULLSCREEN = {
     "regola": "Per le full-screen su iOS-PWA, lo SCROLL del body e' piu' affidabile del guscio fisso a tutto schermo. Evitare .app fixed + scrollwrap interno.",
     "tap_fix_invariato": "Resta valida la regola .tapd: ogni elemento posizionato con transform ripete quel transform anche in .tapd (vedi TAP_FIX). Le righe animate puliscono i transform inline a fine animazione, quindi non serve variante .tapd su di esse.",
 }
+
+
+# ---------------------------------------------------------------------------
+# SESSIONE RECENTE — chiusura davvero automatica, frecce in Lega, Pagellone semplificato
+# (Dove in conflitto con i blocchi sopra, VALE QUESTO. Vedi FANTACALCETTO.md sez. 25.)
+# ---------------------------------------------------------------------------
+AUTO_CLOSE = {
+    "obiettivo": "La giornata si chiude DA SOLA alla scadenza dei voti (kickoff + 25h = fine finestra voti): classifica + crediti aggiornati e Pagellone che parte, SENZA che l'admin prema il tasto.",
+    "livello1_server": "Vero 'app chiusa': pg_cron 'fanta-reminder' (ogni 10 min) -> notify.ts runAutoClose() -> RPC close_due_matchdays() (chiude scadute, applica crediti, push 'chiusa'). DEVE essere attivo su Supabase. Se non scatta: di solito il cron non e' programmato, o il CRON_SECRET nel job non combacia con quello nei Secret della function (rotazione 14/06).",
+    "file_sql": "timer_chiusura.sql: diagnosi (funzione presente? cron presente?) + (ri)attivazione idempotente del job + test 'select * from close_due_matchdays();'. Servono <PROGETTO> (Settings->API->Project URL) e <CRON_SECRET> (Edge Functions->notify->Secrets).",
+    "livello2_client": "Rete di sicurezza (admin): in startCountdown()/tick(), se l'admin apre l'app e now>voteClose (isFinite) la giornata si chiude via doCloseMatchday(true) (guardia _autoClosing). Sul ramo auto, doCloseMatchday chiama anche maybeShowRecap() -> Pagellone automatico. Idempotente col server (status='closed' + cost_applied).",
+    "tasto_manuale": "Il tasto 'Chiudi la giornata adesso' resta solo per la chiusura ANTICIPATA (facoltativa); non piu' necessario nel funzionamento normale.",
+}
+
+FRECCE_LEGA = {
+    "problema": "Le frecce ▲/▼ (verde/rossa, finestra 24h) in Lega stavano DENTRO il nome squadra <b> con overflow:hidden+ellipsis+nowrap -> con nomi lunghi venivano tagliate.",
+    "fix": "In lbRowHTML la <span class='mvw'> (freccia) e' ora SORELLA del nome (.who), prima di .tot, con CSS .lb-row>.mvw{flex:none;margin-left:-6px}. Sempre visibile e colorata.",
+    "dove_vale": "Classifica generale in Lega + scena classifica del Pagellone (entrambe usano lbRowHTML). Home (renderMini) era gia' ok: INVARIATA. lbAnimate trova ancora .mvw via [data-id] .mvw: INVARIATO.",
+}
+
+PAGELLONE_V2 = {
+    "tolto": "«5 vincitori vs 5 sconfitti» (split n.winners/n.losers, etichetta pure vecchia +2/-1) e i nomi oscuri «Fascia d'oro»/«Fascia gelata» della vecchia scena unica «Capitani & MVP».",
+    "captains_riscritta": "Scena 'captains' (titolo «La fascia da capitano», eyebrow oro) + sottotitolo «Il capitano vale doppio sul voto: ecco chi l'ha scelto meglio e chi peggio». Due colonne chiare: ✅ Capitano piu' azzeccato / ❌ Capitano sfortunato, con «scelto da {squadra}» + punti. Dati invariati (ex.captains.top/flop).",
+    "mvp_scena_a_se": "MVP ora e' la scena {t:'mvp'} dedicata (avatar grande oro + nome + nomination), non piu' dentro i capitani.",
+    "winner_pulito": "Vincitore = scena {t:'winner'} (trofeo + squadra + punti + 🥄 cucchiaio), al posto della vecchia 'verdict'. Coriandoli+vibrazione estesi a 'winner'.",
+    "flusso_scene": "cover -> you -> topflop -> captains -> mvp -> winner -> forma -> standings -> share. Scene non piu' referenziate (verdict, vecchia captains) restano inerti in renderRecapHTML (morte, innocue). buildShareCard usa d.winner/d.mvp/d.capocannoniere: INVARIATA.",
+}
+
+FILE_TOCCATI_SESSIONE = [
+    "index.html — chiusura automatica client (admin) + Pagellone auto, freccia Lega fuori dal nome (+CSS), scena capitani riscritta, MVP/vincitore come scene dedicate.",
+    "timer_chiusura.sql — diagnosi + (ri)attivazione del cron di chiusura lato server (il vero 'app chiusa').",
+    "Ricorda: re-incollare le 2 chiavi Supabase a ogni upload di index.html. Niente PNG.",
+]

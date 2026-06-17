@@ -939,3 +939,30 @@ Nuovo file **`crea_squadre.html`**: tool **personale offline** (nessun backend/c
 - `migrazione_lega1_sondaggio.sql` — migrazione una tantum del sondaggio esterno (lega 1).
 - `crea_squadre.html` — tool separato (generatore squadre offline).
 - (Ricorda: re-incollare le 2 chiavi Supabase a ogni upload di `index.html`.)
+
+---
+
+## 25. Aggiornamenti recenti — chiusura davvero automatica, frecce in Lega, Pagellone semplificato
+
+> Sessione di rifinitura. Dove in conflitto con sezioni precedenti, **vale questa**. Tutto in `index.html`, tranne la verifica del timer di chiusura che è lato Supabase (vedi 25.1).
+
+### 25.1 Chiusura giornata AUTOMATICA (due livelli)
+Obiettivo: la giornata si chiude da sola **alla scadenza dei voti** (kickoff + 25h = fine finestra voti), aggiornando classifica + crediti e facendo partire il Pagellone, **senza che l'admin prema il tasto**.
+- **Livello 1 — lato server (vero "app chiusa"):** lo scheduler `pg_cron` (`fanta-reminder`, ogni 10 min) chiama `notify.ts` → `runAutoClose()` → RPC **`close_due_matchdays()`** che chiude le giornate scadute, applica i crediti e manda la push "chiusa". Questo è il meccanismo principale e **deve essere attivo su Supabase**. Se non scatta, di solito **il cron non è programmato** (o il `CRON_SECRET` nel job non combacia con quello nei Secret della function dopo la rotazione del 14/06). File **`timer_chiusura.sql`**: diagnosi (funzione presente? cron presente?) + (ri)attivazione idempotente del job + test al volo `select * from close_due_matchdays();`. Servono `<PROGETTO>` (da Settings→API→Project URL) e `<CRON_SECRET>` (Edge Functions→notify→Secrets).
+- **Livello 2 — rete di sicurezza lato client (admin):** in `startCountdown()`/`tick()`, se l'admin apre l'app e la finestra voti è scaduta (`now>voteClose`, `isFinite`), la giornata si chiude da sola via `doCloseMatchday(true)` (guardia `_autoClosing` anti-doppioni). Sul ramo `auto` ora `doCloseMatchday` chiama anche `maybeShowRecap()` → Pagellone automatico. Idempotente con il server (`status==='closed'` + `cost_applied`).
+- Il **tasto "Chiudi la giornata adesso"** resta solo come chiusura **anticipata** (facoltativa); non è più necessario per il funzionamento normale.
+
+### 25.2 Frecce classifica colorate anche in Lega
+Le frecce ▲/▼ (verde/rossa, finestra 24h) c'erano già ma in Lega stavano **dentro** il nome squadra `<b>` con `overflow:hidden;text-overflow:ellipsis;white-space:nowrap` → con nomi lunghi venivano **tagliate**. Fix in `lbRowHTML`: la `<span class="mvw">` (freccia) è ora **sorella** del nome (`.who`), prima di `.tot`, con CSS `.lb-row>.mvw{flex:none;margin-left:-6px}` → sempre visibile e colorata. Vale per la **Classifica generale** in Lega e per la **scena classifica del Pagellone** (entrambe usano `lbRowHTML`). La mini-classifica in Home era già ok (struttura diversa, `renderMini`): **invariata**. Il motore animato (`lbAnimate`) trova ancora `.mvw` via `[data-id] .mvw`: **invariato**.
+
+### 25.3 Pagellone — scene più chiare
+- **Tolto** «5 vincitori vs 5 sconfitti» (lo split `n.winners/n.losers`, peraltro con etichetta vecchia +2/−1) e la vecchia scena unica «Capitani & MVP» con i nomi oscuri **"Fascia d'oro" / "Fascia gelata"**.
+- **Scena `captains` riscritta** (titolo «La fascia da capitano», eyebrow oro) con sottotitolo esplicativo «Il capitano vale doppio sul voto: ecco chi l'ha scelto meglio e chi peggio» e due colonne chiare: **✅ Capitano più azzeccato** / **❌ Capitano sfortunato**, ognuna con «scelto da {squadra}» + punti. Dati invariati (`ex.captains.top/flop` da `loadRecapExtra`).
+- **MVP** ora è una **scena a sé** (`{t:'mvp'}`, già esistente: avatar grande oro + nome + nomination), non più infilata nella scena capitani.
+- **Vincitore** ora è la scena pulita `{t:'winner'}` (trofeo + squadra + punti + 🥄 cucchiaio di legno), al posto della vecchia `verdict`. Coriandoli + vibrazione estesi a `winner` (oltre a `mvp`/`verdict`).
+- **Flusso scene** ora: cover → you → topflop → **captains** → **mvp** → **winner** → forma → standings → share. Le scene non più referenziate (`verdict`, vecchia `captains`) restano inerti in `renderRecapHTML` (morte, innocue). La share-card (`buildShareCard`) usa `d.winner/d.mvp/d.capocannoniere`: **invariata**.
+
+### 25.4 File toccati
+- `index.html` — chiusura automatica client (admin) + Pagellone auto, freccia Lega fuori dal nome (+CSS), scena capitani riscritta, MVP/vincitore come scene dedicate.
+- `timer_chiusura.sql` — diagnosi + (ri)attivazione del cron di chiusura lato server (il vero "app chiusa").
+- (Ricorda: re-incollare le 2 chiavi Supabase a ogni upload di `index.html`. Niente PNG.)
