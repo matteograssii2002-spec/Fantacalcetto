@@ -108,6 +108,10 @@
 
   .hero{position:relative;border-radius:22px;overflow:hidden;margin-top:6px;background:radial-gradient(140% 120% at 80% 0%, rgba(61,139,255,.22), transparent 55%),linear-gradient(160deg,#10294d,#0a1830);border:1px solid var(--line-strong);padding:16px 18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 20px 44px -26px rgba(0,0,0,.7)}
   .hero-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .hero-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .hh-league{font-family:'Bricolage Grotesque';font-weight:800;font-size:14px;letter-spacing:-.01em;color:#fff;display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hh-league:empty{display:none}
+  .hh-season{flex:none;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--gold-soft);background:rgba(234,178,74,.14);border:1px solid rgba(234,178,74,.3);padding:5px 10px;border-radius:999px;white-space:nowrap}
   .hero .ko{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-soft);background:rgba(61,139,255,.14);border:1px solid rgba(61,139,255,.3);padding:5px 10px;border-radius:999px}
   .hero .teampill{font-size:12px;font-weight:700;background:rgba(255,255,255,.07);border:1px solid var(--line);padding:5px 11px;border-radius:999px;max-width:50%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .hero h1{font-family:'Bricolage Grotesque';font-weight:800;font-size:26px;letter-spacing:-.03em;margin:10px 0 2px;line-height:1.02}
@@ -297,6 +301,11 @@
   .voteinp{appearance:none;-webkit-appearance:none;background:var(--bg2);border:1.5px solid var(--line-strong);color:var(--text);font-family:'JetBrains Mono';font-weight:800;font-size:17px;text-align:center;border-radius:10px;padding:8px 4px;width:66px}
   .voteinp:focus{border-color:var(--accent);outline:none}
   .voteinp:disabled{opacity:.45}
+  .mvpstar{flex:none;width:36px;height:36px;border-radius:10px;border:1.5px solid var(--line-strong);background:var(--bg2);font-size:16px;line-height:1;cursor:pointer;filter:grayscale(1);opacity:.5;transition:transform .1s,filter .15s,opacity .15s,border-color .15s,background .15s}
+  .mvpstar.on{filter:none;opacity:1;border-color:var(--gold);background:rgba(234,178,74,.16);box-shadow:inset 0 0 0 1px rgba(234,178,74,.45)}
+  .mvpstar:active{transform:scale(.92)}
+  .mvpstar:disabled{opacity:.35;cursor:default}
+  .vote-req{color:#b89a6a;font-size:12.5px;margin-top:12px;line-height:1.5;padding-top:10px;border-top:1px solid var(--line)}
   .arow+.arow{border-top:1px solid rgba(234,178,74,.12)}
   .arow .an{flex:1;font-weight:600;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .stp{display:flex;align-items:center;gap:3px}
@@ -561,6 +570,9 @@
   /* ---- Leghe ---- */
   .league-badge{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;background:rgba(61,139,255,.14);border:1px solid rgba(61,139,255,.32);color:var(--accent-soft);font-weight:800;font-size:12px;letter-spacing:.01em;padding:5px 11px;border-radius:999px;margin-bottom:12px}
   .league-badge:empty{display:none}
+  .lega-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .lega-head .league-badge{margin-bottom:0}
+  .lega-head .hh-season{flex:none}
   .lg-res{display:block;padding:13px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-top:8px;cursor:pointer;font-weight:700;transition:border-color .15s}
   .lg-res:active{border-color:var(--accent)}
   .lg-back{display:block;text-align:center;color:var(--accent-soft);font-size:13px;cursor:pointer;margin-top:16px}
@@ -894,7 +906,10 @@
 
   <section class="view active" id="v-home">
     <div class="hero">
-      <div class="league-badge" id="homeLeague"></div>
+      <div class="hero-head">
+        <span class="hh-league" id="homeLeague"></span>
+        <span class="hh-season" id="heroSeason">Stagione 1</span>
+      </div>
       <div class="hero-top"><span class="ko" id="heroKo">● Fantacalcetto</span><span class="teampill" id="heroTeam">La tua squadra</span></div>
       <h1>Pronto a<br>schierare?</h1>
       <p class="sub">Hai 100 crediti. Scegli i 5 e nomina il capitano.</p>
@@ -943,16 +958,10 @@
     <div class="section-h"><h2>Voti</h2></div>
     <div class="countdown"><div class="cl" id="cdLabel">Giornata</div><div class="ct" id="cdTime">—</div></div>
     <div class="vcard">
-      <h3>Migliore in campo</h3><p class="vs">L'MVP raddoppia il proprio voto (i bonus restano invariati).</p>
-      <div class="vsel">
-        <div class="vbox"><label class="mvp">🏆 MVP</label><select class="vselect" id="mvpSel" onchange="onNominate('mvp',this.value)"></select></div>
-      </div>
-      <div class="vs" id="msHint" style="margin:12px 0 0">Ancora nessuna nomination dal gruppo.</div>
-    </div>
-    <div class="vcard">
       <div class="vcard-h"><h3>Vota i giocatori</h3><button class="vsend" id="submitVotesBtn" onclick="submitVotes()" style="display:none">Invia voti</button></div>
-      <p class="vs">Voti da 1 a 10, anche mezzi (es. 7.5). Premi <b>Invia voti</b> per confermare: senza, non si salvano.</p>
+      <p class="vs">Dai un voto da 1 a 10 (anche mezzi, es. 7.5) a <b>tutti</b> e tocca la 🏆 per scegliere l'<b>MVP</b>. Poi premi <b>Invia voti</b>: senza, non si salva nulla.</p>
       <div id="voteList"></div>
+      <div class="vote-req" id="voteReq" style="display:none"></div>
     </div>
     <div class="admin-card" id="adminCard" style="display:none">
       <span class="admin-badge">🔒 Solo amministratore</span>
@@ -965,7 +974,7 @@
 
   <section class="view" id="v-classifica">
     <div class="section-h"><h2>Classifica</h2></div>
-    <div class="league-badge" id="legaLeague"></div>
+    <div class="lega-head"><div class="league-badge" id="legaLeague"></div><span class="hh-season" id="legaSeason">Stagione 1</span></div>
     <select class="vselect" id="mdSelect" onchange="onSelectStandingsMd()" style="width:100%;margin-bottom:6px"></select>
     <p class="vs" id="lbHint" style="color:var(--muted);margin:0 2px 12px;font-size:12.5px"></p>
     <div class="lb" id="lbList"></div>
@@ -1051,6 +1060,10 @@
           <button class="styb" data-self="1" onclick="setPresenceMode(true)">👥 Giocatori</button>
         </div>
         <p class="vs" id="presModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">Sei tu a segnare chi c'è, dal riquadro «Chi gioca questa giornata» qui sotto.</p>
+      </div>
+      <div class="set-card" id="seasonCard" style="border-color:rgba(234,178,74,.28)">
+        <h3>Stagione <span class="lockpill" style="color:var(--gold)">admin</span></h3>
+        <div id="seasonBox"></div>
       </div>
       <div class="set-card" id="mdCard" style="border-color:rgba(234,178,74,.28)">
         <h3>Giornata <span class="lockpill" style="color:var(--gold)">admin</span></h3>
@@ -1170,8 +1183,8 @@
 /* ============================================================
    👇 INCOLLA QUI LE TUE 2 CHIAVI (Supabase → Project Settings → API)
    ============================================================ */
-const SUPABASE_URL  = 'https://lfvpseusbsyzniugczbx.supabase.co';        // es. https://abcdxyz.supabase.co
-const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chiave "anon public"
+const SUPABASE_URL  = 'INCOLLA_URL_QUI';        // es. https://abcdxyz.supabase.co
+const SUPABASE_ANON = 'INCOLLA_ANON_KEY_QUI';   // chiave "anon public"
 /* ============================================================ */
 
 
@@ -1278,6 +1291,7 @@ async function afterLogin(){
     document.getElementById('onboard').classList.add('hidden');
     document.getElementById('league').classList.add('hidden');
     await loadMyLeague();
+    await loadSeason();
     await loadPlayers(); await loadStandings(); await loadMatchdayData();
     applyProfile(); renderAll();
     loadSchedule();          // config lega (modalità portiere) per tutti gli utenti
@@ -1299,6 +1313,57 @@ function renderLeagueName(){
   const nm=myLeague?myLeague.name:'';
   const h=document.getElementById('homeLeague'); if(h)h.textContent=nm?('🏆 '+nm):'';
   const l=document.getElementById('legaLeague'); if(l)l.textContent=nm?('🏆 '+nm):'';
+}
+
+/* ---------- STAGIONE ---------- */
+let currentSeason=null;   // {id,number,name,status,started_at,ended_at,mds_total,mds_closed} | null
+let currentSeasonId=null; // per filtrare le giornate della stagione in corso
+async function loadSeason(){
+  try{ const {data}=await sb.rpc('get_current_season'); currentSeason=(data&&data[0])||null; }
+  catch(_){ currentSeason=null; }
+  currentSeasonId=currentSeason?currentSeason.id:null;
+  renderSeasonUI();
+}
+function seasonLabel(){ return 'Stagione '+(currentSeason?currentSeason.number:1); }
+function renderSeasonUI(){
+  const a=document.getElementById('heroSeason'); if(a)a.textContent=seasonLabel();
+  const b=document.getElementById('legaSeason'); if(b)b.textContent=seasonLabel();
+  renderSeasonAdmin();
+}
+function renderSeasonAdmin(){
+  const box=document.getElementById('seasonBox'); if(!box) return;
+  if(!(profile&&profile.is_admin)){ box.innerHTML=''; return; }
+  const s=currentSeason;
+  const num=s?s.number:1, tot=s?s.mds_total:0, status=s?s.status:'open';
+  const open=(status==='open');
+  let html=`<p class="vs" style="color:var(--muted);margin-bottom:4px;font-size:12.5px">In corso: <b style="color:var(--text)">Stagione ${num}</b> · ${open?'aperta':'chiusa'}</p>
+    <p class="vs" style="color:var(--accent-soft);margin-bottom:10px;font-size:12.5px">${tot}/38 giornate giocate${tot>=38?' · stagione al completo':''}</p>`;
+  if(open){
+    html+=`<button class="logout" style="border-color:rgba(234,178,74,.4);color:var(--gold-soft);margin-top:0" onclick="closeSeasonNow()">Chiudi la stagione adesso</button>
+      <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">Chiudendola, la classifica si congela. La prossima giornata che apri farà partire una <b>nuova stagione</b> (di nuovo Giornata 1).</p>`;
+  }else{
+    html+=`<button class="addbtn" onclick="openSeasonNow()">＋ Apri una nuova stagione</button>
+      <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">La stagione precedente è chiusa. Aprine una nuova per ricominciare la classifica da zero (oppure apri direttamente una giornata: la nuova stagione parte da sola).</p>`;
+  }
+  box.innerHTML=html;
+}
+async function closeSeasonNow(){
+  if(currentMd && currentMd.status!=='closed'){
+    if(!confirm('C\'è ancora una giornata aperta. Chiudi prima la giornata in corso, poi la stagione. Vuoi chiudere comunque la stagione adesso?')) return;
+  }
+  if(!confirm('Chiudere la Stagione '+(currentSeason?currentSeason.number:'')+'? La classifica viene congelata. Si potrà iniziare una nuova stagione aprendo una nuova giornata.')) return;
+  const {error}=await sb.rpc('close_season');
+  if(error){ toast('Errore: '+error.message); return; }
+  await loadSeason(); await loadStandings(); await loadMatchdaysList();
+  renderAll();
+  toast('Stagione chiusa 🏁');
+}
+async function openSeasonNow(){
+  const {error}=await sb.rpc('ensure_open_season');
+  if(error){ toast('Errore: '+error.message); return; }
+  await loadSeason(); await loadStandings(); await loadMatchdaysList();
+  renderAll();
+  toast('Nuova stagione aperta ✅');
 }
 
 /* ---------- SCELTA LEGA (crea / entra) ---------- */
@@ -1522,7 +1587,9 @@ async function loadPlayers(){
   ensureStats();
 }
 async function loadStandings(){
-  const {data,error}=await sb.rpc('get_standings');
+  let data=null,error=null;
+  try{ const r=await sb.rpc('get_standings_season'); data=r.data; error=r.error; }catch(e){ error=e; }
+  if(error||!data){ const r=await sb.rpc('get_standings'); data=r.data; error=r.error; }  // fallback: SQL stagioni non ancora applicata
   if(error||!data){standings=[];standingsLoaded=true;return;}
   standings=data.map(r=>({manager_id:r.manager_id,team_name:r.team_name,player_name:r.player_name,points:Number(r.points),delta:r.delta||0}));
   standingsLoaded=true;
@@ -1531,7 +1598,10 @@ function moveArrow(d){
   if(!d)return '';
   return d>0?`<span class="mv up">▲${d}</span>`:`<span class="mv down">▼${Math.abs(d)}</span>`;
 }
-function ensureStats(){players.filter(isPresent).forEach(p=>{if(myVotes[p.id]==null)myVotes[p.id]=6;if(!adminStats[p.id])adminStats[p.id]={gol:0,assist:0,og:0,gs:0,esito:''};});}
+/* punti classifica: arrotonda al mezzo punto (es. 180,5) e mostra con la virgola */
+function roundHalf(n){ return Math.round((Number(n)||0)*2)/2; }
+function fmtPts(n){ const r=roundHalf(n); return Number.isInteger(r)?String(r):r.toFixed(1).replace('.',','); }
+function ensureStats(){players.filter(isPresent).forEach(p=>{if(!adminStats[p.id])adminStats[p.id]={gol:0,assist:0,og:0,gs:0,esito:''};});}
 async function loadPlayerStats(){
   const {data,error}=await sb.rpc('get_player_stats');
   playerStats={};
@@ -1626,9 +1696,9 @@ async function refreshLive(){
   await loadStandings(); renderLB(); renderMini();
 }
 function refreshAvgLabels(){
-  if(!(profile&&profile.is_admin))return;   // le medie le vede solo l'admin
+  if(!(profile&&profile.is_admin))return;   // le medie le vede solo l'admin (senza il numero di votanti)
   players.filter(isPresent).forEach(p=>{const el=document.getElementById('avg-'+p.id);
-    if(el){const a=averages[p.id];el.textContent=a?`media ${a.v.toFixed(1)} · ${a.n} voti`:'ancora nessun voto';}});
+    if(el){const a=averages[p.id];el.textContent=a?`media ${a.v.toFixed(1)}`:'ancora nessun voto';}});
 }
 function pad2(n){return String(n).padStart(2,'0');}
 function toLocalInput(d){return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;}
@@ -1911,13 +1981,20 @@ async function confirmMatchday(){
   await createMatchday(new Date(v).toISOString());
 }
 async function createMatchday(kickoffISO){
-  const {count}=await sb.from('matchdays').select('*',{count:'exact',head:true});
-  const n=(count||0)+1;
+  await loadSeason();   // numerazione per stagione, sempre aggiornata
+  const seasonOpen = currentSeason && currentSeason.status==='open';
+  const base = seasonOpen ? (currentSeason.mds_total||0) : 0;   // stagione chiusa/assente -> nuova stagione, riparte da 1
+  if(seasonOpen && base>=38){
+    toast('Stagione al completo (38/38). Chiudi la stagione per iniziarne una nuova.');
+    return;
+  }
+  const n = base+1;
   const voteClose=new Date(new Date(kickoffISO).getTime()+VOTING_OPEN_AFTER+VOTING_WINDOW).toISOString();
   const {data,error}=await sb.from('matchdays').insert({label:'Giornata '+n,status:'open',kickoff:kickoffISO,vote_deadline:voteClose}).select().single();
   if(error){toast('Errore giornata: '+error.message);return;}
   currentMd=data; lineup={}; captain=null; myVotes={}; averages={}; adminStats={}; myNom={mvp:'',sega:''}; mvpPid=0; segaPid=0; formModule='1-2-2'; SLOTS=MODULES[formModule].slots;
   mdPresent=new Set();      // nuova giornata: nessuno preselezionato, l'admin sceglie chi gioca
+  await loadSeason();       // la giornata può aver fatto partire una nuova stagione
   await loadMatchdaysList(); await loadMdPresent(); await loadPlayerStats();
   await loadAverages(); subscribeLive(); ensureStats();
   renderAll(); openSettings(); toast('Aperta '+data.label);
@@ -1937,6 +2014,7 @@ async function doCloseMatchday(auto){
   currentMd.status='closed'; currentMd.closed_at=nowIso;
   await sb.rpc('apply_credit_changes',{md:currentMd.id});   // crediti dinamici (+/-1)
   await loadPlayers(); await loadPlayerStats();
+  await loadSeason();                                        // la 38ª chiusura può chiudere la stagione
   await loadStandings(); await loadMatchdaysList();           // classifica + lista giornate aggiornate (frecce + animazione)
   clearRoundLocal();                                         // nuova giornata cambia tutto: svuota campo, voti, MVP
   renderAll();
@@ -1955,7 +2033,7 @@ async function resetMatchday(){
   if(!confirm('RESET: elimina '+currentMd.label+' e tutti i suoi dati (formazioni, voti). Si torna alla giornata precedente. Confermi?'))return;
   const {error}=await sb.rpc('reset_matchday',{md:currentMd.id});
   if(error){toast('Errore reset: '+error.message);return;}
-  await loadMatchdayData(); renderAll(); openSettings(); toast('Giornata resettata');
+  await loadMatchdayData(); await loadSeason(); await loadStandings(); renderAll(); openSettings(); toast('Giornata resettata');
 }
 function computeLock(){
   const t=mdTimes(currentMd), now=Date.now(), closed=!!(currentMd&&currentMd.status==='closed');
@@ -2113,7 +2191,7 @@ function applyProfile(){
   const mtc=document.getElementById('maintCard'); if(mtc)mtc.style.display=profile.is_admin?'block':'none';
   const arow=document.getElementById('adminRow'); if(arow)arow.style.display=profile.is_admin?'flex':'none';
 }
-function renderAll(){renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderRecapButton();}
+function renderAll(){renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();}
 
 function openPlayerStats(id){
   const p=players.find(x=>x.id===id); if(!p)return;
@@ -2165,7 +2243,7 @@ async function togglePresence(id){
 function renderMini(){
   const mb=document.getElementById('miniBoard');
   if(!standings.length){ mb.innerHTML = standingsLoaded ? '<div class="empty-note">Ancora nessuna squadra iscritta.</div>' : skeletonRows('mini',3); return; }
-  mb.innerHTML=standings.slice(0,3).map((t,i)=>`<div class="mini-row ${t.team_name===profile.team_name?'me':''}" data-id="${t.manager_id}"><div class="pos">${i+1}</div><div class="nm">${esc(t.team_name)} ${moveArrow(t.delta)}</div><div class="pt"><span class="num">${Math.round(t.points||0)}</span></div></div>`).join('');
+  mb.innerHTML=standings.slice(0,3).map((t,i)=>`<div class="mini-row ${t.team_name===profile.team_name?'me':''}" data-id="${t.manager_id}"><div class="pos">${i+1}</div><div class="nm">${esc(t.team_name)} ${moveArrow(t.delta)}</div><div class="pt"><span class="num">${fmtPts(t.points||0)}</span></div></div>`).join('');
 }
 function renderMarket(){
   const grid=document.getElementById('marketGrid'), emp=document.getElementById('marketEmpty');
@@ -2316,33 +2394,30 @@ document.getElementById('saveBtn').onclick=async function(){
 /* ---------- VOTI ---------- */
 function renderVoti(){
   computeLock();
-  const ms=document.getElementById('mvpSel');
   const active=!!(currentMd&&currentMd.status!=='closed');
   if(!active){
-    if(ms){ms.innerHTML='<option value="">— nessuno —</option>';ms.value='';ms.disabled=true;}
-    const mh=document.getElementById('msHint'); if(mh)mh.textContent='I voti compariranno quando l\'admin apre la prossima giornata.';
     const vl=document.getElementById('voteList'); if(vl)vl.innerHTML='<div class="empty-note">Nessuna giornata aperta. I giocatori da votare compariranno appena l\'admin apre la prossima giornata.</div>';
+    const vr=document.getElementById('voteReq'); if(vr)vr.style.display='none';
     const sbtn=document.getElementById('submitVotesBtn'); if(sbtn)sbtn.style.display='none';
     if(profile&&profile.is_admin) renderLiveOpenBtn();
     return;
   }
   ensureStats();
   const pres=players.filter(isPresent);
-  const opts=pres.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
   const allowed=canIVote();
-  ms.innerHTML='<option value="">— nessuno —</option>'+opts; ms.value=myNom.mvp||'';
-  ms.disabled=votesLocked||!allowed;
-  renderMvpSegaHint();
   const dis=(votesLocked||!allowed)?'disabled':'';
   const noteV=(!allowed&&currentMd&&!votesLocked)?'<div class="vs" style="color:#b89a6a;margin:0 0 8px">🔒 Possono votare solo i giocatori che hanno giocato questa giornata. Se fai solo il manager, l\'admin può abilitarti dalle Impostazioni.</div>':'';
-  const showAvg=profile&&profile.is_admin;
+  const showAvg=profile&&profile.is_admin;   // la media la vede solo l'admin (senza il numero di votanti)
   document.getElementById('voteList').innerHTML=noteV+(pres.length?pres.map(p=>{
     const a=averages[p.id];
-    const sub=showAvg?(a?`media ${a.v.toFixed(1)} · ${a.n} voti`:'ancora nessun voto'):(p.role==='ATT'?'Attaccante':'Difensore');
-    const mv=myVotes[p.id]??6;
-    return `<div class="vrow"><div class="oav">${avatarImg(p.avatar,34)}</div>
+    const sub=showAvg?(a?`media ${a.v.toFixed(1)}`:'ancora nessun voto'):(p.role==='ATT'?'Attaccante':'Difensore');
+    const mv=myVotes[p.id];
+    const isMvp=String(myNom.mvp)===String(p.id);
+    return `<div class="vrow">
+      <button class="mvpstar ${isMvp?'on':''}" type="button" ${dis} onclick="pickMvp(${p.id})" aria-label="MVP" title="Segna come MVP">🏆</button>
+      <div class="oav">${avatarImg(p.avatar,34)}</div>
       <div class="pinfo"><b>${p.name}</b><div class="avg" id="avg-${p.id}">${sub}</div></div>
-      <input class="voteinp" id="v-${p.id}" type="text" inputmode="decimal" enterkeyhint="done" maxlength="4" ${dis} value="${fmtVote(mv)}" onchange="onVote(${p.id},this.value)"></div>`;}).join('')
+      <input class="voteinp" id="v-${p.id}" type="text" inputmode="decimal" enterkeyhint="done" maxlength="4" ${dis} placeholder="voto" value="${mv==null?'':fmtVote(mv)}" onchange="onVote(${p.id},this.value)"></div>`;}).join('')
     :'<div class="empty-note">Nessun giocatore presente da votare.</div>');
   updateSubmitBtn();
   if(profile&&profile.is_admin) renderLiveOpenBtn();
@@ -2508,18 +2583,21 @@ async function liveConfirmSave(){
   await loadMatchStats(); await loadAverages(); updateScores();
   closeLiveStats(); toast('Dati partita salvati ✅');
 }
-function renderMvpSegaHint(){
-  const el=document.getElementById('msHint'); if(!el)return;
-  const mv=players.find(p=>p.id===mvpPid);
-  el.innerHTML=mvpPid?`Al momento il gruppo vota MVP: 🏆 <b style="color:var(--gold-soft)">${mv?mv.name:'—'}</b>`:'Ancora nessuna nomination dal gruppo.';
+function renderMvpSegaHint(){ /* MVP nascosto durante la votazione: non si mostra chi sta votando chi */ }
+/* riflette in tempo reale la stellina MVP scelta, senza ridisegnare tutta la lista */
+function refreshMvpStars(){
+  document.querySelectorAll('#voteList .mvpstar').forEach(b=>{
+    const id=(b.getAttribute('onclick')||'').replace(/\D/g,'');
+    b.classList.toggle('on', id!=='' && String(myNom.mvp)===id);
+  });
 }
-async function onNominate(kind,val){
+function pickMvp(id){
   if(votesLocked||!currentMd)return;
   if(!canIVote()){toast('Può votare solo chi ha giocato');return;}
-  const pid=val?parseInt(val):null;
-  myNom.mvp=pid||'';
-  await sb.from('nominations').upsert({matchday_id:currentMd.id,voter_id:user.id,mvp_player_id:myNom.mvp||null,sega_player_id:null},{onConflict:'matchday_id,voter_id'});
-  await loadMvpSega(); renderMvpSegaHint(); updateScores();
+  myNom.mvp = (String(myNom.mvp)===String(id)) ? '' : id;   // ritocca = deseleziona
+  voteDirty=true;
+  refreshMvpStars(); updateSubmitBtn();
+  if(navigator.vibrate){ try{navigator.vibrate(8);}catch(_){ } }
 }
 function parseVote(raw){
   let s=String(raw==null?'':raw).replace(',','.').trim();
@@ -2528,17 +2606,37 @@ function parseVote(raw){
   return Math.max(1,Math.min(10,n));
 }
 function fmtVote(n){ n=Number(n); return Number.isInteger(n)?String(n):n.toFixed(1); }
+/* stato di completamento: voto a tutti i presenti + MVP scelto */
+function voteStatus(){
+  const pres=players.filter(isPresent);
+  const missing=pres.filter(p=>myVotes[p.id]==null).map(p=>p.name);
+  const needMvp=!myNom.mvp;
+  return {pres, missing, needMvp, ok: pres.length>0 && missing.length===0 && !needMvp};
+}
 function updateSubmitBtn(){
   const b=document.getElementById('submitVotesBtn'); if(!b)return;
-  const ok=currentMd&&!votesLocked&&canIVote();
-  b.style.display=ok?'inline-flex':'none';
-  b.classList.toggle('dirty',voteDirty);
+  const allowed=currentMd&&!votesLocked&&canIVote();
+  b.style.display=allowed?'inline-flex':'none';
+  const st=voteStatus();
+  b.disabled=!st.ok;
+  b.classList.toggle('dirty',voteDirty&&st.ok);
+  const vr=document.getElementById('voteReq');
+  if(vr){
+    if(!allowed||st.ok){ vr.style.display='none'; vr.textContent=''; }
+    else{
+      const bits=[];
+      if(st.missing.length) bits.push('manca il voto a <b>'+st.missing.slice(0,4).map(esc).join(', ')+(st.missing.length>4?` e altri ${st.missing.length-4}`:'')+'</b>');
+      if(st.needMvp) bits.push('scegli l\'<b>MVP</b> 🏆');
+      vr.innerHTML='Per inviare: '+bits.join(' · ');
+      vr.style.display='block';
+    }
+  }
 }
 function onVote(id,val){
   if(votesLocked)return;
   if(!canIVote()){toast('Può votare solo chi ha giocato');return;}
   const n=parseVote(val), inp=document.getElementById('v-'+id);
-  if(n==null){ if(inp)inp.value=fmtVote(myVotes[id]??6); return; }
+  if(n==null){ if(inp)inp.value=(myVotes[id]==null?'':fmtVote(myVotes[id])); return; }
   myVotes[id]=n;
   if(inp)inp.value=fmtVote(n);          // mostra il valore arrotondato
   voteDirty=true; updateSubmitBtn();
@@ -2547,21 +2645,32 @@ function onVote(id,val){
 async function submitVotes(){
   if(!currentMd||votesLocked)return;
   if(!canIVote()){toast('Può votare solo chi ha giocato');return;}
+  const st=voteStatus();
+  if(!st.ok){
+    if(st.missing.length) toast('Vota tutti prima di inviare (manca: '+st.missing.slice(0,3).join(', ')+(st.missing.length>3?'…':'')+')');
+    else if(st.needMvp) toast('Scegli l\'MVP 🏆 prima di inviare');
+    updateSubmitBtn();
+    return;
+  }
   const b=document.getElementById('submitVotesBtn');
-  const pres=players.filter(isPresent);
-  const rows=pres.map(p=>({matchday_id:currentMd.id,voter_id:user.id,player_id:p.id,score:(myVotes[p.id]??6)}));
+  const pres=st.pres;
+  const rows=pres.map(p=>({matchday_id:currentMd.id,voter_id:user.id,player_id:p.id,score:myVotes[p.id]}));
   if(b){b.disabled=true;b.textContent='Invio…';b.classList.remove('dirty');}
   const {error}=await sb.from('votes').upsert(rows,{onConflict:'matchday_id,voter_id,player_id'});
-  if(error){toast('Errore: '+error.message); if(b){b.disabled=false;b.textContent='Invia voti';} return;}
+  if(error){toast('Errore: '+error.message); if(b){b.disabled=false;b.textContent='Invia voti';} updateSubmitBtn(); return;}
+  // MVP salvato INSIEME ai voti (non più separatamente)
+  const {error:eNom}=await sb.from('nominations').upsert({matchday_id:currentMd.id,voter_id:user.id,mvp_player_id:parseInt(myNom.mvp)||null,sega_player_id:null},{onConflict:'matchday_id,voter_id'});
+  if(eNom){toast('Voti salvati, ma MVP non salvato: '+eNom.message);}
   voteDirty=false;
-  await loadAverages(); refreshAvgLabels(); updateScores();
-  if(b){b.disabled=false;b.textContent='Voti inviati ✓'; setTimeout(()=>{const bb=document.getElementById('submitVotesBtn'); if(bb)bb.textContent='Invia voti';},1800);}
-  toast('Voti inviati');
+  await loadAverages(); await loadMvpSega(); refreshAvgLabels(); updateScores();
+  if(b){b.disabled=false;b.textContent='Inviati ✓'; setTimeout(()=>{const bb=document.getElementById('submitVotesBtn'); if(bb)bb.textContent='Invia voti';},1800);}
+  toast('Voti e MVP inviati');
+  updateSubmitBtn();
   // CHIUSURA ANTICIPATA: se hanno votato TUTTI gli aventi diritto, la giornata si chiude da sola (anche prima delle 25h)
   try{
     const {data:closedNow}=await sb.rpc('close_if_all_voted',{p_md:currentMd.id});
     if(closedNow){
-      await loadMatchdayData(); await loadPlayers(); await loadStandings(); await loadPlayerStats();
+      await loadMatchdayData(); await loadPlayers(); await loadStandings(); await loadPlayerStats(); await loadSeason();
       clearRoundLocal(); renderAll();
       toast('Hanno votato tutti: giornata chiusa 🏁');
       maybeShowRecap();
@@ -2573,7 +2682,8 @@ function renderLB(){
   if(sel){
     const cur=sel.value;
     const now=Date.now();
-    const visMds=matchdaysList.filter(m=> m.status==='closed' || m.status==='open' || (m.kickoff && now>=new Date(m.kickoff).getTime())).slice().sort((a,b)=>a.id-b.id);
+    const visMds=matchdaysList.filter(m=> (m.status==='closed' || m.status==='open' || (m.kickoff && now>=new Date(m.kickoff).getTime()))
+        && (currentSeasonId==null || m.season_id==null || m.season_id===currentSeasonId) ).slice().sort((a,b)=>a.id-b.id);
     sel.innerHTML='<option value="">🏆 Classifica generale</option><option value="scorers">⚽ Classifica marcatori</option>'+visMds.map(m=>`<option value="${m.id}">${m.label}</option>`).join('');
     sel.value=cur||selStandingsMd||'';
   }
@@ -2602,11 +2712,11 @@ function renderLB(){
   } else {
     if(hint)hint.textContent='Punti di giornata · tocca una squadra per vedere la formazione.';
     if(!mdStandings.length){el.innerHTML='<div class="empty-note">Nessuna squadra per questa giornata.</div>';return;}
-    el.innerHTML=mdStandings.map((t,i)=>`<div class="lb-row ${t.team_name===profile.team_name?'me':''}" onclick="openTeamLineup('${t.manager_id}','${t.team_name.replace(/'/g,"\\'")}')" style="cursor:pointer"><div class="rank">${i+1}</div><div class="who"><b>${t.team_name} ›</b><span>${t.player_name}</span></div><div class="tot">${Math.round(t.points||0)}</div></div>`).join('');
+    el.innerHTML=mdStandings.map((t,i)=>`<div class="lb-row ${t.team_name===profile.team_name?'me':''}" onclick="openTeamLineup('${t.manager_id}','${t.team_name.replace(/'/g,"\\'")}')" style="cursor:pointer"><div class="rank">${i+1}</div><div class="who"><b>${t.team_name} ›</b><span>${t.player_name}</span></div><div class="tot">${fmtPts(t.points||0)}</div></div>`).join('');
   }
 }
 async function loadMatchdaysList(){
-  const {data}=await sb.from('matchdays').select('id,label,kickoff,status,closed_at').order('id',{ascending:false});
+  const {data}=await sb.from('matchdays').select('id,label,kickoff,status,closed_at,season_id').order('id',{ascending:false});
   matchdaysList=data||[];
   if(selStandingsMd && selStandingsMd!=='scorers' && !matchdaysList.some(m=>String(m.id)===String(selStandingsMd))) selStandingsMd='';
 }
@@ -3278,7 +3388,7 @@ function prefersReduce(){ try{ return matchMedia('(prefers-reduced-motion: reduc
 function lbRowHTML(t,i,pts,withArrow){
   const me=(profile&&t.team_name===profile.team_name)?'me':'';
   const arrow=withArrow?moveArrow(t.delta):'';
-  return `<div class="lb-row ${me}" data-id="${t.manager_id}"><div class="rank">${i+1}</div><div class="who"><b>${esc(t.team_name)}</b><span>${esc(t.player_name)}</span></div><span class="mvw">${arrow}</span><div class="tot"><span class="num">${Math.round(Number(pts)||0)}</span></div></div>`;
+  return `<div class="lb-row ${me}" data-id="${t.manager_id}"><div class="rank">${i+1}</div><div class="who"><b>${esc(t.team_name)}</b><span>${esc(t.player_name)}</span></div><span class="mvw">${arrow}</span><div class="tot"><span class="num">${fmtPts(Number(pts)||0)}</span></div></div>`;
 }
 /* freccia con classe .rv per il reveal animato (resta visibile, niente fade-out) */
 function moveArrowR(d){ if(!d)return ''; return d>0?`<span class="mv up rv">▲${d}</span>`:`<span class="mv down rv">▼${Math.abs(d)}</span>`; }
@@ -3314,10 +3424,10 @@ function lbBuildAnimRows(rows,mdPts){
 function countUpFromTo(el,from,to,dur){
   if(!el)return;
   from=Number(from)||0; to=Number(to)||0;
-  if(prefersReduce()||dur<=0||from===to){ el.textContent=String(Math.round(to)); return; }
+  if(prefersReduce()||dur<=0||from===to){ el.textContent=fmtPts(to); return; }
   const t0=performance.now();
   function step(t){ const k=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-k,3), v=from+(to-from)*e;
-    el.textContent=String(Math.round(v)); if(k<1) requestAnimationFrame(step); }
+    el.textContent=fmtPts(v); if(k<1) requestAnimationFrame(step); }
   requestAnimationFrame(step);
 }
 
