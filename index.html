@@ -1073,8 +1073,8 @@
         <div id="mdActions"></div>
       </div>
       <div class="set-card" id="presCard" style="border-color:rgba(234,178,74,.28)">
-        <h3>Chi gioca questa giornata <span class="lockpill" style="color:var(--gold)">admin</span></h3>
-        <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Tocca per segnare presente/assente. Solo i presenti saranno schierabili in campo.</p>
+        <h3 id="presTitle">Chi gioca questa giornata <span class="lockpill" style="color:var(--gold)">admin</span></h3>
+        <p class="vs" id="presHint" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Tocca per segnare presente/assente. Solo i presenti saranno schierabili in campo.</p>
         <div id="presList" class="preschips"></div>
       </div>
     </div>
@@ -1183,8 +1183,8 @@
 /* ============================================================
    👇 INCOLLA QUI LE TUE 2 CHIAVI (Supabase → Project Settings → API)
    ============================================================ */
-const SUPABASE_URL  = 'https://lfvpseusbsyzniugczbx.supabase.co';        // es. https://abcdxyz.supabase.co
-const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chiave "anon public"
+const SUPABASE_URL  = 'INCOLLA_URL_QUI';        // es. https://abcdxyz.supabase.co
+const SUPABASE_ANON = 'INCOLLA_ANON_KEY_QUI';   // chiave "anon public"
 /* ============================================================ */
 
 
@@ -1211,14 +1211,28 @@ let _autoClosing=false;   // guardia: evita doppie chiusure automatiche
 function presentId(id){ return currentMd ? mdPresent.has(id) : false; }
 function isPresent(p){ return presentId(p.id); }
 function isOwnChar(p){ return !!(profile && profile.is_player!==false && p.owner_id===user.id && p.name===profile.player_name); }
-const HOUR=3600000, LINEUP_LOCK_BEFORE=1*HOUR, VOTING_OPEN_AFTER=1*HOUR, VOTING_WINDOW=24*HOUR;
+const HOUR=3600000, LINEUP_LOCK_BEFORE=1*HOUR, VOTING_OPEN_AFTER=1*HOUR, VOTING_WINDOW=24*HOUR, PRESENCE_CLOSE_BEFORE=36*HOUR;
 function mdTimes(md){
   if(!md)return null;
   if(md.kickoff){ const k=new Date(md.kickoff).getTime();
-    return {kickoff:k, lineupLock:k-LINEUP_LOCK_BEFORE, voteOpen:k+VOTING_OPEN_AFTER, voteClose:k+VOTING_OPEN_AFTER+VOTING_WINDOW}; }
+    return {kickoff:k, presenceClose:k-PRESENCE_CLOSE_BEFORE, lineupLock:k-LINEUP_LOCK_BEFORE, voteOpen:k+VOTING_OPEN_AFTER, voteClose:k+VOTING_OPEN_AFTER+VOTING_WINDOW}; }
   if(md.vote_deadline){ const c=new Date(md.vote_deadline).getTime();
-    return {kickoff:null, lineupLock:Infinity, voteOpen:0, voteClose:c}; }
-  return {kickoff:null, lineupLock:Infinity, voteOpen:0, voteClose:Infinity};
+    return {kickoff:null, presenceClose:null, lineupLock:Infinity, voteOpen:0, voteClose:c}; }
+  return {kickoff:null, presenceClose:null, lineupLock:Infinity, voteOpen:0, voteClose:Infinity};
+}
+/* sondaggio presenze (modalità giocatori): aperto dall'apertura fino a 36h prima del via */
+function presencePollOpen(){
+  if(!presenceSelf || !currentMd || currentMd.status!=='open') return false;
+  const t=mdTimes(currentMd);
+  if(!t || t.presenceClose==null) return true;   // senza kickoff: sondaggio sempre aperto (fallback)
+  return Date.now() < t.presenceClose;
+}
+/* messaggio del perché le formazioni sono bloccate */
+function lineupBlockReason(){
+  if(!currentMd) return 'Nessuna giornata aperta';
+  if(currentMd.status==='closed') return 'Giornata conclusa';
+  if(presencePollOpen()) return 'Prima il sondaggio presenze: le formazioni si aprono 36h prima del via';
+  return 'Formazioni bloccate';
 }
 function fmt(ms){ if(ms<0)ms=0; const d=Math.floor(ms/86400000),h=Math.floor(ms%86400000/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000),p=n=>String(n).padStart(2,'0'); return (d>0?d+'g ':'')+`${p(h)}:${p(m)}:${p(s)}`; }
 let obAvatar=null, myRole='ATT', setAvatarDraft=null, editDraft=null;
@@ -1292,7 +1306,7 @@ async function afterLogin(){
     document.getElementById('league').classList.add('hidden');
     await loadMyLeague();
     await loadSeason();
-    await loadPlayers(); await loadStandings(); await loadMatchdayData();
+    await loadPlayers(); await loadStandings(); await loadMatchdayData(); await loadPlannedPresences();
     applyProfile(); renderAll();
     loadSchedule();          // config lega (modalità portiere) per tutti gli utenti
     loadCreditConfig();      // metodo crediti + sondaggio valori per tutti
@@ -1695,11 +1709,7 @@ async function refreshLive(){
   refreshAvgLabels(); renderMvpSegaHint(); updateScores();
   await loadStandings(); renderLB(); renderMini();
 }
-function refreshAvgLabels(){
-  if(!(profile&&profile.is_admin))return;   // le medie le vede solo l'admin (senza il numero di votanti)
-  players.filter(isPresent).forEach(p=>{const el=document.getElementById('avg-'+p.id);
-    if(el){const a=averages[p.id];el.textContent=a?`media ${a.v.toFixed(1)}`:'ancora nessun voto';}});
-}
+function refreshAvgLabels(){ /* media voti nascosta durante la votazione: nessun aggiornamento a schermo */ }
 function pad2(n){return String(n).padStart(2,'0');}
 function toLocalInput(d){return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;}
 function defaultKickoff(){const d=new Date(Date.now()+86400000);d.setHours(20,0,0,0);return toLocalInput(d);}
@@ -1853,46 +1863,35 @@ function nextWeeklyKickoffLocal(wd,hhmm){
 }
 function fmtDayTime(d){return d.toLocaleString('it-IT',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
 function schedHintText(){
-  if(schedDraft.weekday==null||!schedDraft.time) return 'Scegli giorno e ora: la giornata si aprirà da sola 48h prima del fischio d\'inizio.';
+  if(schedDraft.weekday==null||!schedDraft.time) return 'Scegli giorno e ora: la giornata si aprirà da sola 72h prima del fischio d\'inizio.';
   const k=nextWeeklyKickoffLocal(schedDraft.weekday,schedDraft.time);
-  const open=new Date(k.getTime()-48*HOUR);
-  return `Si aprirà da sola: ${fmtDayTime(open)} (48h prima del fischio d'inizio di ${fmtDayTime(k)}).`;
+  const open=new Date(k.getTime()-72*HOUR);
+  return `Si aprirà da sola: ${fmtDayTime(open)} (72h prima del fischio d'inizio di ${fmtDayTime(k)}).`;
 }
 function renderOpenMode(){
   const box=document.getElementById('mdOpenBox'); if(!box) return;
-  const auto=!!schedDraft.auto_open;
-  let html=`<div class="ed-lab" style="margin-bottom:7px">Apertura giornata</div>
-    <div class="ed-sw" style="margin-bottom:12px">
-      <button class="styb ${!auto?'on':''}" onclick="setOpenMode(false)">✋ Manuale</button>
-      <button class="styb ${auto?'on':''}" onclick="setOpenMode(true)">🤖 Automatica</button>
-    </div>`;
-  if(!auto){
-    html+=`<button class="addbtn" onclick="openMatchdaySheet()">＋ Apri nuova giornata</button>
-      <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">La apri tu, scegliendo data e ora. Adatta a chi gioca in orari variabili.</p>`;
-  }else{
-    html+=`<div class="field-lab">Giorno della partita</div>
-      <div class="preschips" style="margin-bottom:12px">`+
-      WD_ORDER.map(d=>`<div class="preschip ${schedDraft.weekday===d?'on':''}" onclick="pickSchedDay(${d})">${WD_LABELS[d]}</div>`).join('')+
-      `</div>
-      <div class="field-lab">Ora del fischio d'inizio</div>
-      <input class="ob-input" type="time" id="schedTime" value="${schedDraft.time||'20:00'}" oninput="schedDraft.time=this.value;refreshSchedHint()" style="padding:12px;font-size:15px;margin-bottom:10px">
-      <button class="save" onclick="saveSchedule()">Salva programmazione</button>
-      <p class="vs" id="schedHint" style="color:var(--accent-soft);font-size:12px;margin-top:9px;line-height:1.5">${schedHintText()}</p>`;
-  }
+  const html=`<div class="ed-lab" style="margin-bottom:7px">🤖 Apertura automatica</div>
+    <p class="vs" style="color:var(--muted);font-size:12px;margin:0 0 12px;line-height:1.5">Scegli giorno e ora del match: la giornata si apre <b>da sola 72h prima</b>, ogni settimana. Se una settimana giocate in un altro giorno/ora, cambia qui i valori (o usa «Modifica orario» sulla giornata aperta) e tutto si ricalcola.</p>
+    <div class="field-lab">Giorno della partita</div>
+    <div class="preschips" style="margin-bottom:12px">`+
+    WD_ORDER.map(d=>`<div class="preschip ${schedDraft.weekday===d?'on':''}" onclick="pickSchedDay(${d})">${WD_LABELS[d]}</div>`).join('')+
+    `</div>
+    <div class="field-lab">Ora del fischio d'inizio</div>
+    <input class="ob-input" type="time" id="schedTime" value="${schedDraft.time||'20:00'}" oninput="schedDraft.time=this.value;refreshSchedHint()" style="padding:12px;font-size:15px;margin-bottom:10px">
+    <button class="save" onclick="saveSchedule()">Salva programmazione</button>
+    <p class="vs" id="schedHint" style="color:var(--accent-soft);font-size:12px;margin-top:9px;line-height:1.5">${schedHintText()}</p>`;
   box.innerHTML=html;
 }
 function refreshSchedHint(){const h=document.getElementById('schedHint'); if(h)h.textContent=schedHintText();}
 function pickSchedDay(d){schedDraft.weekday=d; renderOpenMode();}
-function setOpenMode(auto){ schedDraft.auto_open=auto; if(!auto){ saveSchedule(false); } else { renderOpenMode(); } }
-async function saveSchedule(forceAuto){
-  const auto=(forceAuto===undefined)?!!schedDraft.auto_open:!!forceAuto;
-  if(auto && schedDraft.weekday==null){ toast('Scegli il giorno della partita'); return; }
+async function saveSchedule(){
+  if(schedDraft.weekday==null){ toast('Scegli il giorno della partita'); return; }
   const time=schedDraft.time||'20:00';
-  const {error}=await sb.rpc('set_league_schedule',{p_auto:auto, p_weekday:(schedDraft.weekday==null?null:schedDraft.weekday), p_time:time});
+  const {error}=await sb.rpc('set_league_schedule',{p_auto:true, p_weekday:schedDraft.weekday, p_time:time});
   if(error){ toast('Errore: '+error.message); return; }
-  schedDraft.auto_open=auto; leagueSched={...schedDraft};
+  schedDraft.auto_open=true; leagueSched={...schedDraft};
   renderOpenMode();
-  toast(auto?'Apertura automatica attiva ✅':'Apertura manuale attiva');
+  toast('Programmazione salvata ✅');
 }
 
 /* ---------- MODALITÀ PORTIERE (rotazione / fisso) ---------- */
@@ -1913,18 +1912,20 @@ async function setGkMode(fixed){
 
 /* ---------- MODALITÀ PRESENZE (admin / giocatori) ---------- */
 function renderPresenceMode(){
-  // visibilità della card admin "Chi gioca": solo se admin E modalità admin
+  // card admin "presenze": in modalità admin sempre; in modalità giocatori come OVERRIDE quando c'è una giornata aperta
   const pc=document.getElementById('presCard');
-  if(pc) pc.style.display=(profile&&profile.is_admin&&!presenceSelf)?'block':'none';
+  const showPres = profile&&profile.is_admin && (!presenceSelf || (currentMd && currentMd.status!=='closed'));
+  if(pc) pc.style.display=showPres?'block':'none';
   // interruttore nelle impostazioni
   const sw=document.getElementById('presModeSw');
   if(sw){
     sw.querySelectorAll('button').forEach(b=>b.classList.toggle('on',(b.dataset.self==='1')===presenceSelf));
     const h=document.getElementById('presModeHint');
     if(h) h.textContent=presenceSelf
-      ? 'Ogni giocatore si segna presente o assente dalla Home, a giornata aperta. Tu non devi fare nulla.'
+      ? 'Ogni giocatore si segna presente o assente dalla Home (sondaggio). Tu puoi comunque correggere dal riquadro qui sotto, fino al blocco formazioni.'
       : 'Sei tu a segnare chi c\'è, dal riquadro «Chi gioca questa giornata» qui sotto.';
   }
+  renderPresence();
   renderHomePresence();
 }
 async function setPresenceMode(self){
@@ -1934,12 +1935,19 @@ async function setPresenceMode(self){
   toast(self?'Presenze ai giocatori ✅':'Presenze gestite dall\'admin');
 }
 function myPlayer(){ return players.find(p=>p.owner_id===user.id) || null; }
+let plannedPresent=new Set();   // rosa prevista (modalità admin): presenze impostabili anche prima dell'apertura
+async function loadPlannedPresences(){
+  plannedPresent=new Set();
+  try{ const {data}=await sb.rpc('get_planned_presences'); (data||[]).forEach(r=>plannedPresent.add(r.player_id)); }catch(_){}
+}
 async function setMyPresence(present){
   const {error}=await sb.rpc('set_my_presence',{p_present:!!present});
   if(error){
     const m=error.message||'';
-    if(m.includes('lineup_locked')) toast('Tempo scaduto: formazioni bloccate');
+    if(m.includes('presence_closed')||m.includes('lineup_locked')) toast('Sondaggio presenze chiuso (si chiude 36h prima del via)');
     else if(m.includes('no_open_matchday')) toast('Nessuna giornata aperta');
+    else if(m.includes('presence_self_off')) toast('Le presenze le gestisce l\'admin');
+    else if(m.includes('no_player')) toast('Non hai un personaggio in campo');
     else toast('Errore: '+m);
     return;
   }
@@ -1950,10 +1958,11 @@ async function setMyPresence(present){
 function renderHomePresence(){
   const box=document.getElementById('homePresence'); if(!box) return;
   const mp=myPlayer();
-  const show = presenceSelf && mp && profile && profile.is_player!==false
-            && currentMd && currentMd.status==='open' && !lineupLocked;
+  const t=currentMd?mdTimes(currentMd):null;
+  const show = presencePollOpen() && mp && profile && profile.is_player!==false;
   if(!show){ box.style.display='none'; box.innerHTML=''; return; }
   const here=mdPresent.has(mp.id);
+  const when=(t&&t.presenceClose!=null)?(' · si chiude '+fmtDayTime(new Date(t.presenceClose))):'';
   box.style.display='block';
   box.innerHTML=`
     <div class="hp-top"><span class="hp-dot"></span>${currentMd.label} aperta!</div>
@@ -1962,7 +1971,7 @@ function renderHomePresence(){
       <button class="hp-b yes ${here?'on':''}" onclick="setMyPresence(true)">✓ Ci sono</button>
       <button class="hp-b no ${here?'':'on'}" onclick="setMyPresence(false)">✕ Salto</button>
     </div>
-    <div class="hp-note">Puoi cambiare finché le formazioni sono aperte.</div>`;
+    <div class="hp-note">Sondaggio presenze${when}. Dopo si aprono le formazioni: si schiera solo chi ha votato presente.</div>`;
 }
 
 function openMatchdaySheet(){
@@ -2035,9 +2044,37 @@ async function resetMatchday(){
   if(error){toast('Errore reset: '+error.message);return;}
   await loadMatchdayData(); await loadSeason(); await loadStandings(); renderAll(); openSettings(); toast('Giornata resettata');
 }
+/* MODIFICA ORARIO della giornata già aperta: utile se l'orario reale differisce da quello programmato.
+   Tutto (sondaggio presenze, formazioni, voti) si ricalcola dal nuovo kickoff. Le notifiche si riarmano. */
+function openEditKickoffSheet(){
+  if(!currentMd){toast('Nessuna giornata aperta');return;}
+  if(currentMd.status==='closed'){toast('Giornata conclusa');return;}
+  document.getElementById('sheetTitle').textContent='Modifica orario partita';
+  document.getElementById('sheetHint').textContent='Sposta data/ora del match: presenze, formazioni e voti si ricalcolano da qui. Meglio farlo almeno 36h prima del via, così resta tempo per il sondaggio presenze.';
+  const cur=currentMd.kickoff?toLocalInput(new Date(currentMd.kickoff)):defaultKickoff();
+  document.getElementById('sheetList').innerHTML=`
+    <div class="field-lab">Nuova data e ora della partita</div>
+    <input class="ob-input" type="datetime-local" id="mdKickEdit" value="${cur}" style="padding:13px;font-size:15px">
+    <button class="save" onclick="confirmEditKickoff()">Salva nuovo orario</button>`;
+  openSheet();
+}
+async function confirmEditKickoff(){
+  const v=document.getElementById('mdKickEdit').value;
+  if(!v){toast('Scegli data e ora');return;}
+  closeSheet();
+  const kickoffISO=new Date(v).toISOString();
+  const voteClose=new Date(new Date(kickoffISO).getTime()+VOTING_OPEN_AFTER+VOTING_WINDOW).toISOString();
+  // riarmo i flag così le 2 push (sblocco formazioni / ultima ora) ripartono ai nuovi orari
+  const {error}=await sb.from('matchdays').update({kickoff:kickoffISO,vote_deadline:voteClose,reminder_sent:false,lineup_open_sent:false}).eq('id',currentMd.id);
+  if(error){toast('Errore: '+error.message);return;}
+  currentMd.kickoff=kickoffISO; currentMd.vote_deadline=voteClose;
+  await loadMatchdaysList(); renderAll();
+  toast('Orario aggiornato 🕑');
+}
 function computeLock(){
   const t=mdTimes(currentMd), now=Date.now(), closed=!!(currentMd&&currentMd.status==='closed');
-  lineupLocked = !currentMd || closed || (!!t && t.lineupLock!==Infinity && now>=t.lineupLock);
+  const presPhase = presenceSelf && !!t && t.presenceClose!=null && now<t.presenceClose && !closed;  // modalità giocatori: formazioni bloccate finché il sondaggio presenze è aperto
+  lineupLocked = !currentMd || closed || presPhase || (!!t && t.lineupLock!==Infinity && now>=t.lineupLock);
   votesLocked  = !currentMd || closed || !t || (!!t.voteOpen && now<t.voteOpen) || (now>t.voteClose);
 }
 function statsOpen(){
@@ -2054,6 +2091,7 @@ function phaseLabel(){
   if(currentMd.status==='closed')return 'Conclusa';
   const t=mdTimes(currentMd),now=Date.now();
   if(!t||t.lineupLock===Infinity)return 'Formazioni e voti aperti';
+  if(presenceSelf&&t.presenceClose!=null&&now<t.presenceClose)return 'Sondaggio presenze aperto (formazioni 36h prima del via)';
   if(now<t.lineupLock)return 'Formazioni aperte (si bloccano 1h prima del via)';
   if(now<t.voteOpen)return 'Formazioni bloccate · partita in corso';
   if(now<=t.voteClose)return 'Voti aperti';
@@ -2079,6 +2117,7 @@ function startCountdown(){
       if(ll&&lt){
         if(closed){ll.textContent=lab+' · conclusa';lt.textContent='🔒';}
         else if(!t||t.lineupLock===Infinity){ll.textContent=lab+' · formazioni aperte';lt.textContent='∞';}
+        else if(presenceSelf&&t.presenceClose!=null&&now<t.presenceClose){ll.textContent=lab+' · sondaggio presenze · formazioni tra';lt.textContent=fmt(t.presenceClose-now);}
         else if(now<t.lineupLock){ll.textContent=lab+' · le formazioni si bloccano tra';lt.textContent=fmt(t.lineupLock-now);}
         else {ll.textContent=lab+' · formazioni bloccate';lt.textContent='🔒';}
       }
@@ -2106,7 +2145,8 @@ function renderMatchday(){
     const mp=document.getElementById('mdPhase'); if(mp)mp.textContent=phaseLabel();
     const ma=document.getElementById('mdActions');
     if(ma) ma.innerHTML = currentMd ? (
-      (currentMd.status!=='closed'?`<button class="logout" style="border-color:rgba(234,178,74,.4);color:var(--gold-soft);margin-top:10px" onclick="closeMatchday()">Chiudi la giornata adesso</button>`:'')
+      (currentMd.status!=='closed'?`<button class="set-btn" style="margin-top:10px" onclick="openEditKickoffSheet()">🕑 Modifica orario partita</button>`:'')
+      +(currentMd.status!=='closed'?`<button class="logout" style="border-color:rgba(234,178,74,.4);color:var(--gold-soft);margin-top:10px" onclick="closeMatchday()">Chiudi la giornata adesso</button>`:'')
       +`<button class="logout" style="border-color:rgba(255,90,90,.45);color:#ff9a9a;margin-top:10px" onclick="resetMatchday()">Resetta giornata (annulla · per test)</button>`
     ) : '';
     renderOpenMode();
@@ -2229,15 +2269,40 @@ async function toggleVoter(id,now){
 
 function renderPresence(){
   const box=document.getElementById('presList'); if(!box)return;
-  if(!currentMd||currentMd.status==='closed'){box.innerHTML='<div class="vs" style="color:var(--muted)">Apri una giornata per scegliere chi gioca.</div>';return;}
-  box.innerHTML=players.length?players.map(p=>`<div class="preschip ${presentId(p.id)?'on':''}" onclick="togglePresence(${p.id})">${presentId(p.id)?'✓':'○'} ${p.name}</div>`).join(''):'<div class="vs" style="color:var(--muted)">Nessun giocatore.</div>';
+  const pc=document.getElementById('presCard');
+  const showPres = profile&&profile.is_admin && (!presenceSelf || (currentMd && currentMd.status!=='closed'));
+  if(pc) pc.style.display=showPres?'block':'none';
+  if(!showPres) return;
+  const ttl=document.getElementById('presTitle'), hint=document.getElementById('presHint');
+  const liveMd = currentMd && currentMd.status!=='closed';   // giornata aperta -> presenze della giornata; altrimenti rosa prevista
+  if(liveMd){
+    if(presenceSelf){
+      if(ttl)ttl.innerHTML='Presenze — correggi (admin) <span class="lockpill" style="color:var(--gold)">admin</span>';
+      if(hint)hint.textContent='I giocatori votano la presenza da soli. Qui puoi correggere: aggiungi o togli chi serve fino al blocco formazioni, anche chi non ha votato.';
+    }else{
+      if(ttl)ttl.innerHTML='Chi gioca questa giornata <span class="lockpill" style="color:var(--gold)">admin</span>';
+      if(hint)hint.textContent='Tocca per segnare presente/assente. Solo i presenti saranno schierabili in campo.';
+    }
+    box.innerHTML=players.length?players.map(p=>`<div class="preschip ${presentId(p.id)?'on':''}" onclick="togglePresence(${p.id})">${presentId(p.id)?'✓':'○'} ${p.name}</div>`).join(''):'<div class="vs" style="color:var(--muted)">Nessun giocatore.</div>';
+  }else{
+    if(ttl)ttl.innerHTML='Presenze previste (prossima giornata) <span class="lockpill" style="color:var(--gold)">admin</span>';
+    if(hint)hint.textContent='Imposta chi giocherà di solito: all\'apertura della prossima giornata i presenti vengono precompilati da qui (poi li potrai ritoccare).';
+    box.innerHTML=players.length?players.map(p=>`<div class="preschip ${plannedPresent.has(p.id)?'on':''}" onclick="togglePresence(${p.id})">${plannedPresent.has(p.id)?'✓':'○'} ${p.name}</div>`).join(''):'<div class="vs" style="color:var(--muted)">Nessun giocatore.</div>';
+  }
 }
 async function togglePresence(id){
-  if(!currentMd){toast('Apri prima una giornata');return;}
-  if(currentMd.status==='closed'){toast('Giornata conclusa');return;}
-  if(mdPresent.has(id)){ await sb.from('matchday_players').delete().eq('matchday_id',currentMd.id).eq('player_id',id); mdPresent.delete(id); }
-  else { await sb.from('matchday_players').insert({matchday_id:currentMd.id,player_id:id}); mdPresent.add(id); }
-  renderPresence(); renderMarket(); renderVoti();
+  const liveMd = currentMd && currentMd.status!=='closed';
+  if(liveMd){
+    if(mdPresent.has(id)){ await sb.from('matchday_players').delete().eq('matchday_id',currentMd.id).eq('player_id',id); mdPresent.delete(id); }
+    else { await sb.from('matchday_players').insert({matchday_id:currentMd.id,player_id:id}); mdPresent.add(id); }
+    renderPresence(); renderMarket(); renderVoti();
+  }else{
+    const want=!plannedPresent.has(id);
+    const {error}=await sb.rpc('set_planned_presence',{p_player:id,p_present:want});
+    if(error){ toast('Errore: '+error.message); return; }
+    if(want) plannedPresent.add(id); else plannedPresent.delete(id);
+    renderPresence();
+  }
 }
 
 function renderMini(){
@@ -2291,7 +2356,7 @@ function updateBudget(){
   const fill=document.getElementById('meterFill');fill.style.width=Math.min(100,spent/BUDGET*100)+'%';fill.classList.toggle('over',over);
   const btn=document.getElementById('saveBtn');
   computeLock();
-  if(lineupLocked){btn.disabled=true;btn.textContent=!currentMd?'Nessuna giornata aperta':(currentMd.status==='closed'?'Giornata conclusa':'Formazioni bloccate');return;}
+  if(lineupLocked){btn.disabled=true;btn.textContent=lineupBlockReason();return;}
   if(over){btn.disabled=true;btn.textContent='Sfori il budget di '+(spent-BUDGET)+' cr';return;}
   btn.disabled=!(n===5);
   btn.textContent=n===5?(captain?'Conferma formazione ✓':'Scegli il capitano'):`Mancano ${5-n} giocatori`;
@@ -2344,7 +2409,7 @@ function updateScores(){
   document.getElementById('ptTotal').textContent=total.toFixed(1);
 }
 function slotTap(key){
-  if(lineupLocked){toast(currentMd&&currentMd.status==='closed'?'Giornata conclusa':(currentMd?'Formazioni bloccate':'Nessuna giornata aperta'));return;}
+  if(lineupLocked){toast(lineupBlockReason());return;}
   lineup[key]?openCaptainSheet(key):openPickerSheet(key);
 }
 function openSheet(){document.getElementById('sheet').classList.add('open');document.getElementById('sheetBg').classList.add('open')}
@@ -2407,7 +2472,7 @@ function renderVoti(){
   const allowed=canIVote();
   const dis=(votesLocked||!allowed)?'disabled':'';
   const noteV=(!allowed&&currentMd&&!votesLocked)?'<div class="vs" style="color:#b89a6a;margin:0 0 8px">🔒 Possono votare solo i giocatori che hanno giocato questa giornata. Se fai solo il manager, l\'admin può abilitarti dalle Impostazioni.</div>':'';
-  const showAvg=profile&&profile.is_admin;   // la media la vede solo l'admin (senza il numero di votanti)
+  const showAvg=false;   // media voti NON visibile durante la votazione (nemmeno all'admin): si vede solo dopo la chiusura
   document.getElementById('voteList').innerHTML=noteV+(pres.length?pres.map(p=>{
     const a=averages[p.id];
     const sub=showAvg?(a?`media ${a.v.toFixed(1)}`:'ancora nessun voto'):(p.role==='ATT'?'Attaccante':'Difensore');
@@ -2708,7 +2773,7 @@ function renderLB(){
   if(!selStandingsMd){
     if(hint)hint.textContent='Punti delle giornate concluse. La giornata in corso si aggiunge quando viene chiusa.';
     if(!standings.length){ el.innerHTML = standingsLoaded ? '<div class="empty-note">Ancora nessuna squadra iscritta.</div>' : skeletonRows('lb',5); return; }
-    el.innerHTML=standings.map((t,i)=>lbRowHTML(t,i,(t.points||0),true)).join('');
+    el.innerHTML=standings.map((t,i)=>lbRowHTML(t,i,(t.points||0),lbFresh())).join('');
   } else {
     if(hint)hint.textContent='Punti di giornata · tocca una squadra per vedere la formazione.';
     if(!mdStandings.length){el.innerHTML='<div class="empty-note">Nessuna squadra per questa giornata.</div>';return;}
@@ -3401,11 +3466,11 @@ function skeletonRows(kind,n){
   return new Array(Math.max(1,n)).fill(row).join('');
 }
 
-/* ultima chiusura entro le 24h? (finestra delle frecce) */
+/* ultima chiusura entro le 48h? (finestra delle frecce in Lega) */
 function lbFresh(){
   const md=latestClosedMd();
   if(!md||!md.closed_at) return false;
-  return (Date.now()-new Date(md.closed_at).getTime()) < 24*3600*1000;
+  return (Date.now()-new Date(md.closed_at).getTime()) < 48*3600*1000;
 }
 /* punti della singola giornata: per il count-up (prevTotal = totale − punti giornata) */
 async function mdPointsMap(mdId){
