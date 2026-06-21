@@ -470,6 +470,7 @@
   .stat-head{display:flex;align-items:center;gap:13px;margin-bottom:16px}
   .stat-av{width:56px;height:56px;border-radius:13px;background:linear-gradient(160deg,#13294a,#0d1c34);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
   .stat-av img{max-height:50px;width:auto;max-width:46px}
+  #teamAv{font-size:28px}
   .stat-id b{font-family:'Bricolage Grotesque';font-weight:800;font-size:18px;display:block;letter-spacing:-.01em}
   .stat-id span{font-size:12px;color:var(--muted)}
   .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
@@ -493,10 +494,32 @@
   .bch-badge{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:9px 10px}
   .bch-badge .bb-m{font-size:21px;line-height:1;flex-shrink:0}
   .bch-badge .bb-tx b{font-size:12.5px;font-weight:800;display:block;letter-spacing:-.01em}
+  .bch-badge.solo .bb-tx b{font-size:14.5px}
+  .bch-badge.solo{align-items:center}
   .bch-badge .bb-tx span{font-size:10.5px;color:var(--muted);font-weight:600}
   .bch-mgr{margin-top:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--line)}
   .bch-mgr .bm-lab{font-size:11.5px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:5px;width:100%}
   .bch-empty{font-size:12.5px;color:var(--muted);text-align:center;padding:6px 0}
+  /* ---- HOME: mini-card bacheca ---- */
+  .bcard{margin-top:12px;border-radius:18px;padding:14px 15px;cursor:pointer;position:relative;overflow:hidden;border:1px solid var(--line-strong);background:linear-gradient(160deg,#13294a,#0c1a31);transition:transform .15s}
+  .bcard:active{transform:scale(.99)}
+  .bcard.manager{background:linear-gradient(160deg,#1a2540,#0e1526)}
+  .bcard-top{display:flex;align-items:center;gap:12px}
+  .bcard .bc-ic{font-size:30px;line-height:1;flex-shrink:0;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
+  .bcard .bc-tx{flex:1;min-width:0}
+  .bcard .bc-eyebrow{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-soft);margin-bottom:2px}
+  .bcard.manager .bc-eyebrow{color:var(--gold-soft)}
+  .bcard .bc-title{font-family:'Bricolage Grotesque';font-weight:800;font-size:18px;letter-spacing:-.02em;line-height:1.05}
+  .bcard .bc-sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .bcard .bc-arr{color:var(--muted);font-size:18px;flex-shrink:0}
+  .bcard .bc-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+  .bcard .bc-pill{font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid var(--line);color:var(--text);display:inline-flex;align-items:center;gap:5px}
+  .bcard .bc-next{margin-top:12px}
+  .bcard .bc-next-top{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;margin-bottom:5px}
+  .bcard .bc-next-top b{font-weight:700;color:var(--text)} .bcard .bc-next-top span{color:var(--muted);font-family:'JetBrains Mono'}
+  .bcard .bc-bar{height:7px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+  .bcard .bc-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),#5b8cff)}
+  .bcard.manager .bc-bar i{background:linear-gradient(90deg,var(--gold),#f0c674)}
   .sheet h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:19px;margin:8px 2px 4px}
   .sheet .shint{font-size:12.5px;color:var(--muted);margin:0 2px 14px}
   .opt{display:flex;align-items:center;gap:13px;padding:10px 12px;border-radius:14px;cursor:pointer;transition:background .15s}
@@ -939,6 +962,8 @@
     </div>
     <div class="hpcard" id="homeValuePoll" style="display:none"></div>
     <div class="hpcard" id="homePresence" style="display:none"></div>
+    <div class="bcard" id="homeBcardPlayer" style="display:none" onclick="openMyPlayerBacheca()"></div>
+    <div class="bcard manager" id="homeBcardMgr" style="display:none" onclick="openMyTeamBacheca()"></div>
     <div class="section-h"><h2>Classifica</h2><a onclick="go('classifica')">Vedi tutti</a></div>
     <div class="mini-board" id="miniBoard"></div>
     <div id="homeRecapWrap" style="display:none">
@@ -1174,6 +1199,15 @@
     <div class="bch" id="statBacheca"></div>
   </div>
 
+  <div class="statmodal-bg" id="teamBg" onclick="closeTeamModal()"></div>
+  <div class="statmodal" id="teamModal">
+    <button class="statx" onclick="closeTeamModal()">✕</button>
+    <div class="stat-head"><div class="stat-av" id="teamAv">👔</div>
+      <div class="stat-id"><b id="teamName">—</b><span id="teamSub">—</span></div></div>
+    <div class="stat-grid" id="teamGrid"></div>
+    <div class="bch" id="teamBacheca"></div>
+  </div>
+
   <div class="ls-open" id="liveStats">
     <div class="ls-head">
       <button class="ls-back" id="lsBack" onclick="closeLiveStats()">✕</button>
@@ -1206,8 +1240,8 @@
 /* ============================================================
    👇 INCOLLA QUI LE TUE 2 CHIAVI (Supabase → Project Settings → API)
    ============================================================ */
-const SUPABASE_URL  = 'https://lfvpseusbsyzniugczbx.supabase.co';        // es. https://abcdxyz.supabase.co
-const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chiave "anon public"
+const SUPABASE_URL  = 'INCOLLA_URL_QUI';        // es. https://abcdxyz.supabase.co
+const SUPABASE_ANON = 'INCOLLA_ANON_KEY_QUI';   // chiave "anon public"
 /* ============================================================ */
 
 
@@ -1979,6 +2013,67 @@ async function setMyPresence(present){
   renderHomePresence(); renderMarket(); renderPitch(); renderVoti();
   toast(present?'Sei dentro per questa giornata ⚽':'Segnato come assente');
 }
+/* ---------- HOME: mini-card bacheca (giocatore + manager) ---------- */
+let _homeCardCache={player:null,team:null};
+let _homeBcardsAt=0;
+function nextBarHTML(next){
+  if(!next) return '';
+  const now=Number(next.now)||0, tot=Number(next.next)||1;
+  const pct=Math.max(0,Math.min(100,Math.round(now/tot*100)));
+  return `<div class="bc-next"><div class="bc-next-top"><b>Prossimo: ${esc(next.label)}</b><span>${now}/${tot}</span></div>
+    <div class="bc-bar"><i style="width:${pct}%"></i></div></div>`;
+}
+function renderHomeBcards(force){
+  const pc=document.getElementById('homeBcardPlayer');
+  const mc=document.getElementById('homeBcardMgr');
+  if(!pc||!mc) return;
+  // throttle: non ricaricare più di una volta ogni 20s (a meno di force)
+  const nowT=Date.now();
+  if(!force && (nowT-_homeBcardsAt)<20000 && (_homeCardCache.player||_homeCardCache.team)) return;
+  _homeBcardsAt=nowT;
+  // ---- Card GIOCATORE: solo se ho un personaggio nel listone ----
+  const mp=(typeof myPlayer==='function')?myPlayer():null;
+  const amPlayer=mp && profile && profile.is_player!==false;
+  if(amPlayer){
+    loadPlayerCard(mp.id).then(card=>{
+      if(!card||card.error){ pc.style.display='none'; return; }
+      _homeCardCache.player=card;
+      const meta=[];
+      if(card.forma) meta.push(`<span class="bc-pill">📈 ${esc(card.forma)}</span>`);
+      if(card.dept) meta.push(`<span class="bc-pill">🎯 ${card.dept.pos}° tra ${esc(card.dept.label)}</span>`);
+      pc.innerHTML=`<div class="bcard-top">
+          <div class="bc-ic">${card.headline?card.headline.icon:'🏅'}</div>
+          <div class="bc-tx"><div class="bc-eyebrow">Il tuo punto di forza</div>
+            <div class="bc-title">${esc(card.headline?card.headline.text:'In gioco')}</div>
+            <div class="bc-sub">${esc(card.headline?card.headline.sub:'')}</div></div>
+          <div class="bc-arr">›</div></div>
+        ${meta.length?`<div class="bc-meta">${meta.join('')}</div>`:''}
+        ${nextBarHTML(card.next)}`;
+      pc.style.display='block';
+    });
+  } else { pc.style.display='none'; }
+  // ---- Card MANAGER 👔: per tutti ----
+  if(user){
+    loadTeamCard(user.id).then(card=>{
+      if(!card||card.error){ mc.style.display='none'; return; }
+      _homeCardCache.team=card;
+      const st=card.stats||{};
+      const meta=[];
+      if(st.pos) meta.push(`<span class="bc-pill">🏆 ${st.pos}° in classifica</span>`);
+      if(st.wins) meta.push(`<span class="bc-pill">👑 Re giornata ×${st.wins}</span>`);
+      if(st.leader_days) meta.push(`<span class="bc-pill">🚩 Al comando ×${st.leader_days}</span>`);
+      mc.innerHTML=`<div class="bcard-top">
+          <div class="bc-ic">${card.headline?card.headline.icon:'👔'}</div>
+          <div class="bc-tx"><div class="bc-eyebrow">Da manager</div>
+            <div class="bc-title">${esc(card.headline?card.headline.text:'Manager')}</div>
+            <div class="bc-sub">${esc(card.headline?card.headline.sub:'')}</div></div>
+          <div class="bc-arr">›</div></div>
+        ${meta.length?`<div class="bc-meta">${meta.join('')}</div>`:''}
+        ${nextBarHTML(card.next)}`;
+      mc.style.display='block';
+    });
+  } else { mc.style.display='none'; }
+}
 function renderHomePresence(){
   const box=document.getElementById('homePresence'); if(!box) return;
   const mp=myPlayer();
@@ -2052,7 +2147,7 @@ async function doCloseMatchday(auto){
   await loadSeason();                                        // la 38ª chiusura può chiudere la stagione
   await loadStandings(); await loadMatchdaysList();           // classifica + lista giornate aggiornate (frecce + animazione)
   clearRoundLocal();                                         // nuova giornata cambia tutto: svuota campo, voti, MVP
-  renderAll();
+  renderAll(); renderHomeBcards(true);                        // trofei aggiornati dopo la chiusura
   if(!auto)openSettings();
   else maybeShowRecap();   // chiusura automatica: parte il Pagellone (classifica già aggiornata)
   toast(auto?'Giornata chiusa in automatico 🏁':'Giornata chiusa');
@@ -2257,7 +2352,7 @@ function applyProfile(){
   const mtc=document.getElementById('maintCard'); if(mtc)mtc.style.display=profile.is_admin?'block':'none';
   const arow=document.getElementById('adminRow'); if(arow)arow.style.display=profile.is_admin?'flex':'none';
 }
-function renderAll(){renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();}
+function renderAll(){renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderHomeBcards();}
 
 /* ---------- BACHECA (render condiviso) ---------- */
 const MEDALS=['','🥉','🥈','🥇','💎'];   // index = tier (1..4)
@@ -2288,8 +2383,12 @@ function bachecaHTML(card, opts){
   const badges=card.badges||[];
   if(badges.length){
     h+=`<div class="bch-sec"><div class="bch-h">🎖️ Traguardi</div><div class="bch-badges">`+
-      badges.map(b=>`<div class="bch-badge"><div class="bb-m">${medalFor(b.tier)}</div>
-        <div class="bb-tx"><b>${esc(b.label)}</b><span>${b.value!=null?esc(b.value):''}</span></div></div>`).join('')+
+      badges.map(b=>{
+        const solo=(['tripletta','poker','manita'].indexOf(b.key)>=0);
+        const sub=solo?'':(b.value!=null?`<span>${esc(b.value)}</span>`:'');
+        return `<div class="bch-badge ${solo?'solo':''}"><div class="bb-m">${medalFor(b.tier)}</div>
+        <div class="bb-tx"><b>${esc(b.label)}</b>${sub}</div></div>`;
+      }).join('')+
       `</div></div>`;
   }
   // Riga manager (👔) — solo se richiesto e presente
@@ -2339,6 +2438,42 @@ function openPlayerStats(id){
   });
 }
 function closeStatModal(){document.getElementById('statBg').classList.remove('open');document.getElementById('statModal').classList.remove('open');}
+
+/* ---------- SCHEDA SQUADRA / MANAGER ---------- */
+let _teamCardId=null;
+function teamStatsGridHTML(card){
+  const st=card.stats||{};
+  const box=(v,k,cls)=>`<div class="stat-box ${cls||''}"><div class="v">${v}</div><div class="k">${k}</div></div>`;
+  let h='';
+  h+=box(fmtPts(st.points||0),'Punti'+(card.season_no?' · St.'+card.season_no:''),'accent');
+  if(st.pos) h+=box(st.pos+'°','Posizione');
+  h+=box(st.wins||0,'Vittorie giornata');
+  h+=box(st.leader_days||0,'Giornate da leader','gold');
+  if(st.best_climb) h+=box('+'+st.best_climb,'Miglior balzo');
+  if(st.best_md!=null) h+=box(fmtPts(st.best_md),'Miglior giornata');
+  return h;
+}
+function openTeamCard(managerId){
+  const bg=document.getElementById('teamBg'), md=document.getElementById('teamModal');
+  document.getElementById('teamName').textContent='Carico…';
+  document.getElementById('teamSub').textContent='';
+  document.getElementById('teamGrid').innerHTML='';
+  document.getElementById('teamBacheca').innerHTML='<div class="bch-empty">Carico la bacheca…</div>';
+  _teamCardId=managerId;
+  bg.classList.add('open'); md.classList.add('open');
+  loadTeamCard(managerId).then(card=>{
+    if(_teamCardId!==managerId) return;
+    if(!md.classList.contains('open')) return;
+    if(!card||card.error){ document.getElementById('teamName').textContent='Squadra'; document.getElementById('teamBacheca').innerHTML='<div class="bch-empty">Scheda non disponibile.</div>'; return; }
+    document.getElementById('teamName').textContent=card.team_name||card.player_name||'Squadra';
+    document.getElementById('teamSub').textContent=card.player_name&&card.team_name?('Manager: '+card.player_name):'Manager';
+    document.getElementById('teamGrid').innerHTML=teamStatsGridHTML(card);
+    document.getElementById('teamBacheca').innerHTML=bachecaHTML(card,{includeManager:false});
+  });
+}
+function closeTeamModal(){document.getElementById('teamBg').classList.remove('open');document.getElementById('teamModal').classList.remove('open');}
+function openMyPlayerBacheca(){ const mp=(typeof myPlayer==='function')?myPlayer():null; if(mp) openPlayerStats(mp.id); }
+function openMyTeamBacheca(){ if(user) openTeamCard(user.id); }
 /* ---------- ABILITA AL VOTO (manager-solo) ---------- */
 async function renderVoters(){
   const box=document.getElementById('voterList'); if(!box)return;
