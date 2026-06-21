@@ -414,6 +414,8 @@
   .hpcard .hp-dot{width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px rgba(234,178,74,.18);animation:hpPulse 1.8s ease-in-out infinite}
   @keyframes hpPulse{0%,100%{opacity:1}50%{opacity:.45}}
   .hpcard .hp-q{font-family:'Bricolage Grotesque';font-weight:800;font-size:19px;color:var(--text);margin:9px 0 12px;letter-spacing:-.01em}
+  .hpcard .hp-match{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:7px 12px;border-radius:10px;background:rgba(234,178,74,.12);border:1px solid rgba(234,178,74,.28);color:var(--gold-soft);font-size:13.5px;font-weight:600}
+  .hpcard .hp-match b{color:var(--text);font-weight:800;text-transform:capitalize}
   .hpcard .hp-sw{display:flex;gap:9px}
   .hpcard .hp-b{flex:1;padding:13px 10px;border-radius:13px;border:1.5px solid var(--line-strong);background:var(--surface2);color:var(--muted);font-family:'Bricolage Grotesque';font-weight:800;font-size:14.5px;cursor:pointer;transition:transform .08s,border-color .15s,color .15s,background .15s}
   .hpcard .hp-b:active{transform:scale(.97)}
@@ -1183,8 +1185,8 @@
 /* ============================================================
    👇 INCOLLA QUI LE TUE 2 CHIAVI (Supabase → Project Settings → API)
    ============================================================ */
-const SUPABASE_URL  = 'https://lfvpseusbsyzniugczbx.supabase.co';        // es. https://abcdxyz.supabase.co
-const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chiave "anon public"
+const SUPABASE_URL  = 'INCOLLA_URL_QUI';        // es. https://abcdxyz.supabase.co
+const SUPABASE_ANON = 'INCOLLA_ANON_KEY_QUI';   // chiave "anon public"
 /* ============================================================ */
 
 
@@ -1963,10 +1965,12 @@ function renderHomePresence(){
   if(!show){ box.style.display='none'; box.innerHTML=''; return; }
   const here=mdPresent.has(mp.id);
   const when=(t&&t.presenceClose!=null)?(' · si chiude '+fmtDayTime(new Date(t.presenceClose))):'';
+  const matchWhen=currentMd.kickoff?`<div class="hp-match">📅 Partita: <b>${fmtDayTime(new Date(currentMd.kickoff))}</b></div>`:'';
   box.style.display='block';
   box.innerHTML=`
     <div class="hp-top"><span class="hp-dot"></span>${currentMd.label} aperta!</div>
-    <div class="hp-q">Ci sei questa giornata?</div>
+    ${matchWhen}
+    <div class="hp-q">Ci sei a questa partita?</div>
     <div class="hp-sw">
       <button class="hp-b yes ${here?'on':''}" onclick="setMyPresence(true)">✓ Ci sono</button>
       <button class="hp-b no ${here?'':'on'}" onclick="setMyPresence(false)">✕ Salto</button>
