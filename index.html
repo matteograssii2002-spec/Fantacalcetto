@@ -477,6 +477,26 @@
   .stat-box .v{font-family:'JetBrains Mono';font-weight:700;font-size:22px;letter-spacing:-.02em}
   .stat-box .k{font-size:11.5px;color:var(--muted);margin-top:2px;font-weight:600}
   .stat-box.accent .v{color:var(--accent-soft)} .stat-box.gold .v{color:var(--gold)}
+  /* ---- BACHECA (trofei) ---- */
+  .bch{margin-top:15px}
+  .bch-sec{margin-top:13px}
+  .bch-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:12.5px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted);margin:0 0 9px;display:flex;align-items:center;gap:6px}
+  .bch-head{display:flex;align-items:center;gap:11px;background:linear-gradient(160deg,rgba(234,178,74,.16),rgba(16,36,67,.5));border:1px solid rgba(234,178,74,.34);border-radius:15px;padding:12px 13px}
+  .bch-head .bh-ic{font-size:26px;line-height:1;flex-shrink:0}
+  .bch-head .bh-tx b{font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;display:block;letter-spacing:-.01em;color:var(--text)}
+  .bch-head .bh-tx span{font-size:12px;color:var(--gold-soft);font-weight:600}
+  .bch-titles{display:flex;flex-wrap:wrap;gap:7px}
+  .bch-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:999px;font-size:12.5px;font-weight:700;background:rgba(234,178,74,.14);border:1px solid rgba(234,178,74,.34);color:var(--gold-soft)}
+  .bch-chip.silver{background:rgba(190,200,214,.12);border-color:rgba(190,200,214,.34);color:#cdd6e4}
+  .bch-chip small{font-weight:600;color:var(--muted);font-size:10.5px}
+  .bch-badges{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .bch-badge{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:9px 10px}
+  .bch-badge .bb-m{font-size:21px;line-height:1;flex-shrink:0}
+  .bch-badge .bb-tx b{font-size:12.5px;font-weight:800;display:block;letter-spacing:-.01em}
+  .bch-badge .bb-tx span{font-size:10.5px;color:var(--muted);font-weight:600}
+  .bch-mgr{margin-top:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--line)}
+  .bch-mgr .bm-lab{font-size:11.5px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:5px;width:100%}
+  .bch-empty{font-size:12.5px;color:var(--muted);text-align:center;padding:6px 0}
   .sheet h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:19px;margin:8px 2px 4px}
   .sheet .shint{font-size:12.5px;color:var(--muted);margin:0 2px 14px}
   .opt{display:flex;align-items:center;gap:13px;padding:10px 12px;border-radius:14px;cursor:pointer;transition:background .15s}
@@ -1151,6 +1171,7 @@
     <div class="stat-head"><div class="stat-av" id="statAv"></div>
       <div class="stat-id"><b id="statName">—</b><span id="statRole">—</span></div></div>
     <div class="stat-grid" id="statGrid"></div>
+    <div class="bch" id="statBacheca"></div>
   </div>
 
   <div class="ls-open" id="liveStats">
@@ -1185,8 +1206,8 @@
 /* ============================================================
    👇 INCOLLA QUI LE TUE 2 CHIAVI (Supabase → Project Settings → API)
    ============================================================ */
-const SUPABASE_URL  = 'https://lfvpseusbsyzniugczbx.supabase.co';        // es. https://abcdxyz.supabase.co
-const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chiave "anon public"
+const SUPABASE_URL  = 'INCOLLA_URL_QUI';        // es. https://abcdxyz.supabase.co
+const SUPABASE_ANON = 'INCOLLA_ANON_KEY_QUI';   // chiave "anon public"
 /* ============================================================ */
 
 
@@ -1207,6 +1228,7 @@ let lastVotesLocked=null, lastLineupLocked=null;
 let myNom={mvp:'',sega:''}, mvpPid=0, segaPid=0, liveT=null;
 let matchdaysList=[], selStandingsMd='', mdStandings=[];
 let playerStats={}, mdPresent=new Set();
+let _statCardId=null;   // id giocatore della bacheca aperta (anti-race)
 let iAmExtraVoter=false;
 let voteDirty=false;
 let _autoClosing=false;   // guardia: evita doppie chiusure automatiche
@@ -2237,6 +2259,59 @@ function applyProfile(){
 }
 function renderAll(){renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();}
 
+/* ---------- BACHECA (render condiviso) ---------- */
+const MEDALS=['','🥉','🥈','🥇','💎'];   // index = tier (1..4)
+function medalFor(tier){ return MEDALS[tier]||'🏅'; }
+// Costruisce l'HTML della bacheca da una card (get_player_card o pezzo manager).
+// opts.includeManager: se true e card.manager c'è, aggiunge la riga 👔.
+function bachecaHTML(card, opts){
+  opts=opts||{};
+  if(!card||card.error){ return '<div class="bch-empty">Bacheca non disponibile.</div>'; }
+  let h='';
+  // Headline (punto di forza)
+  if(card.headline){
+    h+=`<div class="bch-head"><div class="bh-ic">${card.headline.icon||'🏅'}</div>
+      <div class="bh-tx"><b>${esc(card.headline.text||'')}</b><span>${esc(card.headline.sub||'')}</span></div></div>`;
+  }
+  // Titoli (chip dorati / argento per il podio)
+  const titles=card.titles||[];
+  if(titles.length){
+    h+=`<div class="bch-sec"><div class="bch-h">🏅 Titoli</div><div class="bch-titles">`+
+      titles.map(t=>{
+        const sil=(t.key||'').indexOf('podio')===0;
+        const seas=t.season?`<small>St.${t.season}</small>`:'';
+        const pos=t.pos?` ${t.pos}°`:'';
+        return `<span class="bch-chip ${sil?'silver':''}">${esc(t.label)}${pos} ${seas}</span>`;
+      }).join('')+`</div></div>`;
+  }
+  // Traguardi (medaglie con gradino)
+  const badges=card.badges||[];
+  if(badges.length){
+    h+=`<div class="bch-sec"><div class="bch-h">🎖️ Traguardi</div><div class="bch-badges">`+
+      badges.map(b=>`<div class="bch-badge"><div class="bb-m">${medalFor(b.tier)}</div>
+        <div class="bb-tx"><b>${esc(b.label)}</b><span>${b.value!=null?esc(b.value):''}</span></div></div>`).join('')+
+      `</div></div>`;
+  }
+  // Riga manager (👔) — solo se richiesto e presente
+  if(opts.includeManager && card.manager && card.manager.ok){
+    const mb=(card.manager.badges||[]);
+    if(mb.length){
+      h+=`<div class="bch-mgr"><div class="bm-lab">👔 Da manager</div>`+
+        mb.map(b=>`<span class="bch-chip">${esc(b.label)}${b.value?` ×${b.value}`:''}</span>`).join('')+
+        `</div>`;
+    }
+  }
+  if(!h) h='<div class="bch-empty">Ancora nessuna targa: gioca e torna a controllare! 💪</div>';
+  return h;
+}
+async function loadPlayerCard(playerId){
+  try{ const {data,error}=await sb.rpc('get_player_card',{p_player_id:playerId}); if(error)return null; return data; }
+  catch(_){ return null; }
+}
+async function loadTeamCard(managerId){
+  try{ const {data,error}=await sb.rpc('get_team_card',{p_manager_id:managerId}); if(error)return null; return data; }
+  catch(_){ return null; }
+}
 function openPlayerStats(id){
   const p=players.find(x=>x.id===id); if(!p)return;
   const s=playerStats[id]||{presences:0,gol:0,assist:0,voto:6,forma:'Costante'};
@@ -2249,8 +2324,19 @@ function openPlayerStats(id){
     <div class="stat-box accent"><div class="v">${s.presences||0}</div><div class="k">Presenze</div></div>
     <div class="stat-box"><div class="v">${s.gol||0}</div><div class="k">Gol</div></div>
     <div class="stat-box"><div class="v">${s.assist||0}</div><div class="k">Assist</div></div>`+votoBox;
+  // Bacheca: mostra subito un placeholder, poi carica le targhe in background
+  const bch=document.getElementById('statBacheca');
+  if(bch) bch.innerHTML='<div class="bch-empty">Carico la bacheca…</div>';
+  _statCardId=id;
   document.getElementById('statBg').classList.add('open');
   document.getElementById('statModal').classList.add('open');
+  loadPlayerCard(id).then(card=>{
+    if(!bch) return;
+    // se nel frattempo si è chiuso o si è aperta un'altra card, non sovrascrivere
+    if(_statCardId!==id) return;
+    if(!document.getElementById('statModal').classList.contains('open')) return;
+    bch.innerHTML=bachecaHTML(card,{includeManager:true});
+  });
 }
 function closeStatModal(){document.getElementById('statBg').classList.remove('open');document.getElementById('statModal').classList.remove('open');}
 /* ---------- ABILITA AL VOTO (manager-solo) ---------- */
