@@ -490,13 +490,11 @@
   .bch-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:999px;font-size:12.5px;font-weight:700;background:rgba(234,178,74,.14);border:1px solid rgba(234,178,74,.34);color:var(--gold-soft)}
   .bch-chip.silver{background:rgba(190,200,214,.12);border-color:rgba(190,200,214,.34);color:#cdd6e4}
   .bch-chip small{font-weight:600;color:var(--muted);font-size:10.5px}
-  .bch-badges{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .bch-badge{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:9px 10px}
-  .bch-badge .bb-m{font-size:21px;line-height:1;flex-shrink:0}
-  .bch-badge .bb-tx b{font-size:12.5px;font-weight:800;display:block;letter-spacing:-.01em}
-  .bch-badge.solo .bb-tx b{font-size:14.5px}
-  .bch-badge.solo{align-items:center}
-  .bch-badge .bb-tx span{font-size:10.5px;color:var(--muted);font-weight:600}
+  .bch-badges{display:flex;flex-direction:column;gap:8px}
+  .bch-badge{display:flex;align-items:center;gap:11px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:10px 12px}
+  .bch-badge .bb-m{font-size:23px;line-height:1;flex-shrink:0}
+  .bch-badge .bb-tx b{font-size:13.5px;font-weight:800;display:block;letter-spacing:-.01em}
+  .bch-badge .bb-tx span{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:1px;display:block}
   .bch-mgr{margin-top:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--line)}
   .bch-mgr .bm-lab{font-size:11.5px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:5px;width:100%}
   .bch-empty{font-size:12.5px;color:var(--muted);text-align:center;padding:6px 0}
@@ -962,10 +960,10 @@
     </div>
     <div class="hpcard" id="homeValuePoll" style="display:none"></div>
     <div class="hpcard" id="homePresence" style="display:none"></div>
-    <div class="bcard" id="homeBcardPlayer" style="display:none" onclick="openMyPlayerBacheca()"></div>
-    <div class="bcard manager" id="homeBcardMgr" style="display:none" onclick="openMyTeamBacheca()"></div>
     <div class="section-h"><h2>Classifica</h2><a onclick="go('classifica')">Vedi tutti</a></div>
     <div class="mini-board" id="miniBoard"></div>
+    <div class="bcard" id="homeBcardPlayer" style="display:none" onclick="openMyPlayerBacheca()"></div>
+    <div class="bcard manager" id="homeBcardMgr" style="display:none" onclick="openMyTeamBacheca()"></div>
     <div id="homeRecapWrap" style="display:none">
       <div class="section-h"><h2>Pagellone di Giornata</h2></div>
       <button class="pag-open-btn" id="homeRecapBtn" onclick="openRecapLatest()" style="margin-top:0">
@@ -1240,8 +1238,8 @@
 /* ============================================================
    👇 INCOLLA QUI LE TUE 2 CHIAVI (Supabase → Project Settings → API)
    ============================================================ */
-const SUPABASE_URL  = 'https://lfvpseusbsyzniugczbx.supabase.co';        // es. https://abcdxyz.supabase.co
-const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chiave "anon public"
+const SUPABASE_URL  = 'INCOLLA_URL_QUI';        // es. https://abcdxyz.supabase.co
+const SUPABASE_ANON = 'INCOLLA_ANON_KEY_QUI';   // chiave "anon public"
 /* ============================================================ */
 
 
@@ -2357,6 +2355,43 @@ function renderAll(){renderMatchday();renderMarket();renderPitch();renderVoti();
 /* ---------- BACHECA (render condiviso) ---------- */
 const MEDALS=['','🥉','🥈','🥇','💎'];   // index = tier (1..4)
 function medalFor(tier){ return MEDALS[tier]||'🏅'; }
+// Descrizione chiara di ogni traguardo, dato il valore raggiunto.
+function badgeDesc(key,val){
+  const v=(val!=null?val:'');
+  switch(key){
+    case 'cecchino':    return v+' gol segnati in totale';
+    case 'rifinitore':  return v+' assist serviti in totale';
+    case 'copertina':   return v+' volte MVP di giornata';
+    case 'presenze':    return v+' partite giocate in totale';
+    case 'tripletta':   return '3 gol in una sola giornata';
+    case 'poker':       return '4 gol in una sola giornata';
+    case 'manita':      return '5 o più gol in una sola giornata';
+    case 'profeta':     return v+' volte modulo coraggioso azzeccato';
+    case 'capitano':    return v+' volte il capitano ha segnato o è stato MVP';
+    case 're_giornata': return v+' giornate vinte (1° del turno)';
+    case 'al_comando':  return v+' giornate passate in testa alla classifica';
+    case 'scalatore':   return 'Balzo record: +'+v+' posizioni in una giornata';
+    default:            return '';
+  }
+}
+// Blocca lo scroll dello sfondo quando è aperto un modal (robusto su iOS)
+let _scrollLockY=0, _scrollLocks=0;
+function lockScroll(){
+  if(_scrollLocks++>0) return;            // già bloccato
+  _scrollLockY=window.scrollY||window.pageYOffset||0;
+  document.body.style.position='fixed';
+  document.body.style.top=(-_scrollLockY)+'px';
+  document.body.style.left='0'; document.body.style.right='0';
+  document.body.style.width='100%';
+}
+function unlockScroll(){
+  if(_scrollLocks>0) _scrollLocks--;
+  if(_scrollLocks>0) return;               // altri modal ancora aperti
+  document.body.style.position='';
+  document.body.style.top=''; document.body.style.left='';
+  document.body.style.right=''; document.body.style.width='';
+  window.scrollTo(0,_scrollLockY);
+}
 // Costruisce l'HTML della bacheca da una card (get_player_card o pezzo manager).
 // opts.includeManager: se true e card.manager c'è, aggiunge la riga 👔.
 function bachecaHTML(card, opts){
@@ -2379,15 +2414,14 @@ function bachecaHTML(card, opts){
         return `<span class="bch-chip ${sil?'silver':''}">${esc(t.label)}${pos} ${seas}</span>`;
       }).join('')+`</div></div>`;
   }
-  // Traguardi (medaglie con gradino)
+  // Traguardi (medaglie con gradino + spiegazione chiara)
   const badges=card.badges||[];
   if(badges.length){
     h+=`<div class="bch-sec"><div class="bch-h">🎖️ Traguardi</div><div class="bch-badges">`+
       badges.map(b=>{
-        const solo=(['tripletta','poker','manita'].indexOf(b.key)>=0);
-        const sub=solo?'':(b.value!=null?`<span>${esc(b.value)}</span>`:'');
-        return `<div class="bch-badge ${solo?'solo':''}"><div class="bb-m">${medalFor(b.tier)}</div>
-        <div class="bb-tx"><b>${esc(b.label)}</b>${sub}</div></div>`;
+        const desc=badgeDesc(b.key,b.value);
+        return `<div class="bch-badge"><div class="bb-m">${medalFor(b.tier)}</div>
+        <div class="bb-tx"><b>${esc(b.label)}</b>${desc?`<span>${esc(desc)}</span>`:''}</div></div>`;
       }).join('')+
       `</div></div>`;
   }
@@ -2427,6 +2461,7 @@ function openPlayerStats(id){
   const bch=document.getElementById('statBacheca');
   if(bch) bch.innerHTML='<div class="bch-empty">Carico la bacheca…</div>';
   _statCardId=id;
+  lockScroll();
   document.getElementById('statBg').classList.add('open');
   document.getElementById('statModal').classList.add('open');
   loadPlayerCard(id).then(card=>{
@@ -2437,7 +2472,7 @@ function openPlayerStats(id){
     bch.innerHTML=bachecaHTML(card,{includeManager:true});
   });
 }
-function closeStatModal(){document.getElementById('statBg').classList.remove('open');document.getElementById('statModal').classList.remove('open');}
+function closeStatModal(){document.getElementById('statBg').classList.remove('open');document.getElementById('statModal').classList.remove('open');unlockScroll();}
 
 /* ---------- SCHEDA SQUADRA / MANAGER ---------- */
 let _teamCardId=null;
@@ -2460,6 +2495,7 @@ function openTeamCard(managerId){
   document.getElementById('teamGrid').innerHTML='';
   document.getElementById('teamBacheca').innerHTML='<div class="bch-empty">Carico la bacheca…</div>';
   _teamCardId=managerId;
+  lockScroll();
   bg.classList.add('open'); md.classList.add('open');
   loadTeamCard(managerId).then(card=>{
     if(_teamCardId!==managerId) return;
@@ -2471,7 +2507,7 @@ function openTeamCard(managerId){
     document.getElementById('teamBacheca').innerHTML=bachecaHTML(card,{includeManager:false});
   });
 }
-function closeTeamModal(){document.getElementById('teamBg').classList.remove('open');document.getElementById('teamModal').classList.remove('open');}
+function closeTeamModal(){document.getElementById('teamBg').classList.remove('open');document.getElementById('teamModal').classList.remove('open');unlockScroll();}
 function openMyPlayerBacheca(){ const mp=(typeof myPlayer==='function')?myPlayer():null; if(mp) openPlayerStats(mp.id); }
 function openMyTeamBacheca(){ if(user) openTeamCard(user.id); }
 /* ---------- ABILITA AL VOTO (manager-solo) ---------- */
@@ -3678,7 +3714,7 @@ function prefersReduce(){ try{ return matchMedia('(prefers-reduced-motion: reduc
 function lbRowHTML(t,i,pts,withArrow){
   const me=(profile&&t.team_name===profile.team_name)?'me':'';
   const arrow=withArrow?moveArrow(t.delta):'';
-  return `<div class="lb-row ${me}" data-id="${t.manager_id}"><div class="rank">${i+1}</div><div class="who"><b>${esc(t.team_name)}</b><span>${esc(t.player_name)}</span></div><span class="mvw">${arrow}</span><div class="tot"><span class="num">${fmtPts(Number(pts)||0)}</span></div></div>`;
+  return `<div class="lb-row ${me}" data-id="${t.manager_id}" onclick="openTeamCard('${t.manager_id}')" style="cursor:pointer"><div class="rank">${i+1}</div><div class="who"><b>${esc(t.team_name)} ›</b><span>${esc(t.player_name)}</span></div><span class="mvw">${arrow}</span><div class="tot"><span class="num">${fmtPts(Number(pts)||0)}</span></div></div>`;
 }
 /* freccia con classe .rv per il reveal animato (resta visibile, niente fade-out) */
 function moveArrowR(d){ if(!d)return ''; return d>0?`<span class="mv up rv">▲${d}</span>`:`<span class="mv down rv">▼${Math.abs(d)}</span>`; }
