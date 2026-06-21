@@ -277,6 +277,9 @@
   .modbtn.on{background:rgba(61,139,255,.16);border-color:var(--accent);color:var(--accent-soft)}
   .modbtn.on b{color:var(--accent-soft)}
   .modbtn:disabled{opacity:.5}
+  .modbtn.unavail{opacity:.4} .modbtn.unavail b{color:var(--muted)}
+  .modbtn.unavail small{color:#8893a6}
+  .mod-free-info{margin-top:9px;background:rgba(234,178,74,.1);border:1px solid rgba(234,178,74,.32);color:var(--gold-soft);font-size:12px;line-height:1.4;padding:9px 11px;border-radius:11px}
   .tm-wrap{display:flex;gap:8px}
   .tm-col{flex:1;min-width:0;border:2px solid var(--line-strong);border-radius:14px;padding:8px;background:var(--bg2)}
   .tm-col.ok{border-color:var(--green)} .tm-col.bad{border-color:var(--red)}
@@ -498,6 +501,16 @@
   .bch-mgr{margin-top:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--line)}
   .bch-mgr .bm-lab{font-size:11.5px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:5px;width:100%}
   .bch-empty{font-size:12.5px;color:var(--muted);text-align:center;padding:6px 0}
+  /* ---- PAGINA BACHECA (full screen, niente sfondo che balla) ---- */
+  .bch-page{z-index:90}
+  .bch-page-bar{position:sticky;top:0;z-index:2;display:flex;align-items:center;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:linear-gradient(180deg,var(--bg),rgba(8,14,26,.85) 70%,transparent);backdrop-filter:blur(6px)}
+  .bch-back{background:var(--surface2);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:14px;padding:9px 15px 9px 11px;border-radius:12px;cursor:pointer}
+  .bch-back:active{transform:scale(.97)}
+  .bch-page-inner{max-width:var(--maxw);margin:0 auto;padding:6px 18px calc(40px + env(safe-area-inset-bottom))}
+  .bch-page .stat-head{margin-bottom:16px}
+  .bch-page .stat-av{width:64px;height:64px}
+  .bch-page #teamAv{font-size:32px}
+  .bch-page .stat-id b{font-size:21px}
   /* ---- HOME: mini-card bacheca ---- */
   .bcard{margin-top:12px;border-radius:18px;padding:14px 15px;cursor:pointer;position:relative;overflow:hidden;border:1px solid var(--line-strong);background:linear-gradient(160deg,#13294a,#0c1a31);transition:transform .15s}
   .bcard:active{transform:scale(.99)}
@@ -1188,22 +1201,26 @@
     <button class="set-btn" style="margin-top:9px" onclick="closePushPrompt()">No, grazie</button>
   </div>
 
-  <div class="statmodal-bg" id="statBg" onclick="closeStatModal()"></div>
-  <div class="statmodal" id="statModal">
-    <button class="statx" onclick="closeStatModal()">✕</button>
-    <div class="stat-head"><div class="stat-av" id="statAv"></div>
-      <div class="stat-id"><b id="statName">—</b><span id="statRole">—</span></div></div>
-    <div class="stat-grid" id="statGrid"></div>
-    <div class="bch" id="statBacheca"></div>
-  </div>
-
-  <div class="statmodal-bg" id="teamBg" onclick="closeTeamModal()"></div>
-  <div class="statmodal" id="teamModal">
-    <button class="statx" onclick="closeTeamModal()">✕</button>
-    <div class="stat-head"><div class="stat-av" id="teamAv">👔</div>
-      <div class="stat-id"><b id="teamName">—</b><span id="teamSub">—</span></div></div>
-    <div class="stat-grid" id="teamGrid"></div>
-    <div class="bch" id="teamBacheca"></div>
+  <div class="overlay hidden bch-page" id="bachecaPage">
+    <div class="bch-page-bar">
+      <button class="bch-back" onclick="closeBacheca()" aria-label="Indietro">‹ Indietro</button>
+    </div>
+    <div class="bch-page-inner">
+      <!-- SCHEDA GIOCATORE -->
+      <div id="pgPlayer" style="display:none">
+        <div class="stat-head"><div class="stat-av" id="statAv"></div>
+          <div class="stat-id"><b id="statName">—</b><span id="statRole">—</span></div></div>
+        <div class="stat-grid" id="statGrid"></div>
+        <div class="bch" id="statBacheca"></div>
+      </div>
+      <!-- SCHEDA SQUADRA / MANAGER -->
+      <div id="pgTeam" style="display:none">
+        <div class="stat-head"><div class="stat-av" id="teamAv">👔</div>
+          <div class="stat-id"><b id="teamName">—</b><span id="teamSub">—</span></div></div>
+        <div class="stat-grid" id="teamGrid"></div>
+        <div class="bch" id="teamBacheca"></div>
+      </div>
+    </div>
   </div>
 
   <div class="ls-open" id="liveStats">
@@ -1238,8 +1255,8 @@
 /* ============================================================
    👇 INCOLLA QUI LE TUE 2 CHIAVI (Supabase → Project Settings → API)
    ============================================================ */
-const SUPABASE_URL  = 'https://lfvpseusbsyzniugczbx.supabase.co';        // es. https://abcdxyz.supabase.co
-const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chiave "anon public"
+const SUPABASE_URL  = 'INCOLLA_URL_QUI';        // es. https://abcdxyz.supabase.co
+const SUPABASE_ANON = 'INCOLLA_ANON_KEY_QUI';   // chiave "anon public"
 /* ============================================================ */
 
 
@@ -1299,10 +1316,54 @@ const MODULES={
 };
 let formModule='1-2-2';
 let SLOTS=MODULES[formModule].slots;
+// Requisiti di reparto per ogni modulo (slot di movimento, il POR è sempre 1)
+const MODULE_NEED={ '1-3-1':{ATT:1,DIF:3}, '1-2-2':{ATT:2,DIF:2}, '1-1-3':{ATT:3,DIF:1} };
+// Calcola, in base ai PRESENTI correnti, quali moduli sono selezionabili.
+// Se manca completamente un reparto (0 ATT o 0 DIF) -> solo 1-2-2 a "ruoli liberi".
+function fieldAvailability(){
+  let nATT=0, nDIF=0;
+  (players||[]).forEach(p=>{
+    if(!isPresent(p)) return;
+    if(p.role==='ATT') nATT++;
+    else if(p.role==='DIF') nDIF++;
+  });
+  const available=new Set();
+  const missingDept = (nATT===0 || nDIF===0);
+  if(missingDept){
+    available.add('1-2-2');           // unico modulo, a ruoli liberi
+    return {nATT,nDIF,available,freeRoles:true};
+  }
+  Object.keys(MODULE_NEED).forEach(m=>{
+    const need=MODULE_NEED[m];
+    if(nATT>=need.ATT && nDIF>=need.DIF) available.add(m);
+  });
+  // safety: se per qualche motivo nessuno è disponibile, lascia 1-2-2
+  if(available.size===0) available.add('1-2-2');
+  return {nATT,nDIF,available,freeRoles:false};
+}
 function moduleBonus(){return MODULES[formModule]?MODULES[formModule].bonus:0;}
+// Se il modulo attuale non è più valido (presenze cambiate), ripiega su uno disponibile.
+function ensureValidModule(){
+  // se non ci sono ancora presenti caricati, non forzare nulla (evita di svuotare al caricamento)
+  if(!currentMd || mdPresent.size===0) return fieldAvailability();
+  const av=fieldAvailability();
+  if(!av.available.has(formModule)){
+    const fallback = av.available.has('1-2-2') ? '1-2-2' : av.available.values().next().value;
+    if(fallback && fallback!==formModule){
+      formModule=fallback; SLOTS=MODULES[formModule].slots; lineup={}; captain=null;
+    }
+  }
+  return av;
+}
 function setModule(m){
   if(!MODULES[m]||m===formModule)return;
   if(lineupLocked){toast('Formazioni bloccate');return;}
+  const av=fieldAvailability();
+  if(!av.available.has(m)){
+    const need=MODULE_NEED[m];
+    toast(`Modulo non disponibile: servono almeno ${need.ATT} ATT e ${need.DIF} DIF tra i presenti`);
+    return;
+  }
   if(Object.keys(lineup).length && !confirm('Cambiando modulo la formazione si svuota. Continuare?'))return;
   formModule=m; SLOTS=MODULES[formModule].slots; lineup={}; captain=null;
   renderModulePicker(); renderPitch();
@@ -1310,10 +1371,23 @@ function setModule(m){
 function renderModulePicker(){
   const box=document.getElementById('modPick'); if(!box)return;
   const lk=lineupLocked;
+  const av=fieldAvailability();
   box.innerHTML=Object.keys(MODULES).map(m=>{
+    const ok=av.available.has(m);
     const b=MODULES[m].bonus, sub=b>0?('parti +'+b):(b<0?('parti '+b):'nessun bonus');
-    return `<button class="modbtn ${m===formModule?'on':''}" ${lk?'disabled':''} onclick="setModule('${m}')"><b>${m}</b><small>${sub}</small></button>`;
+    const need=MODULE_NEED[m];
+    const dis=(lk||!ok);
+    const title=ok?'':`Servono ${need.ATT} ATT e ${need.DIF} DIF presenti`;
+    const small=ok?sub:'non disponibile';
+    return `<button class="modbtn ${m===formModule?'on':''} ${ok?'':'unavail'}" ${dis?'disabled':''} ${title?`title="${title}"`:''} onclick="setModule('${m}')"><b>${m}</b><small>${small}</small></button>`;
   }).join('');
+  // banner informativo quando si gioca a ruoli liberi
+  let info=document.getElementById('modFreeInfo');
+  if(av.freeRoles){
+    if(!info){ info=document.createElement('div'); info.id='modFreeInfo'; info.className='mod-free-info'; box.parentNode.insertBefore(info, box.nextSibling); }
+    info.style.display='block';
+    info.innerHTML='⚠️ Manca un reparto tra i presenti: si gioca col <b>1-2-2 a ruoli liberi</b> (chiunque in qualsiasi posizione, nessun bonus/malus di modulo).';
+  } else if(info){ info.style.display='none'; }
 }
 
 function avatarImg(name,px){
@@ -1757,7 +1831,15 @@ function subscribeLive(){
     .on('postgres_changes',{event:'*',schema:'public',table:'votes',filter:f},scheduleLive)
     .on('postgres_changes',{event:'*',schema:'public',table:'match_stats',filter:f},scheduleLive)
     .on('postgres_changes',{event:'*',schema:'public',table:'nominations',filter:f},scheduleLive)
+    .on('postgres_changes',{event:'*',schema:'public',table:'matchday_players',filter:f},schedulePresence)
     .subscribe();
+}
+let presT=null;
+function schedulePresence(){clearTimeout(presT);presT=setTimeout(refreshPresence,300);}
+async function refreshPresence(){
+  // l'admin ha cambiato i presenti: ricarico e riadeguo campo + liste (il modulo si riadegua da solo)
+  await loadMdPresent();
+  renderPresence(); renderHomePresence(); renderMarket(); renderVoti(); renderPitch();
 }
 function scheduleLive(){clearTimeout(liveT);liveT=setTimeout(refreshLive,300);}
 async function refreshLive(){
@@ -2374,24 +2456,6 @@ function badgeDesc(key,val){
     default:            return '';
   }
 }
-// Blocca lo scroll dello sfondo quando è aperto un modal (robusto su iOS)
-let _scrollLockY=0, _scrollLocks=0;
-function lockScroll(){
-  if(_scrollLocks++>0) return;            // già bloccato
-  _scrollLockY=window.scrollY||window.pageYOffset||0;
-  document.body.style.position='fixed';
-  document.body.style.top=(-_scrollLockY)+'px';
-  document.body.style.left='0'; document.body.style.right='0';
-  document.body.style.width='100%';
-}
-function unlockScroll(){
-  if(_scrollLocks>0) _scrollLocks--;
-  if(_scrollLocks>0) return;               // altri modal ancora aperti
-  document.body.style.position='';
-  document.body.style.top=''; document.body.style.left='';
-  document.body.style.right=''; document.body.style.width='';
-  window.scrollTo(0,_scrollLockY);
-}
 // Costruisce l'HTML della bacheca da una card (get_player_card o pezzo manager).
 // opts.includeManager: se true e card.manager c'è, aggiunge la riga 👔.
 function bachecaHTML(card, opts){
@@ -2445,6 +2509,21 @@ async function loadTeamCard(managerId){
   try{ const {data,error}=await sb.rpc('get_team_card',{p_manager_id:managerId}); if(error)return null; return data; }
   catch(_){ return null; }
 }
+/* ---------- PAGINA BACHECA (overlay full-screen) ---------- */
+function openBacheca(which){
+  const pg=document.getElementById('bachecaPage');
+  document.getElementById('pgPlayer').style.display=(which==='player')?'block':'none';
+  document.getElementById('pgTeam').style.display=(which==='team')?'block':'none';
+  pg.classList.remove('hidden');
+  // porta in cima il contenuto
+  const inner=pg.querySelector('.bch-page-inner'); if(inner) inner.scrollTop=0;
+  pg.scrollTop=0;
+}
+function closeBacheca(){
+  const pg=document.getElementById('bachecaPage');
+  pg.classList.add('hidden');
+  _statCardId=null; _teamCardId=null;
+}
 function openPlayerStats(id){
   const p=players.find(x=>x.id===id); if(!p)return;
   const s=playerStats[id]||{presences:0,gol:0,assist:0,voto:6,forma:'Costante'};
@@ -2461,18 +2540,15 @@ function openPlayerStats(id){
   const bch=document.getElementById('statBacheca');
   if(bch) bch.innerHTML='<div class="bch-empty">Carico la bacheca…</div>';
   _statCardId=id;
-  lockScroll();
-  document.getElementById('statBg').classList.add('open');
-  document.getElementById('statModal').classList.add('open');
+  openBacheca('player');
   loadPlayerCard(id).then(card=>{
     if(!bch) return;
     // se nel frattempo si è chiuso o si è aperta un'altra card, non sovrascrivere
     if(_statCardId!==id) return;
-    if(!document.getElementById('statModal').classList.contains('open')) return;
     bch.innerHTML=bachecaHTML(card,{includeManager:true});
   });
 }
-function closeStatModal(){document.getElementById('statBg').classList.remove('open');document.getElementById('statModal').classList.remove('open');unlockScroll();}
+function closeStatModal(){ closeBacheca(); }
 
 /* ---------- SCHEDA SQUADRA / MANAGER ---------- */
 let _teamCardId=null;
@@ -2489,17 +2565,14 @@ function teamStatsGridHTML(card){
   return h;
 }
 function openTeamCard(managerId){
-  const bg=document.getElementById('teamBg'), md=document.getElementById('teamModal');
   document.getElementById('teamName').textContent='Carico…';
   document.getElementById('teamSub').textContent='';
   document.getElementById('teamGrid').innerHTML='';
   document.getElementById('teamBacheca').innerHTML='<div class="bch-empty">Carico la bacheca…</div>';
   _teamCardId=managerId;
-  lockScroll();
-  bg.classList.add('open'); md.classList.add('open');
+  openBacheca('team');
   loadTeamCard(managerId).then(card=>{
     if(_teamCardId!==managerId) return;
-    if(!md.classList.contains('open')) return;
     if(!card||card.error){ document.getElementById('teamName').textContent='Squadra'; document.getElementById('teamBacheca').innerHTML='<div class="bch-empty">Scheda non disponibile.</div>'; return; }
     document.getElementById('teamName').textContent=card.team_name||card.player_name||'Squadra';
     document.getElementById('teamSub').textContent=card.player_name&&card.team_name?('Manager: '+card.player_name):'Manager';
@@ -2507,7 +2580,7 @@ function openTeamCard(managerId){
     document.getElementById('teamBacheca').innerHTML=bachecaHTML(card,{includeManager:false});
   });
 }
-function closeTeamModal(){document.getElementById('teamBg').classList.remove('open');document.getElementById('teamModal').classList.remove('open');unlockScroll();}
+function closeTeamModal(){ closeBacheca(); }
 function openMyPlayerBacheca(){ const mp=(typeof myPlayer==='function')?myPlayer():null; if(mp) openPlayerStats(mp.id); }
 function openMyTeamBacheca(){ if(user) openTeamCard(user.id); }
 /* ---------- ABILITA AL VOTO (manager-solo) ---------- */
@@ -2556,7 +2629,7 @@ async function togglePresence(id){
   if(liveMd){
     if(mdPresent.has(id)){ await sb.from('matchday_players').delete().eq('matchday_id',currentMd.id).eq('player_id',id); mdPresent.delete(id); }
     else { await sb.from('matchday_players').insert({matchday_id:currentMd.id,player_id:id}); mdPresent.add(id); }
-    renderPresence(); renderMarket(); renderVoti();
+    renderPresence(); renderMarket(); renderVoti(); renderPitch();
   }else{
     const want=!plannedPresent.has(id);
     const {error}=await sb.rpc('set_planned_presence',{p_player:id,p_present:want});
@@ -2592,6 +2665,7 @@ function renderMarket(){
     </div>`;}).join('');
 }
 function renderPitch(){
+  ensureValidModule();
   renderModulePicker();
   const pitch=document.getElementById('pitch');
   pitch.querySelectorAll('.slot').forEach(e=>e.remove());
@@ -2677,10 +2751,16 @@ function openSheet(){document.getElementById('sheet').classList.add('open');docu
 function closeSheet(){document.getElementById('sheet').classList.remove('open');document.getElementById('sheetBg').classList.remove('open')}
 function openPickerSheet(key){
   const slot=SLOTS.find(s=>s.key===key),used=Object.values(lineup),isPor=slot.label==='POR';
-  const eligible=players.filter(p=>isPresent(p)&&(isPor?(gkFixed?p.role==='POR':true):p.role===slot.label)).sort((a,b)=>(b.cost??PRICE)-(a.cost??PRICE));
+  const free=fieldAvailability().freeRoles;   // manca un reparto -> ruoli liberi sugli slot di movimento
+  const eligible=players.filter(p=>{
+    if(!isPresent(p)) return false;
+    if(isPor) return gkFixed?p.role==='POR':true;       // porta: invariato
+    if(free) return p.role!=='POR' || !gkFixed;          // ruoli liberi: chiunque di movimento (no POR se gk fisso)
+    return p.role===slot.label;                          // normale: solo il ruolo dello slot
+  }).sort((a,b)=>(b.cost??PRICE)-(a.cost??PRICE));
   const remaining=BUDGET-lineupSpent();
-  document.getElementById('sheetTitle').textContent=isPor?'Scegli — in porta 🧤':'Scegli — '+(slot.label==='ATT'?'attaccante':'difensore');
-  document.getElementById('sheetHint').textContent=eligible.length?('Solo presenti'+(isPor?(gkFixed?' · solo portieri (POR)':' (chiunque)'):' · '+slot.label)+` · ${remaining} cr rimasti`):(isPor&&gkFixed?'Nessun portiere (POR) presente. Assegna il ruolo in Gestione giocatori.':'Nessun giocatore presente per questo ruolo.');
+  document.getElementById('sheetTitle').textContent=isPor?'Scegli — in porta 🧤':(free?'Scegli — ruolo libero':'Scegli — '+(slot.label==='ATT'?'attaccante':'difensore'));
+  document.getElementById('sheetHint').textContent=eligible.length?('Solo presenti'+(isPor?(gkFixed?' · solo portieri (POR)':' (chiunque)'):(free?' · chiunque (ruoli liberi)':' · '+slot.label))+` · ${remaining} cr rimasti`):(isPor&&gkFixed?'Nessun portiere (POR) presente. Assegna il ruolo in Gestione giocatori.':'Nessun giocatore presente per questo ruolo.');
   document.getElementById('sheetList').innerHTML=eligible.map(p=>{const taken=used.includes(p.id);const tooExp=!taken&&p.cost>remaining;const dis=taken||tooExp;
     return `<div class="opt ${dis?'dis':''}" onclick="${dis?'':`pick('${key}',${p.id})`}"><div class="oav">${avatarImg(p.avatar,38)}</div>
       <div class="info"><b>${p.name}</b><span>${roleLabel(p.role)}${taken?' · già schierato':(tooExp?' · troppo caro':'')}</span></div>
