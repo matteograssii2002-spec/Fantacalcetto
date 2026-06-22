@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Fantacalcetto · Console</title>
+<style>
+  :root{
+    --bg:#070f1e; --surface:#0e1f38; --surface2:#10294d; --line:#1d3a63;
+    --line-strong:#2a4f86; --text:#eaf1fb; --muted:#8aa3c2; --accent:#3d8bff; --accent-soft:#7fb0ff;
+    --gold:#eab24a; --gold-soft:#f0c879; --green:#37c98a; --red:#ff6b6b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(170deg,#070f1e,#0a1830);color:var(--text);
+    font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:max(18px,env(safe-area-inset-top)) 16px 40px;min-height:100vh}
+  .wrap{max-width:720px;margin:0 auto}
+  h1{font-size:23px;font-weight:800;letter-spacing:-.02em;margin:0 0 2px;font-family:'Bricolage Grotesque',sans-serif}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+  .num{font-family:'JetBrains Mono',ui-monospace,monospace}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px}
+  .card h2{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 12px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:520px){.grid{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:13px 12px}
+  .stat b{display:block;font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800;letter-spacing:-.01em;line-height:1.1}
+  .stat span{display:block;color:var(--muted);font-size:11.5px;font-weight:600;margin-top:3px}
+  .stat.green b{color:var(--green)} .stat.gold b{color:var(--gold)} .stat.red b{color:var(--red)} .stat.muted b{color:var(--muted)}
+  button{font-family:inherit;cursor:pointer;border:none}
+  .btn{background:var(--accent);color:#fff;font-weight:700;font-size:14px;border-radius:12px;padding:12px 16px;width:100%}
+  .btn.ghost{background:var(--surface2);color:var(--text);border:1px solid var(--line-strong)}
+  .btn.danger{background:var(--red)} .btn.green{background:var(--green)}
+  .btn:active{transform:scale(.99)}
+  input{font-family:inherit;background:var(--surface2);border:1px solid var(--line-strong);color:var(--text);
+    border-radius:11px;padding:11px 12px;font-size:15px;width:100%}
+  .row{display:flex;gap:10px;align-items:center}
+  .maint-state{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-weight:700}
+  .dot{width:11px;height:11px;border-radius:50%;flex:none}
+  .dot.on{background:var(--red);box-shadow:0 0 0 4px rgba(255,107,107,.18)}
+  .dot.off{background:var(--green);box-shadow:0 0 0 4px rgba(55,201,138,.18)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:6px 8px;border-bottom:1px solid var(--line)}
+  td{padding:9px 8px;border-bottom:1px solid var(--line)}
+  .pill{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .pill.a{background:rgba(55,201,138,.15);color:var(--green)} .pill.i{background:rgba(138,163,194,.13);color:var(--muted)}
+  .tog{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface2);color:var(--text)}
+  .tog.paid{background:rgba(234,178,74,.16);color:var(--gold);border-color:rgba(234,178,74,.4)}
+  .note{color:var(--muted);font-size:11.5px;margin-top:8px;line-height:1.5}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#13294a;color:#fff;
+    padding:11px 18px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:50;border:1px solid var(--line-strong)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .center{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}
+  .center .card{width:100%;max-width:340px}
+  .err{color:var(--red);font-size:13px;margin-top:8px}
+  .lk{color:var(--accent-soft);text-decoration:none;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- LOGIN -->
+  <div id="loginView" class="center" style="display:none">
+    <div class="card">
+      <h1 style="text-align:center">🔐 Console</h1>
+      <p class="sub" style="text-align:center" id="loginSub">Accedi con la mail del tuo account super-admin.</p>
+      <div id="step1">
+        <input id="email" type="email" inputmode="email" placeholder="la-tua@email.it" autocomplete="email">
+        <button class="btn" style="margin-top:10px" onclick="sendCode()">Invia codice</button>
+      </div>
+      <div id="step2" style="display:none">
+        <input id="code" inputmode="numeric" placeholder="Codice a 6 cifre" maxlength="6">
+        <button class="btn" style="margin-top:10px" onclick="verifyCode()">Entra</button>
+        <p class="note">Ti abbiamo inviato un codice via email.</p>
+      </div>
+      <div class="err" id="loginErr"></div>
+    </div>
+  </div>
+
+  <!-- DENIED -->
+  <div id="denyView" class="center" style="display:none">
+    <div class="card">
+      <div style="font-size:44px">⛔</div>
+      <h1 style="text-align:center">Accesso riservato</h1>
+      <p class="sub" style="text-align:center">Questa console è solo per il super-admin dell'app.</p>
+      <button class="btn ghost" onclick="signOut()">Esci</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dash" style="display:none">
+    <div class="row" style="justify-content:space-between;margin-bottom:4px">
+      <h1>📊 Console super-admin</h1>
+      <a class="lk" href="javascript:void(0)" onclick="signOut()">Esci</a>
+    </div>
+    <p class="sub">Pannello di controllo dell'app · solo tu. <a class="lk" href="javascript:void(0)" onclick="loadAll()">↻ Aggiorna</a></p>
+
+    <!-- MANUTENZIONE GLOBALE -->
+    <div class="card">
+      <h2>Manutenzione globale</h2>
+      <div class="maint-state"><span class="dot off" id="mDot"></span><span id="mLabel">—</span></div>
+      <button class="btn" id="mBtn" onclick="toggleMaint()">—</button>
+      <p class="note">Attivandola, <b>tutti gli utenti di tutte le leghe</b> vengono bloccati (e buttati fuori se dentro). Tu resti l'unico a poter usare l'app.</p>
+    </div>
+
+    <!-- NUMERI -->
+    <div class="card">
+      <h2>Leghe</h2>
+      <div class="grid">
+        <div class="stat"><b id="lTot">–</b><span>Totali</span></div>
+        <div class="stat green"><b id="lAct">–</b><span>Attive</span></div>
+        <div class="stat muted"><b id="lIna">–</b><span>Inattive</span></div>
+        <div class="stat gold"><b id="lPaid">–</b><span>A pagamento</span></div>
+        <div class="stat"><b id="lFree">–</b><span>Gratis</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Utenti</h2>
+      <div class="grid">
+        <div class="stat"><b id="uTot">–</b><span>Totali</span></div>
+        <div class="stat green"><b id="uAct">–</b><span>Attivi (30g)</span></div>
+        <div class="stat muted"><b id="uIna">–</b><span>Inattivi</span></div>
+      </div>
+    </div>
+
+    <!-- ECONOMIA -->
+    <div class="card">
+      <h2>Economia</h2>
+      <div class="grid">
+        <div class="stat red"><b id="eCost">–</b><span>Costo/mese</span></div>
+        <div class="stat gold"><b id="eRev">–</b><span>Ricavo stim.</span></div>
+        <div class="stat" id="eMarginCard"><b id="eMargin">–</b><span>Margine stim.</span></div>
+      </div>
+      <div class="row" style="margin-top:12px;gap:10px">
+        <input id="inCost" inputmode="decimal" placeholder="Costo €/mese">
+        <input id="inPrice" inputmode="decimal" placeholder="Prezzo €/lega">
+      </div>
+      <button class="btn ghost" style="margin-top:10px" onclick="saveEconomics()">Salva economia</button>
+      <p class="note">Da configurare a mano: il ricavo stimato = leghe a pagamento × prezzo per lega.</p>
+    </div>
+
+    <!-- TABELLA LEGHE -->
+    <div class="card">
+      <h2>Tutte le leghe</h2>
+      <div style="overflow-x:auto">
+        <table id="lgTable">
+          <thead><tr><th>#</th><th>Nome</th><th>Membri</th><th>Stato</th><th>Tipo</th></tr></thead>
+          <tbody id="lgBody"></tbody>
+        </table>
+      </div>
+      <p class="note">Tocca «Gratis/Pagante» per cambiare il tipo della lega.</p>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL  = 'https://lfvpseusbsyzniugczbx.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+let emailVal = '';
+function show(id){ ['loginView','denyView','dash'].forEach(v=>document.getElementById(v).style.display=(v===id?(id==='dash'?'block':'flex'):'none')); }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2200); }
+function eur(v){ return (v==null)?'—':('€'+Number(v).toLocaleString('it-IT')); }
+
+// ---- AUTH ----
+async function boot(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session){ show('loginView'); return; }
+  await gate();
+}
+async function gate(){
+  // sa_overview e' protetta lato server: se non sei super-admin, lancia errore.
+  try{
+    const { data, error } = await sb.rpc('sa_overview');
+    if(error) throw error;
+    show('dash');
+    paintOverview(data);
+    loadLeagues();
+  }catch(e){
+    show('denyView');
+  }
+}
+async function sendCode(){
+  emailVal=(document.getElementById('email').value||'').trim().toLowerCase();
+  document.getElementById('loginErr').textContent='';
+  if(!emailVal){ document.getElementById('loginErr').textContent='Inserisci la mail.'; return; }
+  const { error } = await sb.auth.signInWithOtp({ email:emailVal, options:{ shouldCreateUser:false } });
+  if(error){ document.getElementById('loginErr').textContent=error.message; return; }
+  document.getElementById('step1').style.display='none';
+  document.getElementById('step2').style.display='block';
+  document.getElementById('loginSub').textContent='Inserisci il codice ricevuto via email.';
+}
+async function verifyCode(){
+  const token=(document.getElementById('code').value||'').trim();
+  document.getElementById('loginErr').textContent='';
+  const { error } = await sb.auth.verifyOtp({ email:emailVal, token, type:'email' });
+  if(error){ document.getElementById('loginErr').textContent='Codice non valido.'; return; }
+  await gate();
+}
+async function signOut(){ await sb.auth.signOut(); location.reload(); }
+
+// ---- DATA ----
+async function loadAll(){ await gate(); toast('Aggiornato'); }
+function paintOverview(d){
+  const set=(id,v)=>document.getElementById(id).textContent=v;
+  set('lTot',d.leagues_total); set('lAct',d.leagues_active); set('lIna',d.leagues_inactive);
+  set('lPaid',d.leagues_paid); set('lFree',d.leagues_free);
+  set('uTot',d.users_total); set('uAct',d.users_active); set('uIna',d.users_inactive);
+  set('eCost',eur(d.monthly_cost)); set('eRev',eur(d.revenue_est)); set('eMargin',eur(d.margin_est));
+  const mc=document.getElementById('eMarginCard'); mc.className='stat '+((d.margin_est!=null&&d.margin_est<0)?'red':'green');
+  if(d.monthly_cost!=null) document.getElementById('inCost').value=d.monthly_cost;
+  if(d.price_per_league!=null) document.getElementById('inPrice').value=d.price_per_league;
+  // manutenzione
+  const on=!!d.maintenance;
+  document.getElementById('mDot').className='dot '+(on?'on':'off');
+  document.getElementById('mLabel').textContent=on?'ATTIVA — app bloccata per tutti':'Spenta — app online';
+  const b=document.getElementById('mBtn');
+  b.textContent=on?'🟢 Rimetti l\u2019app online':'🛠️ Attiva manutenzione globale';
+  b.className='btn '+(on?'green':'danger');
+  b.dataset.on=on?'1':'0';
+}
+async function loadLeagues(){
+  try{
+    const { data, error } = await sb.rpc('sa_leagues');
+    if(error) throw error;
+    const rows=(data||[]).map(l=>{
+      const act=l.active?'<span class="pill a">attiva</span>':'<span class="pill i">inattiva</span>';
+      const paid=l.is_paid
+        ? `<button class="tog paid" onclick="togglePaid(${l.id},false)">Pagante</button>`
+        : `<button class="tog" onclick="togglePaid(${l.id},true)">Gratis</button>`;
+      const nm=(l.name||'—').replace(/</g,'&lt;');
+      return `<tr><td class="num">${l.id}</td><td>${nm}</td><td class="num">${l.members_active||0}/${l.members||0}</td><td>${act}</td><td>${paid}</td></tr>`;
+    }).join('');
+    document.getElementById('lgBody').innerHTML=rows||'<tr><td colspan="5" style="color:var(--muted)">Nessuna lega.</td></tr>';
+  }catch(e){ toast('Errore elenco leghe'); }
+}
+
+// ---- AZIONI ----
+async function toggleMaint(){
+  const on=document.getElementById('mBtn').dataset.on==='1';
+  const next=!on;
+  if(next && !confirm('Attivare la manutenzione GLOBALE?\n\nTutti gli utenti di tutte le leghe verranno bloccati (e buttati fuori se sono dentro). Solo tu potrai usare l\u2019app.')) return;
+  try{
+    const { error } = await sb.rpc('sa_set_maintenance',{ p_on:next });
+    if(error) throw error;
+    toast(next?'Manutenzione attivata':'App di nuovo online');
+    await gate();
+  }catch(e){ toast('Errore: '+(e.message||e)); }
+}
+async function togglePaid(id,paid){
+  try{
+    const { error } = await sb.rpc('sa_set_league_paid',{ p_league:id, p_paid:paid });
+    if(error) throw error;
+    await gate();
+  }catch(e){ toast('Errore'); }
+}
+async function saveEconomics(){
+  const c=document.getElementById('inCost').value.replace(',','.');
+  const p=document.getElementById('inPrice').value.replace(',','.');
+  try{
+    const { error } = await sb.rpc('sa_set_economics',{ p_monthly_cost:c===''?null:Number(c), p_price:p===''?null:Number(p) });
+    if(error) throw error;
+    toast('Economia salvata');
+    await gate();
+  }catch(e){ toast('Errore'); }
+}
+
+boot();
+</script>
+</body>
+</html>

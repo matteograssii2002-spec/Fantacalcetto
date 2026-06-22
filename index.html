@@ -1103,37 +1103,45 @@
     <div class="setpage" id="page-partita">
       <button class="subback" onclick="setNav('page-admin')">‹ Area amministratore</button>
       <div class="section-h"><h2>⚽ Partita</h2></div>
-      <div class="set-card" style="border-color:rgba(234,178,74,.28)">
-        <h3>Modalità portiere <span class="lockpill" style="color:var(--gold)">admin</span></h3>
-        <div class="ed-sw" id="gkModeSw" style="margin:2px 0 8px">
-          <button class="styb" data-fixed="0" onclick="setGkMode(false)">🔄 Rotazione</button>
-          <button class="styb" data-fixed="1" onclick="setGkMode(true)">🧤 Fisso</button>
-        </div>
-        <p class="vs" id="gkModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">Chiunque può essere schierato in porta (regola attuale).</p>
+      <div class="acc gold" style="margin-top:12px">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🧤</span>Modalità portiere</span><span class="acc-chev">▾</span></button>
+        <div class="acc-body"><div class="set-card" style="border-color:rgba(234,178,74,.28)">
+          <div class="ed-sw" id="gkModeSw" style="margin:2px 0 8px">
+            <button class="styb" data-fixed="0" onclick="setGkMode(false)">🔄 Rotazione</button>
+            <button class="styb" data-fixed="1" onclick="setGkMode(true)">🧤 Fisso</button>
+          </div>
+          <p class="vs" id="gkModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">Chiunque può essere schierato in porta (regola attuale).</p>
+        </div></div>
       </div>
-      <div class="set-card" style="border-color:rgba(234,178,74,.28)">
-        <h3>Presenze <span class="lockpill" style="color:var(--gold)">admin</span></h3>
-        <div class="ed-sw" id="presModeSw" style="margin:2px 0 8px">
-          <button class="styb" data-self="0" onclick="setPresenceMode(false)">🙋 Admin</button>
-          <button class="styb" data-self="1" onclick="setPresenceMode(true)">👥 Giocatori</button>
-        </div>
-        <p class="vs" id="presModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">Sei tu a segnare chi c'è, dal riquadro «Chi gioca questa giornata» qui sotto.</p>
+      <div class="acc gold">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🙋</span>Presenze</span><span class="acc-chev">▾</span></button>
+        <div class="acc-body"><div class="set-card" style="border-color:rgba(234,178,74,.28)">
+          <div class="ed-sw" id="presModeSw" style="margin:2px 0 8px">
+            <button class="styb" data-self="0" onclick="setPresenceMode(false)">🙋 Admin</button>
+            <button class="styb" data-self="1" onclick="setPresenceMode(true)">👥 Giocatori</button>
+          </div>
+          <p class="vs" id="presModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">Sei tu a segnare chi c'è, dal riquadro «Chi gioca questa giornata» qui sotto.</p>
+        </div></div>
       </div>
-      <div class="set-card" id="seasonCard" style="border-color:rgba(234,178,74,.28)">
-        <h3>Stagione <span class="lockpill" style="color:var(--gold)">admin</span></h3>
-        <div id="seasonBox"></div>
+      <div class="acc gold" id="seasonCard">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">📅</span>Stagione</span><span class="acc-chev">▾</span></button>
+        <div class="acc-body"><div class="set-card" style="border-color:rgba(234,178,74,.28)"><div id="seasonBox"></div></div></div>
       </div>
-      <div class="set-card" id="mdCard" style="border-color:rgba(234,178,74,.28)">
-        <h3>Giornata <span class="lockpill" style="color:var(--gold)">admin</span></h3>
-        <p class="vs" style="color:var(--muted);margin-bottom:4px;font-size:12.5px">Attuale: <b id="mdLabel" style="color:var(--text)">—</b></p>
-        <p class="vs" id="mdPhase" style="color:var(--accent-soft);margin-bottom:10px;font-size:12.5px">—</p>
-        <div id="mdOpenBox"></div>
-        <div id="mdActions"></div>
+      <div class="acc gold" id="mdCard">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">⚽</span>Giornata</span><span class="acc-chev">▾</span></button>
+        <div class="acc-body"><div class="set-card" style="border-color:rgba(234,178,74,.28)">
+          <p class="vs" style="color:var(--muted);margin-bottom:4px;font-size:12.5px">Attuale: <b id="mdLabel" style="color:var(--text)">—</b></p>
+          <p class="vs" id="mdPhase" style="color:var(--accent-soft);margin-bottom:10px;font-size:12.5px">—</p>
+          <div id="mdOpenBox"></div>
+          <div id="mdActions"></div>
+        </div></div>
       </div>
-      <div class="set-card" id="presCard" style="border-color:rgba(234,178,74,.28)">
-        <h3 id="presTitle">Chi gioca questa giornata <span class="lockpill" style="color:var(--gold)">admin</span></h3>
-        <p class="vs" id="presHint" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Tocca per segnare presente/assente. Solo i presenti saranno schierabili in campo.</p>
-        <div id="presList" class="preschips"></div>
+      <div class="acc gold" id="presCard">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🟢</span><span id="presTitle">Chi gioca questa giornata</span></span><span class="acc-chev">▾</span></button>
+        <div class="acc-body"><div class="set-card" style="border-color:rgba(234,178,74,.28)">
+          <p class="vs" id="presHint" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Tocca per segnare presente/assente. Solo i presenti saranno schierabili in campo.</p>
+          <div id="presList" class="preschips"></div>
+        </div></div>
       </div>
     </div>
 
@@ -1141,13 +1149,15 @@
     <div class="setpage" id="page-lega">
       <button class="subback" onclick="setNav('page-admin')">‹ Area amministratore</button>
       <div class="section-h"><h2>🏆 Lega</h2></div>
-      <div class="set-card" id="inviteCard" style="border-color:rgba(61,139,255,.28)">
-        <h3>Invita nella lega <span class="lockpill" style="color:var(--accent-soft)">admin</span></h3>
-        <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Condividi link e password per far entrare i tuoi amici in «<b id="invName" style="color:var(--text)">—</b>».</p>
-        <div class="field-lab">Link d'invito</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px"><input class="ob-input" id="invLink" readonly style="flex:1;margin:0;font-size:12px"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invLink')">Copia</button></div>
-        <div class="field-lab">Password</div>
-        <div style="display:flex;gap:8px"><input class="ob-input" id="invPwd" readonly style="flex:1;margin:0"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invPwd')">Copia</button></div>
+      <div class="acc" id="inviteCard" style="margin-top:12px">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">✉️</span>Invita nella lega</span><span class="acc-chev">▾</span></button>
+        <div class="acc-body"><div class="set-card" style="border-color:rgba(61,139,255,.28)">
+          <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Condividi link e password per far entrare i tuoi amici in «<b id="invName" style="color:var(--text)">—</b>».</p>
+          <div class="field-lab">Link d'invito</div>
+          <div style="display:flex;gap:8px;margin-bottom:10px"><input class="ob-input" id="invLink" readonly style="flex:1;margin:0;font-size:12px"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invLink')">Copia</button></div>
+          <div class="field-lab">Password</div>
+          <div style="display:flex;gap:8px"><input class="ob-input" id="invPwd" readonly style="flex:1;margin:0"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invPwd')">Copia</button></div>
+        </div></div>
       </div>
       <div class="acc gold" id="manageCard" style="margin-top:12px">
         <button class="acc-head" onclick="toggleAcc(this)">
@@ -1166,15 +1176,19 @@
         <h3>💰 Sondaggio valori <span class="lockpill" style="color:var(--gold)">admin</span></h3>
         <div id="creditPollBox"></div>
       </div>
-      <div class="set-card" id="voterCard" style="border-color:rgba(234,178,74,.28)">
-        <h3>Voto ai soli-manager <span class="lockpill" style="color:var(--gold)">admin</span></h3>
-        <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Di norma vota solo chi ha giocato. Qui puoi dare il voto anche a chi fa solo il manager (guarda ma non gioca). Tocca per abilitare/disabilitare.</p>
-        <div id="voterList" class="preschips"></div>
+      <div class="acc gold" id="voterCard">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🗳️</span>Voto ai soli-manager</span><span class="acc-chev">▾</span></button>
+        <div class="acc-body"><div class="set-card" style="border-color:rgba(234,178,74,.28)">
+          <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Di norma vota solo chi ha giocato. Qui puoi dare il voto anche a chi fa solo il manager (guarda ma non gioca). Tocca per abilitare/disabilitare.</p>
+          <div id="voterList" class="preschips"></div>
+        </div></div>
       </div>
-      <div class="set-card" id="maintCard" style="border-color:rgba(255,120,120,.28)">
-        <h3>Manutenzione <span class="lockpill" style="color:#ff8888">admin</span></h3>
-        <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Mette l'app in stand-by per tutti gli altri (tu continui a usarla). Utile per fare modifiche senza interferenze.</p>
-        <button class="set-btn" id="maintBtn" onclick="setMaintenance(!maintOn)">🛠️ Metti in manutenzione</button>
+      <div class="acc" id="maintCard" style="margin-top:10px">
+        <button class="acc-head" onclick="toggleAcc(this)" style="border-color:rgba(255,120,120,.4)"><span class="acc-ttl" style="color:#ff8888"><span class="ic">🛠️</span>Manutenzione lega</span><span class="acc-chev">▾</span></button>
+        <div class="acc-body"><div class="set-card" style="border-color:rgba(255,120,120,.28)">
+          <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Mette l'app in stand-by per gli altri della <b>tua</b> lega (tu continui a usarla). Per fare modifiche senza interferenze.</p>
+          <button class="set-btn" id="maintBtn" onclick="setMaintenance(!maintOn)">🛠️ Metti in manutenzione</button>
+        </div></div>
       </div>
     </div>
 
@@ -1451,6 +1465,7 @@ async function afterLogin(){
     maybeShowNotifBanner();  // banner mensile per chi non le ha ancora attivate
   }
   await loadMaintenance(); subscribeMaintenance();
+  try{ sb.rpc('touch_last_seen'); }catch(_){}   // battito "attivo" per la dashboard super-admin
   hideSplash();
 }
 let myLeague=null;
@@ -1654,28 +1669,40 @@ async function loadInvite(){
     } else card.style.display='none';
   }catch(_){ card.style.display='none'; }
 }
-/* ---------- MANUTENZIONE (stand-by per tutti tranne admin) ---------- */
-let maintOn=false, maintChannel=null;
+/* ---------- MANUTENZIONE: per-lega (admin) + GLOBALE (super-admin) ---------- */
+let maintOn=false, globalMaint=false, maintChannel=null;
+function isSuperAdmin(){ return !!(profile&&profile.is_superadmin); }
 async function loadMaintenance(){
+  if(!profile){ maintOn=false; globalMaint=false; applyMaintenance(); return; }
   try{
-    if(!profile){ maintOn=false; applyMaintenance(); return; }
     const {data}=await sb.from('app_state').select('maintenance').eq('league_id',profile.league_id).maybeSingle();
     maintOn=!!(data&&data.maintenance);
-  }
-  catch(_){ maintOn=false; }
+  }catch(_){ maintOn=false; }
+  try{
+    const {data:g}=await sb.from('app_global').select('maintenance').eq('id',1).maybeSingle();
+    globalMaint=!!(g&&g.maintenance);
+  }catch(_){ globalMaint=false; }   // se la tabella non c'è ancora: nessuna manutenzione globale
   applyMaintenance();
 }
 function applyMaintenance(){
   const isAdmin=!!(profile&&profile.is_admin);
-  const el=document.getElementById('maint');
-  el.style.display=(maintOn&&!isAdmin)?'flex':'none';
-  const banner=document.getElementById('maintBanner'); if(banner) banner.style.display=(maintOn&&isAdmin)?'flex':'none';
+  // GLOBALE batte tutto: chiude fuori chiunque tranne il super-admin. Poi la manutenzione di lega.
+  const blocked=(globalMaint && !isSuperAdmin()) || (maintOn && !isAdmin);
+  const el=document.getElementById('maint'); if(el) el.style.display=blocked?'flex':'none';
+  const banner=document.getElementById('maintBanner');
+  if(banner){
+    if(globalMaint && isSuperAdmin()){ banner.style.display='flex'; banner.textContent='🌐 Manutenzione GLOBALE attiva — la vedi solo tu (super-admin)'; }
+    else if(maintOn && isAdmin){ banner.style.display='flex'; banner.textContent="⚙️ Manutenzione lega attiva — solo tu vedi l'app"; }
+    else banner.style.display='none';
+  }
   renderMaintBtn();
 }
 function subscribeMaintenance(){
   if(maintChannel){sb.removeChannel(maintChannel);maintChannel=null;}
-  maintChannel=sb.channel('appstate')
-    .on('postgres_changes',{event:'*',schema:'public',table:'app_state'},p=>{ maintOn=!!(p.new&&p.new.maintenance); applyMaintenance(); })
+  // un solo canale, due tabelle: a ogni cambio ricarico lo stato corretto (anche per il "buttafuori" live)
+  maintChannel=sb.channel('maint')
+    .on('postgres_changes',{event:'*',schema:'public',table:'app_state'},()=>loadMaintenance())
+    .on('postgres_changes',{event:'*',schema:'public',table:'app_global'},()=>loadMaintenance())
     .subscribe();
 }
 async function setMaintenance(on){
