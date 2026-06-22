@@ -1149,19 +1149,21 @@
         <div class="field-lab">Password</div>
         <div style="display:flex;gap:8px"><input class="ob-input" id="invPwd" readonly style="flex:1;margin:0"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invPwd')">Copia</button></div>
       </div>
-      <div class="set-card" id="manageCard" style="border-color:rgba(234,178,74,.28)">
-        <h3>Gestione giocatori <span class="lockpill" style="color:var(--gold)">admin</span></h3>
-        <p class="vs" style="color:var(--muted);margin-bottom:6px;font-size:12.5px">Modifica, elimina o aggiungi giocatori.</p>
-        <div id="manageList"></div>
-        <button class="addbtn" onclick="openEditPlayer(null)">＋ Nuovo giocatore</button>
-      </div>
-      <div class="set-card" id="creditCard" style="border-color:rgba(234,178,74,.28)">
-        <h3>💰 Crediti giocatori <span class="lockpill" style="color:var(--gold)">admin</span></h3>
-        <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Come vengono assegnati i crediti dei giocatori. In «Manuale» li imposti tu nella scheda di ogni giocatore. In «Sondaggio» i membri votano i giocatori e l'app propone i crediti in automatico.</p>
-        <div class="ed-sw" id="creditModeSw" style="margin-bottom:4px">
-          <button class="styb" data-v="manual" onclick="setCreditMode('manual')">Manuale</button>
-          <button class="styb" data-v="poll" onclick="setCreditMode('poll')">Sondaggio</button>
+      <div class="acc gold" id="manageCard" style="margin-top:12px">
+        <button class="acc-head" onclick="toggleAcc(this)">
+          <span class="acc-ttl"><span class="ic">👥</span>Gestione giocatori</span>
+          <span class="acc-chev">▾</span>
+        </button>
+        <div class="acc-body">
+          <div class="set-card" style="border-color:rgba(234,178,74,.28)">
+            <p class="vs" style="color:var(--muted);margin-bottom:6px;font-size:12.5px">Modifica, elimina o aggiungi giocatori.</p>
+            <div id="manageList"></div>
+            <button class="addbtn" onclick="openEditPlayer(null)">＋ Nuovo giocatore</button>
+          </div>
         </div>
+      </div>
+      <div class="set-card" id="creditCard" style="border-color:rgba(234,178,74,.28);display:none">
+        <h3>💰 Sondaggio valori <span class="lockpill" style="color:var(--gold)">admin</span></h3>
         <div id="creditPollBox"></div>
       </div>
       <div class="set-card" id="voterCard" style="border-color:rgba(234,178,74,.28)">
@@ -1196,7 +1198,7 @@
   <div class="statmodal" id="pushModal" style="text-align:center">
     <div style="font-size:40px;margin-bottom:6px">🔔</div>
     <b style="font-family:'Bricolage Grotesque';font-size:19px;display:block;margin-bottom:6px">Vuoi gli avvisi delle giornate?</b>
-    <p class="vs" style="color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:16px">Pochi e importanti: quando si apre una giornata, un promemoria 1h prima della chiusura formazioni, e quando si chiude per vedere com'è andata. Niente spam.</p>
+    <p class="vs" style="color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:16px">Pochi e importanti: apertura giornata, promemoria per votare la presenza e per schierare la formazione, e quando si chiude per vedere com'è andata. Niente spam.</p>
     <button class="ob-btn" style="margin-top:0" onclick="enablePush()">Sì, attiva</button>
     <button class="set-btn" style="margin-top:9px" onclick="closePushPrompt()">No, grazie</button>
   </div>
@@ -1256,7 +1258,7 @@
    👇 INCOLLA QUI LE TUE 2 CHIAVI (Supabase → Project Settings → API)
    ============================================================ */
 const SUPABASE_URL  = 'https://lfvpseusbsyzniugczbx.supabase.co';        // es. https://abcdxyz.supabase.co
-const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chiave "anon public"
+const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chiave publishable (pubblica per design)
 /* ============================================================ */
 
 
@@ -1284,7 +1286,7 @@ let _autoClosing=false;   // guardia: evita doppie chiusure automatiche
 function presentId(id){ return currentMd ? mdPresent.has(id) : false; }
 function isPresent(p){ return presentId(p.id); }
 function isOwnChar(p){ return !!(profile && profile.is_player!==false && p.owner_id===user.id && p.name===profile.player_name); }
-const HOUR=3600000, LINEUP_LOCK_BEFORE=1*HOUR, VOTING_OPEN_AFTER=1*HOUR, VOTING_WINDOW=24*HOUR, PRESENCE_CLOSE_BEFORE=36*HOUR;
+const HOUR=3600000, MIN=60000, LINEUP_LOCK_BEFORE=5*MIN, VOTING_OPEN_AFTER=1*HOUR, VOTING_WINDOW=24*HOUR, PRESENCE_CLOSE_BEFORE=36*HOUR;
 function mdTimes(md){
   if(!md)return null;
   if(md.kickoff){ const k=new Date(md.kickoff).getTime();
@@ -1959,21 +1961,18 @@ async function submitValuePoll(){
 
 /* ---- Pannello admin: metodo + avanzamento + chiusura ---- */
 function renderCreditAdmin(){
-  const sw=document.getElementById('creditModeSw');
-  if(sw) sw.querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.v===creditMode));
-  const box=document.getElementById('creditPollBox'); if(!box) return;
-  if(creditMode!=='poll'){ box.innerHTML=''; return; }
-  if(valuePollOpen){
-    const all = valuePollMembers>0 && valuePollVoters>=valuePollMembers;
-    box.innerHTML=`
-      <div class="vp-prog" style="margin-top:10px">Sondaggio <b>aperto</b> · ${valuePollVoters} di ${valuePollMembers} membri hanno votato${all?' · ✓ tutti!':''}</div>
-      <button class="set-btn" style="margin-top:8px" onclick="closeAndApplyPoll()">Chiudi e calcola i crediti</button>
-      <p class="vs" style="color:var(--muted);font-size:11.5px;margin-top:8px">Quando chiudi, l'app assegna i crediti in base ai voti medi. Potrai sempre modificarli a mano nella scheda di ogni giocatore.</p>`;
-  }else{
-    box.innerHTML=`
-      <div class="vp-prog" style="margin-top:10px">Sondaggio concluso · crediti applicati.</div>
-      <button class="set-btn" style="margin-top:8px" onclick="setCreditMode('poll')">Riapri il sondaggio</button>`;
-  }
+  const card=document.getElementById('creditCard');
+  const box=document.getElementById('creditPollBox');
+  if(!card||!box) return;
+  // La sezione compare SOLO mentre il sondaggio valori è aperto (di norma una volta sola, all'inizio).
+  // Dopo, i crediti si modificano a mano dalla scheda di ogni giocatore (matita ✏️).
+  if(!(profile&&profile.is_admin&&creditMode==='poll'&&valuePollOpen)){ card.style.display='none'; box.innerHTML=''; return; }
+  card.style.display='block';
+  const all = valuePollMembers>0 && valuePollVoters>=valuePollMembers;
+  box.innerHTML=`
+    <div class="vp-prog" style="margin-top:6px">Sondaggio <b>aperto</b> · ${valuePollVoters} di ${valuePollMembers} membri hanno votato${all?' · ✓ tutti!':''}</div>
+    <button class="set-btn" style="margin-top:8px" onclick="closeAndApplyPoll()">Chiudi e calcola i crediti</button>
+    <p class="vs" style="color:var(--muted);font-size:11.5px;margin-top:8px">Quando chiudi, l'app assegna i crediti in base ai voti medi. Potrai poi modificarli a mano nella scheda di ogni giocatore (matita ✏️).</p>`;
 }
 async function setCreditMode(mode){
   try{ await sb.rpc('set_credit_mode',{p_mode:mode}); }
@@ -2089,6 +2088,8 @@ async function setMyPresence(present){
     else toast('Errore: '+m);
     return;
   }
+  // registra che ho risposto al sondaggio (serve per i promemoria mirati ai soli non-votanti)
+  try{ await sb.rpc('mark_presence_responded'); }catch(_){}
   const mp=myPlayer(); if(mp){ if(present) mdPresent.add(mp.id); else mdPresent.delete(mp.id); }
   renderHomePresence(); renderMarket(); renderPitch(); renderVoti();
   toast(present?'Sei dentro per questa giornata ⚽':'Segnato come assente');
@@ -2177,7 +2178,7 @@ function renderHomePresence(){
 
 function openMatchdaySheet(){
   document.getElementById('sheetTitle').textContent='Apri nuova giornata';
-  document.getElementById('sheetHint').textContent='Quando si gioca? Le formazioni si bloccano 1h prima, i voti aprono ~1h dopo il via e restano aperti 24h.';
+  document.getElementById('sheetHint').textContent='Quando si gioca? Le formazioni si bloccano 5 min prima del via, i voti aprono ~1h dopo e restano aperti 24h.';
   document.getElementById('sheetList').innerHTML=`
     <div class="field-lab">Data e ora della partita</div>
     <input class="ob-input" type="datetime-local" id="mdKick" value="${defaultKickoff()}" style="padding:13px;font-size:15px">
@@ -2266,7 +2267,7 @@ async function confirmEditKickoff(){
   const kickoffISO=new Date(v).toISOString();
   const voteClose=new Date(new Date(kickoffISO).getTime()+VOTING_OPEN_AFTER+VOTING_WINDOW).toISOString();
   // riarmo i flag così le 2 push (sblocco formazioni / ultima ora) ripartono ai nuovi orari
-  const {error}=await sb.from('matchdays').update({kickoff:kickoffISO,vote_deadline:voteClose,reminder_sent:false,lineup_open_sent:false}).eq('id',currentMd.id);
+  const {error}=await sb.from('matchdays').update({kickoff:kickoffISO,vote_deadline:voteClose,reminder_sent:false,lineup_open_sent:false,presence_remind_sent:false,lineup_remind_sent:false}).eq('id',currentMd.id);
   if(error){toast('Errore: '+error.message);return;}
   currentMd.kickoff=kickoffISO; currentMd.vote_deadline=voteClose;
   await loadMatchdaysList(); renderAll();
@@ -2293,7 +2294,7 @@ function phaseLabel(){
   const t=mdTimes(currentMd),now=Date.now();
   if(!t||t.lineupLock===Infinity)return 'Formazioni e voti aperti';
   if(presenceSelf&&t.presenceClose!=null&&now<t.presenceClose)return 'Sondaggio presenze aperto (formazioni 36h prima del via)';
-  if(now<t.lineupLock)return 'Formazioni aperte (si bloccano 1h prima del via)';
+  if(now<t.lineupLock)return 'Formazioni aperte (si bloccano 5 min prima del via)';
   if(now<t.voteOpen)return 'Formazioni bloccate · partita in corso';
   if(now<=t.voteClose)return 'Voti aperti';
   return 'Voti chiusi';
@@ -2693,8 +2694,8 @@ function updateBudget(){
   computeLock();
   if(lineupLocked){btn.disabled=true;btn.textContent=lineupBlockReason();return;}
   if(over){btn.disabled=true;btn.textContent='Sfori il budget di '+(spent-BUDGET)+' cr';return;}
-  btn.disabled=!(n===5);
-  btn.textContent=n===5?(captain?'Conferma formazione ✓':'Scegli il capitano'):`Mancano ${5-n} giocatori`;
+  btn.disabled=!(n===5 && captain);
+  btn.textContent=n===5?(captain?'Conferma formazione ✓':'👑 Scegli il capitano'):`Mancano ${5-n} giocatori`;
 }
 function avgFor(id){return averages[id]?averages[id].v:6;}
 function scoreOf(pid,slot,isCaptain,avgMap,statsMap,mvp){
@@ -2787,6 +2788,8 @@ document.getElementById('saveBtn').onclick=async function(){
   if(this.disabled)return;
   if(!currentMd){toast('Nessuna giornata aperta');return;}
   if(lineupLocked){toast('Formazioni bloccate');return;}
+  if(Object.keys(lineup).length<5){toast('Schiera 5 giocatori');return;}
+  if(!captain){toast('👑 Scegli il capitano prima di confermare');return;}
   this.disabled=true;
   await sb.from('lineups').delete().eq('matchday_id',currentMd.id).eq('manager_id',user.id);
   const rows=Object.entries(lineup).map(([slot,pid])=>({matchday_id:currentMd.id,manager_id:user.id,slot,player_id:pid,is_captain:captain===slot}));
