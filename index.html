@@ -481,6 +481,15 @@
   .stat-box .v{font-family:'JetBrains Mono';font-weight:700;font-size:22px;letter-spacing:-.02em}
   .stat-box .k{font-size:11.5px;color:var(--muted);margin-top:2px;font-weight:600}
   .stat-box.accent .v{color:var(--accent-soft)} .stat-box.gold .v{color:var(--gold)}
+  /* ---- ANDAMENTO VOTI (grafichino stagione) ---- */
+  .vtrend{margin-top:15px;background:linear-gradient(165deg,rgba(61,139,255,.10),rgba(16,36,67,.55));
+    border:1px solid var(--line);border-radius:16px;padding:14px 12px 10px}
+  .vtrend .vt-h{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px}
+  .vtrend .vt-t{font-family:'Bricolage Grotesque';font-weight:800;font-size:14.5px;letter-spacing:.01em}
+  .vtrend .vt-avg{font-family:'JetBrains Mono';font-weight:800;font-size:13px;color:var(--accent-soft);
+    background:rgba(61,139,255,.14);border:1px solid rgba(61,139,255,.30);border-radius:999px;padding:3px 9px}
+  .vtrend svg{display:block;width:100%;height:auto;overflow:visible}
+  .vtrend .vt-empty{color:var(--muted);font-size:12.5px;text-align:center;padding:14px 6px}
   /* ---- BACHECA (trofei) ---- */
   .bch{margin-top:15px}
   .bch-sec{margin-top:13px}
@@ -599,6 +608,17 @@
   .ls-home .ls-block.small .lse{font-size:26px}
   .ls-home .ls-block.small .lsl b{font-size:17px}
   .ls-home .ls-block.small .lsn{font-size:22px}
+  /* riga piccola in basso: autogol + rigore sbagliato + rigore parato (eventi rari) */
+  .ls-srow{display:flex;gap:9px;flex:0 0 auto}
+  .ls-srow .ls-mini{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    border:1.5px solid var(--line-strong);border-radius:18px;padding:12px 6px;cursor:pointer;
+    background:linear-gradient(160deg,#10294d,#0a1830);transition:transform .1s}
+  .ls-srow .ls-mini:active{transform:scale(.97)}
+  .ls-srow .ls-mini .lse{font-size:24px;line-height:1}
+  .ls-srow .ls-mini .lsl{font-size:11px;font-weight:800;letter-spacing:.01em;text-transform:uppercase;text-align:center;line-height:1.12;color:var(--muted)}
+  .ls-srow .ls-mini .lsn{font-family:'JetBrains Mono';font-weight:800;font-size:18px;line-height:1}
+  .ls-srow .ls-mini.neg{border-color:rgba(255,90,90,.30)} .ls-srow .ls-mini.neg .lsn{color:var(--red)}
+  .ls-srow .ls-mini.pos{border-color:rgba(55,201,126,.42)} .ls-srow .ls-mini.pos .lsn{color:var(--green)}
   .ls-prow{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--line)}
   .ls-tap{display:flex;align-items:center;gap:12px;flex:1;min-width:0;cursor:pointer;padding:4px 2px;border-radius:12px}
   .ls-tap:active{background:rgba(61,139,255,.08)}
@@ -1082,6 +1102,8 @@
           <div class="rule"><div class="ic">⚽</div><div class="tx">Gol</div><div class="pt pos">+3</div></div>
           <div class="rule"><div class="ic">🅰️</div><div class="tx">Assist</div><div class="pt pos">+2</div></div>
           <div class="rule"><div class="ic">😵</div><div class="tx">Autogol</div><div class="pt neg">−3</div></div>
+          <div class="rule"><div class="ic">🚫</div><div class="tx">Rigore sbagliato</div><div class="pt neg">−3</div></div>
+          <div class="rule"><div class="ic">🙌</div><div class="tx">Rigore parato</div><div class="pt pos">+3</div></div>
           <div class="rule"><div class="ic">🧤</div><div class="tx">In porta<small>−1 per gol subìto nel suo turno · +3 se imbattuto</small></div><div class="pt"></div></div>
           <div class="rule"><div class="ic">✅</div><div class="tx">Squadra vince<small>la tua vera squadra di calcetto</small></div><div class="pt pos">+2</div></div>
           <div class="rule"><div class="ic">❌</div><div class="tx">Squadra perde</div><div class="pt neg">−1</div></div>
@@ -1096,7 +1118,7 @@
       <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
       <div class="section-h"><h2>Area amministratore</h2></div>
       <button class="navrow gold" onclick="setNav('page-partita')"><span class="ic">⚽</span><span class="lab">Partita<small>Giornata, presenze, squadre</small></span><span class="go">›</span></button>
-      <button class="navrow gold" onclick="setNav('page-lega')"><span class="ic">🏆</span><span class="lab">Lega<small>Inviti, giocatori, sondaggio, manutenzione</small></span><span class="go">›</span></button>
+      <button class="navrow gold" onclick="setNav('page-lega')"><span class="ic">🏆</span><span class="lab">Lega<small>Inviti, giocatori, sondaggio</small></span><span class="go">›</span></button>
     </div>
 
     <!-- ===== PARTITA ===== -->
@@ -1183,13 +1205,6 @@
           <div id="voterList" class="preschips"></div>
         </div></div>
       </div>
-      <div class="acc" id="maintCard" style="margin-top:10px">
-        <button class="acc-head" onclick="toggleAcc(this)" style="border-color:rgba(255,120,120,.4)"><span class="acc-ttl" style="color:#ff8888"><span class="ic">🛠️</span>Manutenzione lega</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body"><div class="set-card" style="border-color:rgba(255,120,120,.28)">
-          <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Mette l'app in stand-by per gli altri della <b>tua</b> lega (tu continui a usarla). Per fare modifiche senza interferenze.</p>
-          <button class="set-btn" id="maintBtn" onclick="setMaintenance(!maintOn)">🛠️ Metti in manutenzione</button>
-        </div></div>
-      </div>
     </div>
 
   </section>
@@ -1227,6 +1242,7 @@
         <div class="stat-head"><div class="stat-av" id="statAv"></div>
           <div class="stat-id"><b id="statName">—</b><span id="statRole">—</span></div></div>
         <div class="stat-grid" id="statGrid"></div>
+        <div class="vtrend" id="statChart" style="display:none"></div>
         <div class="bch" id="statBacheca"></div>
       </div>
       <!-- SCHEDA SQUADRA / MANAGER -->
@@ -1774,7 +1790,7 @@ function moveArrow(d){
 /* punti classifica: arrotonda al mezzo punto (es. 180,5) e mostra con la virgola */
 function roundHalf(n){ return Math.round((Number(n)||0)*2)/2; }
 function fmtPts(n){ const r=roundHalf(n); return Number.isInteger(r)?String(r):r.toFixed(1).replace('.',','); }
-function ensureStats(){players.filter(isPresent).forEach(p=>{if(!adminStats[p.id])adminStats[p.id]={gol:0,assist:0,og:0,gs:0,esito:''};});}
+function ensureStats(){players.filter(isPresent).forEach(p=>{if(!adminStats[p.id])adminStats[p.id]={gol:0,assist:0,og:0,gs:0,rs:0,rp:0,esito:''};});}
 async function loadPlayerStats(){
   const {data,error}=await sb.rpc('get_player_stats');
   playerStats={};
@@ -1838,7 +1854,7 @@ async function loadMatchStats(){
   adminStats={};
   if(!currentMd)return;
   const {data}=await sb.from('match_stats').select('*').eq('matchday_id',currentMd.id);
-  (data||[]).forEach(r=>{adminStats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,esito:r.esito||''};});
+  (data||[]).forEach(r=>{adminStats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,esito:r.esito||''};});
 }
 async function loadMyNom(){
   myNom={mvp:'',sega:''};
@@ -2569,6 +2585,7 @@ function openPlayerStats(id){
   if(bch) bch.innerHTML='<div class="bch-empty">Carico la bacheca…</div>';
   _statCardId=id;
   openBacheca('player');
+  loadVoteTrend(id);
   loadPlayerCard(id).then(card=>{
     if(!bch) return;
     // se nel frattempo si è chiuso o si è aperta un'altra card, non sovrascrivere
@@ -2577,6 +2594,68 @@ function openPlayerStats(id){
   });
 }
 function closeStatModal(){ closeBacheca(); }
+
+/* ---------- ANDAMENTO VOTI: grafichino della stagione (solo voto, niente bonus) ---------- */
+// Estrae il numero di giornata dalla label "Giornata N" (fallback: indice progressivo).
+function mdShortLabel(lab,i){ const m=/(\d+)/.exec(lab||''); return m?('G'+m[1]):('G'+(i+1)); }
+async function loadVoteTrend(id){
+  const box=document.getElementById('statChart'); if(!box) return;
+  box.style.display='none'; box.innerHTML='';
+  try{
+    const {data,error}=await sb.rpc('get_player_vote_trend',{p_player:id});
+    if(_statCardId!==id) return;                 // card cambiata nel frattempo
+    if(error) return;                            // RPC non ancora installata → niente grafico, nessun crash
+    const pts=(data||[]).map((r,i)=>({lab:mdShortLabel(r.md_label,i), v:Number(r.voto)}))
+                        .filter(p=>isFinite(p.v));
+    if(pts.length<2) return;                     // serve almeno un andamento (2+ giornate)
+    box.innerHTML=voteTrendHTML(pts);
+    box.style.display='block';
+  }catch(_){ /* offline o RPC assente: semplicemente non mostriamo il grafico */ }
+}
+// Disegna una linea morbida con pallini e voto sopra ogni punto. Semplice e carino, non da ingegnere.
+function voteTrendHTML(pts){
+  const W=320, H=150, padL=10, padR=10, padT=24, padB=24;
+  const vals=pts.map(p=>p.v);
+  const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+  // scala Y dinamica ma "umana": min/max attorno ai voti reali, arrotondati a interi, minimo 2 punti d'aria
+  let lo=Math.floor(Math.min(...vals)), hi=Math.ceil(Math.max(...vals));
+  if(hi-lo<2){ lo=Math.max(1,lo-1); hi=Math.min(10,hi+1); }
+  if(hi===lo){ hi=lo+1; }
+  const n=pts.length;
+  const X=i=> padL + (n===1?0.5:(i/(n-1))) * (W-padL-padR);
+  const Y=v=> padT + (1-((v-lo)/(hi-lo))) * (H-padT-padB);
+  const xs=pts.map((p,i)=>X(i)), ys=pts.map(p=>Y(p.v));
+  // path con curve dolci (Catmull-Rom → Bézier)
+  let d='M '+xs[0].toFixed(1)+' '+ys[0].toFixed(1);
+  for(let i=0;i<n-1;i++){
+    const x0=xs[i?i-1:0], y0=ys[i?i-1:0], x1=xs[i], y1=ys[i], x2=xs[i+1], y2=ys[i+1], x3=xs[i+2<n?i+2:n-1], y3=ys[i+2<n?i+2:n-1];
+    const c1x=x1+(x2-x0)/6, c1y=y1+(y2-y0)/6, c2x=x2-(x3-x1)/6, c2y=y2-(y3-y1)/6;
+    d+=' C '+c1x.toFixed(1)+' '+c1y.toFixed(1)+' '+c2x.toFixed(1)+' '+c2y.toFixed(1)+' '+x2.toFixed(1)+' '+y2.toFixed(1);
+  }
+  const area=d+` L ${xs[n-1].toFixed(1)} ${(H-padB).toFixed(1)} L ${xs[0].toFixed(1)} ${(H-padB).toFixed(1)} Z`;
+  const avgY=Y(avg).toFixed(1);
+  const dots=pts.map((p,i)=>{
+    const x=xs[i].toFixed(1), y=ys[i].toFixed(1), hiV=p.v>=avg;
+    return `<g>
+      <circle cx="${x}" cy="${y}" r="4.5" fill="${hiV?'#37c97e':'#ff8aa0'}" stroke="#0b1c34" stroke-width="2"/>
+      <text x="${x}" y="${(ys[i]-9).toFixed(1)}" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" font-weight="700" fill="#eaf1fb">${p.v.toFixed(1).replace('.0','')}</text>
+      <text x="${x}" y="${(H-8).toFixed(1)}" text-anchor="middle" font-family="'Hanken Grotesk',sans-serif" font-size="9.5" font-weight="700" fill="#8aa3c2">${p.lab}</text>
+    </g>`;
+  }).join('');
+  return `<div class="vt-h"><span class="vt-t">📈 Andamento voti</span><span class="vt-avg">media ${avg.toFixed(1).replace('.0','')}</span></div>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Andamento dei voti per giornata">
+      <defs>
+        <linearGradient id="vtFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#3d8bff" stop-opacity="0.34"/>
+          <stop offset="1" stop-color="#3d8bff" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <line x1="${padL}" y1="${avgY}" x2="${(W-padR)}" y2="${avgY}" stroke="#8aa3c2" stroke-width="1" stroke-dasharray="4 4" opacity="0.5"/>
+      <path d="${area}" fill="url(#vtFill)"/>
+      <path d="${d}" fill="none" stroke="#5aa0ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      ${dots}
+    </svg>`;
+}
 
 /* ---------- SCHEDA SQUADRA / MANAGER ---------- */
 let _teamCardId=null;
@@ -2726,21 +2805,22 @@ function updateBudget(){
 }
 function avgFor(id){return averages[id]?averages[id].v:6;}
 function scoreOf(pid,slot,isCaptain,avgMap,statsMap,mvp){
-  const st=statsMap[pid]||{gol:0,assist:0,og:0,gs:0,esito:''},isPor=slot==='g1';
+  const st=statsMap[pid]||{gol:0,assist:0,og:0,gs:0,rs:0,rp:0,esito:''},isPor=slot==='g1';
   const voto=avgMap[pid]?avgMap[pid].v:6;
   const mult=(mvp===pid?2:1)*(isCaptain?2:1);   // capitano e MVP raddoppiano SOLO il voto
-  let bonus=st.gol*3+st.assist*2-st.og*3,gs=st.gs||0;
+  let bonus=st.gol*3+st.assist*2-st.og*3-(st.rs||0)*3+(st.rp||0)*3,gs=st.gs||0;
   if(st.esito==='V')bonus+=2; else if(st.esito==='S')bonus-=1;
   if(isPor)bonus+=(gs===0?3:-gs);
   const s=voto*mult+bonus;
-  return {score:s,voto,gol:st.gol,assist:st.assist,og:st.og,gs,isPor};
+  return {score:s,voto,gol:st.gol,assist:st.assist,og:st.og,rs:st.rs||0,rp:st.rp||0,gs,isPor};
 }
 function computeScore(pid,slotKey,mvp){
   return scoreOf(pid,slotKey,captain===slotKey,averages,adminStats,mvp);
 }
-// Icone evento sul campo: ⚽ gol · 🅰️ assist · ⚫ autogol · 🧤 imbattuto / 🔴 gol subiti (solo portiere)
+// Icone evento sul campo: ⚽ gol · 🅰️ assist · 💀 autogol · 🚫 rigore sbagliato · 🙌 rigore parato · 🧤 imbattuto / 🔴 gol subiti (solo portiere)
 function statIcons(r){
   return '⚽'.repeat(r.gol||0)+'🅰️'.repeat(r.assist||0)+'💀'.repeat(r.og||0)
+    +'🚫'.repeat(r.rs||0)+'🙌'.repeat(r.rp||0)
     +(r.isPor?(((r.gs||0)===0)?'🧤':'🔴'.repeat(r.gs||0)):'');
 }
 const PITCH_MARKS='<div class="mark m-box top"></div><div class="mark m-box bot"></div><div class="mark m-goal top"></div><div class="mark m-goal bot"></div><div class="mark m-arc top"></div><div class="mark m-arc bot"></div><div class="mark m-halfway"></div><div class="mark m-circle"></div><div class="mark m-spot"></div>';
@@ -2875,7 +2955,9 @@ const LIVE_FIELDS={
   gol:   {key:'gol',    emoji:'⚽', label:'Gol',      sub:'+3 a chi segna',          cls:'gol'},
   assist:{key:'assist', emoji:'🅰️', label:'Assist',   sub:'+2 a chi serve l\'assist', cls:'ass'},
   gs:    {key:'gs',     emoji:'🧤', label:'Portiere', sub:'gol subìto dal portiere', cls:'por'},
-  og:    {key:'og',     emoji:'💀', label:'Autogol',  sub:'−3 a chi lo segna',        cls:'small'}
+  og:    {key:'og',     emoji:'💀', label:'Autogol',        sub:'−3 a chi lo segna',     tone:'neg'},
+  rs:    {key:'rs',     emoji:'🚫', label:'Rig. sbagliato', sub:'−3 a chi lo sbaglia',   tone:'neg'},
+  rp:    {key:'rp',     emoji:'🙌', label:'Rig. parato',    sub:'+3 a chi lo para',      tone:'pos'}
 };
 let liveView='home', livePickField='gol';
 function LS(){ return adminStats; }
@@ -2896,7 +2978,7 @@ function renderLiveOpenBtn(){
 
 function liveDraftKey(){ return currentMd?('fc_live_'+currentMd.id):null; }
 function saveLiveDraft(){ const k=liveDraftKey(); if(!k)return; try{ const d={}; players.filter(isPresent).forEach(p=>{ if(adminStats[p.id])d[p.id]=adminStats[p.id]; }); localStorage.setItem(k,JSON.stringify(d)); }catch(_){} }
-function loadLiveDraft(){ const k=liveDraftKey(); if(!k)return; try{ const raw=localStorage.getItem(k); if(!raw)return; const d=JSON.parse(raw); for(const pid in d){ adminStats[pid]=Object.assign({gol:0,assist:0,og:0,gs:0,esito:''}, adminStats[pid]||{}, d[pid]); } }catch(_){} }
+function loadLiveDraft(){ const k=liveDraftKey(); if(!k)return; try{ const raw=localStorage.getItem(k); if(!raw)return; const d=JSON.parse(raw); for(const pid in d){ adminStats[pid]=Object.assign({gol:0,assist:0,og:0,gs:0,rs:0,rp:0,esito:''}, adminStats[pid]||{}, d[pid]); } }catch(_){} }
 function clearLiveDraft(){ const k=liveDraftKey(); if(k){ try{ localStorage.removeItem(k); }catch(_){} } }
 
 function openLiveStats(){
@@ -2935,7 +3017,14 @@ function renderLive(){
         <div class="lse">${m.emoji}</div>
         <div class="lsl"><b>${m.label.toUpperCase()}</b><small>${m.sub}</small></div>
         <div class="lsn">${liveTotal(m.key)}</div></div>`; };
-    body.innerHTML=`<div class="ls-home">${blk('gol')}${blk('assist')}${blk('gs')}${blk('og')}</div>`;
+    // eventi rari (autogol + rigori): blocchetti piccoli in basso
+    const mini=f=>{ const m=LIVE_FIELDS[f];
+      return `<div class="ls-mini ${m.tone||'neg'}" onclick="liveGo('pick','${f}')">
+        <div class="lse">${m.emoji}</div>
+        <div class="lsl">${m.label}</div>
+        <div class="lsn">${liveTotal(m.key)}</div></div>`; };
+    body.innerHTML=`<div class="ls-home">${blk('gol')}${blk('assist')}${blk('gs')}`
+      +`<div class="ls-srow">${mini('og')}${mini('rs')}${mini('rp')}</div></div>`;
     foot.innerHTML=`<button class="ls-cta" onclick="liveGo('result')">Risultato e salva →</button>`;
 
   } else if(liveView==='pick'){
@@ -2975,7 +3064,7 @@ function renderLive(){
 
 function liveAdd(pid,field,delta){
   const st=LS();
-  if(!st[pid])st[pid]={gol:0,assist:0,og:0,gs:0,esito:''};
+  if(!st[pid])st[pid]={gol:0,assist:0,og:0,gs:0,rs:0,rp:0,esito:''};
   const nv=Math.max(0,(st[pid][field]||0)+delta);
   st[pid][field]=nv;
   if(delta>0 && navigator.vibrate){ try{navigator.vibrate(8);}catch(_){} }
@@ -2991,14 +3080,14 @@ function liveAdd(pid,field,delta){
 function recomputeEsito(){
   const st=LS(), pres=livePlayers();
   const anyWin=pres.some(p=> st[p.id] && st[p.id].esito==='V');
-  pres.forEach(p=>{ if(!st[p.id])st[p.id]={gol:0,assist:0,og:0,gs:0,esito:''};
+  pres.forEach(p=>{ if(!st[p.id])st[p.id]={gol:0,assist:0,og:0,gs:0,rs:0,rp:0,esito:''};
     if(!anyWin) st[p.id].esito='';
     else if(st[p.id].esito!=='V') st[p.id].esito='S';
   });
 }
 function liveToggleWin(pid){
   const st=LS();
-  if(!st[pid])st[pid]={gol:0,assist:0,og:0,gs:0,esito:''};
+  if(!st[pid])st[pid]={gol:0,assist:0,og:0,gs:0,rs:0,rp:0,esito:''};
   st[pid].esito=(st[pid].esito==='V')?'':'V';
   recomputeEsito();
   if(navigator.vibrate){ try{navigator.vibrate(8);}catch(_){} }
@@ -3009,9 +3098,9 @@ async function liveConfirmSave(){
   if(!currentMd)return;
   const pres=players.filter(isPresent);
   if(!pres.length){ toast('Nessun giocatore presente'); return; }
-  if(!confirm('Salvare e caricare tutti i dati della partita?\nVerranno aggiornati gol, assist, gol del portiere, autogol e il risultato di ogni giocatore.'))return;
-  const rows=pres.map(p=>{ const a=adminStats[p.id]||{gol:0,assist:0,og:0,gs:0,esito:''};
-    return {matchday_id:currentMd.id,player_id:p.id,gol:a.gol||0,assist:a.assist||0,autogol:a.og||0,gol_subiti:a.gs||0,esito:a.esito||null}; });
+  if(!confirm('Salvare e caricare tutti i dati della partita?\nVerranno aggiornati gol, assist, gol del portiere, autogol, rigori e il risultato di ogni giocatore.'))return;
+  const rows=pres.map(p=>{ const a=adminStats[p.id]||{gol:0,assist:0,og:0,gs:0,rs:0,rp:0,esito:''};
+    return {matchday_id:currentMd.id,player_id:p.id,gol:a.gol||0,assist:a.assist||0,autogol:a.og||0,gol_subiti:a.gs||0,rigore_sbagliato:a.rs||0,rigore_parato:a.rp||0,esito:a.esito||null}; });
   const btn=document.getElementById('lsSaveBtn'); if(btn){btn.disabled=true;btn.textContent='Salvataggio…';}
   const {error}=await sb.from('match_stats').upsert(rows,{onConflict:'matchday_id,player_id'});
   if(error){ toast('Errore: '+error.message); if(btn){btn.disabled=false;btn.textContent='✓ Conferma e salva tutto';} return; }
@@ -3179,7 +3268,7 @@ async function openTeamLineup(managerId, teamName){
   }
   const {data:lns}=await sb.from('lineups').select('*').eq('matchday_id',md).eq('manager_id',managerId);
   const avg={}; const {data:av}=await sb.rpc('get_averages',{md}); (av||[]).forEach(r=>avg[r.player_id]={v:Number(r.v)});
-  const stats={}; const {data:msd}=await sb.from('match_stats').select('*').eq('matchday_id',md); (msd||[]).forEach(r=>stats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,esito:r.esito||''});
+  const stats={}; const {data:msd}=await sb.from('match_stats').select('*').eq('matchday_id',md); (msd||[]).forEach(r=>stats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,esito:r.esito||''});
   let mvp=0; const {data:msx}=await sb.rpc('get_mvp_sega',{md}); if(msx&&msx[0]){mvp=msx[0].mvp||0;}
   let mod='1-2-2'; const {data:lm}=await sb.from('lineup_modules').select('module').eq('matchday_id',md).eq('manager_id',managerId).maybeSingle(); if(lm&&MODULES[lm.module])mod=lm.module;
   document.getElementById('sheetTitle').textContent=teamName;
@@ -3528,7 +3617,7 @@ async function loadRecapExtra(md){
     ]);
     const lns=lnsR.data||[];
     const avg={}; (avdR.data||[]).forEach(r=>avg[r.player_id]={v:Number(r.v)});
-    const stats={}; (msdR.data||[]).forEach(r=>stats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,esito:r.esito||''});
+    const stats={}; (msdR.data||[]).forEach(r=>stats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,esito:r.esito||''});
     const mvp=(msxR.data&&msxR.data[0]&&msxR.data[0].mvp)||0;
     const modBy={}; (lmdR.data||[]).forEach(r=>modBy[r.manager_id]=r.module);
     ex.mvpPodium=(podR.data||[]).map(r=>({name:r.name,avatar:r.avatar,votes:r.votes}));   // [1º,2º,3º] per nomination

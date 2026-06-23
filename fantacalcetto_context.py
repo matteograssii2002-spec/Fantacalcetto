@@ -19,7 +19,7 @@ NOTE PER L'ASSISTENTE
   ripresentare il file intero, ricordare di RE-INCOLLARE le chiavi Supabase,
   e dire chiaro SE serve eseguire SQL e/o caricare nuovi PNG icona.
 - Coerenza punteggio OBBLIGATORIA tra client (computeScore/scoreOf) e SQL
-  (get_standings / get_standings_md). NB: risultato squadra reale = +/-1 (non +/-2);
+  (get_standings / get_standings_md). NB: risultato squadra reale = +2 (vince) / -1 (perde);
   crediti alla chiusura = metodo a ranking (vedi MATCHDAY_LIFECYCLE).
 - App multi-lega: ogni gruppo e' una lega (league_id ovunque, isolamento via RLS/my_league()).
   Il gruppo originale e' la lega #1 'La Fossa di Lissone'.
@@ -33,7 +33,7 @@ APP = {
     "cos_e": "Fantasy game per un gruppo che gioca a calcetto a 5 una volta a settimana.",
     "doppio_ruolo": "Ogni utente è sia giocatore (nel listone) sia fanta-manager.",
     "giornate": "Budget 100 cr, si schierano 5 giocatori (20 cr l'uno), formazione rifatta ogni giornata.",
-    "classifica": "Unica e condivisa, per punti totali stagionali.",
+    "classifica": "Per STAGIONE (max 38 giornate, vedi STAGIONI): chiusa una stagione la classifica riparte da zero. Punti mostrati a MEZZO PUNTO con la virgola (es. 180,5). Frecce ▲/▼ in Lega solo entro 48h dalla chiusura; nel Pagellone sempre.",
     "solo_manager": "Modalità per chi non gioca a calcetto: ha la squadra ma non entra nel listone (profiles.is_player=false).",
     "lingua": "italiano",
     "utente": "Giulio / 'Teo', su iPhone, non sviluppatore",
@@ -97,9 +97,9 @@ SCORING = {
     "formula_giocatore": "voto*moltiplicatore + bonus  (i bonus NON sono moltiplicati)",
     "voto": "media dei voti ricevuti; 6 di default se nessun voto",
     "moltiplicatore (solo sul voto)": "x2 se MVP, x2 se Capitano, cumulabili -> x4",
-    "bonus": "gol +3, assist +2, autogol -3",
+    "bonus": "gol +3, assist +2, autogol -3, rigore_sbagliato -3, rigore_parato +3",
     "portiere (solo slot g1)": "+3 se 0 gol subiti, altrimenti -gol_subiti (e' un bonus, NON moltiplicato)",
-    "risultato squadra reale": "+1 se la sua squadra di calcetto vince, -1 se perde (match_stats.esito = V/S/null). NB: cambiato da +/-2 a +/-1.",
+    "risultato squadra reale": "+2 se la sua squadra di calcetto vince, -1 se perde (match_stats.esito = V/S/null). Vedi fix_esito.sql / §30.",
     "bonus modulo (una volta per manager)": "1-2-2: 0 | 1-3-1: +5 | 1-1-3: -5",
     "punti_manager_giornata": "bonus_modulo + somma punti dei 5 giocatori",
     "MVP": "il piu nominato dal gruppo (parita: id piu basso), x2 sul voto",
@@ -108,14 +108,14 @@ SCORING = {
 
 
 def score_player(slot, is_captain, media_voti=6.0, gol=0, assist=0, autogol=0,
-                 gol_subiti=0, is_mvp=False, esito=None):
+                 gol_subiti=0, is_mvp=False, esito=None, rigore_sbagliato=0, rigore_parato=0):
     """Riferimento Python di scoreOf (client) e get_standings_md (SQL).
     Capitano/MVP raddoppiano SOLO il voto; i bonus restano piatti. esito: 'V'/'S'/None.
     NB: il bonus modulo (+5/-5) si somma una volta a livello di manager, non qui."""
     mult = (2 if is_mvp else 1) * (2 if is_captain else 1)
-    bonus = gol * 3 + assist * 2 - autogol * 3
+    bonus = gol * 3 + assist * 2 - autogol * 3 - rigore_sbagliato * 3 + rigore_parato * 3
     if esito == "V":
-        bonus += 1
+        bonus += 2
     elif esito == "S":
         bonus -= 1
     if slot == "g1":  # portiere
@@ -127,15 +127,15 @@ def score_player(slot, is_captain, media_voti=6.0, gol=0, assist=0, autogol=0,
 # CICLO GIORNATA (admin)
 # ---------------------------------------------------------------------------
 MATCHDAY_LIFECYCLE = {
-    "apri": "MANUALE (default): scegli kickoff. AUTOMATICA (leagues.auto_open): la giornata si apre da sola 48h prima di un fischio settimanale ricorrente (auto_weekday+auto_time, Europe/Rome) via open_due_matchdays() nel cron. blocco formazioni=kickoff-1h, voti aperti=kickoff+1h, voti chiusi=+24h. ALL'APERTURA NESSUNO E' PRESENTE (mdPresent vuoto).",
+    "apri": "SOLO AUTOMATICA (tolto il manuale, vedi APERTURA_72H): scegli giorno+ora, la giornata si apre da sola 72h prima del fischio settimanale ricorrente (auto_weekday+auto_time, Europe/Rome) via open_due_matchdays() nel cron. Numerazione Giornata 1..38 PER STAGIONE fissata dal trigger stamp_season (lato server). Tempi: sondaggio presenze chiude=kickoff-36h, formazioni aperte da li fino a kickoff-5min (era 1h, vedi SESSIONE_BLOCCO5MIN), voti aperti=kickoff+1h, voti chiusi=+25h. L'admin puo' correggere l'orario reale con 'Modifica orario partita'. ALL'APERTURA (modalita' giocatori) nessuno e' presente finche' non votano il sondaggio.",
     "moduli": "il manager sceglie 1-2-2 / 1-3-1 / 1-1-3 prima del kickoff (salvato in lineup_modules); cambiare modulo svuota la formazione.",
-    "presenti": "DUE MODALITA' (leagues.presence_self). ADMIN (default): card 'Chi gioca questa giornata' -> matchday_players. GIOCATORI: la card admin sparisce e in HOME esce '.hpcard' (Giornata X aperta! Ci sei?) ai SOLI giocatori (non soli-manager), solo a giornata open e prima di kickoff-1h; ogni giocatore segna la PROPRIA presenza via set_my_presence. In entrambi i casi: solo presenti schierabili/votabili; assenti opachi nel mercato.",
-    "bonus_malus": "PANNELLO PARTITA LIVE (non piu' tendina per giocatore). Impostazioni admin -> '📊 Apri pannello partita' (#liveOpenBtn) -> overlay full-screen #liveStats: blocchi grandi GOL/ASSIST/PORTIERE + AUTOGOL, tap giocatore = +1 (vibra), '-' per annullare; bozza salvata in localStorage (fc_live_<mdId>) cosi' sopravvive alla chiusura app; step finale 'Chi ha vinto?' (seleziona vincitori = +1, presenti non scelti = -1, nessuno = pari) -> esito V/S/'' per tutti i presenti; 'Conferma e salva' upserta tutto in match_stats. Apribile da kickoff-30min finche' la giornata non e' chiusa (matchWindow/matchOpenable).",
+    "presenti": "DUE MODALITA' (leagues.presence_self). ADMIN: card 'Chi gioca questa giornata' -> matchday_players; impostabile ANCHE PRIMA dell'apertura via ROSA PREVISTA (planned_presences, vedi PLANNED_PRESENZE), che precompila la giornata all'apertura (trigger seed_presences). GIOCATORI (sondaggio): in HOME esce la card presenze ai SOLI giocatori (is_player) durante il SONDAGGIO = apertura..kickoff-36h; ogni giocatore segna la propria presenza (set_my_presence, guardia now<kickoff-36h). Le formazioni restano BLOCCATE finche' il sondaggio non chiude (kickoff-36h). L'ADMIN puo' comunque correggere le presenze (override) anche dopo, fino al blocco formazioni. In entrambi i casi: solo presenti schierabili/votabili; assenti opachi nel mercato.",
+    "bonus_malus": "PANNELLO PARTITA LIVE (non piu' tendina per giocatore). Impostazioni admin -> '📊 Apri pannello partita' (#liveOpenBtn) -> overlay full-screen #liveStats: blocchi grandi GOL/ASSIST/PORTIERE + riga piccola in basso AUTOGOL/RIG.SBAGLIATO/RIG.PARATO (eventi rari), tap giocatore = +1 (vibra), '-' per annullare; bozza salvata in localStorage (fc_live_<mdId>) cosi' sopravvive alla chiusura app; step finale 'Chi ha vinto?' (seleziona vincitori = +1, presenti non scelti = -1, nessuno = pari) -> esito V/S/'' per tutti i presenti; 'Conferma e salva' upserta tutto in match_stats. Apribile da kickoff-30min finche' la giornata non e' chiusa (matchWindow/matchOpenable).",
     "chi_vota": "solo chi ha giocato (suo personaggio presente) + admin + manager abilitati (extra_voters). canIVote() lato app.",
     "genera_squadre": "RIMOSSO DALL'APP (giu 2026): non adatto all'uso diffuso (altre leghe fanno le squadre da se' o hanno giocatori non del fanta). Spostato in TOOL SEPARATO OFFLINE 'crea_squadre.html' (rosa manuale salvata in localStorage, bilanciamento per forza+ruolo, tap-to-move, niente backend/chiavi). Tool privato di Teo. In-app non c'e' piu' ne' la card ne' POLL_ALIAS ne' il campo Valore nella scheda giocatore.",
     "chiudi": "AUTO-CHIUSURA LATO SERVER: close_due_matchdays() (cron ogni 10min via notify.ts) chiude le giornate con now()>=kickoff+25h, applica i crediti e manda la push 'chiusa' della lega. Non dipende dall'admin. L'admin puo' comunque chiudere a mano. Alla chiusura: status='closed'+closed_at=now(), reset locale (clearRoundLocal svuota formazione/capitano/modulo/voti/MVP/medie).",
     "reset": "rpc reset_matchday(md): solo admin della stessa lega; cancella giornata e TUTTI i figli (formazioni/voti/nomination/stat/presenze).",
-    "presenza_statistica": "conta solo da blocco formazioni (kickoff-1h) o se closed; aprire una giornata non genera piu presenze.",
+    "presenza_statistica": "conta solo da blocco formazioni (kickoff-5min) o se closed; aprire una giornata non genera piu presenze.",
     "crediti_chiusura": "NUOVO METODO (non piu' delta-voto). Solo sui presenti: (1) ranking-credito per cost desc (parita=media); (2) ranking-punti per voto+0.5*(gol*3+assist*2-autogol*3-gol_subiti) [voto medio, no clean-sheet, no esito/MVP/cap/modulo]; (3) scarto=rank_credito-rank_punti; (4) ordina per scarto desc, parita=cost asc: top3 +2/+1/+1, bottom3 -2/-1/-1, in mezzo invariati (clamp 1..100); (5) trend smallint 1/-1/0 -> forma (In forma/In calo/Costante). Funzioni: _apply_credits_core(md) + apply_credit_changes(md) [admin].",
     "classifica": "somma SOLO le giornate closed: la giornata in corso (e il bonus modulo) compare solo quando viene chiusa.",
     "formazioni_avversarie": "nascoste finche la partita non inizia (kickoff o closed). selettore Lega nasconde le giornate non ancora iniziate.",
@@ -150,11 +150,11 @@ SCHEMA = {
     "league_id (OVUNQUE)": "Tutte le tabelle dati hanno league_id bigint default 1 references leagues(id). La lega #1 e' 'La Fossa di Lissone' (il gruppo originale). Le scritture vengono 'timbrate' da un trigger (stamp_league) con coalesce(my_league(),1).",
     "profiles": "id uuid(=auth.uid()), team_name, player_name, role, avatar, is_admin bool(DERIVATO dal trigger: true se sei admin_id della tua lega), is_player bool(def true), league_id",
     "players": "id bigint, name, role(ATT/DIF/POR), avatar, present bool, forma int(legacy), trend smallint(1/-1/0 -> forma), owner_id uuid, injured bool, cost int(def20), valore numeric(LEGACY: serviva al vecchio generatore squadre in-app, ora RIMOSSO; colonna lasciata ma non usata/non editabile in-app), league_id. NB: POR usato solo se la lega e' in modalita' portiere FISSO (gk_fixed).",
-    "matchdays": "id bigint, label, kickoff timestamptz, status(open/voting/locked/closed), closed_at timestamptz, reminder_sent bool, cost_applied bool, league_id",
+    "matchdays": "id bigint, label('Giornata N' per-stagione, fissata dal trigger), kickoff timestamptz, status(open/voting/locked/closed), closed_at, reminder_sent bool, lineup_open_sent bool(2a notifica 'schiera'), cost_applied bool, season_id bigint(FK seasons), league_id",
     "lineups": "matchday_id, manager_id uuid, slot(a1,a2,a3,d1,d2,d3,g1), player_id, is_captain bool, league_id. CHECK lineups_slot_check su quei 7 slot",
     "lineup_modules": "matchday_id, manager_id uuid, module(1-2-2/1-3-1/1-1-3), league_id  (PK composta)",
     "votes": "matchday_id, voter_id uuid, player_id, score numeric(1-10, anche mezzi), league_id",
-    "match_stats": "matchday_id, player_id, gol, assist, autogol, gol_subiti, esito(V/S/null = risultato squadra reale), league_id",
+    "match_stats": "matchday_id, player_id, gol, assist, autogol, gol_subiti, rigore_sbagliato(-3), rigore_parato(+3), esito(V/S/null = risultato squadra reale), league_id",
     "nominations": "matchday_id, voter_id uuid, mvp_player_id, sega_player_id(legacy, sempre null), league_id",
     "matchday_players": "matchday_id, player_id (PK), league_id. NB: presenza statistica solo da blocco formazioni",
     "extra_voters": "profile_id uuid PK, league_id  (manager-solo abilitati al voto)",
@@ -171,7 +171,8 @@ RPC = {
     "get_averages(md)": "media voti per player nella giornata",
     "get_mvp_sega(md)": "id MVP (e SEGA, ormai ignorato)",
     "get_standings()": "classifica SOLO giornate closed della propria lega + delta posizione (frecce 24h). Ritorna anche manager_id (usato come data-id per il FLIP della classifica animata).",
-    "get_standings_md(md)": "classifica di giornata (filtra i manager della lega della giornata): voto*mult(solo voto)+bonus+esito(+/-1)+bonus modulo.",
+    "get_standings_md(md)": "classifica di giornata (filtra i manager della lega della giornata): voto*mult(solo voto)+bonus(gol*3+assist*2-autogol*3-rig_sbagliato*3+rig_parato*3)+esito(V=+2/S=-1)+bonus modulo. Vedi rigori.sql.",
+    "get_player_vote_trend(p_player)": "andamento voti stagione corrente: una riga per giornata CHIUSA con voti per quel player (md_label, voto medio SOLO voto, no bonus). Scoping my_league(), ordine per kickoff. Usato dal grafichino nella scheda giocatore (loadVoteTrend/voteTrendHTML). Vedi rigori.sql.",
     "get_player_stats()": "presenze, gol, assist, voto_medio, forma(da trend) della propria lega.",
     "list_solo_managers()": "(admin) profili solo-manager della lega con flag voto.",
     "apply_credit_changes(md)/_apply_credits_core(md)": "crediti alla chiusura col NUOVO metodo a ranking (vedi MATCHDAY_LIFECYCLE.crediti_chiusura).",
@@ -236,7 +237,7 @@ FEATURES = {
 GOTCHAS = [
     "LEGHE: ogni gruppo = una lega privata. league_id su tutte le tabelle (default 1), letture isolate via RLS (league_id=my_league()), scritture timbrate dal trigger stamp_league. Le funzioni aggregate (security definer) filtrano per my_league().",
     "is_admin DERIVATO: il trigger profiles_guard imposta is_admin=true solo se sei admin_id della tua lega; la lega non si cambia da update. Nessuno puo' auto-promuoversi o cambiare lega.",
-    "RISULTATO SQUADRA = +/-1 (non piu' +/-2). Tenere allineati scoreOf (client), get_standings_md (SQL) e il Regolamento in Home.",
+    "RISULTATO SQUADRA = +2 (vince) / -1 (perde). Tenere allineati scoreOf (client, gia' +2/-1) e get_standings_md (SQL, corretta da fix_esito.sql) e il Regolamento in Home.",
     "CREDITI alla chiusura = metodo a RANKING (scarto credito vs punti), non piu' delta-voto. Vedi MATCHDAY_LIFECYCLE.crediti_chiusura. forma da players.trend.",
     "BONUS/MALUS via pannello partita LIVE (#liveStats), non piu' tendina per giocatore; bozza in localStorage fc_live_<mdId>.",
     "AUTO-CHIUSURA lato server (close_due_matchdays via cron in notify.ts): chiude a kickoff+25h e applica i crediti, indipendente dall'admin.",
@@ -245,7 +246,7 @@ GOTCHAS = [
     "Icona PWA: cambia solo rimuovendo e ri-aggiungendo l'app alla home.",
     "players.forma: legacy, non usata nei punti. Lo 'stato di forma' viene da get_player_stats (trend).",
     "injured: stato solo visivo (non blocca lo schieramento da solo).",
-    "presenze: contate da matchday_players MA solo da blocco formazioni (kickoff-1h) o se closed.",
+    "presenze: contate da matchday_players MA solo da blocco formazioni (kickoff-5min) o se closed.",
     "classifica: somma solo le giornate closed -> niente leak del modulo prima del match. Cambiare punteggio = toccare solo get_standings_md.",
     "frecce posizione: ▲ verde / ▼ rossa, attive 24h dopo l'ultima chiusura e solo dalla 2a giornata chiusa (serve closed_at).",
     "moltiplicatore capitano/MVP: SOLO sul voto, i bonus restano piatti.",
@@ -299,14 +300,14 @@ VALUE_POLL = {
 # NOTIFICHE PUSH (PWA)
 # ---------------------------------------------------------------------------
 NOTIFICATIONS = {
-    "quando": "Apertura e chiusura giornata + promemoria 1h prima della chiusura formazioni. Poche, niente spam. TUTTE inviate SOLO agli utenti della stessa lega.",
+    "quando": "4 promemoria (modalita' giocatori) + apertura/chiusura. In ordine: apertura 'vota presenza' (solo giocatori); K-38h 'vota presenza' SOLO ai non-votanti (runPresenceReminder); K-36h 'schiera' a tutti (runLineupOpen); 8h prima del blocco 'schiera' SOLO a chi non ha schierato (runLineupReminder); 1h prima del blocco 'ultima ora' a tutti (runReminder). Vedi SESSIONE_PROMEMORIA. Tutte SOLO agli utenti della stessa lega.",
     "self_heal": "ensurePush() ricrea in silenzio la subscription scaduta/persa a ogni apertura app e su focus/visibilitychange (la finestra non gira ad app chiusa).",
     "primo_invito": "maybeAskPush() mostra il prompt gentile alla PRIMA apertura (una volta per dispositivo, localStorage fc_push_asked), solo se supportate e permesso ancora 'default'.",
     "banner_mensile": "maybeShowNotifBanner(): banner #notifBanner in cima all'app, SOLO a chi NON ha le notifiche attive (permission 'default'), max 1 volta ogni 30 giorni (localStorage fc_notif_banner). Esclude i bloccati a livello iOS. Tasti Attiva/✕.",
     "auto_apertura": "notify.ts (cron 10min) chiama open_due_matchdays(): apre le giornate programmate 48h prima (leagues.auto_open) e manda la push '<Giornata> aperta! ⚽' alla lega giusta (runAutoOpen).",
     "auto_chiusura": "notify.ts (cron ogni 10min) chiama close_due_matchdays(): chiude le giornate scadute di tutte le leghe e manda la push 'chiusa' alla lega giusta (closed_league).",
     "testi": [
-        "Promemoria: 'manca 1h alla scadenza delle formazioni. Schierala subito!'",
+        "Promemoria ultima ora: 'manca 1h alla chiusura delle formazioni. Schierala subito (capitano compreso)!'",
         "Chiusura: '<Giornata> chiusa. Scopri com'e' andata la tua squadra.'",
     ],
     "pezzi": {
@@ -531,4 +532,257 @@ FILE_TOCCATI_ULTIMO = [
     "index.html — podio MVP, close_if_all_voted in submitVotes, renderRecapStandings sempre animata, arrotondamenti.",
     "podio_e_chiusura_voti.sql — get_mvp_podium(md) + close_if_all_voted(p_md).",
     "Ricorda: reincollare le 2 chiavi a ogni upload di index.html. Niente PNG.",
+]
+
+# ===========================================================================
+# AGGIORNAMENTI SESSIONE (giu 2026) — mezzi punti, STAGIONI, voti+MVP uniti,
+#   apertura solo-auto 72h, ciclo presenze (sondaggio 36h), 2 notifiche.
+# Dove in conflitto con voci precedenti, VALE QUESTO.
+# File: index.html + stagioni.sql + presenze.sql + apertura_72h.sql + notify.ts
+# Ordine SQL: stagioni.sql -> presenze.sql -> apertura_72h.sql. Poi notify.ts, poi index.html.
+# ===========================================================================
+CLASSIFICA_MEZZI_PUNTI = {
+    "cosa": "SUPERA CLASSIFICA_ARROTONDATA: i punti ora si mostrano al MEZZO PUNTO con la virgola (es. 180,5).",
+    "client": "Helper roundHalf(n)/fmtPts(n). Usati in renderMini, lbRowHTML, mdStandings, countUpFromTo. Ordine sempre per valore vero.",
+    "frecce": "Lega 'Classifica generale': frecce ▲/▼ solo entro 48h dalla chiusura (lbFresh() ora 48h; renderLB passa withArrow=lbFresh()). Pagellone: sempre. delta da get_standings_season() persistente (>=2 giornate chiuse nella stagione).",
+}
+STAGIONI = {
+    "cosa": "Una stagione raccoglie max 38 giornate (come Serie A). Chiusa/al-completo -> ne parte una nuova, numerazione Giornata 1..38 che riparte.",
+    "schema": "Tabella seasons(id bigint identity, league_id, number, name, status 'open'|'closed', started_at, ended_at, created_at). matchdays.season_id (FK). Indice 'una sola aperta per lega' + unique(league_id,number). RLS seasons_read (propria lega).",
+    "trigger": "stamp_season (BEFORE INSERT matchdays): assegna/crea la stagione aperta, gestisce il tetto 38 (chiude+apre nuova), e fissa label 'Giornata N' per-stagione (vale anche per le aperture cron). close_full_season (AFTER UPDATE): alla 38a giornata chiusa chiude la stagione.",
+    "rpc": "get_current_season() [aperta o ultima per numero; mds_total/mds_closed], get_standings_season() [classifica stagione corrente: somma giornate chiuse della stagione via get_standings_md, + delta frecce], ensure_open_season() [admin apri], close_season() [admin chiudi anticipata].",
+    "client": "loadSeason() -> currentSeason/currentSeasonId. loadStandings() usa get_standings_season con FALLBACK a get_standings. Menu giornate in Lega filtrato alla stagione corrente. UI: #heroSeason (home, alto dx), #legaSeason (Lega), card admin #seasonCard/#seasonBox (closeSeasonNow/openSeasonNow).",
+}
+VOTI_MVP_UNITO = {
+    "cosa": "L'MVP e' UNITO alla lista voti (🏆 sulla riga). Invio UNICO: submitVotes() salva voti + nomination insieme. Bloccato finche' non hai votato TUTTI i presenti E scelto l'MVP.",
+    "client": "pickMvp(id) -> myNom.mvp (locale, salvato all'invio). voteStatus()/updateSubmitBtn()/#voteReq per la validazione. ensureStats() NON preimposta piu' il voto a 6 (non votato=null).",
+    "medie": "Medie voto NASCOSTE A TUTTI durante la votazione (anche admin): showAvg=false, refreshAvgLabels no-op, niente conteggio votanti. renderMvpSegaHint reso no-op (non si mostra chi il gruppo vota come MVP).",
+}
+HOME_TESTATA = "Hero ridisegnato: riga .hero-head con nome lega a sx (#homeLeague) + Stagione N a dx (#heroSeason); sotto il riquadro 'pronto a schierare' (.hero-top: giornata #heroKo + squadra #heroTeam). In Lega .lega-head racchiude #legaLeague + #legaSeason."
+APERTURA_72H = {
+    "cosa": "Tolta la modalita' MANUALE: solo automatica (giorno+ora). renderOpenMode() solo scheduler; saveSchedule() salva sempre p_auto=true. createMatchday/confirmMatchday/openMatchdaySheet ora INUTILIZZATI (numerazione lato server via trigger).",
+    "sql": "apertura_72h.sql riscrive open_due_matchdays() per aprire 72h prima (era 48h). Si appoggia a next_weekly_kickoff() (Europe/Rome, intatta), league_id esplicito, label via trigger, idempotente. UNICA funzione storica riscritta: dopo l'esecuzione verifica 'select next_weekly_kickoff(2,''21:00''::time);'.",
+}
+CICLO_PRESENZE = {
+    "timeline": "kickoff=K: K-72h apertura (sondaggio aperto, formazioni bloccate) · K-36h sondaggio chiuso -> formazioni aperte (solo chi ha votato presente) · K-1h formazioni bloccate · K+1h voti · +25h/'tutti votato' chiusura.",
+    "client": "PRESENCE_CLOSE_BEFORE=36h. mdTimes aggiunge presenceClose=k-36h. presencePollOpen() (player mode, open, now<presenceClose). computeLock(): in player mode lineupLocked anche durante il sondaggio. renderHomePresence solo durante il sondaggio e SOLO ai giocatori (is_player); MOSTRA giorno+ora del match (currentMd.kickoff via fmtDayTime, riga .hp-match). Messaggi via lineupBlockReason(); phaseLabel/countdown col ramo 'sondaggio presenze'.",
+    "sql": "presenze.sql: set_my_presence riscritta (guardia now<kickoff-36h; errori presence_self_off/no_open_matchday/presence_closed/no_player). NB: DROP FUNCTION set_my_presence(boolean) PRIMA del create (il vecchio return type era diverso -> errore 42P13).",
+    "override_admin": "In player mode l'admin puo' correggere le presenze anche dopo la chiusura del sondaggio (fino al blocco formazioni): la card admin presenze compare in player mode quando c'e' una giornata aperta; togglePresence scrive matchday_players diretto (RLS admin, niente guardia tempo).",
+}
+PLANNED_PRESENZE = {
+    "cosa": "ROSA PREVISTA (modalita' admin): presenze impostabili ANCHE PRIMA dell'apertura. All'apertura precompila matchday_players.",
+    "sql": "Tabella planned_presences(league_id, player_id) + RPC get_planned_presences()/set_planned_presence(p_player,p_present) + trigger seed_presences (AFTER INSERT matchdays: in modalita' admin seed da planned). In presenze.sql.",
+    "client": "plannedPresent Set, loadPlannedPresences(). renderPresence instrada: giornata aperta -> matchday_players; nessuna giornata aperta (modalita' admin) -> rosa prevista.",
+}
+MODIFICA_ORARIO = "Gestione ritardi/anticipi vs orario programmato: bottone admin sulla giornata aperta -> openEditKickoffSheet()/confirmEditKickoff() aggiornano matchdays.kickoff+vote_deadline e RIARMANO reminder_sent+lineup_open_sent. Tutto (presenze/formazioni/voti) si ricalcola dal nuovo kickoff. Caso limite: se lo cambi a <36h, il sondaggio e' gia' chiuso -> l'admin imposta le presenze a mano (override)."
+NOTIFICHE_2 = {
+    "cosa": "2 notifiche in modalita' giocatori. matchdays.lineup_open_sent (in presenze.sql).",
+    "push1": "All'apertura 'Vota la presenza': runAutoOpen legge leagues.presence_self -> player mode invia con sendToPlayers() (SOLO profiles.is_player=true). Modalita' admin: 'schiera' a tutti (sendAll).",
+    "push2": "A K-36h 'schiera la formazione': runLineupOpen() (player mode, una volta sola via lineup_open_sent) -> sendAll (anche i soli-manager schierano).",
+    "notify_ts": "PRESENCE_CLOSE_BEFORE=36h. sendAll refattorizzata con pushList(); aggiunta sendToPlayers(). Risposta cron {opened, lineup, reminders, closed}.",
+}
+TEMPI_ATTUALI = "Apertura 72h prima · sondaggio presenze chiude 36h prima · formazioni bloccate 1h prima · voti aperti +1h · finestra voti 24h (chiusi +25h). Chiusura anche se hanno votato tutti."
+FILE_TOCCATI_SESSIONE = [
+    "index.html — mezzi punti+frecce 48h, stagioni (stato/UI/admin), voti+MVP uniti+validazione+medie nascoste, hero testata, apertura solo-auto 72h, ciclo presenze 36h + override admin + rosa prevista + modifica orario.",
+    "stagioni.sql, presenze.sql, apertura_72h.sql (additivi/idempotenti; presenze.sql droppa set_my_presence prima di ricrearla).",
+    "notify.ts — 2 notifiche, sendToPlayers, runLineupOpen, testi per-modalita'.",
+    "Ricorda: reincollare le 2 chiavi Supabase a ogni upload di index.html. Niente PNG nel repo. notify.ts MAI su GitHub.",
+]
+
+# ===========================================================================
+# OPERATIVITA' & COSE IMPARATE (messa in produzione del ciclo automatico).
+# Una sola modifica di codice (data/ora nel sondaggio); il resto e' config/diagnosi.
+# ===========================================================================
+SONDAGGIO_DATA_ORA = "renderHomePresence mostra '📅 Partita: <giorno ora>' (currentMd.kickoff via fmtDayTime, CSS .hpcard .hp-match). Domanda: 'Ci sei a questa partita?'. Cosi' si vota presente/assente sapendo quando si gioca."
+CATENA_APERTURA_AUTO = {
+    "catena": "pg_cron (job 'fanta-reminder', */10 * * * *) -> net.http_post alla Edge Function notify (header x-cron-secret, body {mode:'reminder'}) -> notify chiama open_due_matchdays / runLineupOpen / runReminder / close_due_matchdays.",
+    "push": "Le push le manda NOTIFY, non la funzione SQL. Quindi 'select open_due_matchdays();' a mano APRE la giornata ma NON manda notifiche. Per testare le push: resettare la giornata e LASCIAR FARE AL CRON (non riaprire a mano).",
+    "finestra72h": "open_due_matchdays apre se now()>=kickoff-72h AND now()<kickoff. La '72h prima' e' l'INIZIO di una finestra, non una scadenza: se quel momento e' passato, sei dentro la finestra e la giornata e' apribile fino al via. Idempotente (no doppio open / stesso kickoff).",
+}
+TROUBLESHOOTING_CRON = {
+    "sintomo": "Giornate non si aprono/chiudono da sole e nessuna push, pur con fanta-reminder attivo.",
+    "diagnosi": "select status_code, content from net._http_response order by created desc limit 5;  -> se 401 {'error':'bad cron secret'} = la chiamata a notify e' rifiutata.",
+    "fix": "(1) Edge Functions->notify->Settings: Verify JWT OFF (altrimenti il cron e' bloccato all'ingresso; notify si protegge col x-cron-secret). (2) CRON_SECRET IDENTICO tra job cron.schedule e Secrets della function (occhio spazi/maiuscole; usare valore alfanumerico semplice). Dopo cambio Secret puo' servire ridistribuire la function.",
+    "ricrea_job": "select cron.unschedule('fanta-reminder'); select cron.schedule('fanta-reminder','*/10 * * * *', $$ select net.http_post(url:='https://lfvpseusbsyzniugczbx.supabase.co/functions/v1/notify', headers:=jsonb_build_object('Content-Type','application/json','x-cron-secret','SEGRETO'), body:=jsonb_build_object('mode','reminder')); $$);",
+    "ok": "status_code 200 con {'ok':true,'opened':..,'lineup':..,'reminders':..,'closed':..}. Note: timestamp di net._http_response in UTC (+2h vs ora legale IT). status_code NULL = risposta non ancora registrata, NON e' un errore.",
+}
+FIX_DATI_OWNER_ID = {
+    "sintomo": "Un giocatore vota 'Ci sono' (sblocca il suo personaggio nel mercato) ma rientrando il voto sparisce e risulta presente un'ALTRA carta del listone (senza profilo, es. 'Benzo').",
+    "causa": "Quella carta ha per errore l'owner_id di un utente reale (residuo del vecchio bug rinomino di massa): set_my_presence trova DUE carte con quell'owner_id e ne salva una 'a caso'.",
+    "regola": "Ogni persona possiede ESATTAMENTE una carta (la propria). Le carte non-personali del listone hanno owner_id=null.",
+    "diagnosi": "select p.id,p.name,p.owner_id,pr.player_name from players p left join profiles pr on pr.id=p.owner_id where p.owner_id is not null order by p.owner_id,p.id;",
+    "fix": "update players set owner_id=null where name='Benzo' and league_id=1;  + delete dalla matchday_players della giornata aperta per quel player_id.",
+}
+FILE_TOCCATI_OPERATIVITA = [
+    "index.html — data/ora nel sondaggio (renderHomePresence + CSS .hp-match).",
+    "Nessun nuovo SQL applicativo: le query di troubleshooting/fix-dati sono operative, non migrazioni.",
+]
+
+# ===========================================================================
+# BACHECA / TROFEI / ACHIEVEMENT (+ card Home, scheda squadra, pagina
+# full-screen, filtro moduli per reparto). Vedi FANTACALCETTO.md §29.
+# Tutto retroattivo, zero lavoro admin, coerente col punteggio (riusa le RPC).
+# ===========================================================================
+BACHECA = {
+    "concetto": "Targhe automatiche dai dati gia' raccolti. Ogni persona ha 2 nature: GIOCATORE (listone) e MANAGER 👔 (squadra). Due tipi: TRAGUARDI 🔒 (cumulativi a gradini, ALL-TIME, sticky) e TITOLI 🏅 (classifica/reparto, uno per lega, PER-STAGIONE, perdibili, gate presenze). I titoli restano nello storico etichettati 'Stagione N'.",
+    "gate_titoli": "pres_season >= greatest(4, ceil(v_closed*0.30)). Sotto soglia (inizio stagione) i titoli semplicemente NON compaiono.",
+    "soglie": {
+        "cecchino(gol all-time)": "10/25/50/100",
+        "rifinitore(assist all-time)": "10/25/50",
+        "uomo_copertina(MVP all-time)": "1/3/7/15",
+        "tripletta/poker/manita": "3/4/5+ gol in UNA giornata (sticky, mostrate col solo nome, niente numero)",
+        "presenze(all-time)": "5/10/25 (+ Stagione perfetta 100% min 8)",
+        "profeta(manager)": "3/8/15 (modulo!=default 1-3-1/1-1-3 E chiusura meta' alta)",
+        "capitano_coraggioso(manager)": "3/8/15 (capitano schierato MVP o gol>=1)",
+        "re_giornata(manager)": "1/3/7 (1o in get_standings_md)",
+        "al_comando(manager)": "1/5/12 (giornate chiuse da 1o in classifica generale)",
+        "scalatore(manager)": "+3/+5/+8 (max balzo posizioni in una giornata)",
+        "titoli_stagione": "Pallone d'oro (miglior media assoluta), Re attacco/Diga/Saracinesca (miglior media ATT/DIF/POR; Saracinesca solo gk_fixed), Capocannoniere (piu' gol), Mago assist (piu' assist), 'Sul podio del reparto' 2o-3o (chip argento).",
+    },
+    "headline": "Punto di forza scelto dal server + 'pavimento di dignita'' (Bandiera/presenze o miglior piazzamento reparto): nessuno resta senza headline.",
+    "rank_history": "Al comando & Scalatore: NESSUNA tabella snapshot. Si ricostruisce in SQL la classifica 'dopo ogni giornata chiusa' (ordine closed_at) sommando progressivamente get_standings_md. _season_rank_history(p_season). Retroattivo, coerente col punteggio.",
+}
+BACHECA_SQL = {
+    "file": "bacheca.sql — GIA' ESEGUITO. Additivo/idempotente: NON tocca tabelle/trigger/funzioni esistenti. Si puo' rilanciare.",
+    "rpc_pubbliche": "get_player_card(p_player_id bigint)->jsonb ; get_team_card(p_manager_id uuid)->jsonb. Entrambe security definer, isolate per my_league(). get_player_card risolve owner_id e include il lato manager della stessa persona + 'next' (prossimo traguardo per la Home).",
+    "helper": "_badge_tier(qty,thresholds[]), _season_rank_history(p_season), _manager_season_facts(), _player_facts(), _next_milestone_player(...), _next_milestone_manager(...).",
+    "casi_limite": "inizio stagione (titoli assenti), solo-manager (solo card manager), gk rotazione (no Saracinesca), parita' medie (ordine per id), no MVP, persona senza nulla (pavimento). played_md/leader_days contano SOLO le giornate effettivamente schierate (chi non schiera non risulta 'in meta' alta'/'leader').",
+    "trappole_sql_imparate": "league_id e' BIGINT. NON mettere window function (lag) dentro un'aggregata (max): separare in CTE (errore 'aggregate function calls cannot contain window function calls'). _player_facts: presenze con la stessa guardia di get_player_stats (kickoff-1h o closed); voto_season da votes della stagione.",
+}
+BACHECA_CLIENT = {
+    "render_condiviso": "bachecaHTML(card,{includeManager}) + badgeDesc(key,val) (frase chiara sotto ogni traguardo, es. Scalatore->'Balzo record: +3 posizioni in una giornata'). MEDALS=['','🥉','🥈','🥇','💎'] per gradino. loadPlayerCard()/loadTeamCard() chiamano le RPC.",
+    "mercato": "tap card -> apre PAGINA bacheca. Le stat esistenti (#statGrid: Presenze/Gol/Assist + Voto medio admin) restano INVARIATE; bacheca AGGIUNTA sotto (#statBacheca). Solo targhe conquistate. Riga 👔 in fondo.",
+    "home": "DUE card separate SOTTO la Classifica: #homeBcardPlayer (solo se is_player e myPlayer()) e #homeBcardMgr (per TUTTI, anche soli-manager). renderHomeBcards(force) con throttle 20s; refresh forzato dopo doCloseMatchday. Pagellone automatico full-screen resta indipendente e in cima come prima.",
+    "classifica_generale": "lbRowHTML -> onclick openTeamCard(manager_id) (scheda squadra). Vista DI GIORNATA invariata (tap->formazione via openTeamLineup).",
+    "pagina_fullscreen": "Niente piu' modal con sfondo che balla (problema iPhone). #bachecaPage = overlay .bch-page (z-index 90, position:fixed inset:0, scrolla internamente, stessa tecnica di gate/onboard/league). Header '‹ Indietro' = closeBacheca(). Sotto-blocchi #pgPlayer/#pgTeam; openBacheca('player'|'team'). closeStatModal/closeTeamModal -> closeBacheca. .statmodal RESTA solo per pushModal. Rimossi lockScroll/unlockScroll.",
+}
+FILTRO_MODULI = {
+    "regola": "Un modulo e' scegliibile solo se #ATT_presenti>=slot_ATT E #DIF_presenti>=slot_DIF (ruolo anagrafico). MODULE_NEED={'1-3-1':{ATT:1,DIF:3},'1-2-2':{ATT:2,DIF:2},'1-1-3':{ATT:3,DIF:1}}.",
+    "esempi": "1 DIF->solo 1-1-3 · 1 ATT->solo 1-3-1 · 2 DIF->1-2-2 e 1-1-3 · 2ATT/2DIF->solo 1-2-2 · 3/3->tutti.",
+    "manca_reparto": "0 ATT OPPURE 0 DIF -> fieldAvailability().freeRoles=true: SOLO 1-2-2 e BLOCCO RUOLI DISATTIVATO (openPickerSheet: slot di movimento accettano chiunque; portiere resta secondo gkFixed). Bonus 1-2-2=0 -> nessuna distorsione. Banner #modFreeInfo.",
+    "ui": "Moduli non disponibili VISIBILI ma disabilitati (.modbtn.unavail, title esplicativo). setModule rifiuta i non disponibili (toast). renderModulePicker usa fieldAvailability().",
+    "riadeguo": "ensureValidModule() in renderPitch ripiega su modulo valido (svuota formazione) se l'attuale non lo e' piu'. GUARDIA: non agisce se mdPresent.size===0 (evita svuotamento al primo load). Admin cambia presenze -> togglePresence chiama renderPitch(); REALTIME ascolta anche matchday_players (schedulePresence/refreshPresence: loadMdPresent + ridisegno) -> si propaga a tutti.",
+    "ruoli_validi": "Il 'ruolo libero' vale SOLO per schierare. Stat/trofei usano sempre il ruolo anagrafico. Salvataggio (saveBtn) scrive slot+player_id+module senza validazione ruolo (slot g1=portiere ai fini punteggio).",
+}
+FILE_TOCCATI_BACHECA = [
+    "index.html — Bacheca (CSS+render+2 card Home+pagina full-screen+scheda squadra+tap classifica generale) + filtro moduli per reparto/ruoli liberi + refresh presenze realtime. REINCOLLARE le 2 chiavi Supabase a ogni upload.",
+    "bacheca.sql — GIA' ESEGUITO (additivo/idempotente). 2 RPC pubbliche + helper. Nessun PNG.",
+    "fix_esito.sql — corregge get_standings_md: sconfitta da -2 a -1 (regola +2/-1). Additivo/idempotente, retroattivo.",
+    "notify.ts — NON toccato in questa sessione.",
+]
+# RISULTATO SQUADRA REALE — corretto in questa sessione: regola +2 (vince) / -1 (perde).
+# Trovato: client scoreOf gia' +2/-1 (ok); SQL get_standings_md aveva la SCONFITTA a -2 (sbagliata).
+# fix_esito.sql ridefinisce SOLO get_standings_md con S=-1. E' l'unico punto che applica l'esito
+# ai punti (lo usano anche Pagellone via mdPointsMap e Bacheca); i crediti a ranking NON usano l'esito.
+# Retroattivo (ricalcola le giornate chiuse). I vecchi testi che dicevano "+/-1" erano errati.
+
+# ===========================================================================
+# SESSIONE: blocco 5min, +2 promemoria mirati, capitano obbligatorio,
+#           crediti semplificati, gestione giocatori a tendina, chiavi nel file
+# File toccati: index.html, notify.ts, promemoria.sql (nuovo), fix_presenze_5min.sql (nuovo)
+# ===========================================================================
+
+SESSIONE_BLOCCO5MIN = {
+    "cosa": "Blocco formazioni spostato da kickoff-1h a kickoff-5min.",
+    "client": "index.html: LINEUP_LOCK_BEFORE=5*MIN (aggiunta costante MIN=60000). Testi UI aggiornati (lineupBlockReason, hint apertura/modifica giornata, prompt notifiche).",
+    "notify": "notify.ts: LINEUP_LOCK_BEFORE=5*MIN; runReminder usa lock=kickoff-LINEUP_LOCK_BEFORE (l'ultima ora resta 1h prima del BLOCCO).",
+    "sql": "fix_presenze_5min.sql: get_player_stats con soglia presenze da interval '1 hour' a interval '5 minutes'. UNICA modifica, stessa firma (CREATE OR REPLACE), mantiene i filtri my_league() e la forma da players.trend.",
+    "invariante": "Il valore 5min deve restare identico tra client, notify.ts e get_player_stats.",
+}
+
+SESSIONE_PROMEMORIA = {
+    "set_completo": "4 push (player mode): 1) apertura 'vota presenza' (solo giocatori, runAutoOpen+sendToPlayers); 2) K-38h 'vota presenza, chiude tra 2h' SOLO ai non-votanti (runPresenceReminder, una volta via presence_remind_sent, solo se presence_self); 3) K-36h 'presenze chiuse, schiera' a tutti (runLineupOpen); 4) 8h prima del blocco 'schiera' SOLO a chi non ha schierato (runLineupReminder, una volta via lineup_remind_sent, entrambe le modalita'); 5) 1h prima del blocco 'ultima ora' a tutti (runReminder).",
+    "helper": "sendToIds(title,body,url,leagueId,ids[]) in notify.ts: push a un elenco esplicito di user_id filtrato per lega.",
+    "targeting": "non-votanti presenze = profiles(is_player,league) MENO chi e' in presence_responses(md). non-schierati = tutti i profiles(league) MENO i manager_id in lineups(md).",
+    "cron_resp": "{opened, presRem, lineup, lineupRem, reminders, closed}.",
+    "tracciamento": "promemoria.sql: tabella presence_responses(matchday_id,user_id,responded_at,PK) + RLS (read true / insert own) + RPC mark_presence_responded() (security definer, trova md open della lega del chiamante, insert on conflict do nothing). Il client chiama mark_presence_responded dopo set_my_presence (sia 'Ci sono' sia 'Salto'). set_my_presence NON toccata.",
+    "colonne": "matchdays.presence_remind_sent + lineup_remind_sent (bool default false). Resettate (false) in confirmEditKickoff con reminder_sent/lineup_open_sent. promemoria.sql fa update ...=true where status='open' (la giornata gia' aperta al deploy non riceve avvisi fuori tempo).",
+}
+
+SESSIONE_CAPITANO_OBBLIGATORIO = {
+    "cosa": "Non si puo' piu' confermare la formazione senza capitano.",
+    "dove": "index.html updateBudget: btn.disabled=!(n===5 && captain), testo '👑 Scegli il capitano'. Guardia anche in saveBtn.onclick: if(!captain) toast+stop. Solo index.html.",
+}
+
+SESSIONE_CREDITI_SEMPLIFICATI = {
+    "cosa": "Tolta la sezione 'Crediti giocatori' dalle impostazioni admin. La scelta manuale/sondaggio all'APERTURA lega (setupRules.credit -> set_credit_mode) resta intatta.",
+    "dove": "index.html: rimossi card statica, toggle creditModeSw e bottone 'Riapri il sondaggio'. #creditCard ora display:none di default; renderCreditAdmin la mostra SOLO mentre un sondaggio valori e' aperto (avanzamento + 'Chiudi e calcola'); chiuso il sondaggio sparisce. Dopo, crediti modificabili a mano dalla scheda giocatore (matita). setCreditMode() resta definita ma non richiamata da bottoni. renderHomeValuePoll (card sondaggio per i membri) invariata.",
+}
+
+SESSIONE_GESTIONE_TENDINA = {
+    "cosa": "Card 'Gestione giocatori' ora e' un accordion (chiuso di default) invece di sempre aperto.",
+    "dove": "index.html: .acc gold con toggleAcc(this)/.acc-head/.acc-body (pattern esistente). id='manageCard' resta sull'.acc esterno (applyProfile show/hide admin ok). Contenuto invariato (#manageList + Nuovo giocatore).",
+}
+
+SESSIONE_CHIAVI_NEL_FILE = {
+    "cosa": "SUPABASE_URL e SUPABASE_ANON (publishable) ora scritte direttamente in index.html (non piu' placeholder INCOLLA_*). NON serve piu' re-incollare le chiavi a ogni upload.",
+    "sicurezza": "La publishable key e' pubblica per design (gia' visibile nel sito); RLS protegge i dati. Usare sempre la publishable (sb_publishable_...), MAI la secret. La guardia if(SUPABASE_URL.includes('INCOLLA')...) resta innocua.",
+    "nota": "Aggiornare CONFIG_KEYS/DEPLOY mentali: la nota storica 'reincollare le 2 chiavi a ogni upload' NON vale piu'.",
+}
+
+SESSIONE_DEPLOY_ORDINE = [
+    "1. SQL Editor: promemoria.sql -> poi fix_presenze_5min.sql.",
+    "2. Edge Function notify: incolla notify.ts e Deploy (mai su GitHub).",
+    "3. GitHub: index.html (Vercel ridistribuisce). NON serve re-incollare le chiavi.",
+    "Il SQL va per primo: app e notify usano le nuove colonne/tabella/RPC.",
+]
+
+FILE_TOCCATI_SESSIONE = [
+    "index.html — blocco 5min (+testi), 2 promemoria (mark_presence_responded + reset flag), capitano obbligatorio, crediti (sezione tolta/condizionale), gestione giocatori a tendina, chiavi incollate.",
+    "notify.ts — lock 5min, runPresenceReminder + runLineupReminder + sendToIds; cron resp ampliata. MAI su GitHub.",
+    "promemoria.sql — NUOVO: colonne presence_remind_sent/lineup_remind_sent, tabella presence_responses, RPC mark_presence_responded. Additivo/idempotente.",
+    "fix_presenze_5min.sql — NUOVO: get_player_stats soglia 5min. Additivo/idempotente, stessa firma.",
+    "Nessun PNG.",
+]
+
+# ===========================================================================
+# SESSIONE: impostazioni admin a tendine + DASHBOARD super-admin + manutenzione GLOBALE
+# File toccati: index.html, superadmin.sql (nuovo), admin.html (nuovo). notify.ts NON toccato.
+# ===========================================================================
+
+SESSIONE_IMPOSTAZIONI_TENDINE = {
+    "cosa": "Tutte le sezioni di Partita e Lega (Area amministratore) ora sono accordion chiusi di default.",
+    "partita": "Modalita' portiere, Presenze, Stagione(#seasonCard), Giornata(#mdCard), Chi gioca(#presCard).",
+    "lega": "Invita(#inviteCard), Gestione giocatori(gia' accordion), Voto soli-manager(#voterCard), Manutenzione lega(#maintCard). #creditCard resta NON-accordion (pannello a comparsa del sondaggio valori).",
+    "vincolo": "Gli id usati dal JS per show/hide (presCard, mdCard, voterCard, maintCard, inviteCard, seasonCard) restano sull'elemento ESTERNO .acc -> applyProfile/renderPresence/renderMatchday/loadInvite funzionano. #presTitle ora e' uno <span> dentro .acc-head (icona preservata).",
+    "pattern": "toggleAcc(this)/.acc/.acc-head/.acc-body (gia' esistente). Manutenzione per-lega rinominata 'Manutenzione lega'.",
+}
+
+DASHBOARD_SUPERADMIN = {
+    "cosa": "Console del proprietario dell'app: pagina SEPARATA admin.html nello STESSO repo -> Vercel la pubblica su fantacalcettoitalia.it/admin.html. Stesso Supabase (chiavi incluse, login OTP email come l'app, riusa la sessione se gia' loggato). meta robots noindex.",
+    "protezione": "LATO SERVER: ogni RPC sa_* controlla is_superadmin(); un non-super-admin vede 'Accesso riservato'. Il gate client e' solo UX.",
+    "mostra": "leghe totali/attive/inattive, leghe paganti/gratis, utenti totali/attivi/inattivi, costo/ricavo/margine stimati (editabili), elenco leghe con toggle Gratis<->Pagante, tasto Manutenzione globale. Niente realtime: tasto 'Aggiorna'.",
+    "attivo_30g": "lega = ha una giornata con status='open' OR kickoff>now()-30d OR closed_at>now()-30d. utente = last_seen>now()-30d.",
+    "economia": "monthly_cost e price_per_league impostati dall'admin (sa_set_economics). revenue_est=leghe_paganti*price; margin_est=revenue_est-monthly_cost. Placeholder finche' non compilati.",
+}
+
+MANUTENZIONE_GLOBALE = {
+    "cosa": "Distinta dalla manutenzione per-lega (app_state, invariata). Blocca TUTTI gli utenti di TUTTE le leghe; il super-admin (profiles.is_superadmin) non viene mai bloccato.",
+    "tabella": "app_global(id=1, maintenance bool, monthly_cost, price_per_league, updated_at). RLS: read true; scrittura SOLO via RPC super-admin (security definer).",
+    "toggle": "Dalla dashboard -> sa_set_maintenance(bool).",
+    "enforcement_app": "index.html: loadMaintenance() legge anche app_global.maintenance (globalMaint). applyMaintenance(): overlay #maint se (globalMaint && !isSuperAdmin) || (maintOn && !isAdmin). Banner: super-admin '🌐 GLOBALE', admin di lega '⚙️ lega'.",
+    "buttafuori_live": "canale realtime 'maint' ascolta app_state E app_global; a ogni cambio richiama loadMaintenance(). RICHIEDE app_global nella publication realtime: alter publication supabase_realtime add table app_global; (oppure Database->Replication).",
+    "isSuperAdmin": "helper client = !!(profile && profile.is_superadmin). profile caricato con select('*') -> include is_superadmin appena la colonna esiste.",
+}
+
+LAST_SEEN = {
+    "cosa": "profiles.last_seen timestamptz. RPC touch_last_seen() (security definer, set last_seen=now() where id=auth.uid()), chiamata dall'app a ogni avvio (subito dopo loadMaintenance). Alimenta 'utenti attivi' della dashboard.",
+}
+
+SUPERADMIN_SQL = {
+    "file": "superadmin.sql (additivo/idempotente).",
+    "colonne": "profiles.is_superadmin(bool def false), profiles.last_seen, leagues.is_paid(bool def false). Tabella app_global.",
+    "funzioni": "is_superadmin(), touch_last_seen(), sa_set_maintenance(bool), sa_set_league_paid(bigint,bool), sa_set_economics(numeric,numeric), sa_overview()->jsonb, sa_leagues()->jsonb. Tutte le sa_* guardate da is_superadmin(); grant authenticated.",
+    "passi_a_mano": [
+        "1. Renditi super-admin: update profiles set is_superadmin=true where id=(select id from auth.users where email='LA_TUA_EMAIL');",
+        "2. Realtime: aggiungi app_global alla publication supabase_realtime (per il buttafuori live).",
+    ],
+    "deploy": "1) SQL: fix_presenze_5min.sql (se non fatto) -> superadmin.sql -> 2 passi a mano. 2) GitHub: index.html (aggiornato) + admin.html (nuovo). 3) aprire /admin.html. Chiavi gia' incluse.",
+}
+
+APERTI_DASHBOARD = [
+    "Affinare soglie 'attivo' (ora 30g fisse).",
+    "Grafici storici: servirebbe created_at su profiles/leagues (oggi non garantito).",
+    "Dati economici reali (tariffe).",
+    "La manutenzione globale non logga; la dashboard non ha realtime (tasto Aggiorna).",
 ]
