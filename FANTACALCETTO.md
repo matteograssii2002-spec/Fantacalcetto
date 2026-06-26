@@ -1454,3 +1454,33 @@ Tolto dall'area admin in-app il blocco `#maintCard` (la manutenzione si gestisce
 ### 33.4 Da sapere / possibili prossimi passi
 
 Se in futuro si volesse che i rigori incidano anche sui **crediti dinamici**, aggiungere i due termini a `_apply_credits_core` (oggi esclusi di proposito). Il grafico usa solo giornate **chiuse**: una giornata con voti ma ancora aperta non compare (scelta voluta, dati stabili).
+
+---
+
+## 34. LOGHI SQUADRA (crest per ogni squadra)
+
+Ogni squadra (= profilo) può avere un **logo/crest** scelto da una raccolta condivisa, esattamente come funzionano gli **avatar** dei giocatori.
+
+**Storage:** nuovo bucket pubblico **`loghi`** (gemello di `avatars`). Contiene i PNG `logo-01.png … logo-25.png` (512×512, angoli arrotondati uniformi, sfondo scuro originale che si sposa col tema). Caricati a mano dal pannello Storage.
+
+**DB (`loghi.sql`, additivo/idempotente):**
+- `profiles.logo text` (nome-file del logo scelto; NULL = non ancora scelto).
+- `get_team_logos()` → `(manager_id uuid, logo text)` security definer, filtrata `my_league()`, grant `anon, authenticated`. **Non** cambia nessuna RPC esistente (niente DROP a catena): è una funzione nuova.
+
+**Client (`index.html`):**
+- Globali `logos=[]` (come `avatars`), `teamLogoBy={}` (manager_id→nome-file). Loader `loadLogos()` (lista bucket) e `loadTeamLogos()` (RPC) chiamati in `afterLogin` (e dopo onboarding/salvataggi).
+- Helper `logoImg(name,px)` → box quadrato px×px con `object-fit:contain` (mai tagliato, dimensione uniforme; segnaposto `.tlogo.ph` se manca). `teamLogoHTML(managerId,px)` legge da `teamLogoBy`.
+- **Dove compare:** classifica Lega (`lbRowHTML`, tra rank e nome), mini-classifica Home (`renderMini`), classifica di giornata, **pill squadra in Home** (`applyProfile` → `#heroTeam`), **scheda squadra** (`openTeamCard` → `#teamAv`), **striscia sul campo** sopra il verde (`renderCampoTeam` → `#campoTeam`, chiamata in `renderAll`).
+- **Scelta logo:** in **Impostazioni → Profilo** (card `#setLogoCard`, griglia `.lggrid`, `renderSetLogo`/`pickSetLogo`, salvato in `setSaveBtn` insieme al resto). In **onboarding** è uno **step del wizard** (vedi sotto). Salvataggio = `update profiles.logo` diretto sul proprio record (RLS lo consente, come per avatar).
+
+**Avviso "novità loghi" (solo lega già esistente):** `maybeShowLogoIntro()` mostra l'overlay `#logoIntro` a chi ha una squadra ma `profile.logo` è NULL: spiega la novità e fa scegliere subito un logo (`saveLogoIntro`). Resta finché non sceglie; "Lo scelgo più tardi" lo rimanda per la sessione (`sessionStorage fc_logo_intro_snooze`). Le **nuove** squadre scelgono il logo in registrazione, quindi non lo vedono mai. Blocco autonomo e rimovibile, accanto all'avviso temporaneo icona.
+
+**Onboarding ora è un wizard a 3 pagine** (prima era un'unica schermata che scrollava): `#obStepMode` (come giochi) → `#obStepChar` (avatar+ruolo+nome, o solo nome per i manager) → `#obStepTeam` (nome squadra + **logo**). Navigazione `obGo(step)`, pallini `#obDots`, `obNextFromChar()` valida lo step 1. Il submit (`#obBtn`) chiama `onboard_join` (invariata) e poi un `update profiles.logo` additivo col logo scelto.
+
+**Immagini:** i 25 crest originali (screenshot 374×348 con sfondo scuro) sono stati uniformati via script Python (`make_logos_final.py`): center-crop quadrato → 512×512 LANCZOS → angoli arrotondati uniformi. **Sfondo NON rimosso**: il cutout automatico rompeva i crest scuri-su-scuro (e il modello ML era irraggiungibile dalla rete sandbox); tenere l'artwork originale dà risultato pulito e coerente sul tema scuro.
+
+### 34.1 Ordine di deploy per i loghi
+1. **SQL**: esegui `loghi.sql` nel SQL Editor.
+2. **Storage**: crea bucket pubblico `loghi`, carica `logo-01…25.png`.
+3. **index.html**: carica la nuova versione (chiavi già dentro).
+4. Nessuna modifica a `notify.ts`.

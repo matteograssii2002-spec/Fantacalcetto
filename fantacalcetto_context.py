@@ -786,3 +786,35 @@ APERTI_DASHBOARD = [
     "Dati economici reali (tariffe).",
     "La manutenzione globale non logga; la dashboard non ha realtime (tasto Aggiorna).",
 ]
+
+
+# ============================================================================
+# SESSIONE — LOGHI SQUADRA (crest per ogni squadra, come gli avatar giocatori)
+# ============================================================================
+LOGHI_SQUADRA = {
+    "storage_bucket": "loghi (pubblico, gemello di 'avatars'); file logo-01.png..logo-25.png, 512x512 PNG",
+    "db": {
+        "colonna": "profiles.logo text (NULL = non scelto)",
+        "rpc_nuova": "get_team_logos() -> (manager_id uuid, logo text), security definer, my_league(), grant anon+authenticated",
+        "file_sql": "loghi.sql (additivo/idempotente, NON tocca le RPC esistenti)",
+    },
+    "client": {
+        "globali": "logos[] (come avatars), teamLogoBy{manager_id->file}",
+        "loader": "loadLogos() + loadTeamLogos() chiamati in afterLogin / dopo onboarding e salvataggi",
+        "helper": "logoImg(name,px) box quadrato object-fit:contain mai tagliato; teamLogoHTML(mid,px)",
+        "dove_compare": [
+            "classifica Lega (lbRowHTML, tra rank e nome)",
+            "mini-classifica Home (renderMini)",
+            "classifica di giornata",
+            "pill squadra in Home (applyProfile -> #heroTeam)",
+            "scheda squadra (openTeamCard -> #teamAv)",
+            "striscia sul campo sopra il verde (renderCampoTeam -> #campoTeam)",
+        ],
+        "scelta": "Impostazioni>Profilo (#setLogoCard, renderSetLogo/pickSetLogo, salvato in setSaveBtn) + step del wizard onboarding",
+        "salvataggio": "update profiles.logo diretto sul proprio record (RLS lo consente, come avatar)",
+    },
+    "avviso_novita": "maybeShowLogoIntro() -> overlay #logoIntro per chi ha squadra ma logo NULL; resta finche' non sceglie; snooze sessione (sessionStorage fc_logo_intro_snooze). Le nuove squadre scelgono in registrazione, non lo vedono.",
+    "onboarding_wizard": "ora 3 pagine: #obStepMode -> #obStepChar (avatar+ruolo+nome / solo nome) -> #obStepTeam (nome+logo). obGo(step), #obDots, obNextFromChar(); submit chiama onboard_join (invariata) + update profiles.logo additivo.",
+    "immagini": "make_logos_final.py: center-crop quadrato -> 512 LANCZOS -> angoli arrotondati uniformi. Sfondo NON rimosso (cutout rompeva i crest scuri-su-scuro; modello ML irraggiungibile dalla rete sandbox).",
+    "deploy_order": ["loghi.sql nel SQL Editor", "bucket 'loghi' pubblico + carica i 25 PNG", "carica nuovo index.html (chiavi gia' dentro)", "notify.ts invariato"],
+}

@@ -85,6 +85,36 @@
   .avgrid.locked{opacity:.5;pointer-events:none}
   .av-empty{color:var(--muted);font-size:13px;text-align:center;padding:18px;border:1px dashed var(--line-strong);border-radius:14px}
 
+  /* ---- LOGHI SQUADRA ---- */
+  /* badge logo: box quadrato, immagine sempre intera (contain) e mai tagliata, dimensione uniforme */
+  .tlogo{object-fit:contain;display:inline-block;flex:none;vertical-align:middle;border-radius:4px}
+  .tlogo.ph{background:rgba(138,163,194,.14);border:1px dashed var(--line-strong);border-radius:50%}
+  /* griglia di scelta logo: tessere quadrate, crest centrato e intero */
+  .lggrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .lgopt{background:var(--surface);border:2px solid var(--line);border-radius:14px;aspect-ratio:1/1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .12s;overflow:hidden;padding:8px}
+  .lgopt:active{transform:scale(.93)}
+  .lgopt.on{border-color:var(--accent);box-shadow:0 0 0 2px rgba(61,139,255,.4);background:rgba(61,139,255,.1)}
+  .lgopt img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block}
+  .lggrid.locked{opacity:.5;pointer-events:none}
+
+  /* ---- WIZARD ONBOARDING (più pagine invece di un unico scroll) ---- */
+  .obstep{display:none}
+  .obstep.on{display:block;animation:obFade .25s ease}
+  @keyframes obFade{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+  .ob-dots{display:flex;gap:7px;margin:2px 2px 14px}
+  .ob-dots i{width:8px;height:8px;border-radius:50%;background:var(--line-strong);transition:background .2s,transform .2s}
+  .ob-dots i.on{background:var(--accent);transform:scale(1.15)}
+  .ob-navrow{display:flex;gap:10px;margin-top:18px}
+  .ob-back{flex:none;background:var(--surface);color:var(--text);border:1.5px solid var(--line-strong);border-radius:15px;padding:17px 18px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Hanken Grotesk'}
+  .ob-back:active{transform:scale(.98)}
+  .ob-navrow .ob-btn{margin-top:0;flex:1}
+
+  /* ---- STRISCIA SQUADRA SUL CAMPO (logo + nome sopra il verde) ---- */
+  .campo-team{display:flex;align-items:center;gap:10px;background:linear-gradient(160deg,#10294d,#0a1830);border:1px solid var(--line-strong);border-radius:14px;padding:10px 14px;margin-top:12px}
+  .campo-team .tlogo{width:30px;height:30px}
+  .campo-team b{font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .campo-team small{display:block;font-size:11px;color:var(--accent-soft);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1px}
+
   .styb{padding:8px 13px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'Hanken Grotesk'}
   .styb.on{border-color:var(--accent);color:var(--accent-soft);background:rgba(61,139,255,.12)}
   .ed-row .ed-lab{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:7px;text-transform:uppercase;letter-spacing:.05em}
@@ -113,7 +143,9 @@
   .hh-league:empty{display:none}
   .hh-season{flex:none;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--gold-soft);background:rgba(234,178,74,.14);border:1px solid rgba(234,178,74,.3);padding:5px 10px;border-radius:999px;white-space:nowrap}
   .hero .ko{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-soft);background:rgba(61,139,255,.14);border:1px solid rgba(61,139,255,.3);padding:5px 10px;border-radius:999px}
-  .hero .teampill{font-size:12px;font-weight:700;background:rgba(255,255,255,.07);border:1px solid var(--line);padding:5px 11px;border-radius:999px;max-width:50%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hero .teampill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;background:rgba(255,255,255,.07);border:1px solid var(--line);padding:5px 11px;border-radius:999px;max-width:55%;overflow:hidden;white-space:nowrap}
+  .hero .teampill .tnm{overflow:hidden;text-overflow:ellipsis}
+  .hero .teampill .tlogo{width:18px;height:18px}
   .hero h1{font-family:'Bricolage Grotesque';font-weight:800;font-size:26px;letter-spacing:-.03em;margin:10px 0 2px;line-height:1.02}
   .hero .sub{color:var(--muted);font-size:13px;margin-bottom:12px}
   .hero .cta{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;background:linear-gradient(135deg,var(--accent),#1f5fd6);color:#fff;font-weight:700;font-size:15px;border:none;padding:12px;border-radius:13px;cursor:pointer;box-shadow:0 12px 30px -8px rgba(61,139,255,.5);transition:transform .15s}
@@ -128,6 +160,7 @@
   .mini-board .mini-row:nth-child(3) .pos{color:#dba56f}
   .mini-row.me{background:rgba(61,139,255,.1);border-radius:12px}
   .mini-row .nm{flex:1;font-weight:600;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mini-row .tlogo{width:22px;height:22px}
   .mini-row .pt{font-family:'JetBrains Mono';font-weight:700;font-size:14px;color:var(--muted)}
 
   .section-h{display:flex;align-items:baseline;justify-content:space-between;margin:26px 2px 12px}
@@ -329,6 +362,7 @@
   .lb-row .tot{font-family:'JetBrains Mono';font-weight:700;font-size:18px;color:var(--neutral)}
   .lb-row:nth-child(1) .tot{color:var(--gold)}
   .lb-row .who{flex:1;overflow:hidden}
+  .lb-row .tlogo{width:26px;height:26px}
   .lb-row .who b{font-weight:700;font-size:15px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .lb-row .who span{font-size:12px;color:var(--muted)}
   .lb-row .tot{font-family:'JetBrains Mono';font-weight:700;font-size:18px;color:var(--muted)}
@@ -852,14 +886,22 @@
 <!-- ONBOARDING -->
 <div class="overlay hidden" id="onboard"><div class="ob-inner">
   <div class="ob-brand"><div class="dot"><img src="icon-512.png" alt=""></div><b>Fanta<span>calcetto</span></b></div>
-  <div class="ob-eye">Crea il tuo profilo</div>
-  <h1>Come vuoi giocare?</h1>
-  <div class="ed-sw" id="obMode" style="gap:10px;margin-bottom:6px">
-    <button class="styb" data-m="campo" style="flex:1;padding:14px">🏃 Gioco anche in campo</button>
-    <button class="styb" data-m="manager" style="flex:1;padding:14px">👔 Solo manager</button>
+  <div class="ob-eye" id="obEye">Crea il tuo profilo</div>
+  <div class="ob-dots" id="obDots"><i class="on"></i><i></i><i></i></div>
+
+  <!-- STEP 0 · come vuoi giocare -->
+  <div class="obstep on" id="obStepMode">
+    <h1>Come vuoi giocare?</h1>
+    <div class="ed-sw" id="obMode" style="gap:10px;margin-bottom:6px">
+      <button class="styb" data-m="campo" style="flex:1;padding:14px">🏃 Gioco anche in campo</button>
+      <button class="styb" data-m="manager" style="flex:1;padding:14px">👔 Solo manager</button>
+    </div>
+    <p class="vs" id="obModeHint" style="color:var(--muted);margin:0 2px 14px;font-size:12.5px">Scegli un'opzione per continuare.</p>
   </div>
-  <p class="vs" id="obModeHint" style="color:var(--muted);margin:0 2px 14px;font-size:12.5px">Scegli un'opzione per continuare.</p>
-  <div id="obFields" style="display:none">
+
+  <!-- STEP 1 · il tuo personaggio (o il tuo nome) -->
+  <div class="obstep" id="obStepChar">
+    <h1 id="obCharTitle">Il tuo personaggio</h1>
     <div id="obAvatarWrap">
       <div class="ob-preview" id="obPreview"></div>
       <div class="field-lab">Avatar</div>
@@ -869,10 +911,42 @@
       <button class="styb on" data-r="ATT">Attaccante</button><button class="styb" data-r="DIF">Difensore</button></div></div>
     <div style="margin-top:16px" id="obPlayerWrap"><div class="field-lab" id="obPlayerLab">Nome del personaggio</div>
       <input class="ob-input" id="playerInput" placeholder="Es. Bomber Cris" maxlength="16" autocomplete="off"></div>
-    <div style="margin-top:14px"><div class="field-lab">Nome della squadra</div>
-      <input class="ob-input" id="teamInput" placeholder="Es. Real Madruga" maxlength="24" autocomplete="off"></div>
-    <button class="ob-btn" id="obBtn">Entra →</button>
+    <div class="ob-navrow">
+      <button class="ob-back" type="button" onclick="obGo(0)">‹ Indietro</button>
+      <button class="ob-btn" type="button" id="obNextChar" onclick="obNextFromChar()">Avanti →</button>
+    </div>
   </div>
+
+  <!-- STEP 2 · la tua squadra (nome + logo) -->
+  <div class="obstep" id="obStepTeam">
+    <h1>La tua squadra</h1>
+    <div><div class="field-lab">Nome della squadra</div>
+      <input class="ob-input" id="teamInput" placeholder="Es. Real Madruga" maxlength="24" autocomplete="off"></div>
+    <div id="obLogoWrap" style="margin-top:16px">
+      <div class="ob-preview" id="obLogoPreview"></div>
+      <div class="field-lab">Logo della squadra</div>
+      <div class="lggrid" id="obLogoGrid"></div>
+    </div>
+    <div class="ob-navrow">
+      <button class="ob-back" type="button" onclick="obGo(1)">‹ Indietro</button>
+      <button class="ob-btn" type="button" id="obBtn">Entra →</button>
+    </div>
+  </div>
+</div></div>
+
+<!-- NOVITÀ LOGHI: avviso + scelta logo per le squadre già esistenti (lega già attiva) -->
+<div class="overlay hidden" id="logoIntro"><div class="ob-inner">
+  <div class="ob-brand"><div class="dot"><img src="icon-512.png" alt=""></div><b>Fanta<span>calcetto</span></b></div>
+  <div class="ob-eye">Novità</div>
+  <h1 id="logoIntroTitle">Scegli il logo<br>della tua squadra ⚽</h1>
+  <p class="vs" id="logoIntroText" style="color:var(--muted);margin:0 2px 16px;font-size:14px;line-height:1.55">
+    Ora ogni squadra ha il suo <b style="color:var(--accent-soft)">logo</b>: comparirà in classifica, in home e sul campo. Scegline uno adesso — potrai cambiarlo quando vuoi da <b>Impostazioni → Profilo</b>.
+  </p>
+  <div class="ob-preview" id="logoIntroPreview"></div>
+  <div class="field-lab">Loghi disponibili</div>
+  <div class="lggrid" id="logoIntroGrid"></div>
+  <button class="ob-btn" id="logoIntroSave" onclick="saveLogoIntro()">Salva il logo →</button>
+  <button class="ob-back" type="button" style="margin-top:10px;width:100%" onclick="dismissLogoIntro()">Lo scelgo più tardi</button>
 </div></div>
 
 <!-- REGOLE LEGA (solo per chi CREA la lega) -->
@@ -1022,6 +1096,7 @@
       <div class="budget-top"><span class="lab">Budget</span><span class="val"><b id="spent">0</b> / 100 cr · <span id="left" style="color:var(--muted)">100 rimasti</span></span></div>
       <div class="meter"><i id="meterFill"></i></div>
     </div>
+    <div class="campo-team" id="campoTeam" style="display:none"></div>
     <div class="pitch" id="pitch">
       <div class="mark m-box top"></div><div class="mark m-box bot"></div>
       <div class="mark m-goal top"></div><div class="mark m-goal bot"></div>
@@ -1079,7 +1154,9 @@
       <div class="set-card"><h3>Nome squadra</h3><input class="ob-input" id="setNameInput" maxlength="24" autocomplete="off"></div>
       <div class="set-card"><h3 id="setPlayerCardLab">Nome personaggio</h3><input class="ob-input" id="setPlayerInput" maxlength="16" autocomplete="off"></div>
       <div class="set-card" id="setAvatarCard"><h3>Avatar</h3><div class="avgrid" id="setGrid"></div></div>
-      <!-- LOGO SQUADRA: qui andrà la card del logo personalizzato quando sarà pronto -->
+      <div class="set-card" id="setLogoCard"><h3>Logo squadra</h3>
+        <div class="ob-preview" id="setLogoPreview" style="min-height:96px;margin-bottom:12px"></div>
+        <div class="lggrid" id="setLogoGrid"></div></div>
       <button class="save" id="setSaveBtn">Salva modifiche</button>
     </div>
 
@@ -1299,6 +1376,8 @@ const PRICE=20;
 const BUDGET=100;
 let sb=null, user=null, profile=null;
 let avatars=[];            // [{name,url}]
+let logos=[];              // [{name,url}] — crest/loghi squadra dal bucket "loghi"
+let teamLogoBy={};         // manager_id -> nome file logo
 let players=[];            // dal DB
 let standings=[];          // profiles (squadre)
 let standingsLoaded=false; // diventa true al primo caricamento (per gli skeleton)
@@ -1341,6 +1420,7 @@ function lineupBlockReason(){
 }
 function fmt(ms){ if(ms<0)ms=0; const d=Math.floor(ms/86400000),h=Math.floor(ms%86400000/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000),p=n=>String(n).padStart(2,'0'); return (d>0?d+'g ':'')+`${p(h)}:${p(m)}:${p(s)}`; }
 let obAvatar=null, myRole='ATT', setAvatarDraft=null, editDraft=null;
+let obLogo=null, setLogoDraft=null, obStep=0;   // loghi: scelta in onboarding e in impostazioni
 const MODULES={
   '1-2-2':{bonus:0, slots:[{key:"a1",label:"ATT",x:26,y:19},{key:"a2",label:"ATT",x:74,y:19},{key:"d1",label:"DIF",x:20,y:50},{key:"d2",label:"DIF",x:80,y:50},{key:"g1",label:"POR",x:50,y:82}]},
   '1-3-1':{bonus:5, slots:[{key:"a1",label:"ATT",x:50,y:16},{key:"d1",label:"DIF",x:18,y:48},{key:"d2",label:"DIF",x:50,y:53},{key:"d3",label:"DIF",x:82,y:48},{key:"g1",label:"POR",x:50,y:82}]},
@@ -1427,6 +1507,15 @@ function avatarImg(name,px){
   return a?`<img src="${a.url}" alt="" style="width:${px}px;height:auto;border-radius:8px;display:block" draggable="false">`
           :`<div style="width:${px}px;height:${Math.round(px*1.1)}px;border-radius:8px;background:var(--surface2);display:grid;place-items:center;color:var(--muted);font-size:${Math.round(px*.4)}px">?</div>`;
 }
+/* logo squadra: box quadrato px×px, immagine SEMPRE intera (contain) e mai tagliata.
+   Se la squadra non ha ancora scelto un logo -> segnaposto discreto della stessa misura. */
+function logoImg(name,px){
+  const a=name&&logos.find(x=>x.name===name);
+  if(a) return `<img class="tlogo" src="${a.url}" alt="" style="width:${px}px;height:${px}px" draggable="false">`;
+  return `<span class="tlogo ph" style="width:${px}px;height:${px}px"></span>`;
+}
+function teamLogoName(managerId){ return teamLogoBy[managerId]||''; }
+function teamLogoHTML(managerId,px){ return logoImg(teamLogoName(managerId),px); }
 function gateStatus(msg){document.getElementById('gateStatus').textContent=msg;}
 
 /* ---------- SPLASH (logo durante il caricamento) ---------- */
@@ -1460,6 +1549,7 @@ async function boot(){
 }
 async function afterLogin(){
   await loadAvatars();
+  await loadLogos();
   profile=await loadProfile();
   document.getElementById('gate').classList.add('hidden');
   if(!profile){ showLeague(); }
@@ -1467,6 +1557,7 @@ async function afterLogin(){
     document.getElementById('onboard').classList.add('hidden');
     document.getElementById('league').classList.add('hidden');
     await loadMyLeague();
+    await loadTeamLogos();
     await loadSeason();
     await loadPlayers(); await loadStandings(); await loadMatchdayData(); await loadPlannedPresences();
     applyProfile(); renderAll();
@@ -1474,6 +1565,7 @@ async function afterLogin(){
     loadCreditConfig();      // metodo crediti + sondaggio valori per tutti
     ensurePush();            // riaggancia le notifiche se la subscription era scaduta
     maybeShowLogoNotice();   // AVVISO TEMPORANEO (vedi blocco in fondo) — rimuovibile in un deploy futuro
+    maybeShowLogoIntro();    // novità loghi: chiede di scegliere il logo a chi non ce l'ha ancora
     const _rp=new URLSearchParams(location.search).get('recap');   // deep-link dalla push di chiusura
     if(_rp && !isNaN(parseInt(_rp))){ openRecap(parseInt(_rp), false); }
     else { maybeShowRecap(); }                                     // pagellone automatico una volta
@@ -1765,6 +1857,25 @@ async function loadAvatars(){
       .map(f=>({name:f.name,url:sb.storage.from('avatars').getPublicUrl(f.name).data.publicUrl}));
   }catch(e){ avatars=[]; }
   if(avatars.length) obAvatar=avatars[0].name;
+}
+/* Carica i loghi-squadra dal bucket "loghi" (stessa logica degli avatar). */
+async function loadLogos(){
+  try{
+    const {data,error}=await sb.storage.from('loghi').list('',{limit:200,sortBy:{column:'name',order:'asc'}});
+    if(error) throw error;
+    logos=(data||[]).filter(f=>/\.(png|jpe?g|webp|gif|svg)$/i.test(f.name))
+      .map(f=>({name:f.name,url:sb.storage.from('loghi').getPublicUrl(f.name).data.publicUrl}));
+  }catch(e){ logos=[]; }
+  if(logos.length && !obLogo) obLogo=logos[0].name;
+}
+/* Mappa manager_id -> nome logo per tutte le squadre della propria lega (per classifica/home/schede). */
+async function loadTeamLogos(){
+  teamLogoBy={};
+  try{
+    const {data,error}=await sb.rpc('get_team_logos');
+    if(error) throw error;
+    (data||[]).forEach(r=>{ if(r.logo) teamLogoBy[r.manager_id]=r.logo; });
+  }catch(e){ /* SQL non ancora applicata: nessun logo, l'app funziona lo stesso */ }
 }
 async function loadProfile(){
   const {data}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
@@ -2399,11 +2510,24 @@ function renderMatchday(){
   startCountdown();
 }
 
-/* ---------- ONBOARDING ---------- */
+/* ---------- ONBOARDING (wizard a più pagine) ---------- */
 function showOnboard(){
   document.getElementById('onboard').classList.remove('hidden');
-  renderOb();
-  setTimeout(()=>document.getElementById('playerInput').focus(),300);
+  playMode=null;
+  document.querySelectorAll('#obMode button').forEach(x=>x.classList.remove('on'));
+  document.getElementById('obModeHint').textContent="Scegli un'opzione per continuare.";
+  renderOb(); renderObLogo();
+  obGo(0);
+}
+function obGo(step){
+  obStep=step;
+  ['obStepMode','obStepChar','obStepTeam'].forEach((id,i)=>{const el=document.getElementById(id); if(el)el.classList.toggle('on',i===step);});
+  document.querySelectorAll('#obDots i').forEach((d,i)=>d.classList.toggle('on',i===step));
+  const eye=document.getElementById('obEye');
+  if(eye) eye.textContent = step===0?'Crea il tuo profilo' : step===1?(playMode==='manager'?'Il tuo profilo':'Il tuo personaggio') : 'La tua squadra';
+  const ov=document.getElementById('onboard'); if(ov)ov.scrollTop=0;
+  if(step===1 && playMode!=='campo') setTimeout(()=>{const el=document.getElementById('playerInput'); if(el)el.focus();},250);
+  if(step===2){ renderObLogo(); setTimeout(()=>{const el=document.getElementById('teamInput'); if(el)el.focus();},250); }
 }
 function renderOb(){
   const g=document.getElementById('obGrid'), pv=document.getElementById('obPreview');
@@ -2412,29 +2536,45 @@ function renderOb(){
   pv.innerHTML=avatarImg(obAvatar,120);
 }
 function pickOb(name){obAvatar=name;renderOb();}
+function renderObLogo(){
+  const g=document.getElementById('obLogoGrid'), pv=document.getElementById('obLogoPreview');
+  if(!g||!pv)return;
+  if(!logos.length){ g.innerHTML='<div class="av-empty">Nessun logo trovato. Carica i file nel bucket Storage \"loghi\" e ricarica la pagina.</div>'; pv.innerHTML='<div style="color:var(--muted)">—</div>'; return; }
+  if(!obLogo) obLogo=logos[0].name;
+  g.innerHTML=logos.map(l=>`<div class="lgopt ${l.name===obLogo?'on':''}" onclick="pickObLogo('${l.name}')"><img src="${l.url}"></div>`).join('');
+  pv.innerHTML=logoImg(obLogo,110);
+}
+function pickObLogo(name){ obLogo=name; renderObLogo(); }
+function obNextFromChar(){
+  const isCampo=playMode==='campo';
+  const pname=document.getElementById('playerInput').value.trim();
+  if(isCampo&&!obAvatar){toast('Scegli un avatar');return;}
+  if(!pname){toast(isCampo?'Inserisci il nome del personaggio':'Inserisci il tuo nome');return;}
+  obGo(2);
+}
 document.querySelectorAll('#obRole button').forEach(b=>b.onclick=()=>{myRole=b.dataset.r;document.querySelectorAll('#obRole button').forEach(x=>x.classList.toggle('on',x===b));});
 let playMode=null;
 document.querySelectorAll('#obMode button').forEach(b=>b.onclick=()=>{
   playMode=b.dataset.m;
   document.querySelectorAll('#obMode button').forEach(x=>x.classList.toggle('on',x===b));
   const isCampo=playMode==='campo';
-  document.getElementById('obFields').style.display='block';
   document.getElementById('obAvatarWrap').style.display=isCampo?'block':'none';
   document.getElementById('obRoleRow').style.display=isCampo?'flex':'none';
-  document.getElementById('obPlayerWrap').style.display='block';
+  document.getElementById('obCharTitle').textContent=isCampo?'Il tuo personaggio':'Il tuo nome';
   document.getElementById('obPlayerLab').textContent=isCampo?'Nome del personaggio':'Il tuo nome';
   document.getElementById('playerInput').placeholder=isCampo?'Es. Bomber Cris':'Es. Giulio';
   document.getElementById('obModeHint').textContent=isCampo?'Sarai nel listone e gli altri potranno schierarti.':'Avrai una squadra da fanta-manager, senza essere schierabile in campo.';
+  obGo(1);
 });
 document.getElementById('obBtn').onclick=async function(){
-  if(!playMode){toast('Scegli prima come vuoi giocare');return;}
+  if(!playMode){toast('Scegli prima come vuoi giocare'); obGo(0); return;}
   if(!pendingLeague){ toast('Scegli prima una lega'); showLeague(); return; }
   const isCampo=playMode==='campo';
   const team=document.getElementById('teamInput').value.trim();
   const pname=document.getElementById('playerInput').value.trim();
-  if(isCampo&&!obAvatar){toast('Scegli un avatar');return;}
+  if(isCampo&&!obAvatar){toast('Scegli un avatar'); obGo(1); return;}
+  if(!pname){toast(isCampo?'Inserisci il nome del personaggio':'Inserisci il tuo nome'); obGo(1); return;}
   if(!team){toast('Inserisci il nome della squadra');return;}
-  if(!pname){toast(isCampo?'Inserisci il nome del personaggio':'Inserisci il tuo nome');return;}
   this.disabled=true;
   const {error:e1}=await sb.rpc('onboard_join',{
     p_league:pendingLeague.id, p_password:pendingLeague.password,
@@ -2443,14 +2583,17 @@ document.getElementById('obBtn').onclick=async function(){
   if(e1){
     this.disabled=false; const m=e1.message||'';
     if(m.includes('team_taken')) toast('Nome squadra già in uso in questa lega');
-    else if(m.includes('player_taken')) toast('Nome giocatore già in uso in questa lega');
+    else if(m.includes('player_taken')){ toast('Nome giocatore già in uso in questa lega'); obGo(1); }
     else if(m.includes('password')){ toast('Password della lega errata'); showLeague(); }
     else toast('Errore profilo: '+m);
     return;
   }
   if(isCampo){ const {error:e2}=await sb.from('players').insert({name:pname,role:myRole,avatar:obAvatar,present:true,cost:PRICE,owner_id:user.id}); if(e2){this.disabled=false;toast('Errore giocatore: '+e2.message);return;} }
+  // salva il logo scelto (aggiornamento additivo: non tocca la RPC onboard_join)
+  if(obLogo){ try{ await sb.from('profiles').update({logo:obLogo}).eq('id',user.id); }catch(_){} }
   profile=await loadProfile();
   await loadMyLeague();
+  await loadTeamLogos();
   document.getElementById('onboard').classList.add('hidden');
   await loadPlayers(); await loadStandings(); await loadMatchdayData(); applyProfile(); renderAll();
   await loadMaintenance();
@@ -2468,7 +2611,8 @@ function go(v){
   toTop();
 }
 function applyProfile(){
-  document.getElementById('heroTeam').textContent=profile.team_name;
+  document.getElementById('heroTeam').innerHTML=teamLogoHTML(user.id,18)+`<span class="tnm">${esc(profile.team_name)}</span>`;
+  renderCampoTeam();
   document.getElementById('adminCard').style.display=profile.is_admin?'block':'none';
   document.getElementById('manageCard').style.display=profile.is_admin?'block':'none';
   const pc=document.getElementById('presCard'); if(pc)pc.style.display=(profile.is_admin&&!presenceSelf)?'block':'none';
@@ -2476,7 +2620,14 @@ function applyProfile(){
   const mtc=document.getElementById('maintCard'); if(mtc)mtc.style.display=profile.is_admin?'block':'none';
   const arow=document.getElementById('adminRow'); if(arow)arow.style.display=profile.is_admin?'flex':'none';
 }
-function renderAll(){renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderHomeBcards();}
+function renderAll(){renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderHomeBcards();renderCampoTeam();}
+/* striscia squadra (logo + nome) sopra il campo verde */
+function renderCampoTeam(){
+  const el=document.getElementById('campoTeam'); if(!el)return;
+  if(!profile){ el.style.display='none'; return; }
+  el.style.display='flex';
+  el.innerHTML=teamLogoHTML(user.id,30)+`<div style="min-width:0"><small>La tua squadra</small><b>${esc(profile.team_name)}</b></div>`;
+}
 
 /* ---------- BACHECA (render condiviso) ---------- */
 const MEDALS=['','🥉','🥈','🥇','💎'];   // index = tier (1..4)
@@ -2674,6 +2825,7 @@ function teamStatsGridHTML(card){
 function openTeamCard(managerId){
   document.getElementById('teamName').textContent='Carico…';
   document.getElementById('teamSub').textContent='';
+  document.getElementById('teamAv').innerHTML=teamLogoName(managerId)?logoImg(teamLogoName(managerId),46):'👔';
   document.getElementById('teamGrid').innerHTML='';
   document.getElementById('teamBacheca').innerHTML='<div class="bch-empty">Carico la bacheca…</div>';
   _teamCardId=managerId;
@@ -2749,7 +2901,7 @@ async function togglePresence(id){
 function renderMini(){
   const mb=document.getElementById('miniBoard');
   if(!standings.length){ mb.innerHTML = standingsLoaded ? '<div class="empty-note">Ancora nessuna squadra iscritta.</div>' : skeletonRows('mini',3); return; }
-  mb.innerHTML=standings.slice(0,3).map((t,i)=>`<div class="mini-row ${t.team_name===profile.team_name?'me':''}" data-id="${t.manager_id}"><div class="pos">${i+1}</div><div class="nm">${esc(t.team_name)} ${moveArrow(t.delta)}</div><div class="pt"><span class="num">${fmtPts(t.points||0)}</span></div></div>`).join('');
+  mb.innerHTML=standings.slice(0,3).map((t,i)=>`<div class="mini-row ${t.team_name===profile.team_name?'me':''}" data-id="${t.manager_id}"><div class="pos">${i+1}</div>${teamLogoHTML(t.manager_id,22)}<div class="nm">${esc(t.team_name)} ${moveArrow(t.delta)}</div><div class="pt"><span class="num">${fmtPts(t.points||0)}</span></div></div>`).join('');
 }
 function renderMarket(){
   const grid=document.getElementById('marketGrid'), emp=document.getElementById('marketEmpty');
@@ -3237,7 +3389,7 @@ function renderLB(){
   } else {
     if(hint)hint.textContent='Punti di giornata · tocca una squadra per vedere la formazione.';
     if(!mdStandings.length){el.innerHTML='<div class="empty-note">Nessuna squadra per questa giornata.</div>';return;}
-    el.innerHTML=mdStandings.map((t,i)=>`<div class="lb-row ${t.team_name===profile.team_name?'me':''}" onclick="openTeamLineup('${t.manager_id}','${t.team_name.replace(/'/g,"\\'")}')" style="cursor:pointer"><div class="rank">${i+1}</div><div class="who"><b>${t.team_name} ›</b><span>${t.player_name}</span></div><div class="tot">${fmtPts(t.points||0)}</div></div>`).join('');
+    el.innerHTML=mdStandings.map((t,i)=>`<div class="lb-row ${t.team_name===profile.team_name?'me':''}" onclick="openTeamLineup('${t.manager_id}','${t.team_name.replace(/'/g,"\\'")}')" style="cursor:pointer"><div class="rank">${i+1}</div>${teamLogoHTML(t.manager_id,26)}<div class="who"><b>${t.team_name} ›</b><span>${t.player_name}</span></div><div class="tot">${fmtPts(t.points||0)}</div></div>`).join('');
   }
 }
 async function loadMatchdaysList(){
@@ -3314,6 +3466,7 @@ function setNav(id){
 }
 function openSettings(){
   setAvatarDraft=profile.avatar;
+  setLogoDraft=profile.logo||null;
   const isPlayer=profile.is_player!==false;
   document.getElementById('setTeamName').textContent=profile.team_name;
   document.getElementById('setPlayerName').textContent=(isPlayer?'Giocatore: ':'Manager · ')+profile.player_name;
@@ -3323,19 +3476,28 @@ function openSettings(){
   document.getElementById('setPlayerInput').value=profile.player_name;
   document.getElementById('setPreview').innerHTML=avatarImg(profile.avatar,50);
   document.getElementById('setGrid').innerHTML=avatars.map(a=>`<div class="avopt ${a.name===setAvatarDraft?'on':''}" onclick="pickSet('${a.name}')"><img src="${a.url}"></div>`).join('');
+  renderSetLogo();
   if(profile.is_admin){ renderManage(); renderVoters(); loadInvite(); loadSchedule(); loadCreditConfig(); }
   renderNotifBtn(); renderMaintBtn();
 }
+function renderSetLogo(){
+  const grid=document.getElementById('setLogoGrid'), pv=document.getElementById('setLogoPreview');
+  if(!grid||!pv)return;
+  pv.innerHTML=setLogoDraft?logoImg(setLogoDraft,90):'<div style="color:var(--muted)">Nessun logo scelto</div>';
+  if(!logos.length){ grid.innerHTML='<div class="av-empty">Nessun logo trovato. Carica i file nel bucket Storage "loghi" e ricarica la pagina.</div>'; return; }
+  grid.innerHTML=logos.map(l=>`<div class="lgopt ${l.name===setLogoDraft?'on':''}" onclick="pickSetLogo('${l.name}')"><img src="${l.url}"></div>`).join('');
+}
+function pickSetLogo(name){ setLogoDraft=name; renderSetLogo(); }
 function pickSet(name){setAvatarDraft=name;document.getElementById('setGrid').querySelectorAll('.avopt').forEach((el,i)=>el.classList.toggle('on',avatars[i].name===name));}
 document.getElementById('setSaveBtn').onclick=async function(){
   const team=document.getElementById('setNameInput').value.trim()||profile.team_name;
   const pname=document.getElementById('setPlayerInput').value.trim()||profile.player_name;
-  const {error}=await sb.from('profiles').update({team_name:team,player_name:pname,avatar:setAvatarDraft}).eq('id',user.id);
+  const {error}=await sb.from('profiles').update({team_name:team,player_name:pname,avatar:setAvatarDraft,logo:setLogoDraft}).eq('id',user.id);
   if(error){toast('Errore: '+error.message);return;}
   if(profile.is_player!==false && profile.player_name){
     await sb.from('players').update({name:pname,avatar:setAvatarDraft}).eq('owner_id',user.id).eq('name',profile.player_name);
   }
-  profile=await loadProfile(); await loadPlayers(); await loadStandings();
+  profile=await loadProfile(); await loadTeamLogos(); await loadPlayers(); await loadStandings();
   applyProfile(); renderAll(); openSettings(); toast('Modifiche salvate');
 };
 document.getElementById('logoutBtn').onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
@@ -3537,6 +3699,45 @@ function maybeShowLogoNotice(){
   o.querySelector('#lnOk').onclick=()=>{ try{localStorage.setItem('fc_logo_notice_v1','1');}catch(_){ } o.remove(); };
 }
 /* ===== fine avviso temporaneo ===================================================== */
+
+/* ===== NOVITÀ LOGHI: avviso + scelta logo per squadre già esistenti ================
+   Si mostra a chi ha già una squadra ma NON ha ancora un logo. Resta finché non ne
+   sceglie uno (o lo rimanda per questa sessione). Le nuove squadre scelgono il logo
+   in fase di registrazione, quindi non vedono mai questo avviso. */
+let logoIntroDraft=null;
+function maybeShowLogoIntro(){
+  if(!profile) return;
+  if(profile.logo) return;                 // ha già un logo
+  if(!logos.length) return;                // nessun logo caricato: niente da scegliere
+  try{ if(sessionStorage.getItem('fc_logo_intro_snooze')) return; }catch(_){}
+  logoIntroDraft=logos[0].name;
+  document.getElementById('logoIntro').classList.remove('hidden');
+  renderLogoIntro();
+}
+function renderLogoIntro(){
+  const g=document.getElementById('logoIntroGrid'), pv=document.getElementById('logoIntroPreview');
+  if(!g||!pv)return;
+  pv.innerHTML=logoIntroDraft?logoImg(logoIntroDraft,120):'<div style="color:var(--muted)">—</div>';
+  g.innerHTML=logos.map(l=>`<div class="lgopt ${l.name===logoIntroDraft?'on':''}" onclick="pickLogoIntro('${l.name}')"><img src="${l.url}"></div>`).join('');
+}
+function pickLogoIntro(name){ logoIntroDraft=name; renderLogoIntro(); }
+async function saveLogoIntro(){
+  if(!logoIntroDraft){ toast('Scegli un logo'); return; }
+  const btn=document.getElementById('logoIntroSave'); if(btn)btn.disabled=true;
+  const {error}=await sb.from('profiles').update({logo:logoIntroDraft}).eq('id',user.id);
+  if(btn)btn.disabled=false;
+  if(error){ toast('Errore: '+error.message); return; }
+  profile.logo=logoIntroDraft;
+  teamLogoBy[user.id]=logoIntroDraft;
+  document.getElementById('logoIntro').classList.add('hidden');
+  applyProfile(); renderAll();
+  toast('Logo impostato! ⚽');
+}
+function dismissLogoIntro(){
+  try{ sessionStorage.setItem('fc_logo_intro_snooze','1'); }catch(_){}
+  document.getElementById('logoIntro').classList.add('hidden');
+}
+/* ===== fine novità loghi ========================================================== */
 
 /* ============================================================
    PAGELLONE DI FINE GIORNATA — modulo autonomo
@@ -3913,7 +4114,7 @@ function prefersReduce(){ try{ return matchMedia('(prefers-reduced-motion: reduc
 function lbRowHTML(t,i,pts,withArrow){
   const me=(profile&&t.team_name===profile.team_name)?'me':'';
   const arrow=withArrow?moveArrow(t.delta):'';
-  return `<div class="lb-row ${me}" data-id="${t.manager_id}" onclick="openTeamCard('${t.manager_id}')" style="cursor:pointer"><div class="rank">${i+1}</div><div class="who"><b>${esc(t.team_name)} ›</b><span>${esc(t.player_name)}</span></div><span class="mvw">${arrow}</span><div class="tot"><span class="num">${fmtPts(Number(pts)||0)}</span></div></div>`;
+  return `<div class="lb-row ${me}" data-id="${t.manager_id}" onclick="openTeamCard('${t.manager_id}')" style="cursor:pointer"><div class="rank">${i+1}</div>${teamLogoHTML(t.manager_id,26)}<div class="who"><b>${esc(t.team_name)} ›</b><span>${esc(t.player_name)}</span></div><span class="mvw">${arrow}</span><div class="tot"><span class="num">${fmtPts(Number(pts)||0)}</span></div></div>`;
 }
 /* freccia con classe .rv per il reveal animato (resta visibile, niente fade-out) */
 function moveArrowR(d){ if(!d)return ''; return d>0?`<span class="mv up rv">▲${d}</span>`:`<span class="mv down rv">▼${Math.abs(d)}</span>`; }
