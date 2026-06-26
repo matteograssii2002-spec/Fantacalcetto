@@ -1854,7 +1854,11 @@ async function loadAvatars(){
     const {data,error}=await sb.storage.from('avatars').list('',{limit:200,sortBy:{column:'name',order:'asc'}});
     if(error) throw error;
     avatars=(data||[]).filter(f=>/\.(png|jpe?g|webp|gif)$/i.test(f.name))
-      .map(f=>({name:f.name,url:sb.storage.from('avatars').getPublicUrl(f.name).data.publicUrl}));
+      .map(f=>{
+        const base=sb.storage.from('avatars').getPublicUrl(f.name).data.publicUrl;
+        const ver=f.updated_at||f.created_at||(f.metadata&&f.metadata.lastModified)||'';
+        return {name:f.name, url: ver ? base+'?v='+encodeURIComponent(ver) : base};
+      });
   }catch(e){ avatars=[]; }
   if(avatars.length) obAvatar=avatars[0].name;
 }
