@@ -1511,3 +1511,7 @@ Due statistiche ancora da aggiungere (servono i corpi attuali di `get_team_card`
 - squadra → **miglior posizione mai raggiunta** in classifica (oltre all'attuale)
 - giocatore → **miglior voto preso in una giornata** (oltre a media + grafico)
 Recuperare il sorgente con `select pg_get_functiondef('get_team_card(uuid)'::regprocedure);` (e `get_player_card(bigint)`), poi `CREATE OR REPLACE` additivo.
+
+### 35.3 Stat aggiuntive — FATTE
+- **Giocatore · miglior voto in una giornata**: calcolato client-side dal **massimo** dei dati di `get_player_vote_trend` (nessuna modifica SQL). Mostrato nell'header del grafico voti: "media X · **top Y**" (`voteTrendHTML`).
+- **Squadra · miglior posizione mai raggiunta**: `best_pos.sql` ridefinisce `get_team_card(uuid)` (CREATE OR REPLACE, stessa firma) aggiungendo `stats.best_pos`, calcolato ricostruendo la classifica cumulativa giornata-per-giornata (`get_standings_md` sommato) e prendendo il rank minimo, in blocco `begin/exception` (fallisce→NULL, scheda intatta). Mostrato in `teamStatsGridHTML` come box "Miglior posizione" (oro), accanto a "Posizione".

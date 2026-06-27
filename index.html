@@ -2786,6 +2786,7 @@ function voteTrendHTML(pts){
   const W=320, H=150, padL=10, padR=10, padT=24, padB=24;
   const vals=pts.map(p=>p.v);
   const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+  const best=Math.max(...vals);
   // scala Y dinamica ma "umana": min/max attorno ai voti reali, arrotondati a interi, minimo 2 punti d'aria
   let lo=Math.floor(Math.min(...vals)), hi=Math.ceil(Math.max(...vals));
   if(hi-lo<2){ lo=Math.max(1,lo-1); hi=Math.min(10,hi+1); }
@@ -2811,7 +2812,7 @@ function voteTrendHTML(pts){
       <text x="${x}" y="${(H-8).toFixed(1)}" text-anchor="middle" font-family="'Hanken Grotesk',sans-serif" font-size="9.5" font-weight="700" fill="#8aa3c2">${p.lab}</text>
     </g>`;
   }).join('');
-  return `<div class="vt-h"><span class="vt-t">📈 Andamento voti</span><span class="vt-avg">media ${avg.toFixed(1).replace('.0','')}</span></div>
+  return `<div class="vt-h"><span class="vt-t">📈 Andamento voti</span><span class="vt-avg">media ${avg.toFixed(1).replace('.0','')} · <b style="color:#37c98a">top ${best.toFixed(1).replace('.0','')}</b></span></div>
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Andamento dei voti per giornata">
       <defs>
         <linearGradient id="vtFill" x1="0" y1="0" x2="0" y2="1">
@@ -2834,6 +2835,7 @@ function teamStatsGridHTML(card){
   let h='';
   h+=box(fmtPts(st.points||0),'Punti'+(card.season_no?' · St.'+card.season_no:''),'accent');
   if(st.pos) h+=box(st.pos+'°','Posizione');
+  if(st.best_pos) h+=box(st.best_pos+'°','Miglior posizione','gold');
   h+=box(st.wins||0,'Vittorie giornata');
   h+=box(st.leader_days||0,'Giornate da leader','gold');
   if(st.best_climb) h+=box('+'+st.best_climb,'Miglior balzo');

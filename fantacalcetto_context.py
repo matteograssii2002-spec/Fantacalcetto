@@ -832,3 +832,9 @@ CARD_FUT_MERCATO = {
     "cache_busting": "loadAvatars/loadLogos aggiungono ?v=updated_at: file stesso nome -> versione nuova subito (no cache browser/PWA/CDN)",
     "DA_FARE": "2 stat: miglior posizione squadra + miglior voto giocatore; servono i corpi attuali di get_team_card/get_player_card (pg_get_functiondef), poi CREATE OR REPLACE additivo",
 }
+
+
+STAT_AGGIUNTIVE_FATTE = {
+    "giocatore_miglior_voto": "client-side: max dei dati get_player_vote_trend; mostrato in voteTrendHTML header 'media X · top Y' (nessun SQL)",
+    "squadra_miglior_posizione": "best_pos.sql: CREATE OR REPLACE get_team_card(uuid) stessa firma; stats.best_pos = min rank classifica cumulativa (get_standings_md sommato giornata per giornata) in blocco begin/exception (fail->NULL); mostrato in teamStatsGridHTML box 'Miglior posizione' oro",
+}
