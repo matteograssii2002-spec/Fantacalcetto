@@ -1484,3 +1484,30 @@ Ogni squadra (= profilo) può avere un **logo/crest** scelto da una raccolta con
 2. **Storage**: crea bucket pubblico `loghi`, carica `logo-01…25.png`.
 3. **index.html**: carica la nuova versione (chiavi già dentro).
 4. Nessuna modifica a `notify.ts`.
+
+---
+
+## 35. CARD GIOCATORE STILE FUT (mercato)
+
+Le card del mercato (`renderMarket`) non sono più rettangolari ma a **sagoma FUT** (SVG inline).
+
+**Sagoma:** `FC_PATH` (costante JS), viewBox `0 0 200 261`. Estratta da un template immagine, resa simmetrica/centrata, ammorbidita (Chaikin) e allargata, con punta inferiore pulita. **Non è la silhouette EA** (modificata apposta per copyright).
+
+**Layout:** colonna sinistra impilata **ruolo → logo squadra → crediti**; **foto** (avatar) grande spostata a destra, ancorata in basso e sfumata (`xMidYMax meet`, mai schiacciata/tagliata); sotto al centro **nome → forma → "FC"/"CARDS"** (FC grande, CARDS piccolo). Colori app (blu scuro/blu/bianco, accento azzurro).
+
+**Bordo dinamico:** lo stroke (+glow) della card prende il **colore della forma**: `In forma`→verde `#37c98a`, `In calo`→rosso `#ff6b6b`, `Costante`→azzurro `#3d8bff` (`fcFormColor`).
+
+**Logo sulla card (`fcCardLogoUrl`)** — 3 casi: squadra con logo → mostra; **senza squadra** (`owner_id` null, es. benzo) → logo **fisso "a caso"** deterministico (`hashStr(id)%logos.length`); squadra **senza logo scelto** → **vuoto** finché non sceglie.
+
+**Funzioni:** `playerCardSVG(p,s)` costruisce l'SVG (id unici per giocatore); `renderMarket` ora produce `<div class="pcard-fc" onclick="openPlayerStats(id)">` con i badge sovrapposti (👑 capocannoniere, 🚑 infortunato, "Tu"). Dati usati: `p.role`, `p.avatar`, `p.cost` (crediti), `p.owner_id`, `s.forma`. Foto/loghi via `<image href>` (transparenti).
+
+**Verifica render:** generata in locale con `cairosvg` prima dell'implementazione (più iterazioni di forma approvate dall'utente).
+
+### 35.1 Cache-busting immagini (avatar + loghi)
+`loadAvatars()` e `loadLogos()` aggiungono `?v=<updated_at>` all'URL pubblico: sostituendo un file con lo **stesso nome** nel bucket, l'app mostra subito la versione nuova (niente cache vecchia di browser/PWA/CDN). Imparato risolvendo "vedo ancora le immagini vecchie dopo l'upload".
+
+### 35.2 DA FARE (prossimo step, richiede il sorgente SQL attuale)
+Due statistiche ancora da aggiungere (servono i corpi attuali di `get_team_card`/`get_player_card`):
+- squadra → **miglior posizione mai raggiunta** in classifica (oltre all'attuale)
+- giocatore → **miglior voto preso in una giornata** (oltre a media + grafico)
+Recuperare il sorgente con `select pg_get_functiondef('get_team_card(uuid)'::regprocedure);` (e `get_player_card(bigint)`), poi `CREATE OR REPLACE` additivo.

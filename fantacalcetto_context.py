@@ -818,3 +818,17 @@ LOGHI_SQUADRA = {
     "immagini": "make_logos_final.py: center-crop quadrato -> 512 LANCZOS -> angoli arrotondati uniformi. Sfondo NON rimosso (cutout rompeva i crest scuri-su-scuro; modello ML irraggiungibile dalla rete sandbox).",
     "deploy_order": ["loghi.sql nel SQL Editor", "bucket 'loghi' pubblico + carica i 25 PNG", "carica nuovo index.html (chiavi gia' dentro)", "notify.ts invariato"],
 }
+
+
+# ============================================================================
+# SESSIONE — CARD GIOCATORE STILE FUT (mercato) + cache-busting immagini
+# ============================================================================
+CARD_FUT_MERCATO = {
+    "sagoma": "FC_PATH costante JS, viewBox 0 0 200 261; estratta da template, simmetrica/centrata, Chaikin+allargata, punta pulita; NON silhouette EA (modificata per copyright)",
+    "layout": "sx impilati ruolo->logo->crediti; foto avatar a destra ancorata in basso e sfumata (xMidYMax meet, mai schiacciata); sotto centro nome->forma->FC/CARDS",
+    "bordo_dinamico": "stroke+glow = colore forma: In forma verde #37c98a, In calo rosso #ff6b6b, Costante azzurro #3d8bff (fcFormColor)",
+    "logo_3_casi": "fcCardLogoUrl: squadra con logo->mostra; senza squadra (owner_id null, benzo)->logo fisso casuale hashStr(id)%len; squadra senza logo->vuoto",
+    "funzioni": "playerCardSVG(p,s) [id unici per giocatore]; renderMarket -> <div class=pcard-fc onclick=openPlayerStats>; badge 👑/🚑/Tu sovrapposti; dati p.role/p.avatar/p.cost/p.owner_id/s.forma; immagini via <image href> trasparenti",
+    "cache_busting": "loadAvatars/loadLogos aggiungono ?v=updated_at: file stesso nome -> versione nuova subito (no cache browser/PWA/CDN)",
+    "DA_FARE": "2 stat: miglior posizione squadra + miglior voto giocatore; servono i corpi attuali di get_team_card/get_player_card (pg_get_functiondef), poi CREATE OR REPLACE additivo",
+}
