@@ -198,10 +198,10 @@
   .pcard-fc:active{transform:scale(.98)}
   .pcard-fc.absent{opacity:.45}
   .pcard-fc svg{display:block;width:100%;height:auto;overflow:visible}
-  .fc-badge{position:absolute;z-index:2;font-size:10px;font-weight:800;line-height:1;padding:3px 7px;border-radius:999px;white-space:nowrap;letter-spacing:.01em}
-  .fc-badge.gold{top:6%;left:50%;transform:translateX(-50%);background:rgba(234,178,74,.92);color:#241a05}
-  .fc-badge.red{top:6%;left:50%;transform:translateX(-50%);background:rgba(255,99,99,.92);color:#3a0c0c}
-  .fc-badge.me{top:5%;right:8%;background:rgba(61,139,255,.92);color:#fff}
+  .fc-badge{position:absolute;z-index:2;font-size:7.5px;font-weight:800;line-height:1;padding:2px 5.5px;border-radius:999px;white-space:nowrap;letter-spacing:.01em;max-width:80%;overflow:hidden;text-overflow:ellipsis}
+  .fc-badge.gold{top:9%;left:50%;transform:translateX(-50%);background:rgba(234,178,74,.92);color:#241a05}
+  .fc-badge.red{top:9%;left:50%;transform:translateX(-50%);background:rgba(255,99,99,.92);color:#3a0c0c}
+  .fc-badge.me{top:7%;right:7%;background:rgba(61,139,255,.92);color:#fff}
   .forma{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:4px}
   .forma.up{background:rgba(46,196,128,.16);color:var(--green)}
   .forma.down{background:rgba(255,99,99,.15);color:var(--red)}
@@ -2967,10 +2967,10 @@ function playerCardSVG(p,s){
   const nm=esc(p.name||'');
   const role=esc(p.role||'');
   const nmSize = nm.length>14?32 : (nm.length>11?38 : 46);
-  const arrow = s.forma==='In forma'?`M196,566 l9,-13 l9,13 Z` : s.forma==='In calo'?`M196,553 l9,13 l9,-13 Z` : `M197,554 h15 v12 h-15 Z`;
+  const fsym = s.forma==='In forma'?'▲':(s.forma==='In calo'?'▼':'■');
   const flabel = esc(s.forma||'Costante');
   const photo = av ? `<image href="${av.url}" x="150" y="80" width="355" height="390" preserveAspectRatio="xMidYMax meet"${p.injured?' style="filter:grayscale(.7) brightness(.85)"':''}/>` : '';
-  const logo = logoU ? `<image href="${logoU}" x="80" y="238" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>` : '';
+  const logo = logoU ? `<image href="${logoU}" x="80" y="224" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>` : '';
   return `<svg viewBox="0 0 560 716" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <clipPath id="fcav${u}"><path d="M150,80 H505 V470 H150 Z"/></clipPath>
@@ -2987,8 +2987,7 @@ function playerCardSVG(p,s){
     <text x="112" y="400" text-anchor="middle" font-family="'Hanken Grotesk'" font-size="17" font-weight="800" fill="#eab24a" opacity="0.9" letter-spacing="1">CREDITI</text>
     <line x1="105" y1="462" x2="455" y2="462" stroke="#7c5cff" stroke-width="2" opacity="0.45"/>
     <text x="280" y="524" text-anchor="middle" font-family="'Bricolage Grotesque'" font-size="${nmSize}" font-weight="800" fill="#eaf1fb">${nm}</text>
-    <path d="${arrow}" fill="${col}"/>
-    <text x="225" y="570" font-family="'Hanken Grotesk'" font-size="30" font-weight="600" fill="${col}">${flabel}</text>
+    <text x="280" y="572" text-anchor="middle" font-family="'Hanken Grotesk'" font-size="30" font-weight="700" fill="${col}">${fsym} ${flabel}</text>
     <text x="280" y="628" text-anchor="middle" font-family="'Bricolage Grotesque'" font-size="30" font-weight="800" fill="#cfe0ff">FC</text>
     <text x="280" y="648" text-anchor="middle" font-family="'Hanken Grotesk'" font-size="14" font-weight="700" fill="#9fb3d4" letter-spacing="3">CARDS</text>
   </svg>`;
@@ -2999,7 +2998,7 @@ function renderMarket(){
   emp.innerHTML='';
   const topGol=Math.max(0,...players.map(p=>(playerStats[p.id]||{}).gol||0));
   grid.innerHTML=[...players].sort((a,b)=>(b.cost??PRICE)-(a.cost??PRICE)).map(p=>{
-    const dim=currentMd&&currentMd.status!=='closed'&&!isPresent(p);
+    const dim=p.injured||(currentMd&&currentMd.status!=='closed'&&!isPresent(p));
     const s=playerStats[p.id]||{forma:'Costante'};
     const capo=topGol>0&&((s.gol||0)===topGol);
     return `<div class="pcard-fc ${dim?'absent':''}" onclick="openPlayerStats(${p.id})">
