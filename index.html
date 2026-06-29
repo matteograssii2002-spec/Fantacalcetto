@@ -946,8 +946,7 @@
   .section-h h2::before{content:"";flex:none;width:4px;height:18px;border-radius:3px;background:linear-gradient(180deg,var(--accent-soft),var(--accent-deep))}
 
   /* --- 4. LE CARD VERE (quelle che restano) galleggiano morbide ---- */
-  .set-card,.vcard,.budget-wrap,.prof,.pgrid .pcard,.acc-head,.navrow,
-  .bcard,.hpcard,.countdown,.ptcard,.admin-card,.stat-box{
+  .set-card,.prof,.pgrid .pcard,.acc-head,.navrow,.hpcard,.admin-card{
     box-shadow:var(--shadow-card), inset 0 1px 0 rgba(255,255,255,.045);
   }
   .pgrid .pcard{background:linear-gradient(165deg,#17305a,#102341)}
@@ -961,6 +960,45 @@
   .nav button.on .ic svg{filter:drop-shadow(0 0 10px rgba(63,151,255,.6))}
   .nav button.navmain.on .ic svg{filter:drop-shadow(0 0 11px rgba(63,151,255,.7))}
   .wallet .num,.hh-season{text-shadow:0 0 14px rgba(255,194,61,.35)}
+
+  /* --- 7. STESSA LOGICA SULLE ALTRE PAGINE ------------------------ */
+
+  /* VOTI — via la card: resta l'intestazione e la lista voti integrata */
+  .vcard{background:none;border:none;border-radius:0;padding:0;margin-top:8px;box-shadow:none}
+  .vcard .vs{margin-bottom:8px}
+  .vrow{padding:14px 2px}
+
+  /* CAMPO + VOTI — countdown, punti-giornata e budget diventano "strisce"
+     pulite separate da una linea, non più riquadri */
+  .countdown,.ptcard{background:none;border:none;border-radius:0;padding:15px 2px;
+    border-bottom:1px solid var(--line);box-shadow:none;margin-top:0}
+  .ptcard{margin-top:2px}
+  .budget-wrap{background:none;border:none;border-radius:0;padding:15px 2px 6px;
+    margin-top:2px;border-bottom:1px solid var(--line);box-shadow:none}
+  /* numeri protagonisti sulle strisce */
+  .ptbig{font-size:38px}
+  .countdown .ct{font-size:24px}
+
+  /* DETTAGLIO GIOCATORE / SQUADRA — le mattonelle statistiche perdono il
+     bordo: numero grande su superficie appena accennata, niente scatole dure */
+  .stat-box{background:rgba(126,194,255,.05);border:none;border-radius:16px;padding:17px 12px;box-shadow:none}
+  .stat-box .v{font-size:26px}
+  .stat-box.accent{background:rgba(63,151,255,.10)}
+  .stat-box.gold{background:rgba(255,194,61,.10)}
+  .stat-box.green{background:rgba(47,217,138,.10)}
+  .stat-grid{gap:8px}
+  /* andamento voti: pannello più morbido, niente bordo netto */
+  .vtrend{background:linear-gradient(165deg,rgba(63,151,255,.08),rgba(16,36,67,.4));border:none;box-shadow:var(--shadow-card)}
+
+  /* HOME — le due schede "Da giocatore / Da manager":
+     da riquadri a righe-elenco con icona in pastiglia e chevron */
+  .bcard,.bcard.manager{background:none;border:none;border-radius:0;
+    padding:16px 2px;margin-top:4px;border-top:1px solid var(--line);box-shadow:none}
+  .bcard .bc-ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;
+    font-size:24px;background:rgba(63,151,255,.10);filter:none}
+  .bcard.manager .bc-ic{background:rgba(255,194,61,.12)}
+  .bcard .bc-arr{font-size:22px}
+  .bcard .bc-pill{background:rgba(126,194,255,.06)}
 </style>
 </head>
 <body>
@@ -2501,7 +2539,7 @@ function renderHomeBcards(force){
       if(card.dept) meta.push(`<span class="bc-pill">🎯 ${card.dept.pos}° tra ${esc(card.dept.label)}</span>`);
       pc.innerHTML=`<div class="bcard-top">
           <div class="bc-ic">${card.headline?card.headline.icon:'🏅'}</div>
-          <div class="bc-tx"><div class="bc-eyebrow">Il tuo punto di forza</div>
+          <div class="bc-tx"><div class="bc-eyebrow">Da giocatore</div>
             <div class="bc-title">${esc(card.headline?card.headline.text:'In gioco')}</div>
             <div class="bc-sub">${esc(card.headline?card.headline.sub:'')}</div></div>
           <div class="bc-arr">›</div></div>
