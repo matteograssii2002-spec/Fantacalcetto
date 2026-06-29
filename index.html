@@ -46,9 +46,9 @@
     padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);transition:opacity .55s ease, transform .55s ease}
   #splash.gone{opacity:0;transform:scale(1.04);pointer-events:none}
   /* 1) il LOGO cade dall'alto con rimbalzo, alone che pulsa + onda che si espande */
-  .sp-logowrap{position:relative;display:grid;place-items:center;animation:spDrop .9s cubic-bezier(.2,.85,.3,1) both}
+  .sp-logowrap{position:relative;display:grid;place-items:center;animation:spDrop 1.15s cubic-bezier(.2,.85,.3,1) both}
   .sp-logowrap::after{content:"";position:absolute;width:118px;height:118px;border-radius:30px;
-    box-shadow:0 0 0 0 rgba(63,151,255,.45);animation:spRing 1.5s ease .72s both}
+    box-shadow:0 0 0 0 rgba(63,151,255,.45);animation:spRing 1.8s ease .9s both}
   @keyframes spDrop{0%{opacity:0;transform:translateY(-185px) scale(.7) rotate(-6deg)}
     58%{opacity:1;transform:translateY(14px) scale(1.05) rotate(2deg)}
     78%{transform:translateY(-5px) scale(.99) rotate(0)}100%{transform:none}}
@@ -61,16 +61,16 @@
   .sp-logo img{width:100%;height:100%;object-fit:cover;display:block}
   /* 2) FANTA da sinistra + CALCETTO da destra, si uniscono */
   .sp-name{display:flex;justify-content:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:26px;letter-spacing:-.03em;margin-top:22px}
-  .sp-name .np-a{opacity:0;animation:spLeft .7s cubic-bezier(.2,.8,.2,1) .52s both}
-  .sp-name .np-b{color:var(--accent-soft);opacity:0;animation:spRight .7s cubic-bezier(.2,.8,.2,1) .52s both}
+  .sp-name .np-a{opacity:0;animation:spLeft .8s cubic-bezier(.2,.8,.2,1) .68s both}
+  .sp-name .np-b{color:var(--accent-soft);opacity:0;animation:spRight .8s cubic-bezier(.2,.8,.2,1) .68s both}
   @keyframes spLeft{0%{opacity:0;transform:translateX(-44px)}100%{opacity:1;transform:none}}
   @keyframes spRight{0%{opacity:0;transform:translateX(44px)}100%{opacity:1;transform:none}}
   /* 3) "IL TUO CAMPIONATO" sale dal basso */
   .sp-tag{font-size:12.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-top:8px;opacity:0;
-    animation:spUp .7s cubic-bezier(.2,.8,.2,1) .98s both}
+    animation:spUp .8s cubic-bezier(.2,.8,.2,1) 1.25s both}
   @keyframes spUp{0%{opacity:0;transform:translateY(18px)}100%{opacity:1;transform:none}}
   /* 4) i puntini compaiono per ultimi */
-  .sp-load{display:flex;gap:7px;position:absolute;bottom:calc(46px + env(safe-area-inset-bottom));opacity:0;animation:spFadeIn .5s ease 1.28s both}
+  .sp-load{display:flex;gap:7px;position:absolute;bottom:calc(46px + env(safe-area-inset-bottom));opacity:0;animation:spFadeIn .55s ease 1.62s both}
   @keyframes spFadeIn{to{opacity:1}}
   .sp-load i{width:8px;height:8px;border-radius:50%;background:var(--accent-soft);animation:spBlink 1.1s infinite ease-in-out}
   .sp-load i:nth-child(2){animation-delay:.16s}.sp-load i:nth-child(3){animation-delay:.32s}
@@ -1010,15 +1010,17 @@
   /* andamento voti: pannello più morbido, niente bordo netto */
   .vtrend{background:linear-gradient(165deg,rgba(63,151,255,.08),rgba(16,36,67,.4));border:none;box-shadow:var(--shadow-card)}
 
-  /* HOME — le due schede "Da giocatore / Da manager":
-     da riquadri a righe-elenco con icona in pastiglia e chevron */
-  .bcard,.bcard.manager{background:none;border:none;border-radius:0;
-    padding:16px 2px;margin-top:4px;border-top:1px solid var(--line);box-shadow:none}
+  /* HOME — "Da giocatore / Da manager": due blocchi morbidi distinti per
+     colore (azzurro vs oro), così non si confondono tra loro né con la classifica.
+     Niente bordo né divisorio: solo una tinta tenue. */
+  .bcard{background:rgba(63,151,255,.06);border:none;border-radius:16px;
+    padding:14px 14px;margin-top:10px;box-shadow:none}
+  .bcard.manager{background:rgba(255,194,61,.06)}
   .bcard .bc-ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;
-    font-size:24px;background:rgba(63,151,255,.10);filter:none}
-  .bcard.manager .bc-ic{background:rgba(255,194,61,.12)}
+    font-size:24px;background:rgba(63,151,255,.14);filter:none}
+  .bcard.manager .bc-ic{background:rgba(255,194,61,.16)}
   .bcard .bc-arr{font-size:22px}
-  .bcard .bc-pill{background:rgba(126,194,255,.06)}
+  .bcard .bc-pill{background:rgba(255,255,255,.05);border-color:transparent}
 
   /* --- 8. VIA LE "PILL"-SCATOLA: diventano etichette pulite ------- */
   /* Stagione, Giornata, Squadra (hero) e Lega (classifica): niente più
@@ -1297,15 +1299,17 @@
       </div>
       <div class="hero-top"><span class="ko" id="heroKo">● FantaCalcetto</span><span class="teampill" id="heroTeam">La tua squadra</span></div>
       <h1>Pronto a<br><span class="hot">schierare?</span></h1>
-      <p class="sub">Hai 100 crediti. Scegli i 5 e nomina il capitano.</p>
       <button class="cta" onclick="go('formazione')">Schiera la formazione →</button>
     </div>
     <div class="hpcard" id="homeValuePoll" style="display:none"></div>
     <div class="hpcard" id="homePresence" style="display:none"></div>
     <div class="section-h"><h2>Classifica</h2><a onclick="go('classifica')">Vedi tutti</a></div>
     <div class="mini-board" id="miniBoard"></div>
-    <div class="bcard" id="homeBcardPlayer" style="display:none" onclick="openMyPlayerBacheca()"></div>
-    <div class="bcard manager" id="homeBcardMgr" style="display:none" onclick="openMyTeamBacheca()"></div>
+    <div id="homeStatsWrap" style="display:none">
+      <div class="section-h"><h2>Statistiche</h2></div>
+      <div class="bcard" id="homeBcardPlayer" style="display:none" onclick="openMyPlayerBacheca()"></div>
+      <div class="bcard manager" id="homeBcardMgr" style="display:none" onclick="openMyTeamBacheca()"></div>
+    </div>
     <div id="homeRecapWrap" style="display:none">
       <div class="section-h"><h2>Pagellone di Giornata</h2></div>
       <button class="pag-open-btn" id="homeRecapBtn" onclick="openRecapLatest()" style="margin-top:0">
@@ -1338,7 +1342,7 @@
       <div class="mark m-arc top"></div><div class="mark m-arc bot"></div>
       <div class="mark m-halfway"></div><div class="mark m-circle"></div><div class="mark m-spot"></div>
     </div>
-    <p class="hint">Tocca uno slot per scegliere (solo presenti). Tocca uno schierato per il <b style="color:var(--gold)">capitano</b> o per rimuoverlo.</p>
+    <p class="hint">Tocca uno slot per scegliere. Tocca uno schierato per renderlo <b style="color:var(--gold)">capitano</b> o rimuoverlo.</p>
     <button class="save" id="saveBtn" disabled>Conferma formazione</button>
   </section>
 
@@ -1347,14 +1351,14 @@
     <div class="countdown"><div class="cl" id="cdLabel">Giornata</div><div class="ct" id="cdTime">—</div></div>
     <div class="vcard">
       <div class="vcard-h"><h3>Vota i giocatori</h3><button class="vsend" id="submitVotesBtn" onclick="submitVotes()" style="display:none">Invia voti</button></div>
-      <p class="vs">Dai un voto da 1 a 10 (anche mezzi, es. 7.5) a <b>tutti</b> e tocca la 🏆 per scegliere l'<b>MVP</b>. Poi premi <b>Invia voti</b>: senza, non si salva nulla.</p>
+      <p class="vs">Vota da 1 a 10 ogni giocatore. Tocca la 🏆 per l'<b>MVP</b>, poi <b>Invia voti</b> per salvare.</p>
       <div id="voteList"></div>
       <div class="vote-req" id="voteReq" style="display:none"></div>
     </div>
     <div class="admin-card" id="adminCard" style="display:none">
       <span class="admin-badge">🔒 Solo amministratore</span>
       <h3 style="font-family:'Bricolage Grotesque';font-size:15px;margin-bottom:4px">Bonus / Malus partita</h3>
-      <p class="vs" style="color:#b89a6a">Registra gol, assist, gol del portiere e autogol <b>dal vivo, durante la partita</b>. Si salva sul telefono e carichi tutto alla fine.</p>
+      <p class="vs" style="color:#b89a6a">Registra gol, assist e altri eventi dal vivo. Carichi tutto a fine partita.</p>
       <button class="set-btn live-open" id="liveOpenBtn" onclick="openLiveStats()" style="margin-top:6px">📊 Apri pannello partita</button>
       <div class="vs" id="liveOpenHint" style="color:var(--muted);margin-top:8px;font-size:12.5px"></div>
     </div>
@@ -1408,7 +1412,7 @@
       <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
       <div class="section-h"><h2>Notifiche</h2></div>
       <div class="set-card"><h3>Avvisi giornate</h3>
-        <p class="vs" style="color:var(--muted);font-size:12.5px;margin-bottom:10px">Avvisi quando una giornata si apre o si chiude. Pochi e importanti.</p>
+        <p class="vs" style="color:var(--muted);font-size:12.5px;margin-bottom:10px">Avvisi quando una giornata si apre o si chiude.</p>
         <button class="set-btn" id="notifBtn">🔔 Attiva le notifiche</button>
       </div>
     </div>
@@ -1453,7 +1457,7 @@
             <button class="styb" data-fixed="0" onclick="setGkMode(false)">🔄 Rotazione</button>
             <button class="styb" data-fixed="1" onclick="setGkMode(true)">🧤 Fisso</button>
           </div>
-          <p class="vs" id="gkModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">Chiunque può essere schierato in porta (regola attuale).</p>
+          <p class="vs" id="gkModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">In porta può andare chiunque.</p>
         </div></div>
       </div>
       <div class="acc gold">
@@ -1482,7 +1486,7 @@
       <div class="acc gold" id="presCard">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🟢</span><span id="presTitle">Chi gioca questa giornata</span></span><span class="acc-chev">▾</span></button>
         <div class="acc-body"><div class="set-card" style="border-color:rgba(255,194,61,.28)">
-          <p class="vs" id="presHint" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Tocca per segnare presente/assente. Solo i presenti saranno schierabili in campo.</p>
+          <p class="vs" id="presHint" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Tocca per segnare presente/assente.</p>
           <div id="presList" class="preschips"></div>
         </div></div>
       </div>
@@ -1495,7 +1499,7 @@
       <div class="acc" id="inviteCard" style="margin-top:12px">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">✉️</span>Invita nella lega</span><span class="acc-chev">▾</span></button>
         <div class="acc-body"><div class="set-card" style="border-color:rgba(63,151,255,.28)">
-          <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Condividi link e password per far entrare i tuoi amici in «<b id="invName" style="color:var(--text)">—</b>».</p>
+          <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Condividi link e password con i tuoi amici.</p>
           <div class="field-lab">Link d'invito</div>
           <div style="display:flex;gap:8px;margin-bottom:10px"><input class="ob-input" id="invLink" readonly style="flex:1;margin:0;font-size:12px"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invLink')">Copia</button></div>
           <div class="field-lab">Password</div>
@@ -1522,7 +1526,7 @@
       <div class="acc gold" id="voterCard">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🗳️</span>Voto ai soli-manager</span><span class="acc-chev">▾</span></button>
         <div class="acc-body"><div class="set-card" style="border-color:rgba(255,194,61,.28)">
-          <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Di norma vota solo chi ha giocato. Qui puoi dare il voto anche a chi fa solo il manager (guarda ma non gioca). Tocca per abilitare/disabilitare.</p>
+          <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Permette di votare anche chi fa solo il manager.</p>
           <div id="voterList" class="preschips"></div>
         </div></div>
       </div>
@@ -1560,7 +1564,7 @@
   <div class="statmodal" id="pushModal" style="text-align:center">
     <div style="font-size:40px;margin-bottom:6px">🔔</div>
     <b style="font-family:'Bricolage Grotesque';font-size:19px;display:block;margin-bottom:6px">Vuoi gli avvisi delle giornate?</b>
-    <p class="vs" style="color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:16px">Pochi e importanti: apertura giornata, promemoria per votare la presenza e per schierare la formazione, e quando si chiude per vedere com'è andata. Niente spam.</p>
+    <p class="vs" style="color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:16px">Apertura e chiusura giornata, promemoria presenza e formazione. Niente spam.</p>
     <button class="ob-btn" style="margin-top:0" onclick="enablePush()">Sì, attiva</button>
     <button class="set-btn" style="margin-top:9px" onclick="closePushPrompt()">No, grazie</button>
   </div>
@@ -1881,10 +1885,10 @@ function renderSeasonAdmin(){
     <p class="vs" style="color:var(--accent-soft);margin-bottom:10px;font-size:12.5px">${tot}/38 giornate giocate${tot>=38?' · stagione al completo':''}</p>`;
   if(open){
     html+=`<button class="logout" style="border-color:rgba(255,194,61,.4);color:var(--gold-soft);margin-top:0" onclick="closeSeasonNow()">Chiudi la stagione adesso</button>
-      <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">Chiudendola, la classifica si congela. La prossima giornata che apri farà partire una <b>nuova stagione</b> (di nuovo Giornata 1).</p>`;
+      <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">Chiude e congela la classifica. La prossima giornata avvia una <b>nuova stagione</b>.</p>`;
   }else{
     html+=`<button class="addbtn" onclick="openSeasonNow()">＋ Apri una nuova stagione</button>
-      <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">La stagione precedente è chiusa. Aprine una nuova per ricominciare la classifica da zero (oppure apri direttamente una giornata: la nuova stagione parte da sola).</p>`;
+      <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">Stagione chiusa. Apri una giornata per avviarne una nuova.</p>`;
   }
   box.innerHTML=html;
 }
@@ -1926,22 +1930,22 @@ function renderRulesSetup(){
   const WD=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
   document.querySelectorAll('#suOpen button').forEach(b=>b.classList.toggle('on',b.dataset.v===setupRules.open));
   document.getElementById('suOpenHint').textContent = setupRules.open==='auto'
-    ? 'Adatta se giocate sempre lo stesso giorno e ora: la giornata si apre da sola 48h prima del via.'
-    : 'Apri tu la giornata quando vuoi, scegliendo data e ora. Adatta se gli orari cambiano spesso.';
+    ? 'La giornata si apre da sola 48h prima del via.'
+    : 'Apri tu la giornata quando vuoi.';
   document.getElementById('suAutoBox').style.display = setupRules.open==='auto'?'block':'none';
   document.getElementById('suDays').innerHTML = SU_DAYS.map(d=>`<div class="preschip ${setupRules.weekday===d?'on':''}" onclick="suPickDay(${d})">${WD[d]}</div>`).join('');
   document.querySelectorAll('#suGk button').forEach(b=>b.classList.toggle('on',b.dataset.v===setupRules.gk));
   document.getElementById('suGkHint').textContent = setupRules.gk==='fix'
-    ? 'Avete portieri dedicati: in porta vanno solo i giocatori col ruolo Portiere (POR).'
-    : 'In porta può andare chiunque, a turno. La scelta più comune nel calcetto.';
+    ? 'In porta solo chi ha ruolo Portiere (POR).'
+    : 'In porta può andare chiunque, a turno.';
   document.querySelectorAll('#suPres button').forEach(b=>b.classList.toggle('on',b.dataset.v===setupRules.pres));
   document.getElementById('suPresHint').textContent = setupRules.pres==='players'
-    ? 'Ogni giocatore si segna presente o assente dalla Home, a ogni giornata. Meno lavoro per te.'
-    : 'Sei tu a segnare chi c\'è prima di ogni partita. Pieno controllo.';
+    ? 'I giocatori si segnano da soli dalla Home.'
+    : 'Segni tu chi c\'è prima di ogni partita.';
   document.querySelectorAll('#suCredit button').forEach(b=>b.classList.toggle('on',b.dataset.v===setupRules.credit));
   document.getElementById('suCreditHint').textContent = setupRules.credit==='poll'
-    ? 'I membri votano i giocatori (1–10) e l\'app propone i crediti in automatico. Potrai sempre ritoccarli a mano.'
-    : 'Imposti tu i crediti di ogni giocatore nella sua scheda (Gestione giocatori).';
+    ? 'I membri votano i giocatori e l\'app propone i crediti.'
+    : 'Imposti tu i crediti di ogni giocatore.';
 }
 async function saveRulesSetup(){
   const btn=document.getElementById('suSaveBtn');
@@ -2345,7 +2349,7 @@ function renderHomeValuePoll(){
     <div class="hp-top"><span class="hp-dot"></span>Sondaggio valori aperto</div>
     <div class="hp-q">${valuePollVoted?'Hai votato ✓ — puoi modificare':'Valuta gli altri giocatori'}</div>
     <div class="hp-sw"><button class="hp-b yes on" onclick="openValuePoll()">${valuePollVoted?'Modifica i voti →':'Vai al sondaggio →'}</button></div>
-    <div class="hp-note">Dai un voto da 1 a 10 (anche mezzi voti). Servono per assegnare i crediti dei giocatori.</div>`;
+    <div class="hp-note">Voto da 1 a 10. Determina i crediti dei giocatori.</div>`;
 }
 
 function vpSubjects(){
@@ -2410,7 +2414,7 @@ function renderCreditAdmin(){
   box.innerHTML=`
     <div class="vp-prog" style="margin-top:6px">Sondaggio <b>aperto</b> · ${valuePollVoters} di ${valuePollMembers} membri hanno votato${all?' · ✓ tutti!':''}</div>
     <button class="set-btn" style="margin-top:8px" onclick="closeAndApplyPoll()">Chiudi e calcola i crediti</button>
-    <p class="vs" style="color:var(--muted);font-size:11.5px;margin-top:8px">Quando chiudi, l'app assegna i crediti in base ai voti medi. Potrai poi modificarli a mano nella scheda di ogni giocatore (matita ✏️).</p>`;
+    <p class="vs" style="color:var(--muted);font-size:11.5px;margin-top:8px">Alla chiusura i crediti si assegnano dai voti medi (modificabili a mano).</p>`;
 }
 async function setCreditMode(mode){
   try{ await sb.rpc('set_credit_mode',{p_mode:mode}); }
@@ -2453,13 +2457,13 @@ function renderOpenMode(){
     </div>`;
   if(!on){
     const when = schedDraft.weekday!=null ? ` (${WD_LABELS[schedDraft.weekday]} ${schedDraft.time||''})` : '';
-    html+=`<p class="vs" style="color:var(--muted);font-size:12.5px;margin:0 0 4px;line-height:1.5">L'apertura automatica è <b style="color:var(--gold-soft)">in pausa</b>: nessuna giornata partirà finché non la riattivi. Giorno e ora restano salvati${when}.</p>`;
+    html+=`<p class="vs" style="color:var(--muted);font-size:12.5px;margin:0 0 4px;line-height:1.5">Apertura automatica <b style="color:var(--gold-soft)">in pausa</b>: nessuna giornata parte finché non riattivi.${when}</p>`;
     if(currentMd && currentMd.status!=='closed'){
       html+=`<p class="vs" style="color:#ff9a9a;font-size:12px;margin:9px 0 0;line-height:1.5">⚠️ «${currentMd.label}» è ancora aperta: puoi annullarla o chiuderla qui sotto.</p>`;
     }
     box.innerHTML=html; return;
   }
-  html+=`<p class="vs" style="color:var(--muted);font-size:12px;margin:0 0 12px;line-height:1.5">Scegli giorno e ora del match: la giornata si apre <b>da sola 72h prima</b>, ogni settimana. Se una settimana non giocate, metti <b>In pausa</b> qui sopra (riattivi quando volete).</p>
+  html+=`<p class="vs" style="color:var(--muted);font-size:12px;margin:0 0 12px;line-height:1.5">Giorno e ora del match. La giornata si apre da sola <b>72h prima</b>.</p>
     <div class="field-lab">Giorno della partita</div>
     <div class="preschips" style="margin-bottom:12px">`+
     WD_ORDER.map(d=>`<div class="preschip ${schedDraft.weekday===d?'on':''}" onclick="pickSchedDay(${d})">${WD_LABELS[d]}</div>`).join('')+
@@ -2515,8 +2519,8 @@ function renderGkMode(){
   sw.querySelectorAll('button').forEach(b=>b.classList.toggle('on', (b.dataset.fixed==='1')===gkFixed));
   const h=document.getElementById('gkModeHint');
   if(h) h.textContent = gkFixed
-    ? 'In porta solo i giocatori col ruolo Portiere (POR). Assegna il ruolo in «Gestione giocatori».'
-    : 'Chiunque può essere schierato in porta (regola attuale).';
+    ? 'In porta solo chi ha ruolo Portiere (POR).'
+    : 'In porta può andare chiunque.';
 }
 async function setGkMode(fixed){
   const {error}=await sb.rpc('set_gk_mode',{p_fixed:!!fixed});
@@ -2537,8 +2541,8 @@ function renderPresenceMode(){
     sw.querySelectorAll('button').forEach(b=>b.classList.toggle('on',(b.dataset.self==='1')===presenceSelf));
     const h=document.getElementById('presModeHint');
     if(h) h.textContent=presenceSelf
-      ? 'Ogni giocatore si segna presente o assente dalla Home (sondaggio). Tu puoi comunque correggere dal riquadro qui sotto, fino al blocco formazioni.'
-      : 'Sei tu a segnare chi c\'è, dal riquadro «Chi gioca questa giornata» qui sotto.';
+      ? 'I giocatori si segnano da soli dalla Home. Puoi correggere qui sotto.'
+      : 'Segni tu chi c\'è, qui sotto.';
   }
   renderPresence();
   renderHomePresence();
@@ -2582,6 +2586,12 @@ function nextBarHTML(next){
   return `<div class="bc-next"><div class="bc-next-top"><b>Prossimo: ${esc(next.label)}</b><span>${now}/${tot}</span></div>
     <div class="bc-bar"><i style="width:${pct}%"></i></div></div>`;
 }
+function updateStatsWrap(){
+  const w=document.getElementById('homeStatsWrap'); if(!w) return;
+  const pc=document.getElementById('homeBcardPlayer'), mc=document.getElementById('homeBcardMgr');
+  const any=(pc&&pc.style.display!=='none')||(mc&&mc.style.display!=='none');
+  w.style.display=any?'block':'none';
+}
 function renderHomeBcards(force){
   const pc=document.getElementById('homeBcardPlayer');
   const mc=document.getElementById('homeBcardMgr');
@@ -2595,7 +2605,7 @@ function renderHomeBcards(force){
   const amPlayer=mp && profile && profile.is_player!==false;
   if(amPlayer){
     loadPlayerCard(mp.id).then(card=>{
-      if(!card||card.error){ pc.style.display='none'; return; }
+      if(!card||card.error){ pc.style.display='none'; updateStatsWrap(); return; }
       _homeCardCache.player=card;
       const meta=[];
       if(card.forma) meta.push(`<span class="bc-pill">📈 ${esc(card.forma)}</span>`);
@@ -2608,13 +2618,13 @@ function renderHomeBcards(force){
           <div class="bc-arr">›</div></div>
         ${meta.length?`<div class="bc-meta">${meta.join('')}</div>`:''}
         ${nextBarHTML(card.next)}`;
-      pc.style.display='block';
+      pc.style.display='block'; updateStatsWrap();
     });
-  } else { pc.style.display='none'; }
+  } else { pc.style.display='none'; updateStatsWrap(); }
   // ---- Card MANAGER 👔: per tutti ----
   if(user){
     loadTeamCard(user.id).then(card=>{
-      if(!card||card.error){ mc.style.display='none'; return; }
+      if(!card||card.error){ mc.style.display='none'; updateStatsWrap(); return; }
       _homeCardCache.team=card;
       const st=card.stats||{};
       const meta=[];
@@ -2629,9 +2639,9 @@ function renderHomeBcards(force){
           <div class="bc-arr">›</div></div>
         ${meta.length?`<div class="bc-meta">${meta.join('')}</div>`:''}
         ${nextBarHTML(card.next)}`;
-      mc.style.display='block';
+      mc.style.display='block'; updateStatsWrap();
     });
-  } else { mc.style.display='none'; }
+  } else { mc.style.display='none'; updateStatsWrap(); }
 }
 function renderHomePresence(){
   const box=document.getElementById('homePresence'); if(!box) return;
@@ -2651,7 +2661,7 @@ function renderHomePresence(){
       <button class="hp-b yes ${here?'on':''}" onclick="setMyPresence(true)">✓ Ci sono</button>
       <button class="hp-b no ${here?'':'on'}" onclick="setMyPresence(false)">✕ Salto</button>
     </div>
-    <div class="hp-note">Sondaggio presenze${when}. Dopo si aprono le formazioni: si schiera solo chi ha votato presente.</div>`;
+    <div class="hp-note">Sondaggio presenze${when}. Poi si schiera chi è presente.</div>`;
 }
 
 function openMatchdaySheet(){
@@ -3214,10 +3224,10 @@ function renderPresence(){
   if(liveMd){
     if(presenceSelf){
       if(ttl)ttl.innerHTML='Presenze — correggi (admin) <span class="lockpill" style="color:var(--gold)">admin</span>';
-      if(hint)hint.textContent='I giocatori votano la presenza da soli. Qui puoi correggere: aggiungi o togli chi serve fino al blocco formazioni, anche chi non ha votato.';
+      if(hint)hint.textContent='Correggi chi c\'è fino al blocco formazioni, anche chi non ha votato.';
     }else{
       if(ttl)ttl.innerHTML='Chi gioca questa giornata <span class="lockpill" style="color:var(--gold)">admin</span>';
-      if(hint)hint.textContent='Tocca per segnare presente/assente. Solo i presenti saranno schierabili in campo.';
+      if(hint)hint.textContent='Tocca per segnare presente/assente.';
     }
     box.innerHTML=players.length?players.map(p=>`<div class="preschip ${presentId(p.id)?'on':''}" onclick="togglePresence(${p.id})">${presentId(p.id)?'✓':'○'} ${p.name}</div>`).join(''):'<div class="vs" style="color:var(--muted)">Nessun giocatore.</div>';
   }else{
@@ -4696,21 +4706,26 @@ async function renderRecapStandings(){
 }
 
 /* coriandoli (canvas, niente librerie) */
-let _confT=null,_confCtx=null,_confCv=null,_confParts=[];
+let _confT=null,_confCtx=null,_confCv=null,_confParts=[],_pagPaused=false;
 function startConfetti(){
   const cv=document.getElementById('pagConfetti'); if(!cv) return;
-  _confCv=cv; const r=cv.getBoundingClientRect(); cv.width=r.width; cv.height=r.height; _confCtx=cv.getContext('2d');
+  _confCv=cv; const r=cv.getBoundingClientRect(); cv.width=r.width; cv.height=r.height||window.innerHeight; _confCtx=cv.getContext('2d');
   const cols=['#ffc23d','#3f97ff','#2fd98a','#ff5d6b','#ffd470','#7ec2ff']; _confParts=[];
-  for(let i=0;i<130;i++) _confParts.push({x:Math.random()*cv.width, y:-20-Math.random()*cv.height*0.5,
+  const H=cv.height;
+  // i coriandoli riempiono SUBITO tutto lo schermo (da sopra il bordo fino in fondo)
+  for(let i=0;i<160;i++) _confParts.push({x:Math.random()*cv.width, y:Math.random()*(H+H*0.4)-H*0.4,
     w:6+Math.random()*7, h:9+Math.random()*9, vy:2.2+Math.random()*3.2, vx:-1.2+Math.random()*2.4,
     rot:Math.random()*6.28, vr:-0.22+Math.random()*0.44, c:cols[i%cols.length]});
   cancelAnimationFrame(_confT); _confLoop();
 }
 function _confLoop(){
-  if(!_confCtx||!_confCv) return; const ctx=_confCtx, cv=_confCv; ctx.clearRect(0,0,cv.width,cv.height); let alive=false;
-  _confParts.forEach(p=>{ p.y+=p.vy; p.x+=p.vx; p.rot+=p.vr; if(p.y<cv.height+24) alive=true;
+  if(!_confCtx||!_confCv) return; const ctx=_confCtx, cv=_confCv;
+  if(_pagPaused){ _confT=requestAnimationFrame(_confLoop); return; }   // storia in pausa: tutto congelato
+  ctx.clearRect(0,0,cv.width,cv.height);
+  _confParts.forEach(p=>{ p.y+=p.vy; p.x+=p.vx; p.rot+=p.vr;
+    if(p.y>cv.height+24){ p.y=-24-Math.random()*40; p.x=Math.random()*cv.width; }   // ricicla in alto = pioggia continua
     ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle=p.c; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore(); });
-  if(alive) _confT=requestAnimationFrame(_confLoop);
+  _confT=requestAnimationFrame(_confLoop);
 }
 function stopConfetti(){ cancelAnimationFrame(_confT); if(_confCtx&&_confCv) _confCtx.clearRect(0,0,_confCv.width,_confCv.height); }
 
@@ -4854,22 +4869,32 @@ async function maybeShowRecap(){
   finally{ _recapPending=false; }
 }
 
-/* navigazione storie: tap dx avanti / sx indietro, swipe giù chiude */
+/* navigazione storie: tap breve = avanti/indietro · tieni premuto = pausa (no skip al rilascio) · swipe giù = chiudi */
 (function initRecap(){
   const p=document.getElementById('pag'); if(!p) return;
-  p.addEventListener('click', e=>{
-    if(e.target.closest('button,a,[data-stop]')) return;
-    const r=p.getBoundingClientRect();
-    if((e.clientX-r.left) < r.width*0.32) recapPrev(); else recapNext();
+  let pX=0,pY=0,pT=0,pMoved=false,pLong=false,pLT=null,y0=null;
+  p.addEventListener('pointerdown', e=>{
+    pX=e.clientX; pY=e.clientY; pT=performance.now(); pMoved=false; pLong=false;
+    _pagPaused=true; pausePagAuto();                 // metti subito in pausa (storia + coriandoli)
+    pLT=setTimeout(()=>{ pLong=true; }, 180);        // oltre 180ms = pressione prolungata
   });
-  let y0=null;
+  p.addEventListener('pointermove', e=>{
+    if(Math.abs(e.clientX-pX)>10||Math.abs(e.clientY-pY)>10) pMoved=true;
+  });
+  function release(e){
+    clearTimeout(pLT);
+    const wasTap=(performance.now()-pT)<180 && !pMoved && !pLong;   // solo un tocco rapido naviga
+    _pagPaused=false; resumePagAuto();
+    if(wasTap && e && !(e.target.closest && e.target.closest('button,a,[data-stop]'))){
+      const r=p.getBoundingClientRect();
+      if((e.clientX-r.left) < r.width*0.32) recapPrev(); else recapNext();
+    }
+  }
+  p.addEventListener('pointerup', release);
+  p.addEventListener('pointercancel', ()=>{ clearTimeout(pLT); _pagPaused=false; resumePagAuto(); });
   p.addEventListener('touchstart', e=>{ y0=e.touches[0].clientY; }, {passive:true});
   p.addEventListener('touchmove', e=>{ if(y0!=null && (e.touches[0].clientY-y0)>95){ y0=null; closeRecap(); } }, {passive:true});
   p.addEventListener('touchend', ()=>{ y0=null; }, {passive:true});
-  // tieni premuto = pausa (come nelle storie); rilascia = riprende
-  p.addEventListener('pointerdown', ()=>pausePagAuto());
-  p.addEventListener('pointerup', ()=>resumePagAuto());
-  p.addEventListener('pointercancel', ()=>resumePagAuto());
 })();
 
 boot();
