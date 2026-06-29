@@ -1515,3 +1515,41 @@ Recuperare il sorgente con `select pg_get_functiondef('get_team_card(uuid)'::reg
 ### 35.3 Stat aggiuntive — FATTE
 - **Giocatore · miglior voto in una giornata**: calcolato client-side dal **massimo** dei dati di `get_player_vote_trend` (nessuna modifica SQL). Mostrato nell'header del grafico voti: "media X · **top Y**" (`voteTrendHTML`).
 - **Squadra · miglior posizione mai raggiunta**: `best_pos.sql` ridefinisce `get_team_card(uuid)` (CREATE OR REPLACE, stessa firma) aggiungendo `stats.best_pos`, calcolato ricostruendo la classifica cumulativa giornata-per-giornata (`get_standings_md` sommato) e prendendo il rank minimo, in blocco `begin/exception` (fallisce→NULL, scheda intatta). Mostrato in `teamStatsGridHTML` come box "Miglior posizione" (oro), accanto a "Posizione".
+
+---
+
+## 36. Welcome a 3 percorsi + interruttore apertura automatica ON/OFF + fix favicon web + "FantaCalcetto" (C maiuscola)
+
+Sessione tutta **client** (solo `index.html`): **nessun SQL da eseguire**, **nessun PNG nuovo** (`icon-512.png` era già il logo nuovo nel repo). `notify.ts` invariato.
+
+### 36.1 Schermata di benvenuto (`#welcome`) — prima schermata quando NON c'è sessione
+Prima del gate email ora c'è una landing "da app vera" con **3 percorsi**: ➕ **Crea la tua lega**, 🔑 **Entra in una lega**, e sotto il link *"Hai già un account in una lega? Accedi"*. Frase principale **"Il fanta del tuo calcetto"** (tutta bianca), sottotitolo *"Crea o entra in una lega. Inizia in un minuto."*. Layout centrato (`.ob-inner.wc-center`), con uno **stacco di 60px** tra il blocco pulsanti e il contenuto sopra (`.wc-center .ob-btn:first-of-type{margin-top:60px}`). Stili `.wc-*` (logo, name, tag, h, sub, login, back, ctx) + `.ob-btn.ghost` (variante chiara).
+
+**Flusso e funzioni (intento → smistamento dopo login):**
+- `let authIntent=null;` (`'create' | 'join' | 'login'`).
+- `showWelcome()` = entry point quando non c'è sessione (in `boot()` il ramo "no session" ora chiama **showWelcome**, non più `showGate`; idem la rete di sicurezza a 9s). Azzera `authIntent`, nasconde gate/league/onboard, mostra `#welcome`.
+- `welcomeGo(intent)` = i 3 bottoni: salva l'intento e va al passo email con `showGate(intent)`.
+- `showGate(intent)` ora mostra una **pillola contestuale** `#gateContext` ("Stai creando una lega" / "Stai entrando in una lega" / niente per login) + bottone `‹ Indietro` (`onclick="showWelcome()"`).
+- `afterLogin()`: se **profilo assente** chiama `routeNewUser()` invece di `showLeague()` diretto. Nasconde anche `#welcome`.
+- `routeNewUser()`: `create`→`showLeague('create')`, `join`→`showLeague('join')`, `login`(o nullo)→`showLeague()` (scelta generica).
+- `showLeague(forceMode)`: ora accetta un modo. Lo **slug `?lega=` ha la precedenza** (link invito → join + `resolveLeagueSlug`), altrimenti usa `forceMode || 'choose'`.
+
+**Robustezza (la garanzia anti-bug, chiarita con l'utente):** chi ha la **sessione valida** salta tutta la welcome ed entra **dritto in lega** (la welcome compare SOLO se non c'è sessione: logout, scadenza, dispositivo nuovo, PWA reinstallata). Chi **ha già un profilo**, anche se tocca per sbaglio "Crea" o "Entra", dopo il codice finisce **comunque in lega** (l'intento viene ignorato) → impossibile creare/entrare due volte. Lega #1 invariata.
+
+### 36.2 Apertura automatica: interruttore ON/OFF (sostituisce l'idea "salta giornata")
+In Impostazioni → 🤖 **Apertura automatica** ora c'è uno switch **🟢 Attiva / ⏸️ In pausa**. In pausa **nessuna** giornata parte; giorno e ora **restano salvati**.
+- **Perché basta lato app (niente SQL):** `open_due_matchdays()` apre solo le leghe con `coalesce(auto_open,false)=true` → in pausa non apre nulla. E `set_league_schedule(p_auto,p_weekday,p_time)` con `p_auto=false` **conserva** `auto_weekday`/`auto_time` (rami `else auto_weekday` / `else auto_time` nel corpo SQL).
+- **Funzioni:** `applyAutoOpen(on)` chiama `set_league_schedule` (passa sempre giorno/ora salvati); `saveSchedule()` = `applyAutoOpen(true)`; `setAutoOpen(on)` = lo switch. `renderOpenMode()` riscritta con lo switch in cima + (solo se ON) il selettore giorno/ora.
+- **Ordine importante (anti-cron):** spegnendo l'interruttore con una giornata già aperta, l'app **prima** mette in pausa (`auto_open=false`) **poi** offre di annullarla. Se si annulla prima di mettere in pausa, il cron (ogni 10 min) la **riapre** entro pochi minuti perché non esiste più una giornata con quel kickoff.
+
+### 36.3 "Mi dimentico di spegnere e parte una giornata"
+Pulsante rinominato **"🗑️ Annulla questa giornata"** (era "Resetta giornata (annulla · per test)") → chiama `reset_matchday(md)` (già esistente: cancella giornata + figli; non avendo `status='closed'`, non ha mai contato in classifica). `resetMatchday()` ora **avvisa**: se `leagueSched.auto_open` è attivo, mettere prima «In pausa», altrimenti il cron riapre entro ~10 min.
+
+### 36.4 Logo/favicon sul web (il tab PC mostrava l'icona vecchia)
+Causa = **cache** (verificato: **nessun `favicon.ico`** nel repo). Fix: **cache-busting `?v=3`** su TUTTI i riferimenti icona (link in `<head>`, `manifest`, e gli `<img src="icon-512.png?v=3">` interni all'app) + aggiunto `<link rel="shortcut icon" href="icon-512.png?v=3">`. `icon-512.png` nel repo è **già** il logo nuovo. Dopo deploy: **hard-refresh** (Cmd+Shift+R) o incognito. ⚠️ Nell'anteprima della chat il logo appare **rotto** (percorso relativo, il file non esiste nell'ambiente di anteprima) — è **normale**, sul sito vero si vede.
+
+### 36.5 Capitalizzazione brand
+**"FantaCalcetto"** (C maiuscola) ovunque: splash, home/topbar, welcome, gate, onboarding, scelta lega, `<title>`, meta `apple-mobile-web-app-title`, `manifest` (`name`/`short_name`) e fallback JS. Audit nome completato.
+
+### 36.6 File toccati / deploy
+Solo `index.html`. Deploy: scarica → (re)incolla chiavi se placeholder → carica su GitHub → hard-refresh per vedere il logo. Niente SQL, niente PNG, `notify.ts` invariato.

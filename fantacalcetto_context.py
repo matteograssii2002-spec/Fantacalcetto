@@ -838,3 +838,37 @@ STAT_AGGIUNTIVE_FATTE = {
     "giocatore_miglior_voto": "client-side: max dei dati get_player_vote_trend; mostrato in voteTrendHTML header 'media X · top Y' (nessun SQL)",
     "squadra_miglior_posizione": "best_pos.sql: CREATE OR REPLACE get_team_card(uuid) stessa firma; stats.best_pos = min rank classifica cumulativa (get_standings_md sommato giornata per giornata) in blocco begin/exception (fail->NULL); mostrato in teamStatsGridHTML box 'Miglior posizione' oro",
 }
+
+
+# ============================================================================
+# SESSIONE — WELCOME a 3 percorsi + interruttore APERTURA AUTO ON/OFF
+#            + fix favicon web + capitalizzazione "FantaCalcetto"
+# Tutto CLIENT (solo index.html): NIENTE SQL, NIENTE PNG nuovi, notify.ts invariato.
+# ============================================================================
+WELCOME_3_PERCORSI = {
+    "cosa": "Prima schermata (#welcome) quando NON c'e' sessione: 3 percorsi -> ➕ Crea la tua lega / 🔑 Entra in una lega / link 'Hai gia' un account in una lega? Accedi'. Frase principale 'Il fanta del tuo calcetto' (tutta bianca); sottotitolo 'Crea o entra in una lega. Inizia in un minuto.'",
+    "layout": ".ob-inner.wc-center (centrato); stacco 60px tra blocco pulsanti e contenuto sopra (.wc-center .ob-btn:first-of-type{margin-top:60px}); stili .wc-* + .ob-btn.ghost (variante chiara)",
+    "flusso": "authIntent ('create'|'join'|'login'). boot() no-session -> showWelcome() (NON piu' showGate); idem rete di sicurezza 9s. welcomeGo(intent)=salva intento+showGate(intent). showGate(intent) mostra pillola #gateContext + bottone '‹ Indietro'->showWelcome(). afterLogin() se NO profilo -> routeNewUser() (nasconde anche #welcome). routeNewUser: create->showLeague('create'), join->showLeague('join'), login/null->showLeague(). showLeague(forceMode) accetta il modo; slug ?lega= ha PRECEDENZA (join+resolveLeagueSlug).",
+    "robustezza": "Sessione valida -> salta la welcome, entra DRITTO in lega (welcome solo se NO sessione: logout/scadenza/nuovo device/PWA reinstallata). Chi ha gia' un profilo, anche toccando Crea/Entra per sbaglio, finisce COMUNQUE in lega (intento ignorato) -> impossibile creare/entrare 2 volte. Lega #1 invariata.",
+}
+
+APERTURA_AUTO_ONOFF = {
+    "cosa": "Impostazioni -> 🤖 Apertura automatica: switch 🟢 Attiva / ⏸️ In pausa. In pausa NESSUNA giornata parte; giorno/ora restano salvati. Sostituisce l'idea 'salta la prossima giornata'.",
+    "perche_no_sql": "open_due_matchdays() apre solo leghe con coalesce(auto_open,false)=true. set_league_schedule(p_auto=false,...) CONSERVA auto_weekday/auto_time (rami else nel corpo SQL). Quindi tutto lato app, ZERO SQL.",
+    "funzioni": "applyAutoOpen(on)->set_league_schedule (passa sempre giorno/ora salvati); saveSchedule()=applyAutoOpen(true); setAutoOpen(on)=lo switch; renderOpenMode() riscritta con switch in cima + (solo se ON) selettore giorno/ora.",
+    "ordine_anti_cron": "Spegnendo con una giornata gia' aperta: l'app PRIMA mette in pausa (auto_open=false) POI offre di annullarla. Se si annulla SENZA pausa, il cron (ogni 10 min) la RIAPRE (non esiste piu' una giornata con quel kickoff).",
+    "annulla_giornata": "Pulsante rinominato '🗑️ Annulla questa giornata' (era 'Resetta giornata · per test') -> reset_matchday(md) (gia' esistente: cancella giornata+figli; non era closed quindi non ha mai contato). resetMatchday() avvisa: se auto_open attivo, mettere prima In pausa o il cron riapre entro ~10 min.",
+}
+
+FAVICON_LOGO_WEB = {
+    "problema": "Tab PC mostrava icona vecchia. Causa = cache (verificato: NESSUN favicon.ico nel repo). icon-512.png nel repo e' GIA' il logo nuovo.",
+    "fix": "Cache-busting ?v=3 su TUTTI i riferimenti icona (link <head>, manifest, <img src=icon-512.png?v=3> interni) + aggiunto <link rel='shortcut icon' href='icon-512.png?v=3'>. Dopo deploy: hard-refresh (Cmd+Shift+R) o incognito.",
+    "nota_anteprima": "Nell'anteprima della chat il logo appare ROTTO (percorso relativo, file assente nell'ambiente di preview) -> NORMALE, sul sito vero si vede.",
+}
+
+CAPITALIZZAZIONE_BRAND = {
+    "cosa": "'FantaCalcetto' (C maiuscola) ovunque: splash, home/topbar, welcome, gate, onboarding, scelta lega, <title>, meta apple-mobile-web-app-title, manifest name/short_name, fallback JS. Audit nome brand completato.",
+}
+
+FILE_TOCCATI_SESSIONE_WELCOME = ["index.html (solo questo)"]
+DEPLOY_SESSIONE_WELCOME = "Scarica index.html -> (re)incolla chiavi se placeholder -> carica su GitHub -> hard-refresh per il logo. Niente SQL, niente PNG, notify.ts invariato."
