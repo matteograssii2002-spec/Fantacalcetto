@@ -1,6 +1,6 @@
 # Fantacalcetto — Guida al progetto (handoff)
 
-> Documento di contesto. Se apri una **nuova chat**, leggi prima questo: spiega cos'è l'app, com'è fatta, dove vive e come si aggiorna. L'assistente deve continuare a **rispondere in italiano** e ricordare che l'utente (Giulio, display name "Teo") lavora **da iPhone** e non è uno sviluppatore: vanno dati passi guidati, semplici, uno alla volta.
+> Documento di contesto. Se apri una **nuova chat**, leggi prima questo: spiega cos'è l'app, com'è fatta, dove vive e come si aggiorna. L'assistente deve continuare a **rispondere in italiano** e ricordare che l'utente (Teo) lavora **da pc** e non è uno sviluppatore: vanno dati passi guidati, semplici, uno alla volta.
 
 ---
 
@@ -1324,9 +1324,10 @@ Set completo in modalità giocatori, in ordine di tempo:
 6. Apertura/chiusura giornata invariate.
 
 Implementazione `notify.ts`: nuove `runPresenceReminder()` e `runLineupReminder()` + helper **`sendToIds(title,body,url,leagueId,ids[])`** (push a un elenco esplicito di `user_id`, filtrato per lega). Targeting:
+
 - non-votanti presenze = `profiles(is_player=true, league)` **meno** chi è in `presence_responses` per quella giornata.
 - non-schierati = tutti i `profiles(league)` **meno** i `manager_id` presenti in `lineups` per quella giornata.
-Risposta cron ora `{opened, presRem, lineup, lineupRem, reminders, closed}`.
+  Risposta cron ora `{opened, presRem, lineup, lineupRem, reminders, closed}`.
 
 ### 31.3 Tracciamento risposte al sondaggio presenze (`promemoria.sql`)
 
@@ -1344,6 +1345,7 @@ Prima il tasto «Conferma formazione» era cliccabile anche senza capitano. Ora 
 ### 31.5 Crediti: tolta la sezione dalle impostazioni admin
 
 La scelta **manuale/sondaggio all'apertura lega** (`setupRules.credit` → `set_credit_mode`) resta intatta. Nelle impostazioni admin:
+
 - rimossi la card statica «💰 Crediti giocatori», il toggle `creditModeSw` e il bottone «Riapri il sondaggio».
 - la card `#creditCard` ora è `display:none` di default e `renderCreditAdmin` la mostra **solo mentre un sondaggio valori è aperto** (avanzamento + «Chiudi e calcola i crediti»); chiuso il sondaggio, sparisce per sempre.
 - dopo, i crediti si modificano **a mano** dalla scheda di ogni giocatore (matita ✏️).
@@ -1406,6 +1408,7 @@ Colonna `profiles.last_seen timestamptz`. RPC `touch_last_seen()` (security defi
 Colonne: `profiles.is_superadmin` (bool def false), `profiles.last_seen`, `leagues.is_paid` (bool def false). Tabella `app_global`. Funzioni: `is_superadmin()`, `touch_last_seen()`, `sa_set_maintenance(bool)`, `sa_set_league_paid(bigint,bool)`, `sa_set_economics(numeric,numeric)`, `sa_overview()→jsonb`, `sa_leagues()→jsonb`. Tutte le `sa_*` guardate da `is_superadmin()`; grant `authenticated`.
 
 **Due passi a mano (una volta):**
+
 1. Renditi super-admin: `update profiles set is_superadmin=true where id=(select id from auth.users where email='LA_TUA_EMAIL');`
 2. Realtime: aggiungi `app_global` alla publication (vedi §32.3).
 
@@ -1464,10 +1467,12 @@ Ogni squadra (= profilo) può avere un **logo/crest** scelto da una raccolta con
 **Storage:** nuovo bucket pubblico **`loghi`** (gemello di `avatars`). Contiene i PNG `logo-01.png … logo-25.png` (512×512, angoli arrotondati uniformi, sfondo scuro originale che si sposa col tema). Caricati a mano dal pannello Storage.
 
 **DB (`loghi.sql`, additivo/idempotente):**
+
 - `profiles.logo text` (nome-file del logo scelto; NULL = non ancora scelto).
 - `get_team_logos()` → `(manager_id uuid, logo text)` security definer, filtrata `my_league()`, grant `anon, authenticated`. **Non** cambia nessuna RPC esistente (niente DROP a catena): è una funzione nuova.
 
 **Client (`index.html`):**
+
 - Globali `logos=[]` (come `avatars`), `teamLogoBy={}` (manager_id→nome-file). Loader `loadLogos()` (lista bucket) e `loadTeamLogos()` (RPC) chiamati in `afterLogin` (e dopo onboarding/salvataggi).
 - Helper `logoImg(name,px)` → box quadrato px×px con `object-fit:contain` (mai tagliato, dimensione uniforme; segnaposto `.tlogo.ph` se manca). `teamLogoHTML(managerId,px)` legge da `teamLogoBy`.
 - **Dove compare:** classifica Lega (`lbRowHTML`, tra rank e nome), mini-classifica Home (`renderMini`), classifica di giornata, **pill squadra in Home** (`applyProfile` → `#heroTeam`), **scheda squadra** (`openTeamCard` → `#teamAv`), **striscia sul campo** sopra il verde (`renderCampoTeam` → `#campoTeam`, chiamata in `renderAll`).
@@ -1480,6 +1485,7 @@ Ogni squadra (= profilo) può avere un **logo/crest** scelto da una raccolta con
 **Immagini:** i 25 crest originali (screenshot 374×348 con sfondo scuro) sono stati uniformati via script Python (`make_logos_final.py`): center-crop quadrato → 512×512 LANCZOS → angoli arrotondati uniformi. **Sfondo NON rimosso**: il cutout automatico rompeva i crest scuri-su-scuro (e il modello ML era irraggiungibile dalla rete sandbox); tenere l'artwork originale dà risultato pulito e coerente sul tema scuro.
 
 ### 34.1 Ordine di deploy per i loghi
+
 1. **SQL**: esegui `loghi.sql` nel SQL Editor.
 2. **Storage**: crea bucket pubblico `loghi`, carica `logo-01…25.png`.
 3. **index.html**: carica la nuova versione (chiavi già dentro).
@@ -1504,15 +1510,19 @@ Le card del mercato (`renderMarket`) non sono più rettangolari ma a **sagoma FU
 **Verifica render:** generata in locale con `cairosvg` prima dell'implementazione (più iterazioni di forma approvate dall'utente).
 
 ### 35.1 Cache-busting immagini (avatar + loghi)
+
 `loadAvatars()` e `loadLogos()` aggiungono `?v=<updated_at>` all'URL pubblico: sostituendo un file con lo **stesso nome** nel bucket, l'app mostra subito la versione nuova (niente cache vecchia di browser/PWA/CDN). Imparato risolvendo "vedo ancora le immagini vecchie dopo l'upload".
 
 ### 35.2 DA FARE (prossimo step, richiede il sorgente SQL attuale)
+
 Due statistiche ancora da aggiungere (servono i corpi attuali di `get_team_card`/`get_player_card`):
+
 - squadra → **miglior posizione mai raggiunta** in classifica (oltre all'attuale)
 - giocatore → **miglior voto preso in una giornata** (oltre a media + grafico)
-Recuperare il sorgente con `select pg_get_functiondef('get_team_card(uuid)'::regprocedure);` (e `get_player_card(bigint)`), poi `CREATE OR REPLACE` additivo.
+  Recuperare il sorgente con `select pg_get_functiondef('get_team_card(uuid)'::regprocedure);` (e `get_player_card(bigint)`), poi `CREATE OR REPLACE` additivo.
 
 ### 35.3 Stat aggiuntive — FATTE
+
 - **Giocatore · miglior voto in una giornata**: calcolato client-side dal **massimo** dei dati di `get_player_vote_trend` (nessuna modifica SQL). Mostrato nell'header del grafico voti: "media X · **top Y**" (`voteTrendHTML`).
 - **Squadra · miglior posizione mai raggiunta**: `best_pos.sql` ridefinisce `get_team_card(uuid)` (CREATE OR REPLACE, stessa firma) aggiungendo `stats.best_pos`, calcolato ricostruendo la classifica cumulativa giornata-per-giornata (`get_standings_md` sommato) e prendendo il rank minimo, in blocco `begin/exception` (fallisce→NULL, scheda intatta). Mostrato in `teamStatsGridHTML` come box "Miglior posizione" (oro), accanto a "Posizione".
 
@@ -1523,9 +1533,11 @@ Recuperare il sorgente con `select pg_get_functiondef('get_team_card(uuid)'::reg
 Sessione tutta **client** (solo `index.html`): **nessun SQL da eseguire**, **nessun PNG nuovo** (`icon-512.png` era già il logo nuovo nel repo). `notify.ts` invariato.
 
 ### 36.1 Schermata di benvenuto (`#welcome`) — prima schermata quando NON c'è sessione
+
 Prima del gate email ora c'è una landing "da app vera" con **3 percorsi**: ➕ **Crea la tua lega**, 🔑 **Entra in una lega**, e sotto il link *"Hai già un account in una lega? Accedi"*. Frase principale **"Il fanta del tuo calcetto"** (tutta bianca), sottotitolo *"Crea o entra in una lega. Inizia in un minuto."*. Layout centrato (`.ob-inner.wc-center`), con uno **stacco di 60px** tra il blocco pulsanti e il contenuto sopra (`.wc-center .ob-btn:first-of-type{margin-top:60px}`). Stili `.wc-*` (logo, name, tag, h, sub, login, back, ctx) + `.ob-btn.ghost` (variante chiara).
 
 **Flusso e funzioni (intento → smistamento dopo login):**
+
 - `let authIntent=null;` (`'create' | 'join' | 'login'`).
 - `showWelcome()` = entry point quando non c'è sessione (in `boot()` il ramo "no session" ora chiama **showWelcome**, non più `showGate`; idem la rete di sicurezza a 9s). Azzera `authIntent`, nasconde gate/league/onboard, mostra `#welcome`.
 - `welcomeGo(intent)` = i 3 bottoni: salva l'intento e va al passo email con `showGate(intent)`.
@@ -1537,19 +1549,66 @@ Prima del gate email ora c'è una landing "da app vera" con **3 percorsi**: ➕ 
 **Robustezza (la garanzia anti-bug, chiarita con l'utente):** chi ha la **sessione valida** salta tutta la welcome ed entra **dritto in lega** (la welcome compare SOLO se non c'è sessione: logout, scadenza, dispositivo nuovo, PWA reinstallata). Chi **ha già un profilo**, anche se tocca per sbaglio "Crea" o "Entra", dopo il codice finisce **comunque in lega** (l'intento viene ignorato) → impossibile creare/entrare due volte. Lega #1 invariata.
 
 ### 36.2 Apertura automatica: interruttore ON/OFF (sostituisce l'idea "salta giornata")
+
 In Impostazioni → 🤖 **Apertura automatica** ora c'è uno switch **🟢 Attiva / ⏸️ In pausa**. In pausa **nessuna** giornata parte; giorno e ora **restano salvati**.
+
 - **Perché basta lato app (niente SQL):** `open_due_matchdays()` apre solo le leghe con `coalesce(auto_open,false)=true` → in pausa non apre nulla. E `set_league_schedule(p_auto,p_weekday,p_time)` con `p_auto=false` **conserva** `auto_weekday`/`auto_time` (rami `else auto_weekday` / `else auto_time` nel corpo SQL).
 - **Funzioni:** `applyAutoOpen(on)` chiama `set_league_schedule` (passa sempre giorno/ora salvati); `saveSchedule()` = `applyAutoOpen(true)`; `setAutoOpen(on)` = lo switch. `renderOpenMode()` riscritta con lo switch in cima + (solo se ON) il selettore giorno/ora.
 - **Ordine importante (anti-cron):** spegnendo l'interruttore con una giornata già aperta, l'app **prima** mette in pausa (`auto_open=false`) **poi** offre di annullarla. Se si annulla prima di mettere in pausa, il cron (ogni 10 min) la **riapre** entro pochi minuti perché non esiste più una giornata con quel kickoff.
 
 ### 36.3 "Mi dimentico di spegnere e parte una giornata"
+
 Pulsante rinominato **"🗑️ Annulla questa giornata"** (era "Resetta giornata (annulla · per test)") → chiama `reset_matchday(md)` (già esistente: cancella giornata + figli; non avendo `status='closed'`, non ha mai contato in classifica). `resetMatchday()` ora **avvisa**: se `leagueSched.auto_open` è attivo, mettere prima «In pausa», altrimenti il cron riapre entro ~10 min.
 
 ### 36.4 Logo/favicon sul web (il tab PC mostrava l'icona vecchia)
+
 Causa = **cache** (verificato: **nessun `favicon.ico`** nel repo). Fix: **cache-busting `?v=3`** su TUTTI i riferimenti icona (link in `<head>`, `manifest`, e gli `<img src="icon-512.png?v=3">` interni all'app) + aggiunto `<link rel="shortcut icon" href="icon-512.png?v=3">`. `icon-512.png` nel repo è **già** il logo nuovo. Dopo deploy: **hard-refresh** (Cmd+Shift+R) o incognito. ⚠️ Nell'anteprima della chat il logo appare **rotto** (percorso relativo, il file non esiste nell'ambiente di anteprima) — è **normale**, sul sito vero si vede.
 
 ### 36.5 Capitalizzazione brand
+
 **"FantaCalcetto"** (C maiuscola) ovunque: splash, home/topbar, welcome, gate, onboarding, scelta lega, `<title>`, meta `apple-mobile-web-app-title`, `manifest` (`name`/`short_name`) e fallback JS. Audit nome completato.
 
 ### 36.6 File toccati / deploy
+
 Solo `index.html`. Deploy: scarica → (re)incolla chiavi se placeholder → carica su GitHub → hard-refresh per vedere il logo. Niente SQL, niente PNG, `notify.ts` invariato.
+
+---
+
+## 37. RIFINITURE SCHEDE + PAGELLONE ESTESO + PROFILO A TENDINA + REGOLAMENTO + FORMAZIONE DI GIORNATA A PAGINA INTERA
+
+Due sessioni consecutive, **tutte client (solo `index.html`)**: **nessun SQL**, **nessun PNG nuovo**, `notify.ts` invariato. Le chiavi Supabase sono già dentro il file consegnato (non serve re-incollarle).
+
+### 37.1 Scheda giocatore (bch-page) e scheda squadra
+
+- **Avatar header non più schiacciato**: `.stat-av img` riscritto con `width/height:100%!important`, `max-width/height:none!important`, `object-fit:contain`. Prima `max-height:50px` + `max-width:46px` clampavano in modo indipendente e deformavano l'immagine. Vale per avatar giocatore e logo squadra nell'header.
+- **Contenuto centrato** in tutte le caselle: aggiunto `text-align:center` a `.stat-box` (usato solo nelle due schede, verificato).
+- **Andamento voti**: rimossa la pillola "media X · top Y" (`.vt-avg`) dall'header del grafico — le caselle *Voto medio* e *Miglior voto* sopra dicono già la stessa cosa. La variabile `best` resta calcolata ma inutilizzata (innocua).
+- **Scheda squadra**: casella *Punti* (`tg-hero`) resa più compatta e centrata (flex column, padding ridotto); griglia inferiore `tg-rest` passata da `auto-fit minmax(96px)` (4 strette in fila) a **2 colonne fisse** (2×2 bilanciato).
+
+### 37.2 Pagellone — nuove scene e fix
+
+- **Nuova scena `leaders`** ("I migliori di giornata"): **più gol** (⚽ Bomber), **più assist** (🎯 Assist-man), **muro** (🧤, meno gol presi tra chi era schierato in porta, slot `g1`). Calcolata in `loadRecapExtra` come `ex.leaders={bomber,assistman,wall}` deduplicando per `player_id` (gol/assist sono per-player in `match_stats`, uguali a prescindere da chi schiera). Inserita in `buildRecapCards` dopo `topflop`; `PAG_DUR.leaders=5200`. CSS `.lead-row/.lead-cell/.lead-ic/.lead-av/.lead-nm/.lead-val/.lead-lbl` (avatar con `object-fit:contain`).
+- **Verdetto (scena `winner`)**: aggiunti **2º e 3º di giornata** (🥈🥉) e l'ultimo rinominato **"Fanalino di coda"** (🪶) — non più "Cucchiaio di legno". Podio/ultimo calcolati in `loadRecapExtra` via `get_standings_md` → `ex.mdPodium` (top3) e `ex.mdLast`. Guardia: non mostrare il fanalino se coincide col vincitore (lega con 1 squadra). CSS `.vd-list/.vd-row/.vd-medal/.vd-nm/.vd-pt`. Aggiornato anche il testo della scena legacy `verdict` per coerenza. **Nota:** il campo dato dalla RPC resta `d.cucchiaio` (non rinominato lato SQL), cambiata solo l'etichetta UI.
+- **BUG classifica risolto**: la scena `standings` non era in `PAG_DUR`, quindi `dur=0` → la barra si riempiva in 0,4s ma **non chiamava mai `recapNext()`** e il pagellone si bloccava lì. Fix: aggiunto `standings:5600` (l'animazione `lbAnimate` dura ~1,8s, poi avanza da sola alla scena `share`).
+
+### 37.3 Carta PNG di condivisione (scena `share`)
+
+- **Avatar non più schiacciati**: `drawAvatar` ora disegna con **aspetto mantenuto** (logica *contain*: scala su lato lungo, centra nel box). Prima forzava `drawImage(...,s,s)` quadrato.
+- **Layout righe ridisegnato**: **simbolo a sinistra** (🏆 vincitore, ⭐ MVP, 👟 capocannoniere), testo al centro, **immagine a destra**: nella riga squadra il **logo squadra** (`drawLogo` + `logoBlob` che scarica dal bucket `loghi` come blob, niente tainting canvas), nelle righe giocatore l'**avatar**. Logo vincitore risolto con `winnerLogoName(w)` (per `manager_id`, fallback per `team_name` su `standings` → `teamLogoBy`).
+
+### 37.4 Impostazioni → Profilo: avatar e loghi a tendina
+
+Avatar e Logo squadra ora mostrano **solo la scelta attuale** (miniatura `renderAvCur`/`renderLogoCur`) con bottone **"Cambia ▾"**; la griglia (`#setGrid`/`#setLogoGrid`, classe `disc-body`) è nascosta di default e si espande con `toggleDisc('av'|'logo')`. All'apertura della pagina si richiudono sempre (`collapseDisc`). Rimosso il vecchio `#setLogoPreview` (ob-preview grande). CSS `.disc-head/.disc-cur/.disc-act/.disc-chev`. **Attenzione naming:** le funzioni `renderAvCur/renderLogoCur` sono volutamente diverse dagli id `setAvCur/setLogoCur` per evitare il clash funzione↔global-da-id del browser.
+
+### 37.5 Regolamento
+
+- Voce "In porta" **divisa in due righe** uguali alle altre (emoji · nome · numero): **🧤 Clean Sheet +3** e **🔴 Gol subito −1** (il malus portiere è −1 per gol; emoji coerenti con quelle già usate sul campo).
+- **Rimosse tutte le descrizioni** `<small>` dalle righe del regolamento (es. "la tua vera squadra di calcetto", "scelto da te", "raddoppia solo il voto"…). Ora ogni riga è solo emoji + nome + punteggio.
+
+### 37.6 Formazione di giornata → pagina intera (non più bottom-sheet)
+
+`openTeamLineup` non usa più il bottom-sheet condiviso `#sheet` (che lasciava vedere/scrollare lo sfondo). Ora scrive in una **pagina overlay dedicata** `#teamLineupPage` (stile `bch-page`: barra con `‹ Indietro`, `#tlpTitle/#tlpHint/#tlpList`) aperta/chiusa da `openTeamLineupPage()/closeTeamLineupPage()`. Lo swipe campo↔punti (`.tl-swipe`, CSS scroll-snap, nessun hook JS) funziona identico. Il bottom-sheet `#sheet` resta per gli altri usi (apri/modifica giornata, scelta giocatore, azioni giocatore, modifica giocatore).
+
+### 37.7 Deploy
+
+Solo `index.html`. Scarica → carica su GitHub come `index.html` → Vercel pubblica. Niente SQL, niente PNG, `notify.ts` invariato.

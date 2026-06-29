@@ -872,3 +872,44 @@ CAPITALIZZAZIONE_BRAND = {
 
 FILE_TOCCATI_SESSIONE_WELCOME = ["index.html (solo questo)"]
 DEPLOY_SESSIONE_WELCOME = "Scarica index.html -> (re)incolla chiavi se placeholder -> carica su GitHub -> hard-refresh per il logo. Niente SQL, niente PNG, notify.ts invariato."
+
+
+# ============================================================================
+# SESSIONE — RIFINITURE SCHEDE + PAGELLONE ESTESO + PROFILO A TENDINA
+#            + REGOLAMENTO (Clean Sheet/Gol subito) + FORMAZIONE DI GIORNATA A PAGINA INTERA
+# Tutto CLIENT (solo index.html): NIENTE SQL, NIENTE PNG nuovi, notify.ts invariato.
+# Le chiavi Supabase sono gia' dentro il file consegnato (non serve re-incollarle).
+# ============================================================================
+RIFINITURE_SCHEDE = {
+    "avatar_header": "fix avatar 'schiacciato' nelle schede: .stat-av img -> width/height:100%!important + max-width/height:none!important + object-fit:contain. Prima max-height:50px+max-width:46px clampavano indipendenti e deformavano. Vale per avatar giocatore e logo squadra header.",
+    "box_centrati": "text-align:center su .stat-box (usato solo nelle due schede).",
+    "andamento_voti": "rimossa pillola 'media X · top Y' (.vt-avg) dall'header del grafico (gia' nei box Voto medio/Miglior voto sopra). Var 'best' resta calcolata ma inutilizzata (innocua).",
+    "scheda_squadra": "casella Punti (tg-hero) piu' compatta e centrata (flex column, padding ridotto); tg-rest da auto-fit minmax(96px) a 2 colonne fisse (2x2 bilanciato).",
+}
+
+PAGELLONE_ESTESO = {
+    "scena_leaders": "nuova scena 'leaders' (I migliori di giornata): piu' gol (Bomber ⚽), piu' assist (Assist-man 🎯), muro (🧤 meno gol presi tra chi schierato in porta, slot g1). Calcolo in loadRecapExtra -> ex.leaders={bomber,assistman,wall} dedup per player_id. In buildRecapCards dopo topflop; PAG_DUR.leaders=5200. CSS .lead-*.",
+    "verdetto_podio": "scena 'winner' ora con 2º e 3º di giornata (🥈🥉) + ultimo rinominato 'Fanalino di coda' (🪶, era 'Cucchiaio di legno'). ex.mdPodium (top3) + ex.mdLast da get_standings_md. Guardia: niente fanalino se = vincitore. CSS .vd-*. NB: il campo dato RPC resta d.cucchiaio, cambiata solo l'etichetta UI.",
+    "fix_classifica": "BUG: scena 'standings' non era in PAG_DUR -> dur=0 -> barra riempita in 0.4s ma recapNext() mai chiamato -> pagellone bloccato. FIX: aggiunto standings:5600 (animazione lbAnimate ~1.8s, poi avanza a 'share').",
+    "carta_png_share": "drawAvatar ora mantiene l'aspetto (contain, niente piu' schiacciato). Layout righe: simbolo a SINISTRA (🏆/⭐/👟), testo al centro, immagine a DESTRA = logo squadra nella riga vincitore (drawLogo+logoBlob dal bucket 'loghi' come blob, no tainting), avatar nelle righe giocatore. Logo vincitore via winnerLogoName(w) (manager_id, fallback team_name su standings->teamLogoBy).",
+}
+
+PROFILO_A_TENDINA = {
+    "cosa": "Impostazioni>Profilo: Avatar e Logo squadra mostrano solo la scelta attuale (renderAvCur/renderLogoCur) + bottone 'Cambia ▾'. Griglia (#setGrid/#setLogoGrid, classe disc-body) nascosta di default, espansa da toggleDisc('av'|'logo'); all'apertura pagina si richiudono (collapseDisc). Rimosso il vecchio #setLogoPreview.",
+    "css": ".disc-head/.disc-cur/.disc-act/.disc-chev.",
+    "naming": "ATTENZIONE: funzioni renderAvCur/renderLogoCur volutamente diverse dagli id setAvCur/setLogoCur, per evitare il clash funzione<->global-da-id del browser.",
+}
+
+REGOLAMENTO_UPDATE = {
+    "portiere_due_righe": "voce 'In porta' divisa in due righe uguali alle altre (emoji·nome·numero): 🧤 Clean Sheet +3 e 🔴 Gol subito -1 (malus portiere -1 per gol).",
+    "niente_descrizioni": "rimosse TUTTE le descrizioni <small> dalle righe del regolamento (es. 'la tua vera squadra di calcetto', 'scelto da te', 'raddoppia solo il voto'). Ora solo emoji + nome + punteggio.",
+}
+
+FORMAZIONE_GIORNATA_PAGINA = {
+    "cosa": "openTeamLineup non usa piu' il bottom-sheet condiviso #sheet (lasciava vedere/scrollare lo sfondo). Ora scrive in una PAGINA overlay dedicata #teamLineupPage (stile bch-page: barra '‹ Indietro', #tlpTitle/#tlpHint/#tlpList), aperta/chiusa da openTeamLineupPage()/closeTeamLineupPage().",
+    "swipe": ".tl-swipe (campo<->punti) e' CSS scroll-snap, nessun hook JS: funziona identico nella pagina.",
+    "sheet_invariato": "il bottom-sheet #sheet resta per gli altri usi (apri/modifica giornata, scelta giocatore, azioni giocatore, modifica giocatore).",
+}
+
+FILE_TOCCATI_SESSIONE_37 = ["index.html (solo questo)"]
+DEPLOY_SESSIONE_37 = "Scarica index.html -> carica su GitHub come index.html -> Vercel pubblica. Niente SQL, niente PNG, notify.ts invariato. Chiavi gia' dentro."
