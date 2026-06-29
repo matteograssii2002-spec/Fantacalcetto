@@ -100,6 +100,16 @@
   .avopt.on{border-color:var(--accent);box-shadow:0 0 0 2px rgba(61,139,255,.4);background:rgba(61,139,255,.1)}
   .avopt img{width:100%;height:auto;display:block;border-radius:8px}
   .avgrid.locked{opacity:.5;pointer-events:none}
+  /* tendina avatar/logo nel profilo: mostra solo la scelta attuale, espande la griglia */
+  .disc-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface2);border:1px solid var(--line-strong);border-radius:14px;padding:10px 12px;cursor:pointer}
+  .disc-head:active{transform:scale(.99)}
+  .disc-cur{display:flex;align-items:center;gap:10px;min-height:48px}
+  .disc-cur img,.disc-cur .tlogo,.disc-cur .ph{border-radius:10px;display:block}
+  .disc-cur .none{color:var(--muted);font-size:13px}
+  .disc-act{display:flex;align-items:center;gap:6px;color:var(--accent-soft);font-weight:800;font-size:13.5px;white-space:nowrap}
+  .disc-chev{display:inline-block;transition:transform .2s}
+  .disc-head.open .disc-chev{transform:rotate(180deg)}
+  .disc-body{margin-top:12px}
   .av-empty{color:var(--muted);font-size:13px;text-align:center;padding:18px;border:1px dashed var(--line-strong);border-radius:14px}
 
   /* ---- LOGHI SQUADRA ---- */
@@ -533,12 +543,12 @@
   .statx{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:10px;border:none;background:var(--surface2);color:var(--muted);font-size:14px;cursor:pointer;display:grid;place-items:center}
   .stat-head{display:flex;align-items:center;gap:13px;margin-bottom:16px}
   .stat-av{width:56px;height:56px;border-radius:13px;background:linear-gradient(160deg,#13294a,#0d1c34);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
-  .stat-av img{max-height:50px;width:auto;max-width:46px}
+  .stat-av img{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain;border-radius:11px;display:block}
   #teamAv{font-size:28px}
   .stat-id b{font-family:'Bricolage Grotesque';font-weight:800;font-size:18px;display:block;letter-spacing:-.01em}
   .stat-id span{font-size:12px;color:var(--muted)}
   .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-  .stat-box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px}
+  .stat-box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 13px;text-align:center}
   .stat-box .v{font-family:'JetBrains Mono';font-weight:700;font-size:22px;letter-spacing:-.02em}
   .stat-box .k{font-size:11.5px;color:var(--muted);margin-top:2px;font-weight:600}
   .stat-box.accent .v{color:var(--accent-soft)} .stat-box.gold .v{color:var(--gold)} .stat-box.green .v{color:var(--green)}
@@ -546,11 +556,12 @@
   #statGrid .sg-core{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
   #statGrid .sg-vote{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
   #teamGrid{display:block}
-  #teamGrid .tg-hero .stat-box{padding:15px}
-  #teamGrid .tg-hero .stat-box .v{font-size:26px}
+  #teamGrid .tg-hero .stat-box{padding:14px 15px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+  #teamGrid .tg-hero .stat-box .v{font-size:30px}
+  #teamGrid .tg-hero .stat-box .k{font-size:12.5px;margin-top:3px}
   #teamGrid .tg-rank{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
   #teamGrid .tg-rank.one{grid-template-columns:1fr}
-  #teamGrid .tg-rest{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px;margin-top:9px}
+  #teamGrid .tg-rest{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:9px}
   /* ---- ANDAMENTO VOTI (grafichino stagione) ---- */
   .vtrend{margin-top:15px;background:linear-gradient(165deg,rgba(61,139,255,.10),rgba(16,36,67,.55));
     border:1px solid var(--line);border-radius:16px;padding:14px 12px 10px}
@@ -590,6 +601,9 @@
   .bch-page .stat-av{width:64px;height:64px}
   .bch-page #teamAv{font-size:32px}
   .bch-page .stat-id b{font-size:21px}
+  /* pagina formazione di giornata */
+  #teamLineupPage .tlp-title{font-family:'Bricolage Grotesque';font-weight:800;font-size:23px;letter-spacing:-.01em;margin:2px 2px 4px}
+  #teamLineupPage .shint{font-size:13px;color:var(--muted);margin:0 2px 16px;line-height:1.5}
   /* ---- HOME: mini-card bacheca ---- */
   .bcard{margin-top:12px;border-radius:18px;padding:14px 15px;cursor:pointer;position:relative;overflow:hidden;border:1px solid var(--line-strong);background:linear-gradient(160deg,#13294a,#0c1a31);transition:transform .15s}
   .bcard:active{transform:scale(.99)}
@@ -851,6 +865,23 @@
   .rep-av img{width:100%!important;height:auto!important;border-radius:0!important}
   .rep-nm{font-size:12px;font-weight:700;margin-top:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .rep-pt{font-family:'JetBrains Mono';font-weight:800;font-size:15px;color:#7ce6aa;margin-top:3px}
+  /* --- Migliori di giornata (bomber / assist-man / muro) --- */
+  .lead-row{display:flex;gap:10px;width:100%;max-width:360px;margin-top:6px}
+  .lead-cell{flex:1;background:rgba(255,255,255,.04);border:1.5px solid var(--line-strong);border-radius:18px;padding:16px 8px 14px;display:flex;flex-direction:column;align-items:center}
+  .lead-ic{font-size:26px;line-height:1;margin-bottom:8px}
+  .lead-av{width:64px;height:64px;border-radius:16px;overflow:hidden;background:#102742;display:grid;place-items:center;margin:0 auto}
+  .lead-av img{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain;border-radius:0!important;display:block}
+  .lead-nm{font-size:12.5px;font-weight:800;margin-top:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+  .lead-val{font-family:'JetBrains Mono';font-weight:800;font-size:22px;color:#eaf1fb;margin-top:5px;line-height:1}
+  .lead-val span{font-family:'Hanken Grotesk',sans-serif;font-weight:700;font-size:11px;color:var(--muted);margin-left:4px}
+  .lead-lbl{font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--accent-soft);margin-top:7px}
+  /* --- Verdetto: 2º e 3º di giornata --- */
+  .vd-list{display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin-top:20px}
+  .vd-row{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);border:1px solid var(--line-strong);border-radius:14px;padding:11px 15px;text-align:left}
+  .vd-medal{font-size:22px;line-height:1;flex:none}
+  .vd-nm{flex:1;font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .vd-pt{font-family:'JetBrains Mono';font-weight:800;font-size:16px;color:#cfe0f7;flex:none}
+  .vd-pt span{font-family:'Hanken Grotesk',sans-serif;font-weight:700;font-size:11px;color:var(--muted);margin-left:3px}
   /* --- Capitani / MVP --- */
   .cap-team{font-size:11.5px;color:var(--muted);margin-top:2px}
   .mvp-podium{display:flex;flex-direction:column;gap:8px;margin-top:18px;width:100%;max-width:300px}
@@ -1203,10 +1234,18 @@
       <div class="section-h"><h2>Profilo</h2></div>
       <div class="set-card"><h3>Nome squadra</h3><input class="ob-input" id="setNameInput" maxlength="24" autocomplete="off"></div>
       <div class="set-card"><h3 id="setPlayerCardLab">Nome personaggio</h3><input class="ob-input" id="setPlayerInput" maxlength="16" autocomplete="off"></div>
-      <div class="set-card" id="setAvatarCard"><h3>Avatar</h3><div class="avgrid" id="setGrid"></div></div>
+      <div class="set-card" id="setAvatarCard"><h3>Avatar</h3>
+        <button type="button" class="disc-head" id="avDiscHead" onclick="toggleDisc('av')">
+          <span class="disc-cur" id="setAvCur"></span>
+          <span class="disc-act">Cambia <span class="disc-chev">▾</span></span>
+        </button>
+        <div class="avgrid disc-body" id="setGrid" style="display:none"></div></div>
       <div class="set-card" id="setLogoCard"><h3>Logo squadra</h3>
-        <div class="ob-preview" id="setLogoPreview" style="min-height:96px;margin-bottom:12px"></div>
-        <div class="lggrid" id="setLogoGrid"></div></div>
+        <button type="button" class="disc-head" id="logoDiscHead" onclick="toggleDisc('logo')">
+          <span class="disc-cur" id="setLogoCur"></span>
+          <span class="disc-act">Cambia <span class="disc-chev">▾</span></span>
+        </button>
+        <div class="lggrid disc-body" id="setLogoGrid" style="display:none"></div></div>
       <button class="save" id="setSaveBtn">Salva modifiche</button>
     </div>
 
@@ -1231,11 +1270,12 @@
           <div class="rule"><div class="ic">😵</div><div class="tx">Autogol</div><div class="pt neg">−3</div></div>
           <div class="rule"><div class="ic">🚫</div><div class="tx">Rigore sbagliato</div><div class="pt neg">−3</div></div>
           <div class="rule"><div class="ic">🙌</div><div class="tx">Rigore parato</div><div class="pt pos">+3</div></div>
-          <div class="rule"><div class="ic">🧤</div><div class="tx">In porta<small>−1 per gol subìto nel suo turno · +3 se imbattuto</small></div><div class="pt"></div></div>
-          <div class="rule"><div class="ic">✅</div><div class="tx">Squadra vince<small>la tua vera squadra di calcetto</small></div><div class="pt pos">+2</div></div>
+          <div class="rule"><div class="ic">🧤</div><div class="tx">Clean Sheet</div><div class="pt pos">+3</div></div>
+          <div class="rule"><div class="ic">🔴</div><div class="tx">Gol subito</div><div class="pt neg">−1</div></div>
+          <div class="rule"><div class="ic">✅</div><div class="tx">Squadra vince</div><div class="pt pos">+2</div></div>
           <div class="rule"><div class="ic">❌</div><div class="tx">Squadra perde</div><div class="pt neg">−1</div></div>
-          <div class="rule"><div class="ic">©️</div><div class="tx">Capitano<small>scelto da te · raddoppia solo il voto</small></div><div class="pt x2">×2</div></div>
-          <div class="rule"><div class="ic">🏆</div><div class="tx">MVP<small>il migliore, votato dal gruppo · raddoppia solo il voto</small></div><div class="pt x2">×2</div></div>
+          <div class="rule"><div class="ic">©️</div><div class="tx">Capitano</div><div class="pt x2">×2</div></div>
+          <div class="rule"><div class="ic">🏆</div><div class="tx">MVP</div><div class="pt x2">×2</div></div>
         </div>
       </div>
     </div>
@@ -1348,6 +1388,18 @@
   <div class="sheet-bg" id="sheetBg" onclick="closeSheet()"></div>
   <div class="sheet" id="sheet"><div class="grip"></div>
     <h3 id="sheetTitle"></h3><p class="shint" id="sheetHint"></p><div id="sheetList"></div></div>
+
+  <!-- PAGINA FORMAZIONE DI GIORNATA (full screen, niente sfondo che balla) -->
+  <div class="overlay hidden bch-page" id="teamLineupPage">
+    <div class="bch-page-bar">
+      <button class="bch-back" onclick="closeTeamLineupPage()" aria-label="Indietro">‹ Indietro</button>
+    </div>
+    <div class="bch-page-inner">
+      <h3 id="tlpTitle" class="tlp-title"></h3>
+      <p class="shint" id="tlpHint"></p>
+      <div id="tlpList"></div>
+    </div>
+  </div>
   <div class="toast" id="toast"></div>
 
   <div class="statmodal-bg" id="pushBg" onclick="closePushPrompt()"></div>
@@ -2923,7 +2975,7 @@ function voteTrendHTML(pts){
       <text x="${x}" y="${(H-8).toFixed(1)}" text-anchor="middle" font-family="'Hanken Grotesk',sans-serif" font-size="9.5" font-weight="700" fill="#8aa3c2">${p.lab}</text>
     </g>`;
   }).join('');
-  return `<div class="vt-h"><span class="vt-t">📈 Andamento voti</span><span class="vt-avg">media ${avg.toFixed(1).replace('.0','')} · <b style="color:#37c98a">top ${best.toFixed(1).replace('.0','')}</b></span></div>
+  return `<div class="vt-h"><span class="vt-t">📈 Andamento voti</span></div>
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Andamento dei voti per giornata">
       <defs>
         <linearGradient id="vtFill" x1="0" y1="0" x2="0" y2="1">
@@ -3592,21 +3644,21 @@ async function openTeamLineup(managerId, teamName){
   const started = mdObj && (mdObj.status==='closed' || (mdObj.kickoff && Date.now()>=new Date(mdObj.kickoff).getTime()));
   const isMine = managerId===user.id;
   if(!started && !isMine){
-    document.getElementById('sheetTitle').textContent=teamName;
-    document.getElementById('sheetHint').textContent='🔒 Formazione nascosta';
-    document.getElementById('sheetList').innerHTML='<div class="empty-note" style="padding:18px;line-height:1.5">Le formazioni avversarie si vedono dall\'inizio della partita, così nessuno può copiare.</div>';
-    openSheet(); return;
+    document.getElementById('tlpTitle').textContent=teamName;
+    document.getElementById('tlpHint').textContent='🔒 Formazione nascosta';
+    document.getElementById('tlpList').innerHTML='<div class="empty-note" style="padding:18px;line-height:1.5">Le formazioni avversarie si vedono dall\'inizio della partita, così nessuno può copiare.</div>';
+    openTeamLineupPage(); return;
   }
   const {data:lns}=await sb.from('lineups').select('*').eq('matchday_id',md).eq('manager_id',managerId);
   const avg={}; const {data:av}=await sb.rpc('get_averages',{md}); (av||[]).forEach(r=>avg[r.player_id]={v:Number(r.v)});
   const stats={}; const {data:msd}=await sb.from('match_stats').select('*').eq('matchday_id',md); (msd||[]).forEach(r=>stats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,esito:r.esito||''});
   let mvp=0; const {data:msx}=await sb.rpc('get_mvp_sega',{md}); if(msx&&msx[0]){mvp=msx[0].mvp||0;}
   let mod='1-2-2'; const {data:lm}=await sb.from('lineup_modules').select('module').eq('matchday_id',md).eq('manager_id',managerId).maybeSingle(); if(lm&&MODULES[lm.module])mod=lm.module;
-  document.getElementById('sheetTitle').textContent=teamName;
+  document.getElementById('tlpTitle').textContent=teamName;
   if(!lns||!lns.length){
-    document.getElementById('sheetHint').textContent='Questa squadra non ha schierato una formazione in questa giornata.';
-    document.getElementById('sheetList').innerHTML='<div class="empty-note">Nessuna formazione.</div>';
-    openSheet(); return;
+    document.getElementById('tlpHint').textContent='Questa squadra non ha schierato una formazione in questa giornata.';
+    document.getElementById('tlpList').innerHTML='<div class="empty-note">Nessuna formazione.</div>';
+    openTeamLineupPage(); return;
   }
   const bySlot={}; lns.forEach(r=>bySlot[r.slot]=r);
   const getp=(s)=>{ const r=bySlot[s.key]; if(!r)return null;
@@ -3616,7 +3668,7 @@ async function openTeamLineup(managerId, teamName){
   const mb=MODULES[mod]?MODULES[mod].bonus:0;
   let tot=mb;
   lns.forEach(r=>{ tot+=scoreOf(r.player_id,r.slot,r.is_captain,avg,stats,mvp).score; });
-  document.getElementById('sheetHint').innerHTML=`Modulo <b>${mod}</b>${mb?` (parti ${mb>0?'+':''}${mb})`:''} · Totale <b>${tot.toFixed(1)}</b> pt · <span style="color:var(--muted)">scorri ←</span>`;
+  document.getElementById('tlpHint').innerHTML=`Modulo <b>${mod}</b>${mb?` (parti ${mb>0?'+':''}${mb})`:''} · Totale <b>${tot.toFixed(1)}</b> pt · <span style="color:var(--muted)">scorri ←</span>`;
   const order={a1:1,a2:2,a3:3,d1:4,d2:5,d3:6,g1:7};
   const rowsList=lns.slice().sort((x,y)=>(order[x.slot]||9)-(order[y.slot]||9)).map(r=>{
     const p=players.find(x=>x.id===r.player_id);
@@ -3627,13 +3679,22 @@ async function openTeamLineup(managerId, teamName){
       <div class="info"><b>${p?p.name:'?'}${badges}</b><span>${slotlab} · voto ${sc.voto.toFixed(1)}</span></div>
       <span class="pr" style="color:${sc.score>=0?'var(--green)':'var(--red)'}">${sc.score.toFixed(1)}</span></div>`;
   }).join('');
-  document.getElementById('sheetList').innerHTML=`
+  document.getElementById('tlpList').innerHTML=`
     <div class="tl-swipe">
       <div class="tl-slide"><div class="pitch pitch-view">${PITCH_MARKS}${pitchSlotsHTML(mod,getp)}</div></div>
       <div class="tl-slide"><div class="tl-listhead">Punti totali (bonus inclusi)${mb?` · modulo ${mod} ${mb>0?'+':''}${mb}`:''}</div>${rowsList}<div class="tl-tot">Totale squadra <b>${tot.toFixed(1)}</b></div></div>
     </div>
     <div class="tl-hint">● campo &nbsp;·&nbsp; ○ punti — scorri da destra a sinistra</div>`;
-  openSheet();
+  openTeamLineupPage();
+}
+function openTeamLineupPage(){
+  const pg=document.getElementById('teamLineupPage'); if(!pg)return;
+  pg.classList.remove('hidden');
+  const inner=pg.querySelector('.bch-page-inner'); if(inner) inner.scrollTop=0;
+  pg.scrollTop=0;
+}
+function closeTeamLineupPage(){
+  const pg=document.getElementById('teamLineupPage'); if(pg) pg.classList.add('hidden');
 }
 
 /* ---------- SETTINGS ---------- */
@@ -3656,18 +3717,35 @@ function openSettings(){
   document.getElementById('setPreview').innerHTML=avatarImg(profile.avatar,50);
   document.getElementById('setGrid').innerHTML=avatars.map(a=>`<div class="avopt ${a.name===setAvatarDraft?'on':''}" onclick="pickSet('${a.name}')"><img src="${a.url}"></div>`).join('');
   renderSetLogo();
+  renderAvCur(); collapseDisc('av'); collapseDisc('logo');
   if(profile.is_admin){ renderManage(); renderVoters(); loadInvite(); loadSchedule(); loadCreditConfig(); }
   renderNotifBtn(); renderMaintBtn();
 }
 function renderSetLogo(){
-  const grid=document.getElementById('setLogoGrid'), pv=document.getElementById('setLogoPreview');
-  if(!grid||!pv)return;
-  pv.innerHTML=setLogoDraft?logoImg(setLogoDraft,90):'<div style="color:var(--muted)">Nessun logo scelto</div>';
-  if(!logos.length){ grid.innerHTML='<div class="av-empty">Nessun logo trovato. Carica i file nel bucket Storage "loghi" e ricarica la pagina.</div>'; return; }
+  const grid=document.getElementById('setLogoGrid');
+  if(!grid)return;
+  if(!logos.length){ grid.innerHTML='<div class="av-empty">Nessun logo trovato. Carica i file nel bucket Storage "loghi" e ricarica la pagina.</div>'; renderLogoCur(); return; }
   grid.innerHTML=logos.map(l=>`<div class="lgopt ${l.name===setLogoDraft?'on':''}" onclick="pickSetLogo('${l.name}')"><img src="${l.url}"></div>`).join('');
+  renderLogoCur();
+}
+/* anteprime "scelta attuale" mostrate quando la tendina è chiusa */
+function renderAvCur(){ const el=document.getElementById('setAvCur'); if(el) el.innerHTML=setAvatarDraft?avatarImg(setAvatarDraft,44):'<span class="none">Nessun avatar</span>'; }
+function renderLogoCur(){ const el=document.getElementById('setLogoCur'); if(el) el.innerHTML=setLogoDraft?logoImg(setLogoDraft,44):'<span class="none">Nessun logo scelto</span>'; }
+/* apri/chiudi la tendina avatar o logo */
+function toggleDisc(which){
+  const head=document.getElementById(which==='logo'?'logoDiscHead':'avDiscHead');
+  const body=document.getElementById(which==='logo'?'setLogoGrid':'setGrid');
+  if(!head||!body)return;
+  const open=body.style.display==='none';
+  body.style.display=open?'grid':'none'; head.classList.toggle('open',open);
+}
+function collapseDisc(which){
+  const head=document.getElementById(which==='logo'?'logoDiscHead':'avDiscHead');
+  const body=document.getElementById(which==='logo'?'setLogoGrid':'setGrid');
+  if(body) body.style.display='none'; if(head) head.classList.remove('open');
 }
 function pickSetLogo(name){ setLogoDraft=name; renderSetLogo(); }
-function pickSet(name){setAvatarDraft=name;document.getElementById('setGrid').querySelectorAll('.avopt').forEach((el,i)=>el.classList.toggle('on',avatars[i].name===name));}
+function pickSet(name){ setAvatarDraft=name; renderAvCur(); document.getElementById('setGrid').querySelectorAll('.avopt').forEach((el,i)=>el.classList.toggle('on',avatars[i].name===name)); }
 document.getElementById('setSaveBtn').onclick=async function(){
   const team=document.getElementById('setNameInput').value.trim()||profile.team_name;
   const pname=document.getElementById('setPlayerInput').value.trim()||profile.player_name;
@@ -3925,8 +4003,8 @@ function dismissLogoIntro(){
    ============================================================ */
 let recapData=null, recapCards=[], recapIdx=0, recapMd=null, recapBusy=false, _recapPending=false, _shareCanvas=null, recapExtra=null;
 // auto-avanzamento "a storie": durata per scena (le scene finali standings/share non avanzano da sole)
-const PAG_DUR={cover:3200, you:6200, topflop:5400, captains:5200, verdict:5800, forma:5000,
-               numbers:4600, capo:4200, movers:4600, modules:4800, winner:5200, mvp:5400};
+const PAG_DUR={cover:3200, you:6200, topflop:5400, leaders:5200, captains:5200, verdict:5800, forma:5000,
+               numbers:4600, capo:4200, movers:4600, modules:4800, winner:6200, mvp:5400, standings:5600};
 let _pagRAF=null, _pagT0=0, _pagElapsed=0, _pagDur=0, _pagActive=false;
 function pagSegFill(){ return document.querySelector('#pagProg .pag-seg.cur i'); }
 function pagTick(){
@@ -4042,6 +4120,39 @@ async function loadRecapExtra(md){
     });
     ex.reparti={att:bAtt,dif:bDif,por:bPor};
 
+    // ---------- MIGLIORI DI GIORNATA: più gol, più assist, muro (meno gol presi tra i portieri schierati) ----------
+    try{
+      let bomber=null, assistman=null, wall=null;
+      const seenP={}, seenK={};
+      lns.forEach(r=>{
+        const pid=r.player_id;
+        if(!seenP[pid]){
+          seenP[pid]=true;
+          const st=stats[pid]||{}, pi=pInfo(pid), g=st.gol||0, a=st.assist||0;
+          if(g>0 && (!bomber || g>bomber.val)) bomber={name:pi.name,avatar:pi.avatar,val:g};
+          if(a>0 && (!assistman || a>assistman.val)) assistman={name:pi.name,avatar:pi.avatar,val:a};
+        }
+        // muro: solo chi è stato schierato in porta (slot g1)
+        if(r.slot==='g1' && !seenK[pid]){
+          seenK[pid]=true;
+          const st=stats[pid]||{}, pi=pInfo(pid), gs=st.gs||0;
+          if(!wall || gs<wall.val) wall={name:pi.name,avatar:pi.avatar,val:gs};
+        }
+      });
+      if(bomber||assistman||wall) ex.leaders={bomber,assistman,wall};
+    }catch(_){}
+
+    // ---------- PODIO DI GIORNATA (1-2-3) + Fanalino di coda (ultimo) ----------
+    try{
+      const {data:gsP}=await sb.rpc('get_standings_md',{md});
+      const arr=(gsP||[]).map(r=>({manager_id:r.manager_id,team_name:r.team_name,points:Number(r.points)||0}))
+                          .sort((a,b)=>b.points-a.points);
+      if(arr.length){
+        ex.mdPodium=arr.slice(0,3);
+        ex.mdLast=arr.length>1?arr[arr.length-1]:null;   // niente fanalino se c'è una sola squadra
+      }
+    }catch(_){}
+
     // ---------- CAPITANI: chi ha azzeccato / sbagliato la fascia ----------
     let cTop=null,cFlop=null;
     lns.filter(r=>r.is_captain).forEach(r=>{
@@ -4076,6 +4187,7 @@ function buildRecapCards(d, ex){
   const c=[{t:'cover'}];
   if(ex.mine) c.push({t:'you'});                                   // ⭐ la tua giornata (rosa inclusa)
   if(d.top_player || (ex.reparti&&(ex.reparti.att||ex.reparti.dif||ex.reparti.por))) c.push({t:'topflop'});
+  if(ex.leaders&&(ex.leaders.bomber||ex.leaders.assistman||ex.leaders.wall)) c.push({t:'leaders'}); // ⚽ più gol · 🎯 più assist · 🧤 muro
   if(ex.captains&&ex.captains.top) c.push({t:'captains'}); // 🎖️ miglior/peggior capitano schierato (riscritto chiaro)
   if(d.mvp) c.push({t:'mvp'});       // 🏆 MVP della giornata (solo l'MVP, se votato)
   if(d.winner) c.push({t:'winner'}); // 🏆 vincitore di giornata + cucchiaio di legno
@@ -4169,6 +4281,19 @@ function renderRecapHTML(card, d){
       const reparti=(R.att||R.dif||R.por)?`<div class="rep-row">${rep('⚽ Att',R.att)}${rep('🛡️ Dif',R.dif)}${rep('🧤 Por',R.por)}</div>`:'';
       return `<div class="pag-eyebrow">Top, Flop & Reparti</div>${duo}${reparti}`;
     }
+    case 'leaders':{
+      const L=ex.leaders||{};
+      const cell=(ic,lbl,o,unit)=>o?`<div class="lead-cell"><div class="lead-ic">${ic}</div><div class="lead-av">${av(o.avatar,64)}</div><div class="lead-nm">${esc(o.name)}</div><div class="lead-val">${o.val}<span>${unit}</span></div><div class="lead-lbl">${lbl}</div></div>`:'';
+      const wallUnit=L.wall?(L.wall.val===1?'gol preso':'gol presi'):'';
+      const cells=[
+        cell('⚽','Bomber',L.bomber,'gol'),
+        cell('🎯','Assist-man',L.assistman,(L.assistman&&L.assistman.val===1)?'assist':'assist'),
+        cell('🧤','Muro',L.wall,wallUnit)
+      ].filter(Boolean).join('');
+      return `<div class="pag-eyebrow">I migliori di giornata</div>
+        <div class="pag-sub" style="margin-bottom:14px">Più gol, più assist e la porta meno battuta</div>
+        <div class="lead-row">${cells}</div>`;
+    }
     case 'you':{
       const m=ex.mine||{};
       const dT=m.deltaSeason>0?`<span class="you-up">▲ +${m.deltaSeason}</span>`:(m.deltaSeason<0?`<span class="you-dn">▼ ${Math.abs(m.deltaSeason)}</span>`:'');
@@ -4205,7 +4330,7 @@ function renderRecapHTML(card, d){
       const w=d.winner, c=d.cucchiaio, n=d.numbers||{};
       const risky=(d.modules||[]).filter(x=>x.risky)[0];
       const gamble=risky?`<div class="pag-chip-risk">🎲 ${esc(risky.team_name)} ha osato col ${esc(risky.module)}${risky.points!=null?` · ${Number(risky.points).toFixed(1)} pt`:''}</div>`:'';
-      const spoon=c?`<div class="pag-spoon">🥄 Cucchiaio di legno: <b>${esc(c.team_name)}</b> · ${Number(c.points).toFixed(1)} pt</div>`:'';
+      const spoon=c?`<div class="pag-spoon">🪶 Fanalino di coda: <b>${esc(c.team_name)}</b> · ${Number(c.points).toFixed(1)} pt</div>`:'';
       const split=(n.winners+n.losers>0)?`<div class="pag-vs-split" style="margin-top:14px">
            <div class="pvs-col w"><div class="pvs-n">${n.winners}</div><div class="pvs-l">vincitori · +2</div></div>
            <div class="pvs-x">vs</div>
@@ -4242,12 +4367,19 @@ function renderRecapHTML(card, d){
     }
     case 'winner':{
       const w=d.winner, c=d.cucchiaio;
-      const spoon=c?`<div class="pag-spoon">🥄 Cucchiaio di legno: <b>${esc(c.team_name)}</b> · ${Number(c.points).toFixed(1)} pt</div>`:'';
+      const pod=ex.mdPodium||[];
+      const second=pod[1], third=pod[2];
+      const podRow=(medal,o)=>o?`<div class="vd-row"><div class="vd-medal">${medal}</div><div class="vd-nm">${esc(o.team_name)}</div><div class="vd-pt">${Number(o.points).toFixed(1)}<span>pt</span></div></div>`:'';
+      const others=(second||third)?`<div class="vd-list">${podRow('🥈',second)}${podRow('🥉',third)}</div>`:'';
+      // Fanalino di coda (era "cucchiaio di legno"): preferisco il vero ultimo di giornata, fallback sul cucchiaio
+      let fan=ex.mdLast||(c?{team_name:c.team_name,points:Number(c.points)}:null);
+      if(fan && w && fan.team_name===w.team_name) fan=null;   // non mostrarlo se coincide col vincitore
+      const fanHTML=fan?`<div class="pag-spoon">🪶 Fanalino di coda: <b>${esc(fan.team_name)}</b> · ${Number(fan.points).toFixed(1)} pt</div>`:'';
       return `<div class="pag-eyebrow">Il verdetto</div>
         <div class="pag-trophy">🏆</div><div class="pag-win-tag">Vincitore di giornata</div>
         <h2 class="pag-name gold">${esc(w.team_name)}</h2>
         <div class="pag-bigline"><span data-count="${w.points}" data-dec="1">0</span></div>
-        <div class="pag-ptlabel">punti</div>${spoon}`;
+        <div class="pag-ptlabel">punti</div>${others}${fanHTML}`;
     }
     case 'mvp':{
       const m=d.mvp;
@@ -4447,10 +4579,43 @@ async function drawAvatar(ctx,name,x,y,size,fallbackLabel){
   const grd=ctx.createLinearGradient(x,y,x,y+size); grd.addColorStop(0,'#16315a'); grd.addColorStop(1,'#0c1c34');
   ctx.fillStyle=grd; ctx.fill();
   const url=await avatarBlob(name); let img=null; if(url) img=await loadImg(url);
-  if(img){ ctx.save(); rr(ctx,x,y,size,size,size*0.22); ctx.clip();
-    const pad=size*0.08, s=size-pad*2; ctx.drawImage(img,x+pad,y+pad,s,s); ctx.restore(); }
+  if(img && img.naturalWidth){ ctx.save(); rr(ctx,x,y,size,size,size*0.22); ctx.clip();
+    const pad=size*0.08, bw=size-pad*2, bh=size-pad*2, ar=img.naturalWidth/img.naturalHeight;
+    let dw=bw, dh=bh; if(ar>1){ dh=bw/ar; } else { dw=bh*ar; }   // contain: mai schiacciato
+    ctx.drawImage(img, x+pad+(bw-dw)/2, y+pad+(bh-dh)/2, dw, dh); ctx.restore(); }
   else { ctx.fillStyle='#9fb6d6'; ctx.font='800 '+Math.round(size*0.34)+'px "Hanken Grotesk",sans-serif';
     ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(initials(fallbackLabel||name), x+size/2, y+size/2+2); ctx.textBaseline='alphabetic'; }
+}
+/* logo squadra per la carta PNG (scaricato come blob: niente tainting del canvas) */
+async function logoBlob(name){
+  if(!name) return null;
+  const key='__logo__'+name;
+  if(_avBlob[key]==='FAIL') return null;
+  if(_avBlob[key]) return _avBlob[key];
+  try{
+    const {data,error}=await sb.storage.from('loghi').download(name);
+    if(error||!data) throw 0;
+    const url=URL.createObjectURL(data); _avBlob[key]=url; return url;
+  }catch(_){ _avBlob[key]='FAIL'; return null; }
+}
+async function drawLogo(ctx,name,x,y,size){
+  rr(ctx,x,y,size,size,size*0.22);
+  const grd=ctx.createLinearGradient(x,y,x,y+size); grd.addColorStop(0,'#16315a'); grd.addColorStop(1,'#0c1c34');
+  ctx.fillStyle=grd; ctx.fill();
+  const url=name?await logoBlob(name):null; let img=null; if(url) img=await loadImg(url);
+  if(img && img.naturalWidth){ ctx.save(); rr(ctx,x,y,size,size,size*0.22); ctx.clip();
+    const pad=size*0.1, bw=size-pad*2, bh=size-pad*2, ar=img.naturalWidth/img.naturalHeight;
+    let dw=bw, dh=bh; if(ar>1){ dh=bw/ar; } else { dw=bh*ar; }
+    ctx.drawImage(img, x+pad+(bw-dw)/2, y+pad+(bh-dh)/2, dw, dh); ctx.restore(); }
+  else { ctx.fillStyle='#5d76a0'; ctx.font='52px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🛡️', x+size/2, y+size/2); ctx.textBaseline='alphabetic'; }
+}
+/* nome file del logo della squadra vincitrice (per manager_id o, in fallback, per nome squadra) */
+function winnerLogoName(w){
+  if(!w) return '';
+  if(w.manager_id && teamLogoBy[w.manager_id]) return teamLogoBy[w.manager_id];
+  const s=(standings||[]).find(x=>x.team_name===w.team_name);
+  return (s&&teamLogoBy[s.manager_id])||'';
 }
 async function buildShareCard(){
   const d=recapData, W=1080, H=1350;
@@ -4466,23 +4631,31 @@ async function buildShareCard(){
   ctx.fillStyle='#eaf1fb'; ctx.font='800 80px "Bricolage Grotesque",sans-serif';
   ctx.fillText(d.label||'Giornata', W/2, 214);
   let y=320;
-  async function block(emoji,label,name,sub,avatarName){
+  // emoji a SINISTRA, testo al CENTRO, immagine a DESTRA (logo squadra per la riga squadra, avatar per i giocatori)
+  async function block(emoji,label,name,sub,opts){
+    opts=opts||{};
     rr(ctx,80,y,W-160,210,34); ctx.fillStyle='rgba(255,255,255,.05)'; ctx.fill();
     ctx.lineWidth=2; ctx.strokeStyle='rgba(180,205,245,.18)'; rr(ctx,80,y,W-160,210,34); ctx.stroke();
-    if(avatarName!==undefined){ await drawAvatar(ctx,avatarName,120,y+35,140,name); }
-    else { ctx.font='90px sans-serif'; ctx.textAlign='center'; ctx.fillText(emoji,190,y+135); }
-    const tx=320;
+    // SINISTRA: simbolo
+    ctx.font='84px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(emoji||'⭐', 175, y+106); ctx.textBaseline='alphabetic';
+    // DESTRA: immagine (logo o avatar)
+    const isize=150, ix=W-80-26-isize, iy=y+(210-isize)/2;
+    if(opts.logoName!==undefined){ await drawLogo(ctx,opts.logoName,ix,iy,isize); }
+    else if(opts.avatarName!==undefined){ await drawAvatar(ctx,opts.avatarName,ix,iy,isize,name); }
+    // CENTRO: testo
+    const tx=272, maxNameW=ix-tx-24;
     ctx.textAlign='left';
     ctx.fillStyle='#8aa0c0'; ctx.font='800 28px "Hanken Grotesk",sans-serif'; ctx.fillText(label.toUpperCase(), tx, y+72);
     ctx.fillStyle='#eaf1fb'; ctx.font='800 50px "Bricolage Grotesque",sans-serif';
-    let nm=name||'—'; while(ctx.measureText(nm).width>W-tx-130 && nm.length>3){ nm=nm.slice(0,-2); } if(nm!==(name||'—')) nm+='…';
+    let nm=name||'—'; while(ctx.measureText(nm).width>maxNameW && nm.length>3){ nm=nm.slice(0,-2); } if(nm!==(name||'—')) nm+='…';
     ctx.fillText(nm, tx, y+128);
     if(sub){ ctx.fillStyle='#f0c878'; ctx.font='800 34px "JetBrains Mono",monospace'; ctx.fillText(sub, tx, y+178); }
     ctx.textAlign='center'; y+=250;
   }
-  if(d.winner) await block('🏆','Vincitore di giornata', d.winner.team_name, Number(d.winner.points).toFixed(1)+' punti');
-  if(d.mvp)    await block(null,'MVP', d.mvp.name, d.mvp.votes+' nomination', d.mvp.avatar);
-  if(d.capocannoniere) await block(null,'Capocannoniere', d.capocannoniere.name, d.capocannoniere.gol+' gol', d.capocannoniere.avatar);
+  if(d.winner) await block('🏆','Vincitore di giornata', d.winner.team_name, Number(d.winner.points).toFixed(1)+' punti', {logoName:winnerLogoName(d.winner)});
+  if(d.mvp)    await block('⭐','MVP', d.mvp.name, d.mvp.votes+' nomination', {avatarName:d.mvp.avatar});
+  if(d.capocannoniere) await block('👟','Capocannoniere', d.capocannoniere.name, d.capocannoniere.gol+' gol', {avatarName:d.capocannoniere.avatar});
   ctx.fillStyle='#5d76a0'; ctx.font='600 28px "Hanken Grotesk",sans-serif'; ctx.textAlign='center';
   ctx.fillText('fantacalcettoitalia.it', W/2, H-70);
   return cv;
