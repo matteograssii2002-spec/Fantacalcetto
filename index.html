@@ -246,9 +246,10 @@
   .pcard-fc:active{transform:scale(.98)}
   .pcard-fc.absent{opacity:.45}
   .pcard-fc svg{display:block;width:100%;height:auto;overflow:visible}
-  .fc-top{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;min-height:22px;padding:0 14px 7px}
-  .fc-tags{display:flex;flex-wrap:wrap;gap:5px;align-items:center;justify-content:center}
-  .fc-tag{font-size:9px;font-weight:800;line-height:1;padding:4px 8px;border-radius:999px;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;letter-spacing:.01em}
+  .fc-top{position:absolute;top:6px;left:0;right:0;z-index:3;display:flex;align-items:flex-start;justify-content:space-between;gap:6px;padding:0 9px;pointer-events:none}
+  .fc-tags{display:flex;flex-direction:column;flex-wrap:wrap;gap:4px;align-items:flex-start;max-width:62%}
+  .fc-tag{font-size:8px;font-weight:800;line-height:1;padding:3px 6px;border-radius:999px;white-space:nowrap;display:inline-flex;align-items:center;gap:2px;letter-spacing:.01em;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+  .fc-top .fc-tag.me{flex:none;align-self:flex-start}
   .fc-tag.gold{background:rgba(255,194,61,.16);color:var(--gold-soft);border:1px solid rgba(255,194,61,.42)}
   .fc-tag.accent{background:rgba(63,151,255,.16);color:var(--accent-soft);border:1px solid rgba(63,151,255,.42)}
   .fc-tag.red{background:rgba(255,99,99,.16);color:#ff9a9a;border:1px solid rgba(255,99,99,.42)}
@@ -293,8 +294,8 @@
   .m-arc{width:54px;height:54px;border:2px solid rgba(255,255,255,.5);border-radius:50%;left:50%;transform:translateX(-50%)}
   .m-arc.top{top:66px;clip-path:inset(50% 0 0 0)}.m-arc.bot{bottom:66px;clip-path:inset(0 0 50% 0)}
 
-  .slot{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;z-index:3;width:96px}
-  .pitch-view{margin-top:4px;height:470px}
+  .slot{position:absolute;transform:translate(-50%,0);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;z-index:3;width:86px}
+  .pitch-view{margin-top:4px;height:520px}
   .tl-swipe{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .tl-swipe::-webkit-scrollbar{display:none}
   .tl-slide{flex:0 0 100%;scroll-snap-align:start;padding:0 2px}
@@ -310,18 +311,18 @@
   .slot .disc{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:rgba(6,16,34,.35);border:2px dashed rgba(255,255,255,.7);transition:transform .15s}
   .slot:active .disc,.slot:active .pawn{transform:scale(.94)}
   .slot .plus{font-size:26px;color:#fff;font-weight:300}
-  .pawn{position:relative;height:56px;display:flex;align-items:flex-end;justify-content:center;transition:transform .15s}
-  .pawn img{width:52px;height:auto;max-height:70px;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+  .pawn{position:relative;display:inline-flex;align-items:flex-end;justify-content:center;transition:transform .15s}
+  .pawn img{height:60px!important;width:auto!important;max-height:none!important;display:block;border-radius:8px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
   .slot.captain .pawn{filter:drop-shadow(0 0 7px rgba(255,194,61,.95))}
-  .slot .tag{font-size:12px;font-weight:700;text-align:center;line-height:1.1;color:#fff;background:rgba(0,0,0,.45);padding:2px 9px;border-radius:7px;max-width:92px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+  .slot .tag{font-size:12px;font-weight:700;text-align:center;line-height:1.1;color:#fff;background:rgba(0,0,0,.45);padding:2px 9px;border-radius:7px;max-width:86px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.4)}
   .slot .tag.empty{color:rgba(255,255,255,.92);font-weight:600}
   .slot .cap{position:absolute;top:-4px;right:-4px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#1b1207;display:none;place-items:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:12px;border:2px solid #2c7a39}
   .slot.captain .cap{display:grid}
   .scoreline{display:flex;align-items:center;justify-content:center}
   .voto{font-family:'JetBrains Mono';font-weight:700;font-size:11px;padding:1px 6px;border-radius:6px;background:rgba(0,0,0,.55);color:#fff}
   .voto.hi{color:#7ce6aa} .voto.lo{color:#ff9a9a}
-  .evs{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:3px;display:flex;flex-wrap:wrap;justify-content:center;align-content:flex-start;gap:2px;max-width:76px;background:rgba(0,0,0,.45);padding:3px 5px;border-radius:8px;line-height:1}
-  .evs i{font-size:11.5px;font-style:normal;line-height:1}
+  .evs{margin-top:3px;display:flex;flex-wrap:wrap;justify-content:center;align-content:flex-start;gap:2px;max-width:84px;background:rgba(0,0,0,.45);padding:2px 5px;border-radius:8px;line-height:1}
+  .evs i{font-size:12px;font-style:normal;line-height:1}
   .evs:empty{display:none}
 
   .hint{text-align:center;color:var(--muted);font-size:12.5px;margin-top:16px;line-height:1.5}
@@ -1692,9 +1693,9 @@ function fmt(ms){ if(ms<0)ms=0; const d=Math.floor(ms/86400000),h=Math.floor(ms%
 let obAvatar=null, myRole='ATT', setAvatarDraft=null, editDraft=null;
 let obLogo=null, setLogoDraft=null, obStep=0;   // loghi: scelta in onboarding e in impostazioni
 const MODULES={
-  '1-2-2':{bonus:0, slots:[{key:"a1",label:"ATT",x:26,y:25},{key:"a2",label:"ATT",x:74,y:25},{key:"d1",label:"DIF",x:20,y:52},{key:"d2",label:"DIF",x:80,y:52},{key:"g1",label:"POR",x:50,y:83}]},
-  '1-3-1':{bonus:5, slots:[{key:"a1",label:"ATT",x:50,y:24},{key:"d1",label:"DIF",x:18,y:51},{key:"d2",label:"DIF",x:50,y:55},{key:"d3",label:"DIF",x:82,y:51},{key:"g1",label:"POR",x:50,y:83}]},
-  '1-1-3':{bonus:-5, slots:[{key:"a1",label:"ATT",x:22,y:25},{key:"a2",label:"ATT",x:50,y:22},{key:"a3",label:"ATT",x:78,y:25},{key:"d1",label:"DIF",x:50,y:53},{key:"g1",label:"POR",x:50,y:83}]}
+  '1-2-2':{bonus:0, slots:[{key:"a1",label:"ATT",x:26,y:8},{key:"a2",label:"ATT",x:74,y:8},{key:"d1",label:"DIF",x:18,y:40},{key:"d2",label:"DIF",x:82,y:40},{key:"g1",label:"POR",x:50,y:71}]},
+  '1-3-1':{bonus:5, slots:[{key:"a1",label:"ATT",x:50,y:8},{key:"d1",label:"DIF",x:16,y:37},{key:"d2",label:"DIF",x:50,y:43},{key:"d3",label:"DIF",x:84,y:37},{key:"g1",label:"POR",x:50,y:71}]},
+  '1-1-3':{bonus:-5, slots:[{key:"a1",label:"ATT",x:20,y:7},{key:"a2",label:"ATT",x:50,y:13},{key:"a3",label:"ATT",x:80,y:7},{key:"d1",label:"DIF",x:50,y:42},{key:"g1",label:"POR",x:50,y:71}]}
 };
 let formModule='1-2-2';
 let SLOTS=MODULES[formModule].slots;
