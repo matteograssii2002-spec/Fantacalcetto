@@ -246,7 +246,7 @@
   .pcard-fc:active{transform:scale(.98)}
   .pcard-fc.absent{opacity:.45}
   .pcard-fc svg{display:block;width:100%;height:auto;overflow:visible}
-  .fc-top{position:absolute;top:13%;left:0;right:0;z-index:3;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:0 12%;pointer-events:none}
+  .fc-top{position:absolute;top:16%;left:0;right:0;z-index:3;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:0 14%;pointer-events:none}
   .fc-tags{display:flex;flex-direction:column;flex-wrap:wrap;gap:3px;align-items:flex-start;max-width:74%}
   .fc-tag{font-size:9px;font-weight:800;line-height:1.1;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;letter-spacing:.01em;padding:0;background:none;border:none;border-radius:0;text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.7)}
   .fc-top .fc-tag.me{flex:none;align-self:flex-start}
@@ -279,7 +279,7 @@
   .meter i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--gold),#d4912f);transition:width .4s cubic-bezier(.2,.8,.2,1)}
   .meter i.over{background:linear-gradient(90deg,var(--red),#c62828)}
 
-  .pitch{position:relative;margin-top:14px;border-radius:18px;overflow:hidden;height:700px;
+  .pitch{position:relative;margin-top:14px;border-radius:18px;overflow:hidden;height:650px;
     background:repeating-linear-gradient(180deg,#3f9f4b 0 56px,#379143 56px 112px);
     border:2px solid rgba(255,255,255,.22);box-shadow:inset 0 0 70px rgba(0,40,10,.45),0 22px 44px -22px rgba(0,0,0,.6)}
   .mark{position:absolute;pointer-events:none}
@@ -295,7 +295,7 @@
   .m-arc.top{top:66px;clip-path:inset(50% 0 0 0)}.m-arc.bot{bottom:66px;clip-path:inset(0 0 50% 0)}
 
   .slot{position:absolute;transform:translate(-50%,0);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;z-index:3;width:104px}
-  .pitch-view{margin-top:4px;height:700px}
+  .pitch-view{margin-top:4px;height:650px}
   .tl-swipe{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .tl-swipe::-webkit-scrollbar{display:none}
   .tl-slide{flex:0 0 100%;scroll-snap-align:start;padding:0 2px}
@@ -312,7 +312,7 @@
   .slot:active .disc,.slot:active .pawn{transform:scale(.94)}
   .slot .plus{font-size:26px;color:#fff;font-weight:300}
   .pawn{position:relative;display:inline-flex;align-items:flex-end;justify-content:center;transition:transform .15s}
-  .pawn img{height:104px!important;width:auto!important;max-height:none!important;display:block;border-radius:8px;filter:drop-shadow(0 5px 9px rgba(0,0,0,.55))}
+  .pawn img{height:110px!important;width:auto!important;max-height:none!important;display:block;border-radius:8px;filter:drop-shadow(0 5px 9px rgba(0,0,0,.55))}
   .slot.captain .pawn{filter:drop-shadow(0 0 7px rgba(255,194,61,.95))}
   .slot .tag{font-size:12px;font-weight:700;text-align:center;line-height:1.1;color:#fff;background:rgba(0,0,0,.45);padding:2px 8px;border-radius:7px;max-width:96px;margin-top:2px;white-space:normal;word-break:keep-all;overflow-wrap:normal;hyphens:none;text-shadow:0 1px 2px rgba(0,0,0,.4)}
   .slot .tag.empty{color:rgba(255,255,255,.92);font-weight:600}
@@ -607,10 +607,23 @@
   .bch{margin-top:15px}
   .bch-sec{margin-top:13px}
   .bch-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:12.5px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted);margin:0 0 9px;display:flex;align-items:center;gap:6px}
-  .bch-head{display:flex;align-items:center;gap:11px;background:linear-gradient(160deg,rgba(255,194,61,.16),rgba(16,36,67,.5));border:1px solid rgba(255,194,61,.34);border-radius:15px;padding:12px 13px}
-  .bch-head .bh-ic{font-size:26px;line-height:1;flex-shrink:0}
-  .bch-head .bh-tx b{font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;display:block;letter-spacing:-.01em;color:var(--text)}
-  .bch-head .bh-tx span{font-size:12px;color:var(--gold-soft);font-weight:600}
+  .bch-head{display:flex;align-items:stretch;gap:0;background:linear-gradient(160deg,rgba(255,194,61,.16),rgba(16,36,67,.5));border:1px solid rgba(255,194,61,.34);border-radius:15px;padding:13px 14px;overflow:hidden}
+  .bch-head .bh-now{display:flex;align-items:center;gap:11px;flex:0 0 auto;max-width:53%}
+  .bch-head.solo .bh-now{max-width:100%}
+  .bch-head .bh-ic{font-size:30px;line-height:1;flex-shrink:0;filter:drop-shadow(0 4px 11px rgba(255,194,61,.4))}
+  .bch-head .bh-eye{font-size:9px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;line-height:1}
+  .bch-head .bh-eye.accent{color:var(--accent-soft)}
+  .bch-head .bh-tx b{font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;display:block;letter-spacing:-.01em;color:var(--text);line-height:1.05}
+  .bch-head .bh-tx span{font-size:11.5px;color:var(--gold-soft);font-weight:600;display:block;margin-top:2px}
+  .bch-head .bh-div{width:1px;align-self:stretch;background:linear-gradient(180deg,transparent,rgba(255,255,255,.16),transparent);margin:0 14px;flex-shrink:0}
+  .bch-head .bh-next{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+  .bch-head .bh-next-row{display:flex;align-items:center;gap:7px;margin-top:3px}
+  .bch-head .bh-nic{font-size:19px;line-height:1;flex-shrink:0;filter:drop-shadow(0 0 9px rgba(63,151,255,.45))}
+  .bch-head .bh-next-row b{font-family:'Bricolage Grotesque';font-weight:800;font-size:14px;color:var(--text);line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bch-head .bh-prog{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .bch-head .bh-bar{flex:1;height:6px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden}
+  .bch-head .bh-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-soft));box-shadow:0 0 8px rgba(63,151,255,.55)}
+  .bch-head .bh-num{font-family:'JetBrains Mono';font-size:10.5px;font-weight:700;color:var(--muted);flex-shrink:0}
   .bch-titles{display:flex;flex-wrap:wrap;gap:7px}
   .bch-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:999px;font-size:12.5px;font-weight:700;background:rgba(255,194,61,.14);border:1px solid rgba(255,194,61,.34);color:var(--gold-soft)}
   .bch-chip.silver{background:rgba(190,200,214,.12);border-color:rgba(190,200,214,.34);color:#cdd6e4}
@@ -1694,8 +1707,8 @@ let obAvatar=null, myRole='ATT', setAvatarDraft=null, editDraft=null;
 let obLogo=null, setLogoDraft=null, obStep=0;   // loghi: scelta in onboarding e in impostazioni
 const MODULES={
   '1-2-2':{bonus:0, slots:[{key:"a1",label:"ATT",x:26,y:4},{key:"a2",label:"ATT",x:74,y:4},{key:"d1",label:"DIF",x:18,y:34},{key:"d2",label:"DIF",x:82,y:34},{key:"g1",label:"POR",x:50,y:64}]},
-  '1-3-1':{bonus:5, slots:[{key:"a1",label:"ATT",x:50,y:4},{key:"d1",label:"DIF",x:15,y:31},{key:"d2",label:"DIF",x:50,y:38},{key:"d3",label:"DIF",x:85,y:31},{key:"g1",label:"POR",x:50,y:68}]},
-  '1-1-3':{bonus:-5, slots:[{key:"a1",label:"ATT",x:20,y:3},{key:"a2",label:"ATT",x:50,y:9},{key:"a3",label:"ATT",x:80,y:3},{key:"d1",label:"DIF",x:50,y:38},{key:"g1",label:"POR",x:50,y:68}]}
+  '1-3-1':{bonus:5, slots:[{key:"a1",label:"ATT",x:50,y:4},{key:"d1",label:"DIF",x:15,y:31},{key:"d2",label:"DIF",x:50,y:37},{key:"d3",label:"DIF",x:85,y:31},{key:"g1",label:"POR",x:50,y:65}]},
+  '1-1-3':{bonus:-5, slots:[{key:"a1",label:"ATT",x:20,y:3},{key:"a2",label:"ATT",x:50,y:9},{key:"a3",label:"ATT",x:80,y:3},{key:"d1",label:"DIF",x:50,y:37},{key:"g1",label:"POR",x:50,y:65}]}
 };
 let formModule='1-2-2';
 let SLOTS=MODULES[formModule].slots;
@@ -2999,26 +3012,52 @@ function badgeDesc(key,val){
     default:            return '';
   }
 }
+// Simbolo (emoji) del prossimo obiettivo: usa next.icon se presente, altrimenti mappa per chiave/etichetta.
+function nextIcon(n){
+  if(!n) return '🎯';
+  if(n.icon) return n.icon;
+  const k=(n.key||'').toLowerCase(), L=(n.label||'').toLowerCase();
+  const M={cecchino:'🎯',rifinitore:'🅰️',copertina:'⭐',presenze:'🚩',profeta:'🔮',capitano:'🧢',re_giornata:'👑',al_comando:'🚩',scalatore:'🧗',saracinesca:'🧤',tripletta:'⚽',poker:'⚽',manita:'🖐️'};
+  if(M[k]) return M[k];
+  for(const key in M){ if(L.indexOf(key)>=0) return M[key]; }
+  return '🎯';
+}
 // Costruisce l'HTML della bacheca da una card (get_player_card o pezzo manager).
 // opts.includeManager: se true e card.manager c'è, aggiunge la riga 👔.
 function bachecaHTML(card, opts){
   opts=opts||{};
   if(!card||card.error){ return '<div class="bch-empty">Bacheca non disponibile.</div>'; }
   let h='';
-  // Headline (punto di forza)
+  // Headline (simbolo attuale) + prossimo obiettivo a destra
   if(card.headline){
-    h+=`<div class="bch-head"><div class="bh-ic">${card.headline.icon||'🏅'}</div>
-      <div class="bh-tx"><b>${esc(card.headline.text||'')}</b><span>${esc(card.headline.sub||'')}</span></div></div>`;
+    const nx=card.next;
+    let right='';
+    if(nx){
+      const now=Number(nx.now)||0, tot=Number(nx.next)||1;
+      const pct=Math.max(4,Math.min(100,Math.round(now/tot*100)));
+      right=`<div class="bh-div"></div>
+        <div class="bh-next">
+          <div class="bh-eye accent">Prossimo</div>
+          <div class="bh-next-row"><div class="bh-nic">${nextIcon(nx)}</div><b>${esc(nx.label||'')}</b></div>
+          <div class="bh-prog"><div class="bh-bar"><i style="width:${pct}%"></i></div><span class="bh-num">${now}/${tot}</span></div>
+        </div>`;
+    }
+    h+=`<div class="bch-head${nx?'':' solo'}">
+      <div class="bh-now"><div class="bh-ic">${card.headline.icon||'🏅'}</div>
+        <div class="bh-tx"><div class="bh-eye">Il tuo simbolo</div><b>${esc(card.headline.text||'')}</b><span>${esc(card.headline.sub||'')}</span></div></div>
+      ${right}</div>`;
   }
-  // Titoli (chip dorati / argento per il podio)
+  // Titoli (righe come i traguardi, niente riquadro)
   const titles=card.titles||[];
   if(titles.length){
-    h+=`<div class="bch-sec"><div class="bch-h">🏅 Titoli</div><div class="bch-titles">`+
+    h+=`<div class="bch-sec"><div class="bch-h">🏅 Titoli</div><div class="bch-badges">`+
       titles.map(t=>{
         const sil=(t.key||'').indexOf('podio')===0;
-        const seas=t.season?`<small>St.${t.season}</small>`:'';
-        const pos=t.pos?` ${t.pos}°`:'';
-        return `<span class="bch-chip ${sil?'silver':''}">${esc(t.label)}${pos} ${seas}</span>`;
+        const medal=t.pos===3?'🥉':(sil||t.pos===2?'🥈':'🥇');
+        const pos=t.pos?`${t.pos}° `:'';
+        const sub=t.season?`${pos}Stagione ${t.season}`:(pos?`${pos}posto`:'');
+        return `<div class="bch-badge"><div class="bb-m">${medal}</div>
+        <div class="bb-tx"><b>${esc(t.label)}</b>${sub?`<span>${esc(sub)}</span>`:''}</div></div>`;
       }).join('')+`</div></div>`;
   }
   // Traguardi (medaglie con gradino + spiegazione chiara)
@@ -3095,7 +3134,7 @@ function openPlayerStats(id){
     if(!bch) return;
     // se nel frattempo si è chiuso o si è aperta un'altra card, non sovrascrivere
     if(_statCardId!==id) return;
-    bch.innerHTML=bachecaHTML(card,{includeManager:true});
+    bch.innerHTML=bachecaHTML(card,{includeManager:false});
   });
 }
 function closeStatModal(){ closeBacheca(); }
@@ -3291,7 +3330,7 @@ function playerCardSVG(p,s){
   const fsym = s.forma==='In forma'?'▲':(s.forma==='In calo'?'▼':'■');
   const flabel = esc(s.forma||'Costante');
   const photo = av ? `<image href="${av.url}" x="150" y="150" width="355" height="320" preserveAspectRatio="xMidYMax meet"${p.injured?' style="filter:grayscale(.7) brightness(.85)"':''}/>` : '';
-  const logo = logoU ? `<image href="${logoU}" x="84" y="250" width="56" height="56" preserveAspectRatio="xMidYMid meet"/>` : '';
+  const logo = logoU ? `<image href="${logoU}" x="84" y="262" width="56" height="56" preserveAspectRatio="xMidYMid meet"/>` : '';
   return `<svg viewBox="0 0 560 716" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <clipPath id="fcav${u}"><path d="M150,150 H505 V470 H150 Z"/></clipPath>
@@ -3302,7 +3341,7 @@ function playerCardSVG(p,s){
       ${photo}
       <rect x="150" y="300" width="355" height="170" fill="url(#fcfd${u})"/>
     </g>
-    <text x="112" y="224" text-anchor="middle" font-family="'Bricolage Grotesque'" font-size="46" font-weight="800" fill="#eaf1fb">${role}</text>
+    <text x="112" y="206" text-anchor="middle" font-family="'Bricolage Grotesque'" font-size="46" font-weight="800" fill="#eaf1fb">${role}</text>
     ${logo}
     <text x="112" y="372" text-anchor="middle" font-family="'JetBrains Mono'" font-size="48" font-weight="800" fill="#ffc23d">${p.cost}</text>
     <text x="112" y="400" text-anchor="middle" font-family="'Hanken Grotesk'" font-size="17" font-weight="800" fill="#ffc23d" opacity="0.9" letter-spacing="1">CREDITI</text>
