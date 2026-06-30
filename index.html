@@ -244,7 +244,7 @@
   /* --- Card giocatore stile FUT (mercato) --- */
   .pcard-fc{position:relative;cursor:pointer;transition:transform .12s,opacity .2s;line-height:0}
   .pcard-fc:active{transform:scale(.98)}
-  .pcard-fc.absent{opacity:.45}
+  .pcard-fc.absent svg{opacity:.5;filter:saturate(.8)}
   .pcard-fc svg{display:block;width:100%;height:auto;overflow:visible}
   .fc-top{position:absolute;top:16%;left:0;right:0;z-index:3;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:0 14%;pointer-events:none}
   .fc-tags{display:flex;flex-direction:column;flex-wrap:wrap;gap:3px;align-items:flex-start;max-width:74%}
@@ -252,7 +252,7 @@
   .fc-top .fc-tag.me{flex:none;align-self:flex-start}
   .fc-tag.gold{color:var(--gold-soft)}
   .fc-tag.accent{color:var(--accent-soft)}
-  .fc-tag.red{color:#ff9a9a}
+  .fc-tag.red{color:#ff6f6f;text-shadow:0 0 9px rgba(255,72,72,.75),0 1px 3px rgba(0,0,0,.95)}
   .fc-tag.me{color:var(--accent-soft)}
   .forma{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:4px}
   .forma.up{background:rgba(46,196,128,.16);color:var(--green)}
@@ -279,7 +279,7 @@
   .meter i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--gold),#d4912f);transition:width .4s cubic-bezier(.2,.8,.2,1)}
   .meter i.over{background:linear-gradient(90deg,var(--red),#c62828)}
 
-  .pitch{position:relative;margin-top:14px;border-radius:18px;overflow:hidden;height:650px;
+  .pitch{position:relative;margin-top:14px;border-radius:18px;overflow:hidden;height:620px;
     background:repeating-linear-gradient(180deg,#3f9f4b 0 56px,#379143 56px 112px);
     border:2px solid rgba(255,255,255,.22);box-shadow:inset 0 0 70px rgba(0,40,10,.45),0 22px 44px -22px rgba(0,0,0,.6)}
   .mark{position:absolute;pointer-events:none}
@@ -295,7 +295,7 @@
   .m-arc.top{top:66px;clip-path:inset(50% 0 0 0)}.m-arc.bot{bottom:66px;clip-path:inset(0 0 50% 0)}
 
   .slot{position:absolute;transform:translate(-50%,0);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;z-index:3;width:104px}
-  .pitch-view{margin-top:4px;height:650px}
+  .pitch-view{margin-top:4px;height:620px}
   .tl-swipe{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .tl-swipe::-webkit-scrollbar{display:none}
   .tl-slide{flex:0 0 100%;scroll-snap-align:start;padding:0 2px}
@@ -607,17 +607,17 @@
   .bch{margin-top:15px}
   .bch-sec{margin-top:13px}
   .bch-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:12.5px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted);margin:0 0 9px;display:flex;align-items:center;gap:6px}
-  .bch-head{display:flex;align-items:stretch;gap:0;background:linear-gradient(160deg,rgba(255,194,61,.16),rgba(16,36,67,.5));border:1px solid rgba(255,194,61,.34);border-radius:15px;padding:13px 14px;overflow:hidden}
-  .bch-head .bh-now{display:flex;align-items:center;gap:11px;flex:0 0 auto;max-width:53%}
+  .bch-head{display:flex;align-items:flex-start;gap:0;background:linear-gradient(160deg,rgba(255,194,61,.16),rgba(16,36,67,.5));border:1px solid rgba(255,194,61,.34);border-radius:15px;padding:13px 14px;overflow:hidden}
+  .bch-head .bh-now{display:flex;flex-direction:column;justify-content:flex-start;flex:0 0 auto;max-width:53%}
   .bch-head.solo .bh-now{max-width:100%}
+  .bch-head .bh-now-row{display:flex;align-items:center;gap:11px;margin-top:4px}
   .bch-head .bh-ic{font-size:30px;line-height:1;flex-shrink:0;filter:drop-shadow(0 4px 11px rgba(255,194,61,.4))}
-  .bch-head .bh-eye{font-size:9px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;line-height:1}
-  .bch-head .bh-eye.accent{color:var(--accent-soft)}
+  .bch-head .bh-eye{font-size:9px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);line-height:1;height:10px}
   .bch-head .bh-tx b{font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;display:block;letter-spacing:-.01em;color:var(--text);line-height:1.05}
   .bch-head .bh-tx span{font-size:11.5px;color:var(--gold-soft);font-weight:600;display:block;margin-top:2px}
   .bch-head .bh-div{width:1px;align-self:stretch;background:linear-gradient(180deg,transparent,rgba(255,255,255,.16),transparent);margin:0 14px;flex-shrink:0}
-  .bch-head .bh-next{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
-  .bch-head .bh-next-row{display:flex;align-items:center;gap:7px;margin-top:3px}
+  .bch-head .bh-next{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-start}
+  .bch-head .bh-next-row{display:flex;align-items:center;gap:7px;margin-top:4px}
   .bch-head .bh-nic{font-size:19px;line-height:1;flex-shrink:0;filter:drop-shadow(0 0 9px rgba(63,151,255,.45))}
   .bch-head .bh-next-row b{font-family:'Bricolage Grotesque';font-weight:800;font-size:14px;color:var(--text);line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bch-head .bh-prog{display:flex;align-items:center;gap:8px;margin-top:8px}
@@ -1706,9 +1706,9 @@ function fmt(ms){ if(ms<0)ms=0; const d=Math.floor(ms/86400000),h=Math.floor(ms%
 let obAvatar=null, myRole='ATT', setAvatarDraft=null, editDraft=null;
 let obLogo=null, setLogoDraft=null, obStep=0;   // loghi: scelta in onboarding e in impostazioni
 const MODULES={
-  '1-2-2':{bonus:0, slots:[{key:"a1",label:"ATT",x:26,y:4},{key:"a2",label:"ATT",x:74,y:4},{key:"d1",label:"DIF",x:18,y:34},{key:"d2",label:"DIF",x:82,y:34},{key:"g1",label:"POR",x:50,y:64}]},
-  '1-3-1':{bonus:5, slots:[{key:"a1",label:"ATT",x:50,y:4},{key:"d1",label:"DIF",x:15,y:31},{key:"d2",label:"DIF",x:50,y:37},{key:"d3",label:"DIF",x:85,y:31},{key:"g1",label:"POR",x:50,y:65}]},
-  '1-1-3':{bonus:-5, slots:[{key:"a1",label:"ATT",x:20,y:3},{key:"a2",label:"ATT",x:50,y:9},{key:"a3",label:"ATT",x:80,y:3},{key:"d1",label:"DIF",x:50,y:37},{key:"g1",label:"POR",x:50,y:65}]}
+  '1-2-2':{bonus:0, slots:[{key:"a1",label:"ATT",x:26,y:4},{key:"a2",label:"ATT",x:74,y:4},{key:"d1",label:"DIF",x:18,y:34},{key:"d2",label:"DIF",x:82,y:34},{key:"g1",label:"POR",x:50,y:68}]},
+  '1-3-1':{bonus:5, slots:[{key:"a1",label:"ATT",x:50,y:4},{key:"d1",label:"DIF",x:15,y:31},{key:"d2",label:"DIF",x:50,y:37},{key:"d3",label:"DIF",x:85,y:31},{key:"g1",label:"POR",x:50,y:68}]},
+  '1-1-3':{bonus:-5, slots:[{key:"a1",label:"ATT",x:20,y:3},{key:"a2",label:"ATT",x:50,y:9},{key:"a3",label:"ATT",x:80,y:3},{key:"d1",label:"DIF",x:50,y:37},{key:"g1",label:"POR",x:50,y:68}]}
 };
 let formModule='1-2-2';
 let SLOTS=MODULES[formModule].slots;
@@ -3037,14 +3037,15 @@ function bachecaHTML(card, opts){
       const pct=Math.max(4,Math.min(100,Math.round(now/tot*100)));
       right=`<div class="bh-div"></div>
         <div class="bh-next">
-          <div class="bh-eye accent">Prossimo</div>
+          <div class="bh-eye">Prossimo</div>
           <div class="bh-next-row"><div class="bh-nic">${nextIcon(nx)}</div><b>${esc(nx.label||'')}</b></div>
           <div class="bh-prog"><div class="bh-bar"><i style="width:${pct}%"></i></div><span class="bh-num">${now}/${tot}</span></div>
         </div>`;
     }
     h+=`<div class="bch-head${nx?'':' solo'}">
-      <div class="bh-now"><div class="bh-ic">${card.headline.icon||'🏅'}</div>
-        <div class="bh-tx"><div class="bh-eye">Il tuo simbolo</div><b>${esc(card.headline.text||'')}</b><span>${esc(card.headline.sub||'')}</span></div></div>
+      <div class="bh-now"><div class="bh-eye">Il tuo simbolo</div>
+        <div class="bh-now-row"><div class="bh-ic">${card.headline.icon||'🏅'}</div>
+          <div class="bh-tx"><b>${esc(card.headline.text||'')}</b><span>${esc(card.headline.sub||'')}</span></div></div></div>
       ${right}</div>`;
   }
   // Titoli (righe come i traguardi, niente riquadro)
@@ -3330,7 +3331,7 @@ function playerCardSVG(p,s){
   const fsym = s.forma==='In forma'?'▲':(s.forma==='In calo'?'▼':'■');
   const flabel = esc(s.forma||'Costante');
   const photo = av ? `<image href="${av.url}" x="150" y="150" width="355" height="320" preserveAspectRatio="xMidYMax meet"${p.injured?' style="filter:grayscale(.7) brightness(.85)"':''}/>` : '';
-  const logo = logoU ? `<image href="${logoU}" x="84" y="262" width="56" height="56" preserveAspectRatio="xMidYMid meet"/>` : '';
+  const logo = logoU ? `<image href="${logoU}" x="84" y="244" width="56" height="56" preserveAspectRatio="xMidYMid meet"/>` : '';
   return `<svg viewBox="0 0 560 716" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <clipPath id="fcav${u}"><path d="M150,150 H505 V470 H150 Z"/></clipPath>
