@@ -246,10 +246,13 @@
   .pcard-fc:active{transform:scale(.98)}
   .pcard-fc.absent{opacity:.45}
   .pcard-fc svg{display:block;width:100%;height:auto;overflow:visible}
-  .fc-badge{position:absolute;z-index:2;font-size:7.5px;font-weight:800;line-height:1;padding:2px 5.5px;border-radius:999px;white-space:nowrap;letter-spacing:.01em;max-width:80%;overflow:hidden;text-overflow:ellipsis}
-  .fc-badge.gold{top:9%;left:50%;transform:translateX(-50%);background:rgba(255,194,61,.92);color:#241a05}
-  .fc-badge.red{top:9%;left:50%;transform:translateX(-50%);background:rgba(255,99,99,.92);color:#3a0c0c}
-  .fc-badge.me{top:7%;right:7%;background:rgba(63,151,255,.92);color:#fff}
+  .fc-top{display:flex;align-items:center;gap:6px;min-height:22px;padding:0 4px 7px}
+  .fc-tags{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+  .fc-tag{font-size:9px;font-weight:800;line-height:1;padding:4px 8px;border-radius:999px;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;letter-spacing:.01em}
+  .fc-tag.gold{background:rgba(255,194,61,.16);color:var(--gold-soft);border:1px solid rgba(255,194,61,.42)}
+  .fc-tag.accent{background:rgba(63,151,255,.16);color:var(--accent-soft);border:1px solid rgba(63,151,255,.42)}
+  .fc-tag.red{background:rgba(255,99,99,.16);color:#ff9a9a;border:1px solid rgba(255,99,99,.42)}
+  .fc-tag.me{margin-left:auto;background:rgba(126,194,255,.14);color:var(--accent-soft);border:1px solid rgba(126,194,255,.45)}
   .forma{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:4px}
   .forma.up{background:rgba(46,196,128,.16);color:var(--green)}
   .forma.down{background:rgba(255,99,99,.15);color:var(--red)}
@@ -290,7 +293,7 @@
   .m-arc{width:54px;height:54px;border:2px solid rgba(255,255,255,.5);border-radius:50%;left:50%;transform:translateX(-50%)}
   .m-arc.top{top:66px;clip-path:inset(50% 0 0 0)}.m-arc.bot{bottom:66px;clip-path:inset(0 0 50% 0)}
 
-  .slot{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;z-index:3;width:90px}
+  .slot{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;z-index:3;width:96px}
   .pitch-view{margin-top:4px;height:470px}
   .tl-swipe{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .tl-swipe::-webkit-scrollbar{display:none}
@@ -307,17 +310,19 @@
   .slot .disc{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:rgba(6,16,34,.35);border:2px dashed rgba(255,255,255,.7);transition:transform .15s}
   .slot:active .disc,.slot:active .pawn{transform:scale(.94)}
   .slot .plus{font-size:26px;color:#fff;font-weight:300}
-  .pawn{position:relative;display:grid;place-items:center;transition:transform .15s}
-  .pawn img{width:52px;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+  .pawn{position:relative;height:56px;display:flex;align-items:flex-end;justify-content:center;transition:transform .15s}
+  .pawn img{width:52px;height:auto;max-height:70px;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
   .slot.captain .pawn{filter:drop-shadow(0 0 7px rgba(255,194,61,.95))}
-  .slot .tag{font-size:12px;font-weight:700;text-align:center;line-height:1.1;color:#fff;background:rgba(0,0,0,.45);padding:2px 9px;border-radius:7px;max-width:100px;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+  .slot .tag{font-size:12px;font-weight:700;text-align:center;line-height:1.1;color:#fff;background:rgba(0,0,0,.45);padding:2px 9px;border-radius:7px;max-width:92px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.4)}
   .slot .tag.empty{color:rgba(255,255,255,.92);font-weight:600}
   .slot .cap{position:absolute;top:-4px;right:-4px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#1b1207;display:none;place-items:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:12px;border:2px solid #2c7a39}
   .slot.captain .cap{display:grid}
-  .scoreline{display:flex;align-items:center;gap:4px;justify-content:center;flex-wrap:wrap;max-width:98px}
+  .scoreline{display:flex;align-items:center;justify-content:center}
   .voto{font-family:'JetBrains Mono';font-weight:700;font-size:11px;padding:1px 6px;border-radius:6px;background:rgba(0,0,0,.55);color:#fff}
   .voto.hi{color:#7ce6aa} .voto.lo{color:#ff9a9a}
-  .evs{font-size:11.5px;line-height:1;background:rgba(0,0,0,.45);padding:3px 6px;border-radius:6px;white-space:nowrap;text-align:center}
+  .evs{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:3px;display:flex;flex-wrap:wrap;justify-content:center;align-content:flex-start;gap:2px;max-width:84px;background:rgba(0,0,0,.45);padding:3px 5px;border-radius:8px;line-height:1}
+  .evs i{font-size:11.5px;font-style:normal;line-height:1}
+  .evs:empty{display:none}
 
   .hint{text-align:center;color:var(--muted);font-size:12.5px;margin-top:16px;line-height:1.5}
   .save{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;background:linear-gradient(135deg,var(--accent),#1c6ff2);color:#fff;font-weight:700;font-size:15px;border:none;padding:15px;border-radius:14px;cursor:pointer;box-shadow:0 12px 28px -10px rgba(63,151,255,.6);transition:transform .15s,opacity .2s}
@@ -1687,9 +1692,9 @@ function fmt(ms){ if(ms<0)ms=0; const d=Math.floor(ms/86400000),h=Math.floor(ms%
 let obAvatar=null, myRole='ATT', setAvatarDraft=null, editDraft=null;
 let obLogo=null, setLogoDraft=null, obStep=0;   // loghi: scelta in onboarding e in impostazioni
 const MODULES={
-  '1-2-2':{bonus:0, slots:[{key:"a1",label:"ATT",x:26,y:19},{key:"a2",label:"ATT",x:74,y:19},{key:"d1",label:"DIF",x:20,y:50},{key:"d2",label:"DIF",x:80,y:50},{key:"g1",label:"POR",x:50,y:82}]},
-  '1-3-1':{bonus:5, slots:[{key:"a1",label:"ATT",x:50,y:16},{key:"d1",label:"DIF",x:18,y:48},{key:"d2",label:"DIF",x:50,y:53},{key:"d3",label:"DIF",x:82,y:48},{key:"g1",label:"POR",x:50,y:82}]},
-  '1-1-3':{bonus:-5, slots:[{key:"a1",label:"ATT",x:22,y:18},{key:"a2",label:"ATT",x:50,y:14},{key:"a3",label:"ATT",x:78,y:18},{key:"d1",label:"DIF",x:50,y:50},{key:"g1",label:"POR",x:50,y:82}]}
+  '1-2-2':{bonus:0, slots:[{key:"a1",label:"ATT",x:26,y:21},{key:"a2",label:"ATT",x:74,y:21},{key:"d1",label:"DIF",x:20,y:50},{key:"d2",label:"DIF",x:80,y:50},{key:"g1",label:"POR",x:50,y:82}]},
+  '1-3-1':{bonus:5, slots:[{key:"a1",label:"ATT",x:50,y:18},{key:"d1",label:"DIF",x:18,y:48},{key:"d2",label:"DIF",x:50,y:53},{key:"d3",label:"DIF",x:82,y:48},{key:"g1",label:"POR",x:50,y:82}]},
+  '1-1-3':{bonus:-5, slots:[{key:"a1",label:"ATT",x:22,y:20},{key:"a2",label:"ATT",x:50,y:17},{key:"a3",label:"ATT",x:78,y:20},{key:"d1",label:"DIF",x:50,y:50},{key:"g1",label:"POR",x:50,y:82}]}
 };
 let formModule='1-2-2';
 let SLOTS=MODULES[formModule].slots;
@@ -3312,14 +3317,17 @@ function renderMarket(){
   if(!players.length){grid.innerHTML='';emp.innerHTML='<div class="empty-note">Il pool è vuoto. Le persone compaiono qui quando si registrano, oppure aggiungili tu da <b>Impostazioni → Gestione giocatori</b>.</div>';return;}
   emp.innerHTML='';
   const topGol=Math.max(0,...players.map(p=>(playerStats[p.id]||{}).gol||0));
+  const topAst=Math.max(0,...players.map(p=>(playerStats[p.id]||{}).assist||0));
   grid.innerHTML=[...players].sort((a,b)=>(b.cost??PRICE)-(a.cost??PRICE)).map(p=>{
     const dim=p.injured||(currentMd&&currentMd.status!=='closed'&&!isPresent(p));
     const s=playerStats[p.id]||{forma:'Costante'};
     const capo=topGol>0&&((s.gol||0)===topGol);
+    const aman=topAst>0&&((s.assist||0)===topAst);
+    const tags=(capo?'<span class="fc-tag gold">👑 Capocannoniere</span>':'')
+             +(aman?'<span class="fc-tag accent">🅰️ Assist-man</span>':'')
+             +(p.injured?'<span class="fc-tag red">🚑 Infortunato</span>':'');
     return `<div class="pcard-fc ${dim?'absent':''}" onclick="openPlayerStats(${p.id})">
-      ${capo?'<span class="fc-badge gold">👑 Capocannoniere</span>':''}
-      ${p.injured?'<span class="fc-badge red">🚑 Infortunato</span>':''}
-      ${isOwnChar(p)?'<span class="fc-badge me">Tu</span>':''}
+      <div class="fc-top"><div class="fc-tags">${tags}</div>${isOwnChar(p)?'<span class="fc-tag me">Tu</span>':''}</div>
       ${playerCardSVG(p,s)}
     </div>`;}).join('');
 }
@@ -3334,7 +3342,7 @@ function renderPitch(){
     el.className=`slot ${cap?'captain':''} ${isPor?'por':''}`;
     el.style.left=s.x+'%';el.style.top=s.y+'%';el.onclick=()=>slotTap(s.key);
     el.innerHTML=filled
-      ?`<div class="pawn">${avatarImg(p.avatar,52)}<span class="cap">C</span></div><div class="tag">${p.name}</div><div class="scoreline" id="sl-${s.key}"></div>`
+      ?`<div class="pawn">${avatarImg(p.avatar,52)}<span class="cap">C</span></div><div class="tag">${p.name}</div><div class="scoreline" id="sl-${s.key}"></div><div class="evs" id="ev-${s.key}"></div>`
       :`<div class="disc"><span class="plus">+</span></div><div class="tag empty">${isPor?'POR 🧤':s.label}</div>`;
     pitch.appendChild(el);
   });
@@ -3371,9 +3379,14 @@ function computeScore(pid,slotKey,mvp){
 }
 // Icone evento sul campo: ⚽ gol · 🅰️ assist · 💀 autogol · 🚫 rigore sbagliato · 🙌 rigore parato · 🧤 imbattuto / 🔴 gol subiti (solo portiere)
 function statIcons(r){
-  return '⚽'.repeat(r.gol||0)+'🅰️'.repeat(r.assist||0)+'💀'.repeat(r.og||0)
-    +'🚫'.repeat(r.rs||0)+'🙌'.repeat(r.rp||0)
-    +(r.isPor?(((r.gs||0)===0)?'🧤':'🔴'.repeat(r.gs||0)):'');
+  const a=[];
+  for(let i=0;i<(r.gol||0);i++)a.push('⚽');
+  for(let i=0;i<(r.assist||0);i++)a.push('🅰️');
+  for(let i=0;i<(r.og||0);i++)a.push('💀');
+  for(let i=0;i<(r.rs||0);i++)a.push('🚫');
+  for(let i=0;i<(r.rp||0);i++)a.push('🙌');
+  if(r.isPor){ if((r.gs||0)===0)a.push('🧤'); else for(let i=0;i<(r.gs||0);i++)a.push('🔴'); }
+  return a.length?a.map(e=>`<i>${e}</i>`).join(''):'';
 }
 const PITCH_MARKS='<div class="mark m-box top"></div><div class="mark m-box bot"></div><div class="mark m-goal top"></div><div class="mark m-goal bot"></div><div class="mark m-arc top"></div><div class="mark m-arc bot"></div><div class="mark m-halfway"></div><div class="mark m-circle"></div><div class="mark m-spot"></div>';
 // Costruisce gli slot di un campo (sola lettura) per un modulo dato. getp(slot)->{p,sc,cap,mvp} o null.
@@ -3386,7 +3399,8 @@ function pitchSlotsHTML(mod,getp){
     return `<div class="slot ${o.cap?'captain':''} ${isPor?'por':''}" style="left:${s.x}%;top:${s.y}%">
       <div class="pawn">${avatarImg(o.p?o.p.avatar:'',52)}${o.cap?'<span class="cap">C</span>':''}</div>
       <div class="tag">${o.p?o.p.name:'?'}${o.mvp?' 🏆':''}</div>
-      <div class="scoreline"><span class="voto ${cls}">${o.sc.voto.toFixed(1)}</span>${icons?`<span class="evs">${icons}</span>`:''}</div></div>`;
+      <div class="scoreline"><span class="voto ${cls}">${o.sc.voto.toFixed(1)}</span></div>
+      ${icons?`<div class="evs">${icons}</div>`:''}</div>`;
   }).join('');
 }
 function updateScores(){
@@ -3395,12 +3409,13 @@ function updateScores(){
   let total=mb;
   const sub=document.getElementById('ptSub');
   if(sub)sub.textContent=mb?`modulo ${formModule}: parti da ${mb>0?'+':''}${mb}`:`modulo ${formModule} · nessun bonus`;
-  SLOTS.forEach(s=>{const el=document.getElementById('sl-'+s.key);const pid=lineup[s.key];
-    if(!el)return; if(!pid){el.innerHTML='';return;}
+  SLOTS.forEach(s=>{const el=document.getElementById('sl-'+s.key);const ev=document.getElementById('ev-'+s.key);const pid=lineup[s.key];
+    if(!el)return; if(!pid){el.innerHTML='';if(ev)ev.innerHTML='';return;}
     const r=computeScore(pid,s.key,mvp); total+=r.score;
     const evs=statIcons(r);
     const cls=r.voto>=6?'hi':'lo';
-    el.innerHTML=`<span class="voto ${cls}">${r.voto.toFixed(1)}</span>`+(evs?`<span class="evs">${evs}</span>`:'');});
+    el.innerHTML=`<span class="voto ${cls}">${r.voto.toFixed(1)}</span>`;
+    if(ev)ev.innerHTML=evs;});
   document.getElementById('ptTotal').textContent=total.toFixed(1);
 }
 function slotTap(key){
