@@ -246,14 +246,14 @@
   .pcard-fc:active{transform:scale(.98)}
   .pcard-fc.absent{opacity:.45}
   .pcard-fc svg{display:block;width:100%;height:auto;overflow:visible}
-  .fc-top{position:absolute;top:13%;left:0;right:0;z-index:3;display:flex;align-items:flex-start;justify-content:space-between;gap:6px;padding:0 6%;pointer-events:none}
-  .fc-tags{display:flex;flex-direction:column;flex-wrap:wrap;gap:4px;align-items:flex-start;max-width:56%}
-  .fc-tag{font-size:8px;font-weight:800;line-height:1;padding:3px 6px;border-radius:999px;white-space:nowrap;display:inline-flex;align-items:center;gap:2px;letter-spacing:.01em;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+  .fc-top{position:absolute;top:13%;left:0;right:0;z-index:3;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:0 12%;pointer-events:none}
+  .fc-tags{display:flex;flex-direction:column;flex-wrap:wrap;gap:3px;align-items:flex-start;max-width:74%}
+  .fc-tag{font-size:9px;font-weight:800;line-height:1.1;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;letter-spacing:.01em;padding:0;background:none;border:none;border-radius:0;text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.7)}
   .fc-top .fc-tag.me{flex:none;align-self:flex-start}
-  .fc-tag.gold{background:rgba(255,194,61,.16);color:var(--gold-soft);border:1px solid rgba(255,194,61,.42)}
-  .fc-tag.accent{background:rgba(63,151,255,.16);color:var(--accent-soft);border:1px solid rgba(63,151,255,.42)}
-  .fc-tag.red{background:rgba(255,99,99,.16);color:#ff9a9a;border:1px solid rgba(255,99,99,.42)}
-  .fc-tag.me{background:rgba(126,194,255,.14);color:var(--accent-soft);border:1px solid rgba(126,194,255,.45)}
+  .fc-tag.gold{color:var(--gold-soft)}
+  .fc-tag.accent{color:var(--accent-soft)}
+  .fc-tag.red{color:#ff9a9a}
+  .fc-tag.me{color:var(--accent-soft)}
   .forma{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:4px}
   .forma.up{background:rgba(46,196,128,.16);color:var(--green)}
   .forma.down{background:rgba(255,99,99,.15);color:var(--red)}
@@ -279,7 +279,7 @@
   .meter i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--gold),#d4912f);transition:width .4s cubic-bezier(.2,.8,.2,1)}
   .meter i.over{background:linear-gradient(90deg,var(--red),#c62828)}
 
-  .pitch{position:relative;margin-top:14px;border-radius:18px;overflow:hidden;height:600px;
+  .pitch{position:relative;margin-top:14px;border-radius:18px;overflow:hidden;height:700px;
     background:repeating-linear-gradient(180deg,#3f9f4b 0 56px,#379143 56px 112px);
     border:2px solid rgba(255,255,255,.22);box-shadow:inset 0 0 70px rgba(0,40,10,.45),0 22px 44px -22px rgba(0,0,0,.6)}
   .mark{position:absolute;pointer-events:none}
@@ -295,7 +295,7 @@
   .m-arc.top{top:66px;clip-path:inset(50% 0 0 0)}.m-arc.bot{bottom:66px;clip-path:inset(0 0 50% 0)}
 
   .slot{position:absolute;transform:translate(-50%,0);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;z-index:3;width:104px}
-  .pitch-view{margin-top:4px;height:600px}
+  .pitch-view{margin-top:4px;height:700px}
   .tl-swipe{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .tl-swipe::-webkit-scrollbar{display:none}
   .tl-slide{flex:0 0 100%;scroll-snap-align:start;padding:0 2px}
@@ -312,10 +312,9 @@
   .slot:active .disc,.slot:active .pawn{transform:scale(.94)}
   .slot .plus{font-size:26px;color:#fff;font-weight:300}
   .pawn{position:relative;display:inline-flex;align-items:flex-end;justify-content:center;transition:transform .15s}
-  .pawn img{height:88px!important;width:auto!important;max-height:none!important;display:block;border-radius:8px;filter:drop-shadow(0 5px 8px rgba(0,0,0,.55))}
+  .pawn img{height:104px!important;width:auto!important;max-height:none!important;display:block;border-radius:8px;filter:drop-shadow(0 5px 9px rgba(0,0,0,.55))}
   .slot.captain .pawn{filter:drop-shadow(0 0 7px rgba(255,194,61,.95))}
-  .slot .tag{font-size:12px;font-weight:700;text-align:center;line-height:1.08;color:#fff;background:rgba(0,0,0,.45);padding:2px 8px;border-radius:7px;max-width:78px;white-space:normal;overflow-wrap:anywhere;text-shadow:0 1px 2px rgba(0,0,0,.4)}
-  .nv{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:3px;max-width:108px}
+  .slot .tag{font-size:12px;font-weight:700;text-align:center;line-height:1.1;color:#fff;background:rgba(0,0,0,.45);padding:2px 8px;border-radius:7px;max-width:96px;margin-top:2px;white-space:normal;word-break:keep-all;overflow-wrap:normal;hyphens:none;text-shadow:0 1px 2px rgba(0,0,0,.4)}
   .slot .tag.empty{color:rgba(255,255,255,.92);font-weight:600}
   .slot .cap{position:absolute;top:-4px;right:-4px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#1b1207;display:none;place-items:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:12px;border:2px solid #2c7a39}
   .slot.captain .cap{display:grid}
@@ -1694,9 +1693,9 @@ function fmt(ms){ if(ms<0)ms=0; const d=Math.floor(ms/86400000),h=Math.floor(ms%
 let obAvatar=null, myRole='ATT', setAvatarDraft=null, editDraft=null;
 let obLogo=null, setLogoDraft=null, obStep=0;   // loghi: scelta in onboarding e in impostazioni
 const MODULES={
-  '1-2-2':{bonus:0, slots:[{key:"a1",label:"ATT",x:26,y:6},{key:"a2",label:"ATT",x:74,y:6},{key:"d1",label:"DIF",x:18,y:37},{key:"d2",label:"DIF",x:82,y:37},{key:"g1",label:"POR",x:50,y:68}]},
-  '1-3-1':{bonus:5, slots:[{key:"a1",label:"ATT",x:50,y:6},{key:"d1",label:"DIF",x:15,y:32},{key:"d2",label:"DIF",x:50,y:40},{key:"d3",label:"DIF",x:85,y:32},{key:"g1",label:"POR",x:50,y:70}]},
-  '1-1-3':{bonus:-5, slots:[{key:"a1",label:"ATT",x:20,y:5},{key:"a2",label:"ATT",x:50,y:12},{key:"a3",label:"ATT",x:80,y:5},{key:"d1",label:"DIF",x:50,y:40},{key:"g1",label:"POR",x:50,y:70}]}
+  '1-2-2':{bonus:0, slots:[{key:"a1",label:"ATT",x:26,y:4},{key:"a2",label:"ATT",x:74,y:4},{key:"d1",label:"DIF",x:18,y:34},{key:"d2",label:"DIF",x:82,y:34},{key:"g1",label:"POR",x:50,y:64}]},
+  '1-3-1':{bonus:5, slots:[{key:"a1",label:"ATT",x:50,y:4},{key:"d1",label:"DIF",x:15,y:31},{key:"d2",label:"DIF",x:50,y:38},{key:"d3",label:"DIF",x:85,y:31},{key:"g1",label:"POR",x:50,y:68}]},
+  '1-1-3':{bonus:-5, slots:[{key:"a1",label:"ATT",x:20,y:3},{key:"a2",label:"ATT",x:50,y:9},{key:"a3",label:"ATT",x:80,y:3},{key:"d1",label:"DIF",x:50,y:38},{key:"g1",label:"POR",x:50,y:68}]}
 };
 let formModule='1-2-2';
 let SLOTS=MODULES[formModule].slots;
@@ -3292,7 +3291,7 @@ function playerCardSVG(p,s){
   const fsym = s.forma==='In forma'?'▲':(s.forma==='In calo'?'▼':'■');
   const flabel = esc(s.forma||'Costante');
   const photo = av ? `<image href="${av.url}" x="150" y="150" width="355" height="320" preserveAspectRatio="xMidYMax meet"${p.injured?' style="filter:grayscale(.7) brightness(.85)"':''}/>` : '';
-  const logo = logoU ? `<image href="${logoU}" x="80" y="224" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>` : '';
+  const logo = logoU ? `<image href="${logoU}" x="84" y="250" width="56" height="56" preserveAspectRatio="xMidYMid meet"/>` : '';
   return `<svg viewBox="0 0 560 716" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <clipPath id="fcav${u}"><path d="M150,150 H505 V470 H150 Z"/></clipPath>
@@ -3303,7 +3302,7 @@ function playerCardSVG(p,s){
       ${photo}
       <rect x="150" y="300" width="355" height="170" fill="url(#fcfd${u})"/>
     </g>
-    <text x="112" y="166" text-anchor="middle" font-family="'Bricolage Grotesque'" font-size="46" font-weight="800" fill="#eaf1fb">${role}</text>
+    <text x="112" y="224" text-anchor="middle" font-family="'Bricolage Grotesque'" font-size="46" font-weight="800" fill="#eaf1fb">${role}</text>
     ${logo}
     <text x="112" y="372" text-anchor="middle" font-family="'JetBrains Mono'" font-size="48" font-weight="800" fill="#ffc23d">${p.cost}</text>
     <text x="112" y="400" text-anchor="middle" font-family="'Hanken Grotesk'" font-size="17" font-weight="800" fill="#ffc23d" opacity="0.9" letter-spacing="1">CREDITI</text>
@@ -3344,7 +3343,7 @@ function renderPitch(){
     el.className=`slot ${cap?'captain':''} ${isPor?'por':''}`;
     el.style.left=s.x+'%';el.style.top=s.y+'%';el.onclick=()=>slotTap(s.key);
     el.innerHTML=filled
-      ?`<div class="pawn">${avatarImg(p.avatar,88)}<span class="cap">C</span></div><div class="nv"><div class="tag">${p.name}</div><div class="scoreline" id="sl-${s.key}"></div></div><div class="evs" id="ev-${s.key}"></div>`
+      ?`<div class="pawn">${avatarImg(p.avatar,104)}<span class="cap">C</span></div><div class="tag">${p.name}</div><div class="scoreline" id="sl-${s.key}"></div><div class="evs" id="ev-${s.key}"></div>`
       :`<div class="disc"><span class="plus">+</span></div><div class="tag empty">${isPor?'POR 🧤':s.label}</div>`;
     pitch.appendChild(el);
   });
@@ -3399,8 +3398,9 @@ function pitchSlotsHTML(mod,getp){
     if(!o||!o.p) return `<div class="slot ${isPor?'por':''}" style="left:${s.x}%;top:${s.y}%"><div class="disc"></div><div class="tag empty">${isPor?'POR':s.label}</div></div>`;
     const icons=statIcons(o.sc), cls=o.sc.voto>=6?'hi':'lo';
     return `<div class="slot ${o.cap?'captain':''} ${isPor?'por':''}" style="left:${s.x}%;top:${s.y}%">
-      <div class="pawn">${avatarImg(o.p?o.p.avatar:'',88)}${o.cap?'<span class="cap">C</span>':''}</div>
-      <div class="nv"><div class="tag">${o.p?o.p.name:'?'}${o.mvp?' 🏆':''}</div><div class="scoreline"><span class="voto ${cls}">${o.sc.voto.toFixed(1)}</span></div></div>
+      <div class="pawn">${avatarImg(o.p?o.p.avatar:'',104)}${o.cap?'<span class="cap">C</span>':''}</div>
+      <div class="tag">${o.p?o.p.name:'?'}${o.mvp?' 🏆':''}</div>
+      <div class="scoreline"><span class="voto ${cls}">${o.sc.voto.toFixed(1)}</span></div>
       ${icons?`<div class="evs">${icons}</div>`:''}</div>`;
   }).join('');
 }
