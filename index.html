@@ -298,7 +298,12 @@
   .tl-listhead{font-weight:800;font-size:13px;color:var(--accent-soft);margin:6px 2px 8px}
   .tl-tot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:11px 12px;border-radius:12px;background:var(--surface2);font-weight:700;font-size:14px}
   .tl-tot b{font-family:'JetBrains Mono';color:var(--gold)}
-  .tl-hint{text-align:center;color:var(--muted);font-size:11.5px;margin-top:10px}
+  .tl-dots{display:flex;justify-content:center;gap:22px;margin-top:16px}
+  .tl-dotitem{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}
+  .tl-dotitem i{width:9px;height:9px;border-radius:50%;background:rgba(150,185,240,.3);transition:all .2s}
+  .tl-dotitem.on{color:var(--text)}
+  .tl-dotitem.on i{background:var(--accent);box-shadow:0 0 10px rgba(63,151,255,.7)}
+  .tl-swipehint{text-align:center;font-size:12px;color:var(--muted);margin-top:10px}
   .slot .disc{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:rgba(6,16,34,.35);border:2px dashed rgba(255,255,255,.7);transition:transform .15s}
   .slot:active .disc,.slot:active .pawn{transform:scale(.94)}
   .slot .plus{font-size:26px;color:#fff;font-weight:300}
@@ -309,10 +314,10 @@
   .slot .tag.empty{color:rgba(255,255,255,.92);font-weight:600}
   .slot .cap{position:absolute;top:-4px;right:-4px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#1b1207;display:none;place-items:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:12px;border:2px solid #2c7a39}
   .slot.captain .cap{display:grid}
-  .scoreline{display:flex;align-items:center;gap:4px;justify-content:center}
+  .scoreline{display:flex;align-items:center;gap:4px;justify-content:center;flex-wrap:wrap;max-width:98px}
   .voto{font-family:'JetBrains Mono';font-weight:700;font-size:11px;padding:1px 6px;border-radius:6px;background:rgba(0,0,0,.55);color:#fff}
   .voto.hi{color:#7ce6aa} .voto.lo{color:#ff9a9a}
-  .evs{font-size:12px;line-height:1;background:rgba(0,0,0,.45);padding:2px 5px;border-radius:6px}
+  .evs{font-size:11.5px;line-height:1;background:rgba(0,0,0,.45);padding:3px 6px;border-radius:6px;white-space:nowrap;text-align:center}
 
   .hint{text-align:center;color:var(--muted);font-size:12.5px;margin-top:16px;line-height:1.5}
   .save{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;background:linear-gradient(135deg,var(--accent),#1c6ff2);color:#fff;font-weight:700;font-size:15px;border:none;padding:15px;border-radius:14px;cursor:pointer;box-shadow:0 12px 28px -10px rgba(63,151,255,.6);transition:transform .15s,opacity .2s}
@@ -956,7 +961,7 @@
 
   /* --- 2. HERO PIÙ FORTE ------------------------------------------- */
   .hero{padding:20px 20px 18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 26px 54px -28px rgba(0,8,24,.92), 0 0 0 1px rgba(63,151,255,.06)}
-  .hero h1{font-size:34px;line-height:1;margin:12px 0 4px}
+  .hero h1{font-size:clamp(27px,7.4vw,34px);line-height:1.04;margin:16px 0 18px}
   .hero h1 .hot{background:linear-gradient(100deg,var(--accent-soft),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
   .hero .sub{font-size:13.5px;margin-bottom:14px}
 
@@ -1298,7 +1303,7 @@
         <span class="hh-season" id="heroSeason">Stagione 1</span>
       </div>
       <div class="hero-top"><span class="ko" id="heroKo">● FantaCalcetto</span><span class="teampill" id="heroTeam">La tua squadra</span></div>
-      <h1>Pronto a<br><span class="hot">schierare?</span></h1>
+      <h1>Pronto a <span class="hot">schierare?</span></h1>
       <button class="cta" onclick="go('formazione')">Schiera la formazione →</button>
     </div>
     <div class="hpcard" id="homeValuePoll" style="display:none"></div>
@@ -3170,7 +3175,7 @@ function teamStatsGridHTML(card){
   const rest=[];
   rest.push(box(st.wins||0,'Vittorie giornata'));
   rest.push(box(st.leader_days||0,'Giornate da leader','gold'));
-  if(st.best_climb) rest.push(box('+'+st.best_climb,'Miglior balzo'));
+  rest.push(box('+'+(st.best_climb||0),'Miglior balzo'));
   if(st.best_md!=null) rest.push(box(fmtPts(st.best_md),'Miglior giornata'));
   if(rest.length) h+=`<div class="tg-rest">${rest.join('')}</div>`;
   return h;
@@ -3769,7 +3774,7 @@ function renderLB(){
       : '';
   }
   if(selStandingsMd==='scorers'){
-    if(hint)hint.textContent='Gol totali in tutte le giornate · il primo è il capocannoniere 👑';
+    if(hint){hint.textContent='';hint.style.display='none';}
     const list=players.map(p=>({id:p.id,name:p.name,gol:(playerStats[p.id]||{}).gol||0,assist:(playerStats[p.id]||{}).assist||0}))
       .sort((a,b)=> b.gol-a.gol || b.assist-a.assist || a.name.localeCompare(b.name));
     if(!list.length){el.innerHTML='<div class="empty-note">Nessun giocatore.</div>';return;}
@@ -3778,11 +3783,11 @@ function renderLB(){
     return;
   }
   if(!selStandingsMd){
-    if(hint)hint.textContent='Punti delle giornate concluse. La giornata in corso si aggiunge quando viene chiusa.';
+    if(hint){hint.textContent='';hint.style.display='none';}
     if(!standings.length){ el.innerHTML = standingsLoaded ? '<div class="empty-note">Ancora nessuna squadra iscritta.</div>' : skeletonRows('lb',5); return; }
     el.innerHTML=standings.map((t,i)=>lbRowHTML(t,i,(t.points||0),lbFresh())).join('');
   } else {
-    if(hint)hint.textContent='Punti di giornata · tocca una squadra per vedere la formazione.';
+    if(hint){hint.textContent='Tocca una squadra per vedere la formazione.';hint.style.display='';}
     if(!mdStandings.length){el.innerHTML='<div class="empty-note">Nessuna squadra per questa giornata.</div>';return;}
     el.innerHTML=mdStandings.map((t,i)=>`<div class="lb-row ${t.team_name===profile.team_name?'me':''}" onclick="openTeamLineup('${t.manager_id}','${t.team_name.replace(/'/g,"\\'")}')" style="cursor:pointer"><div class="rank">${i+1}</div>${teamLogoHTML(t.manager_id,26)}<div class="who"><b>${t.team_name} ›</b><span>${t.player_name}</span></div><div class="tot">${fmtPts(t.points||0)}</div></div>`).join('');
   }
@@ -3832,7 +3837,7 @@ async function openTeamLineup(managerId, teamName){
   const mb=MODULES[mod]?MODULES[mod].bonus:0;
   let tot=mb;
   lns.forEach(r=>{ tot+=scoreOf(r.player_id,r.slot,r.is_captain,avg,stats,mvp).score; });
-  document.getElementById('tlpHint').innerHTML=`Modulo <b>${mod}</b>${mb?` (parti ${mb>0?'+':''}${mb})`:''} · Totale <b>${tot.toFixed(1)}</b> pt · <span style="color:var(--muted)">scorri ←</span>`;
+  document.getElementById('tlpHint').innerHTML=`Modulo <b>${mod}</b> · Totale <b>${tot.toFixed(1)}</b> pt`;
   const order={a1:1,a2:2,a3:3,d1:4,d2:5,d3:6,g1:7};
   const rowsList=lns.slice().sort((x,y)=>(order[x.slot]||9)-(order[y.slot]||9)).map(r=>{
     const p=players.find(x=>x.id===r.player_id);
@@ -3848,8 +3853,28 @@ async function openTeamLineup(managerId, teamName){
       <div class="tl-slide"><div class="pitch pitch-view">${PITCH_MARKS}${pitchSlotsHTML(mod,getp)}</div></div>
       <div class="tl-slide"><div class="tl-listhead">Punti totali (bonus inclusi)${mb?` · modulo ${mod} ${mb>0?'+':''}${mb}`:''}</div>${rowsList}<div class="tl-tot">Totale squadra <b>${tot.toFixed(1)}</b></div></div>
     </div>
-    <div class="tl-hint">● campo &nbsp;·&nbsp; ○ punti — scorri da destra a sinistra</div>`;
-  openTeamLineupPage();
+    <div class="tl-dots" id="tlDots">
+      <span class="tl-dotitem on" data-i="0" onclick="tlGoSlide(0)"><i></i>Formazione</span>
+      <span class="tl-dotitem" data-i="1" onclick="tlGoSlide(1)"><i></i>Punti</span>
+    </div>
+    <div class="tl-swipehint" id="tlSwipeHint">Scorri a sinistra per i punti</div>`;
+  openTeamLineupPage(); initTlSwipe();
+}
+function tlUpdatePager(i){
+  document.querySelectorAll('#tlpList .tl-dotitem').forEach(d=>d.classList.toggle('on', (+d.dataset.i)===i));
+  const h=document.getElementById('tlSwipeHint');
+  if(h) h.textContent = i===0 ? 'Scorri a sinistra per i punti' : 'Scorri a destra per la formazione';
+}
+function tlGoSlide(i){
+  const sw=document.querySelector('#tlpList .tl-swipe'); if(!sw) return;
+  sw.scrollTo({left:i*sw.clientWidth, behavior:'smooth'});
+}
+function initTlSwipe(){
+  const sw=document.querySelector('#tlpList .tl-swipe'); if(!sw) return;
+  let raf=null;
+  sw.addEventListener('scroll', ()=>{ if(raf) return; raf=requestAnimationFrame(()=>{ raf=null;
+    tlUpdatePager(Math.round(sw.scrollLeft/Math.max(1,sw.clientWidth))); }); }, {passive:true});
+  tlUpdatePager(0);
 }
 function openTeamLineupPage(){
   const pg=document.getElementById('teamLineupPage'); if(!pg)return;
@@ -4381,7 +4406,6 @@ function showRecapCard(i){
   el.scrollTop=0;
   if(navigator.vibrate){ try{ navigator.vibrate((card.t==='mvp'||card.t==='verdict'||card.t==='winner')?[0,35,40,55]:12);}catch(_){ } }
   el.querySelectorAll('[data-count]').forEach(n=>countUp(n, Number(n.dataset.count), n.dataset.dec==='1'));
-  if(card.t==='mvp'||card.t==='verdict'||card.t==='winner') startConfetti();
   if(card.t==='standings') renderRecapStandings();
   if(card.t==='share') prepShareCard();
   // auto-avanzamento "a storie": parte da solo sulle scene di racconto, non sulle finali
