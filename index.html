@@ -1478,7 +1478,7 @@
     <div class="setpage" id="page-partita">
       <button class="subback" onclick="setNav('page-admin')">‹ Area amministratore</button>
       <div class="section-h"><h2>⚽ Partita</h2></div>
-      <div class="acc gold" style="margin-top:12px">
+      <div class="acc gold" id="gkCard" style="margin-top:12px">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🧤</span>Modalità portiere</span><span class="acc-chev">▾</span></button>
         <div class="acc-body">
           <div class="ed-sw" id="gkModeSw" style="margin:2px 0 8px">
@@ -1488,7 +1488,7 @@
           <p class="vs" id="gkModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">In porta può andare chiunque.</p>
         </div>
       </div>
-      <div class="acc gold">
+      <div class="acc gold" id="presModeCard">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🙋</span>Presenze</span><span class="acc-chev">▾</span></button>
         <div class="acc-body">
           <div class="ed-sw" id="presModeSw" style="margin:2px 0 8px">
@@ -1540,6 +1540,13 @@
           <p class="vs" style="color:var(--muted);margin-bottom:6px;font-size:12.5px">Modifica, elimina o aggiungi giocatori.</p>
           <div id="manageList"></div>
           <button class="addbtn" onclick="openEditPlayer(null)">＋ Nuovo giocatore</button>
+        </div>
+      </div>
+      <div class="acc gold" id="viceCard" style="margin-top:12px;display:none">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🛡️</span>Vice-admin</span><span class="acc-chev">▾</span></button>
+        <div class="acc-body">
+          <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Scegli chi può gestire partite e giornate al posto tuo (aprire/chiudere, bonus/esito, presenze, reset). Non potrà cambiare le regole né la lega. Tocca un nome per nominarlo o rimuoverlo.</p>
+          <div id="viceList" class="preschips"></div>
         </div>
       </div>
       <div class="set-card" id="creditCard" style="border-color:rgba(255,194,61,.28);display:none">
@@ -1658,6 +1665,8 @@ const VAPID_PUBLIC = 'BIVh1NLu5K0JVdcOrjGp_LeNc3XZRhMdIs1gAuTLCcs-rnH873A8bB-77N
 const PRICE=20;
 const BUDGET=100;
 let sb=null, user=null, profile=null;
+let opRole={is_owner:false,is_vice:false,can_operate:false};
+function canOp(){ return !!((opRole && opRole.can_operate) || (profile && profile.is_admin)); }   // proprietario OPPURE vice
 let avatars=[];            // [{name,url}]
 let logos=[];              // [{name,url}] — crest/loghi squadra dal bucket "loghi"
 let teamLogoBy={};         // manager_id -> nome file logo
@@ -1937,10 +1946,10 @@ async function openSeasonNow(){
 /* ---------- SCELTA LEGA (crea / entra) ---------- */
 let pendingLeague=null, lgPick=null, lgT=null;
 let justCreatedLeague=false;
-let setupRules={open:'manual', weekday:null, time:'20:00', gk:'rot', pres:'admin', credit:'manual'};
+let setupRules={open:'auto', weekday:null, time:'20:00', gk:'rot', pres:'players', credit:'manual'};
 const SU_DAYS=[1,2,3,4,5,6,0]; // ordine Lun→Dom (indice getDay)
 function showRulesSetup(){
-  setupRules={open:'manual', weekday:null, time:'20:00', gk:'rot', pres:'admin', credit:'manual'};
+  setupRules={open:'auto', weekday:null, time:'20:00', gk:'rot', pres:'players', credit:'manual'};
   document.getElementById('rulesSetup').classList.remove('hidden');
   renderRulesSetup();
 }
@@ -2190,7 +2199,16 @@ async function loadTeamLogos(){
 }
 async function loadProfile(){
   const {data}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
+  await loadMyRole();
   return data||null;
+}
+async function loadMyRole(){
+  try{
+    const {data}=await sb.rpc('get_my_role');
+    const r=Array.isArray(data)?data[0]:data;
+    opRole = r ? {is_owner:!!r.is_owner, is_vice:!!r.is_vice, can_operate:!!r.can_operate}
+               : {is_owner:false,is_vice:false,can_operate:false};
+  }catch(_){ opRole={is_owner:false,is_vice:false,can_operate:false}; }
 }
 async function loadPlayers(){
   const {data}=await sb.from('players').select('*').order('id');
@@ -2230,7 +2248,7 @@ async function loadCanVote(){
 }
 function canIVote(){
   if(!currentMd)return false;
-  if(profile&&profile.is_admin)return true;          // l'admin puo' sempre votare
+  if(canOp())return true;          // proprietario/vice puo' sempre votare
   if(iAmExtraVoter)return true;                       // manager-solo abilitato
   return players.some(p=>p.owner_id===user.id&&presentId(p.id)); // ha giocato (suo personaggio presente)
 }
@@ -2556,7 +2574,7 @@ async function setGkMode(fixed){
 function renderPresenceMode(){
   // card admin "presenze": in modalità admin sempre; in modalità giocatori come OVERRIDE quando c'è una giornata aperta
   const pc=document.getElementById('presCard');
-  const showPres = profile&&profile.is_admin && (!presenceSelf || (currentMd && currentMd.status!=='closed'));
+  const showPres = canOp() && (!presenceSelf || (currentMd && currentMd.status!=='closed'));
   if(pc) pc.style.display=showPres?'block':'none';
   // interruttore nelle impostazioni
   const sw=document.getElementById('presModeSw');
@@ -2819,7 +2837,7 @@ function startCountdown(){
     computeLock();
     const t=mdTimes(currentMd),now=Date.now(),closed=!!(currentMd&&currentMd.status==='closed'),lab=currentMd?currentMd.label:'';
     // CHIUSURA AUTOMATICA: a finestra voti scaduta la giornata si chiude da sola (admin, niente tasto)
-    if(currentMd && !closed && profile && profile.is_admin && t && isFinite(t.voteClose) && now>t.voteClose && !_autoClosing){
+    if(currentMd && !closed && canOp() && t && isFinite(t.voteClose) && now>t.voteClose && !_autoClosing){
       _autoClosing=true;
       doCloseMatchday(true).finally(()=>{ _autoClosing=false; });
       return;
@@ -2844,7 +2862,7 @@ function startCountdown(){
         else {vl.textContent=lab+' · voti chiusi';vt.textContent='🔒';}
       }
     }
-    if(profile&&profile.is_admin)renderLiveOpenBtn();
+    if(canOp())renderLiveOpenBtn();
     if(lastVotesLocked!==null&&votesLocked!==lastVotesLocked)renderVoti();
     if(lastLineupLocked!==null&&lineupLocked!==lastLineupLocked){renderPitch();renderHomePresence();}
     lastVotesLocked=votesLocked; lastLineupLocked=lineupLocked;
@@ -2856,7 +2874,7 @@ function renderMatchday(){
   const ko=document.getElementById('heroKo'); if(ko)ko.textContent=currentMd?('● '+currentMd.label+(currentMd.status==='closed'?' · conclusa':'')):'● Nessuna giornata';
   const mc=document.getElementById('mdCard');
   if(mc){
-    mc.style.display=(profile&&profile.is_admin)?'block':'none';
+    mc.style.display=(canOp())?'block':'none';
     const ml=document.getElementById('mdLabel'); if(ml)ml.textContent=currentMd?currentMd.label:'Nessuna giornata aperta';
     const mp=document.getElementById('mdPhase'); if(mp)mp.textContent=phaseLabel();
     const ma=document.getElementById('mdActions');
@@ -2973,12 +2991,14 @@ function go(v){
 function applyProfile(){
   document.getElementById('heroTeam').innerHTML=teamLogoHTML(user.id,18)+`<span class="tnm">${esc(profile.team_name)}</span>`;
   renderCampoTeam();
-  document.getElementById('adminCard').style.display=profile.is_admin?'block':'none';
-  document.getElementById('manageCard').style.display=profile.is_admin?'block':'none';
-  const pc=document.getElementById('presCard'); if(pc)pc.style.display=(profile.is_admin&&!presenceSelf)?'block':'none';
-  const vtc=document.getElementById('voterCard'); if(vtc)vtc.style.display=profile.is_admin?'block':'none';
-  const mtc=document.getElementById('maintCard'); if(mtc)mtc.style.display=profile.is_admin?'block':'none';
-  const arow=document.getElementById('adminRow'); if(arow)arow.style.display=profile.is_admin?'flex':'none';
+  document.getElementById('adminCard').style.display=canOp()?'block':'none';               // Bonus/Malus (operatore)
+  document.getElementById('manageCard').style.display=profile.is_admin?'block':'none';       // listone (solo proprietario)
+  const pc=document.getElementById('presCard'); if(pc)pc.style.display=(canOp()&&!presenceSelf)?'block':'none';
+  const vtc=document.getElementById('voterCard'); if(vtc)vtc.style.display=canOp()?'block':'none';
+  const mtc=document.getElementById('maintCard'); if(mtc)mtc.style.display=profile.is_admin?'block':'none';   // manutenzione (solo proprietario)
+  const vcc=document.getElementById('viceCard'); if(vcc)vcc.style.display=profile.is_admin?'block':'none';     // gestione vice (solo proprietario)
+  const arow=document.getElementById('adminRow'); if(arow)arow.style.display=canOp()?'flex':'none';
+  ['gkCard','presModeCard','seasonCard'].forEach(id=>{const e=document.getElementById(id); if(e)e.style.display=profile.is_admin?'block':'none';});   // regole: solo proprietario
 }
 function renderAll(){renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderHomeBcards();renderCampoTeam();}
 /* striscia squadra (logo + nome) sopra il campo verde */
@@ -3113,7 +3133,7 @@ function openPlayerStats(id){
   document.getElementById('statName').textContent=p.name;
   document.getElementById('statRole').textContent=roleLabel(p.role)+' · '+s.forma;
   const vm=Math.round((s.voto||6)*100)/100;
-  const adminVote=!!(profile&&profile.is_admin);
+  const adminVote=canOp();
   const voteRow=adminVote?`<div class="sg-vote">
       <div class="stat-box gold"><div class="v">${vm}</div><div class="k">Voto medio</div></div>
       <div class="stat-box green" id="bestVoteBox"><div class="v">—</div><div class="k">Miglior voto</div></div>
@@ -3262,11 +3282,36 @@ async function toggleVoter(id,now){
   if(id===user.id) iAmExtraVoter=!now;
   renderVoters(); renderVoti();
 }
+async function renderVices(){
+  const box=document.getElementById('viceList'); if(!box) return;
+  if(!(profile&&profile.is_admin)){ box.innerHTML=''; return; }
+  box.innerHTML='<div class="vs" style="color:var(--muted)">Carico…</div>';
+  try{
+    const {data,error}=await sb.rpc('list_league_members');
+    if(error) throw error;
+    const rows=(data||[]).filter(m=>!m.is_owner);   // il proprietario non e' un vice
+    if(!rows.length){ box.innerHTML='<div class="vs" style="color:var(--muted)">Nessun altro membro nella lega.</div>'; return; }
+    box.innerHTML=rows.map(m=>{
+      const nm=esc(m.player_name||m.team_name||'Membro');
+      return `<div class="preschip ${m.is_vice?'on':''}" onclick="toggleVice('${m.id}',${m.is_vice?1:0})">${m.is_vice?'🛡️':'○'} ${nm}</div>`;
+    }).join('');
+  }catch(e){ box.innerHTML='<div class="vs" style="color:var(--red)">Errore nel caricamento.</div>'; }
+}
+async function toggleVice(uid, isVice){
+  try{
+    const {error}= isVice
+      ? await sb.rpc('remove_vice_admin',{p_user:uid})
+      : await sb.rpc('set_vice_admin',{p_user:uid});
+    if(error) throw error;
+    toast(isVice?'Vice rimosso':'Vice nominato 🛡️');
+    renderVices();
+  }catch(e){ toast('Errore: '+(e.message||e)); }
+}
 
 function renderPresence(){
   const box=document.getElementById('presList'); if(!box)return;
   const pc=document.getElementById('presCard');
-  const showPres = profile&&profile.is_admin && (!presenceSelf || (currentMd && currentMd.status!=='closed'));
+  const showPres = canOp() && (!presenceSelf || (currentMd && currentMd.status!=='closed'));
   if(pc) pc.style.display=showPres?'block':'none';
   if(!showPres) return;
   const ttl=document.getElementById('presTitle'), hint=document.getElementById('presHint');
@@ -3522,7 +3567,7 @@ function renderVoti(){
     const vl=document.getElementById('voteList'); if(vl)vl.innerHTML='<div class="empty-note">Nessuna giornata aperta. I giocatori da votare compariranno appena l\'admin apre la prossima giornata.</div>';
     const vr=document.getElementById('voteReq'); if(vr)vr.style.display='none';
     const sbtn=document.getElementById('submitVotesBtn'); if(sbtn)sbtn.style.display='none';
-    if(profile&&profile.is_admin) renderLiveOpenBtn();
+    if(canOp()) renderLiveOpenBtn();
     return;
   }
   ensureStats();
@@ -3543,7 +3588,7 @@ function renderVoti(){
       <input class="voteinp" id="v-${p.id}" type="text" inputmode="decimal" enterkeyhint="done" maxlength="4" ${dis} placeholder="voto" value="${mv==null?'':fmtVote(mv)}" onchange="onVote(${p.id},this.value)"></div>`;}).join('')
     :'<div class="empty-note">Nessun giocatore presente da votare.</div>');
   updateSubmitBtn();
-  if(profile&&profile.is_admin) renderLiveOpenBtn();
+  if(canOp()) renderLiveOpenBtn();
 }
 /* ---------- PANNELLO BONUS/MALUS DAL VIVO (admin) ---------- */
 // Finestra partita: da 30 min prima del kickoff a 90 min dopo (slot ~1h + margini).
@@ -3589,7 +3634,7 @@ function loadLiveDraft(){ const k=liveDraftKey(); if(!k)return; try{ const raw=l
 function clearLiveDraft(){ const k=liveDraftKey(); if(k){ try{ localStorage.removeItem(k); }catch(_){} } }
 
 function openLiveStats(){
-  if(!profile||!profile.is_admin)return;
+  if(!profile||!canOp())return;
   if(!currentMd){ toast('Apri prima una giornata'); return; }
   if(currentMd.status==='closed'){ toast('Giornata conclusa'); return; }
   if(!matchOpenable()){ toast('Il pannello si apre durante la partita'); renderLiveOpenBtn(); return; }
@@ -3962,7 +4007,8 @@ function openSettings(){
   document.getElementById('setGrid').innerHTML=avatars.map(a=>`<div class="avopt ${a.name===setAvatarDraft?'on':''}" onclick="pickSet('${a.name}')"><img src="${a.url}"></div>`).join('');
   renderSetLogo();
   renderAvCur(); collapseDisc('av'); collapseDisc('logo');
-  if(profile.is_admin){ renderManage(); renderVoters(); loadInvite(); loadSchedule(); loadCreditConfig(); }
+  if(canOp()){ renderVoters(); loadInvite(); }
+  if(profile.is_admin){ renderManage(); loadSchedule(); loadCreditConfig(); renderVices(); }
   renderNotifBtn(); renderMaintBtn();
 }
 function renderSetLogo(){
