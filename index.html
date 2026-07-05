@@ -33,16 +33,15 @@
   *::-webkit-scrollbar,html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0;background:transparent}
   .overlay,.sheet,.ls-body,.statmodal{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   body{background:radial-gradient(120% 60% at 50% -10%, rgba(63,151,255,.18), transparent 60%),radial-gradient(90% 50% at 50% 110%, rgba(63,151,255,.08), transparent 55%),var(--bg);min-height:100vh;min-height:100dvh}
-  /* GUSCIO APP: contenitore FISSO che copre esattamente il viewport visibile (inset:0, niente
-     unità vh/dvh → nessun calcolo sbagliato su iPhone). topbar e nav sono normali elementi flex
-     (non più position:fixed): la barra inferiore è per costruzione l'ultimo elemento in basso e
-     NON può più "salire" al primo paint. Solo la zona centrale scrolla. */
-  .app{max-width:var(--maxw);margin:0 auto;position:fixed;inset:0;display:flex;flex-direction:column}
+  /* GUSCIO APP: altezza ESPLICITA in pixel (--app-h, impostata via JS = viewport reale).
+     Così non ci si affida più a bottom:0 / inset:0, che su iPhone al primo paint viene
+     calcolato contro un viewport misurato male → la barra non "sale" più. Fallback 100dvh/100vh. */
+  .app{max-width:var(--maxw);margin:0 auto;position:fixed;top:0;left:0;right:0;height:var(--app-h,100dvh);display:flex;flex-direction:column}
   .scrollwrap{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
     padding:6px 0 16px}
   .num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
 
-  .overlay{position:fixed;inset:0;z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(130% 70% at 50% 0%, rgba(63,151,255,.22), transparent 60%),var(--bg);transition:opacity .35s}
+  .overlay{position:fixed;top:0;left:0;right:0;height:var(--app-h,100dvh);z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(130% 70% at 50% 0%, rgba(63,151,255,.22), transparent 60%),var(--bg);transition:opacity .35s}
   .overlay.hidden{opacity:0;pointer-events:none}
 
   /* ---- SPLASH / schermata di caricamento — entrata dinamica a sequenza ---- */
@@ -91,11 +90,11 @@
   /* ---- WELCOME (schermata iniziale a 3 percorsi: crea / entra / accedi) ---- */
   /* tre zone: brand in alto · claim vicino sotto · azioni in fondo (thumb zone) */
   #welcome{display:flex;flex-direction:column}
-  .wc-center{flex:1;min-height:0;justify-content:flex-start;padding-bottom:200px}
+  .wc-center{flex:1;min-height:0;justify-content:flex-start}
   .wc-top{margin-top:24px}
   .wc-mid{margin-top:36px}
   /* pulsanti ancorati stabilmente al fondo schermo: niente più "salto" al primo scroll su iOS */
-  .wc-actions{position:fixed;left:0;right:0;bottom:0;margin:0 auto;width:100%;max-width:var(--maxw);padding:16px 24px calc(22px + env(safe-area-inset-bottom));background:linear-gradient(to top, var(--bg) 62%, rgba(10,22,38,0));z-index:3}
+  .wc-actions{margin-top:auto;width:100%;padding:16px 0 4px;z-index:3}
   .wc-actions .ob-btn:first-of-type{margin-top:0}
   .wc-logo{width:96px;height:96px;border-radius:27px;overflow:hidden;background:linear-gradient(135deg,var(--accent),#1c6ff2);display:grid;place-items:center;margin:0 auto 16px;box-shadow:0 20px 44px -16px rgba(63,151,255,.7), inset 0 1px 0 rgba(255,255,255,.22)}
   .wc-logo img{width:100%;height:100%;object-fit:cover;display:block}
@@ -188,6 +187,8 @@
   #rulesSetup .obstep.on{display:flex;flex-direction:column}
   #rulesSetup .obstep > .ob-btn:last-child,
   #rulesSetup .obstep > .ob-navrow:last-child{margin-top:auto}
+  .rule-err{color:var(--red);font-size:13.5px;font-weight:700;line-height:1.45;margin:14px 2px 0;background:rgba(255,93,107,.12);border:1px solid rgba(255,93,107,.4);border-radius:13px;padding:11px 13px}
+  .rule-err b{color:var(--red)}
 
   /* ---- STRISCIA SQUADRA SUL CAMPO (logo + nome sopra il verde) ---- */
   .campo-team{display:flex;align-items:center;gap:10px;background:linear-gradient(160deg,#10294d,#0a1830);border:1px solid var(--line-strong);border-radius:14px;padding:10px 14px;margin-top:12px}
@@ -1132,6 +1133,25 @@
 </style>
 </head>
 <body>
+<script>
+/* Altezza reale del viewport visibile in pixel → guscio app e overlay ancorati bene su iPhone.
+   Risolve la barra inferiore che "si alza" al primo paint (bug iOS con fixed;bottom). */
+(function(){
+  function setAppH(){
+    var h = window.innerHeight || document.documentElement.clientHeight;
+    if(h) document.documentElement.style.setProperty('--app-h', h + 'px');
+  }
+  setAppH();
+  // riassesta ai primi frame (iOS a volte riporta l'altezza giusta solo dopo il primo layout)
+  requestAnimationFrame(function(){ setAppH(); requestAnimationFrame(setAppH); });
+  window.addEventListener('load', setAppH);
+  window.addEventListener('resize', setAppH);
+  window.addEventListener('pageshow', setAppH);
+  window.addEventListener('orientationchange', function(){ setAppH(); setTimeout(setAppH,250); setTimeout(setAppH,600); });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden){ setAppH(); setTimeout(setAppH,100); } });
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', setAppH); }
+})();
+</script>
 
 <!-- SPLASH / caricamento iniziale: solo logo, niente login né barra in alto -->
 <div id="splash">
@@ -1216,11 +1236,14 @@
   <div class="obstep" id="obStepChar">
     <h1 id="obCharTitle">Il tuo personaggio</h1>
     <div id="obAvatarWrap">
-      <div class="ob-preview" id="obPreview"></div>
       <div class="field-lab">Avatar</div>
-      <div class="avgrid" id="obGrid"></div>
+      <button type="button" class="disc-head" id="obAvDiscHead" onclick="toggleObAv()">
+        <span class="disc-cur" id="obAvCur"></span>
+        <span class="disc-act">Cambia <span class="disc-chev">▾</span></span>
+      </button>
+      <div class="avgrid disc-body" id="obGrid" style="display:none"></div>
     </div>
-    <div class="ed-row" style="margin-top:16px" id="obRoleRow"><div class="ed-lab">Ruolo</div><div class="ed-sw" id="obRole">
+    <div style="margin-top:16px" id="obRoleRow"><div class="field-lab">Ruolo</div><div class="ed-sw" id="obRole">
       <button class="styb on" data-r="ATT">Attaccante</button><button class="styb" data-r="DIF">Difensore</button></div></div>
     <div style="margin-top:16px" id="obPlayerWrap"><div class="field-lab" id="obPlayerLab">Nome del personaggio</div>
       <input class="ob-input" id="playerInput" placeholder="Es. Bomber Cris" maxlength="16" autocomplete="off"></div>
@@ -1283,6 +1306,7 @@
       <div class="field-lab">Ora del fischio d'inizio</div>
       <input class="ob-input" type="time" id="suTime" value="20:00" oninput="setupRules.time=this.value" style="padding:11px;font-size:15px">
     </div>
+    <p id="suErr" class="rule-err" style="display:none">⚠️ Scegli il <b>giorno</b> della partita e l'<b>ora</b> del fischio d'inizio per continuare.</p>
     <button class="ob-btn" type="button" onclick="suNext()">Avanti →</button>
   </div>
 
@@ -1606,7 +1630,7 @@
           <div style="display:flex;gap:8px"><input class="ob-input" id="invPwd" readonly style="flex:1;margin:0"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invPwd')">Copia</button></div>
         </div>
       </div>
-      <div class="acc gold" id="manageCard" style="margin-top:12px">
+      <div class="acc" id="manageCard" style="margin-top:12px">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">👥</span>Gestione giocatori</span><span class="acc-chev">▾</span></button>
         <div class="acc-body">
           <p class="vs" style="color:var(--muted);margin-bottom:6px;font-size:12.5px">Modifica, elimina o aggiungi giocatori.</p>
@@ -1614,23 +1638,23 @@
           <button class="addbtn" onclick="openEditPlayer(null)">＋ Nuovo giocatore</button>
         </div>
       </div>
-      <div class="acc gold" id="viceCard" style="margin-top:12px;display:none">
+      <div class="acc" id="viceCard" style="margin-top:12px;display:none">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🛡️</span>Vice-admin</span><span class="acc-chev">▾</span></button>
         <div class="acc-body">
           <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Scegli chi può gestire partite e giornate al posto tuo (aprire/chiudere, bonus/esito, presenze, reset). Non potrà cambiare le regole né la lega. Tocca un nome per nominarlo o rimuoverlo.</p>
           <div id="viceList" class="preschips"></div>
         </div>
       </div>
-      <div class="set-card" id="creditCard" style="border-color:rgba(255,194,61,.28);display:none">
-        <h3>💰 Sondaggio valori <span class="lockpill" style="color:var(--gold)">admin</span></h3>
-        <div id="creditPollBox"></div>
-      </div>
-      <div class="acc gold" id="voterCard">
+      <div class="acc" id="voterCard" style="margin-top:12px">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🗳️</span>Voto ai soli-manager</span><span class="acc-chev">▾</span></button>
         <div class="acc-body">
           <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Permette di votare anche chi fa solo il manager.</p>
           <div id="voterList" class="preschips"></div>
         </div>
+      </div>
+      <div class="set-card" id="creditCard" style="margin-top:12px;display:none">
+        <h3>💰 Sondaggio valori <span class="lockpill" style="color:var(--accent-soft)">admin</span></h3>
+        <div id="creditPollBox"></div>
       </div>
     </div>
 
@@ -2057,8 +2081,13 @@ function suGo(step){
   const ov=document.getElementById('rulesSetup'); if(ov)ov.scrollTop=0;
 }
 function suNext(){
-  // unica validazione: in modalità automatica serve il giorno della partita
-  if(suStep===0 && setupRules.open==='auto' && setupRules.weekday==null){ toast('Scegli il giorno della partita'); return; }
+  // in modalità automatica servono SIA il giorno SIA l'ora della partita
+  if(suStep===0 && setupRules.open==='auto' && (setupRules.weekday==null || !setupRules.time)){
+    const e=document.getElementById('suErr'); if(e) e.style.display='block';
+    toast('Scegli giorno e ora della partita');
+    return;
+  }
+  const e=document.getElementById('suErr'); if(e) e.style.display='none';
   suGo(suStep+1);
 }
 function suBack(){ suGo(suStep-1); }
@@ -2066,7 +2095,7 @@ function suSet(group,val){
   if(group==='open')setupRules.open=val; else if(group==='gk')setupRules.gk=val; else if(group==='pres')setupRules.pres=val; else if(group==='credit')setupRules.credit=val;
   renderRulesSetup();
 }
-function suPickDay(d){ setupRules.weekday=d; renderRulesSetup(); }
+function suPickDay(d){ setupRules.weekday=d; const e=document.getElementById('suErr'); if(e&&setupRules.time) e.style.display='none'; renderRulesSetup(); }
 function renderRulesSetup(){
   const WD=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
   document.querySelectorAll('#suOpen button').forEach(b=>b.classList.toggle('on',b.dataset.v===setupRules.open));
@@ -3036,16 +3065,24 @@ function obGo(step){
   const eye=document.getElementById('obEye');
   if(eye) eye.textContent = step===0?'Crea il tuo profilo' : step===1?(playMode==='manager'?'Il tuo profilo':'Il tuo personaggio') : 'La tua squadra';
   const ov=document.getElementById('onboard'); if(ov)ov.scrollTop=0;
+  if(step===1){ const b=document.getElementById('obGrid'), h=document.getElementById('obAvDiscHead'); if(b)b.style.display='none'; if(h)h.classList.remove('open'); }
   if(step===1 && playMode!=='campo') setTimeout(()=>{const el=document.getElementById('playerInput'); if(el)el.focus();},250);
   if(step===2){ renderObLogo(); setTimeout(()=>{const el=document.getElementById('teamInput'); if(el)el.focus();},250); }
 }
 function renderOb(){
-  const g=document.getElementById('obGrid'), pv=document.getElementById('obPreview');
-  if(!avatars.length){ g.innerHTML='<div class="av-empty">Nessun avatar trovato. Carica i PNG nel bucket Storage \"avatars\" e ricarica la pagina.</div>'; pv.innerHTML='<div style="color:var(--muted)">—</div>'; return; }
+  const g=document.getElementById('obGrid'), cur=document.getElementById('obAvCur');
+  if(!g)return;
+  if(!avatars.length){ g.innerHTML='<div class="av-empty">Nessun avatar trovato. Carica i PNG nel bucket Storage "avatars" e ricarica la pagina.</div>'; if(cur)cur.innerHTML='<span class="none">—</span>'; return; }
   g.innerHTML=avatars.map(a=>`<div class="avopt ${a.name===obAvatar?'on':''}" onclick="pickOb('${a.name}')"><img src="${a.url}"></div>`).join('');
-  pv.innerHTML=avatarImg(obAvatar,120);
+  if(cur) cur.innerHTML=obAvatar?avatarImg(obAvatar,44):'<span class="none">Nessun avatar</span>';
 }
 function pickOb(name){obAvatar=name;renderOb();}
+function toggleObAv(){
+  const head=document.getElementById('obAvDiscHead'), body=document.getElementById('obGrid');
+  if(!head||!body)return;
+  const open=body.style.display==='none';
+  body.style.display=open?'grid':'none'; head.classList.toggle('open',open);
+}
 function renderObLogo(){
   const g=document.getElementById('obLogoGrid'), pv=document.getElementById('obLogoPreview');
   if(!g||!pv)return;
@@ -3069,7 +3106,7 @@ document.querySelectorAll('#obMode button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#obMode button').forEach(x=>x.classList.toggle('on',x===b));
   const isCampo=playMode==='campo';
   document.getElementById('obAvatarWrap').style.display=isCampo?'block':'none';
-  document.getElementById('obRoleRow').style.display=isCampo?'flex':'none';
+  document.getElementById('obRoleRow').style.display=isCampo?'block':'none';
   document.getElementById('obCharTitle').textContent=isCampo?'Il tuo personaggio':'Il tuo nome';
   document.getElementById('obPlayerLab').textContent=isCampo?'Nome del personaggio':'Il tuo nome';
   document.getElementById('playerInput').placeholder=isCampo?'Es. Bomber Cris':'Es. Giulio';
