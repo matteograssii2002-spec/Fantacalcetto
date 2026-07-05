@@ -1260,52 +1260,70 @@
 <div class="overlay hidden" id="rulesSetup"><div class="ob-inner">
   <div class="ob-brand"><div class="dot"><img src="icon-512.png?v=3" alt=""></div><b>Fanta<span>Calcetto</span></b></div>
   <div class="ob-eye">Imposta le regole</div>
-  <h1>Le regole<br>della tua lega</h1>
-  <p style="color:var(--muted);font-size:13.5px;margin-bottom:18px">Scegli come funziona il vostro campionato. Potrai cambiare tutto quando vuoi dalle Impostazioni.</p>
+  <div class="ob-dots" id="suDots"><i class="on"></i><i></i><i></i><i></i></div>
 
-  <div class="rule-grp">
-    <div class="rule-h">📅 Apertura giornata</div>
+  <!-- STEP 0 · Apertura -->
+  <div class="obstep on" id="suStep0">
+    <h1>📅 Apertura<br>della giornata</h1>
+    <p style="color:var(--muted);font-size:13.5px;margin:0 2px 16px;line-height:1.5">Quando si apre la giornata per schierare la formazione.</p>
     <div class="ed-sw" id="suOpen">
       <button class="styb" data-v="manual" onclick="suSet('open','manual')">Manuale</button>
       <button class="styb" data-v="auto" onclick="suSet('open','auto')">Automatica</button>
     </div>
     <p class="rule-hint" id="suOpenHint"></p>
-    <div id="suAutoBox" style="display:none;margin-top:10px">
+    <div id="suAutoBox" style="display:none;margin-top:14px">
       <div class="field-lab">Giorno della partita</div>
-      <div class="preschips" id="suDays" style="margin-bottom:10px"></div>
+      <div class="preschips" id="suDays" style="margin-bottom:12px"></div>
       <div class="field-lab">Ora del fischio d'inizio</div>
       <input class="ob-input" type="time" id="suTime" value="20:00" oninput="setupRules.time=this.value" style="padding:11px;font-size:15px">
     </div>
+    <button class="ob-btn" type="button" onclick="suNext()">Avanti →</button>
   </div>
 
-  <div class="rule-grp">
-    <div class="rule-h">🧤 Portiere</div>
+  <!-- STEP 1 · Portiere -->
+  <div class="obstep" id="suStep1">
+    <h1>🧤 Portiere</h1>
+    <p style="color:var(--muted);font-size:13.5px;margin:0 2px 16px;line-height:1.5">Chi può andare in porta durante le partite.</p>
     <div class="ed-sw" id="suGk">
       <button class="styb" data-v="rot" onclick="suSet('gk','rot')">Rotazione</button>
       <button class="styb" data-v="fix" onclick="suSet('gk','fix')">Fisso</button>
     </div>
     <p class="rule-hint" id="suGkHint"></p>
+    <div class="ob-navrow">
+      <button class="ob-back" type="button" onclick="suBack()">‹ Indietro</button>
+      <button class="ob-btn" type="button" onclick="suNext()">Avanti →</button>
+    </div>
   </div>
 
-  <div class="rule-grp">
-    <div class="rule-h">🙋 Presenze</div>
+  <!-- STEP 2 · Presenze -->
+  <div class="obstep" id="suStep2">
+    <h1>🙋 Presenze</h1>
+    <p style="color:var(--muted);font-size:13.5px;margin:0 2px 16px;line-height:1.5">Chi segna chi c'è a ogni partita.</p>
     <div class="ed-sw" id="suPres">
       <button class="styb" data-v="admin" onclick="suSet('pres','admin')">Admin</button>
       <button class="styb" data-v="players" onclick="suSet('pres','players')">Giocatori</button>
     </div>
     <p class="rule-hint" id="suPresHint"></p>
+    <div class="ob-navrow">
+      <button class="ob-back" type="button" onclick="suBack()">‹ Indietro</button>
+      <button class="ob-btn" type="button" onclick="suNext()">Avanti →</button>
+    </div>
   </div>
 
-  <div class="rule-grp">
-    <div class="rule-h">💰 Crediti giocatori</div>
+  <!-- STEP 3 · Crediti -->
+  <div class="obstep" id="suStep3">
+    <h1>💰 Crediti<br>dei giocatori</h1>
+    <p style="color:var(--muted);font-size:13.5px;margin:0 2px 16px;line-height:1.5">Come si assegnano i crediti ai giocatori. Potrai cambiare tutto dalle Impostazioni.</p>
     <div class="ed-sw" id="suCredit">
       <button class="styb" data-v="manual" onclick="suSet('credit','manual')">Manuale</button>
       <button class="styb" data-v="poll" onclick="suSet('credit','poll')">Sondaggio</button>
     </div>
     <p class="rule-hint" id="suCreditHint"></p>
+    <div class="ob-navrow">
+      <button class="ob-back" type="button" onclick="suBack()">‹ Indietro</button>
+      <button class="ob-btn" type="button" id="suSaveBtn" onclick="saveRulesSetup()">Salva e inizia →</button>
+    </div>
   </div>
-
-  <button class="ob-btn" id="suSaveBtn" onclick="saveRulesSetup()">Salva e inizia →</button>
 </div></div>
 
 <!-- SCELTA LEGA -->
@@ -1712,7 +1730,7 @@ const VAPID_PUBLIC = 'BIVh1NLu5K0JVdcOrjGp_LeNc3XZRhMdIs1gAuTLCcs-rnH873A8bB-77N
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='2026.07.05 · v4';   // ⬅️ cambia a ogni deploy: così vedi subito in Impostazioni quale codice è online
+const APP_VERSION='2026.07.05 · v5';   // ⬅️ cambia a ogni deploy: così vedi subito in Impostazioni quale codice è online
 try{ console.log('FantaCalcetto build', APP_VERSION); }catch(_){}
 // se una chiamata di rete si impianta, non lasciamo l'interfaccia bloccata all'infinito
 function withTimeout(p, ms, label){
@@ -2018,12 +2036,26 @@ async function openSeasonNow(){
 let pendingLeague=null, lgPick=null, lgT=null;
 let justCreatedLeague=false;
 let setupRules={open:'auto', weekday:null, time:'20:00', gk:'rot', pres:'players', credit:'manual'};
+let suStep=0;
 const SU_DAYS=[1,2,3,4,5,6,0]; // ordine Lun→Dom (indice getDay)
 function showRulesSetup(){
   setupRules={open:'auto', weekday:null, time:'20:00', gk:'rot', pres:'players', credit:'manual'};
-  document.getElementById('rulesSetup').classList.remove('hidden');
+  const ov=document.getElementById('rulesSetup'); ov.classList.remove('hidden'); ov.scrollTop=0;
+  suStep=0; suGo(0);
   renderRulesSetup();
 }
+function suGo(step){
+  suStep=Math.max(0,Math.min(3,step));
+  ['suStep0','suStep1','suStep2','suStep3'].forEach((id,i)=>{const el=document.getElementById(id); if(el)el.classList.toggle('on',i===suStep);});
+  document.querySelectorAll('#suDots i').forEach((d,i)=>d.classList.toggle('on',i===suStep));
+  const ov=document.getElementById('rulesSetup'); if(ov)ov.scrollTop=0;
+}
+function suNext(){
+  // unica validazione: in modalità automatica serve il giorno della partita
+  if(suStep===0 && setupRules.open==='auto' && setupRules.weekday==null){ toast('Scegli il giorno della partita'); return; }
+  suGo(suStep+1);
+}
+function suBack(){ suGo(suStep-1); }
 function suSet(group,val){
   if(group==='open')setupRules.open=val; else if(group==='gk')setupRules.gk=val; else if(group==='pres')setupRules.pres=val; else if(group==='credit')setupRules.credit=val;
   renderRulesSetup();
@@ -2053,19 +2085,27 @@ function renderRulesSetup(){
 async function saveRulesSetup(){
   const btn=document.getElementById('suSaveBtn');
   const auto=setupRules.open==='auto';
-  if(auto && setupRules.weekday==null){ toast('Scegli il giorno della partita'); return; }
-  btn.disabled=true;
+  if(auto && setupRules.weekday==null){ suGo(0); toast('Scegli il giorno della partita'); return; }
+  const _lbl=btn.textContent; btn.disabled=true; btn.textContent='Salvataggio…';
+  // BEST-EFFORT in PARALLELO con un unico timeout: un errore/lentezza su una regola NON
+  // impedisce mai di entrare nell'app (le regole hanno un default e si cambiano dalle Impostazioni).
   try{
-    await sb.rpc('set_league_schedule',{p_auto:auto, p_weekday:(auto?setupRules.weekday:null), p_time:setupRules.time});
-    await sb.rpc('set_gk_mode',{p_fixed:setupRules.gk==='fix'});
-    await sb.rpc('set_presence_mode',{p_self:setupRules.pres==='players'});
-    await sb.rpc('set_credit_mode',{p_mode:setupRules.credit});
-  }catch(e){ toast('Errore nel salvataggio delle regole'); btn.disabled=false; return; }
-  btn.disabled=false; justCreatedLeague=false;
-  try{ localStorage.removeItem('fc_pendingRules'); }catch(_){}   // regole impostate: niente più promemoria
+    await withTimeout(Promise.allSettled([
+      sb.rpc('set_league_schedule',{p_auto:auto, p_weekday:(auto?setupRules.weekday:null), p_time:setupRules.time}),
+      sb.rpc('set_gk_mode',{p_fixed:setupRules.gk==='fix'}),
+      sb.rpc('set_presence_mode',{p_self:setupRules.pres==='players'}),
+      sb.rpc('set_credit_mode',{p_mode:setupRules.credit})
+    ]), 12000, 'rules');
+  }catch(e){ try{console.error('rules save',e);}catch(_){}}
+  // esci SEMPRE dalla schermata regole e pulisci il flag (niente più loop al riavvio)
+  justCreatedLeague=false;
+  try{ localStorage.removeItem('fc_pendingRules'); }catch(_){}
   document.getElementById('rulesSetup').classList.add('hidden');
-  await loadSchedule(); renderAll();
-  loadCreditConfig();
+  btn.disabled=false; btn.textContent=_lbl;
+  try{ await loadSchedule(); }catch(_){}
+  try{ renderAll(); }catch(_){}
+  try{ loadCreditConfig(); }catch(_){}
+  toast('Regole salvate ✅');
   setTimeout(maybeAskPush,600);
 }
 function lgStatus(t){ const e=document.getElementById('lgStatus'); if(e)e.textContent=t||''; }
