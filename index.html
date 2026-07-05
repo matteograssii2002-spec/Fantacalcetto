@@ -101,7 +101,13 @@
   .wc-login{display:block;text-align:center;color:var(--accent-soft);font-size:14px;font-weight:600;margin-top:20px;cursor:pointer}
   .wc-login b{color:var(--text)}
   .wc-back{color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;align-self:flex-start;margin-bottom:2px}
-  .wc-ctx{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;background:var(--surface);border:1px solid var(--line-strong);border-radius:999px;padding:6px 13px;font-size:11.5px;color:var(--accent-soft);font-weight:700;margin-bottom:12px}
+  .wc-ctx{display:inline-flex;align-items:center;gap:6px;background:rgba(63,139,255,.12);border:1px solid rgba(63,139,255,.30);border-radius:999px;padding:6px 12px;font-size:11px;color:var(--accent-soft);font-weight:700;white-space:nowrap}
+  /* pagina email: titoli in alto, form in basso, Indietro+pillola sulla stessa riga */
+  #gate{display:flex;flex-direction:column}
+  .gate-center{flex:1;justify-content:space-between}
+  .gate-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 22px}
+  .gate-bar .wc-back{align-self:auto;margin:0}
+  .gate-desc{color:var(--muted);font-size:14px;line-height:1.55;margin:0}
   .ob-btn.ghost{background:var(--surface);color:var(--text);border:1.5px solid var(--line-strong);box-shadow:none}
   .ob-eye{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-soft);font-weight:700}
   .overlay h1{font-family:'Bricolage Grotesque';font-weight:800;font-size:31px;letter-spacing:-.03em;line-height:1;margin:10px 0 16px}
@@ -1139,24 +1145,28 @@
 </div></div>
 
 <!-- LOGIN GATE -->
-<div class="overlay hidden" id="gate"><div class="ob-inner">
-  <div class="ob-brand"><div class="dot"><img src="icon-512.png?v=3" alt=""></div><b>Fanta<span>Calcetto</span></b></div>
-  <a class="wc-back" onclick="showWelcome()">‹ Indietro</a>
-  <div class="gate-spacer"></div>
-  <span class="wc-ctx" id="gateContext" style="display:none"></span>
-  <div class="ob-eye">Accedi</div>
-  <h1>Entra con la tua email</h1>
-  <p style="color:var(--muted);font-size:14px;margin-bottom:20px">Ti arriva un link via email: clicci e sei dentro. Nessuna password.</p>
-  <input class="ob-input" id="gateEmail" type="email" placeholder="latua@email.it" autocomplete="email">
-  <button class="ob-btn" id="gateBtn">Inviami il codice →</button>
-  <div id="gateStep2" style="display:none">
-    <div class="field-lab" style="margin-top:18px">Codice ricevuto via email</div>
-    <input class="ob-input" id="gateCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" maxlength="8" style="letter-spacing:6px;text-align:center;font-size:22px">
-    <button class="ob-btn" id="gateVerify">Entra →</button>
-    <div style="text-align:center;margin-top:12px"><a id="gateResend" style="color:var(--accent-soft);font-size:13px;cursor:pointer">Rinvia il codice</a></div>
+<div class="overlay hidden" id="gate"><div class="ob-inner gate-center">
+  <div class="gate-top">
+    <div class="ob-brand"><div class="dot"><img src="icon-512.png?v=3" alt=""></div><b>Fanta<span>Calcetto</span></b></div>
+    <div class="gate-bar">
+      <a class="wc-back" onclick="showWelcome()">‹ Indietro</a>
+      <span class="wc-ctx" id="gateContext" style="display:none"></span>
+    </div>
+    <div class="ob-eye">Accedi</div>
+    <h1>Entra con la tua email</h1>
+    <p class="gate-desc">Inserisci la tua email per accedere.<br>Nessuna password richiesta.</p>
   </div>
-  <div class="gate-status" id="gateStatus"></div>
-  <div class="gate-spacer"></div>
+  <div class="gate-bottom">
+    <input class="ob-input" id="gateEmail" type="email" placeholder="latua@email.it" autocomplete="email">
+    <button class="ob-btn" id="gateBtn">Inviami il codice →</button>
+    <div id="gateStep2" style="display:none">
+      <div class="field-lab" style="margin-top:18px">Codice ricevuto via email</div>
+      <input class="ob-input" id="gateCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" maxlength="8" style="letter-spacing:6px;text-align:center;font-size:22px">
+      <button class="ob-btn" id="gateVerify">Entra →</button>
+      <div style="text-align:center;margin-top:12px"><a id="gateResend" style="color:var(--accent-soft);font-size:13px;cursor:pointer">Rinvia il codice</a></div>
+    </div>
+    <div class="gate-status" id="gateStatus"></div>
+  </div>
 </div></div>
 
 <!-- ONBOARDING -->
