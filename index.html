@@ -84,20 +84,17 @@
   .ob-brand b{font-family:'Bricolage Grotesque';font-weight:800;font-size:19px;letter-spacing:-.03em}
   .ob-brand b span{color:var(--accent-soft)}
   /* ---- WELCOME (schermata iniziale a 3 percorsi: crea / entra / accedi) ---- */
-  /* tre zone: brand in alto · claim al centro · azioni in basso (thumb zone) */
-  .wc-center{justify-content:space-between}
-  .wc-top{margin-top:24px}
-  .wc-mid{margin:24px 0}
-  .wc-actions .ob-btn:first-of-type{margin-top:0}
-  .wc-logo{width:96px;height:96px;border-radius:27px;overflow:hidden;background:linear-gradient(135deg,var(--accent),#1c6ff2);display:grid;place-items:center;margin:0 auto 16px;box-shadow:0 20px 44px -16px rgba(63,151,255,.7), inset 0 1px 0 rgba(255,255,255,.22)}
+  .wc-center{justify-content:center}
+  .wc-center .ob-btn:first-of-type{margin-top:60px}
+  .wc-logo{width:92px;height:92px;border-radius:26px;overflow:hidden;background:linear-gradient(135deg,var(--accent),#1c6ff2);display:grid;place-items:center;margin:0 auto 18px;box-shadow:0 20px 44px -16px rgba(63,151,255,.7), inset 0 1px 0 rgba(255,255,255,.22)}
   .wc-logo img{width:100%;height:100%;object-fit:cover;display:block}
   .wc-name{font-family:'Bricolage Grotesque';font-weight:800;font-size:27px;letter-spacing:-.03em;text-align:center}
   .wc-name span{color:var(--accent-soft)}
-  .wc-tag{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);text-align:center;margin-top:8px}
-  .wc-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:30px;letter-spacing:-.03em;line-height:1.08;text-align:center;margin:0 6px 16px}
+  .wc-tag{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);text-align:center;margin-top:6px}
+  .wc-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:26px;letter-spacing:-.03em;line-height:1.08;text-align:center;margin:20px 6px 10px}
   .wc-h span{color:var(--text)}
-  .wc-sub{font-size:14.5px;color:var(--muted);text-align:center;line-height:1.55;margin:0 16px}
-  .wc-login{display:block;text-align:center;color:var(--accent-soft);font-size:14px;font-weight:600;margin-top:20px;cursor:pointer}
+  .wc-sub{font-size:14px;color:var(--muted);text-align:center;line-height:1.5;margin:0 16px}
+  .wc-login{display:block;text-align:center;color:var(--accent-soft);font-size:14px;font-weight:600;margin-top:18px;cursor:pointer}
   .wc-login b{color:var(--text)}
   .wc-back{color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;align-self:flex-start;margin-bottom:2px}
   .wc-ctx{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;background:var(--surface);border:1px solid var(--line-strong);border-radius:999px;padding:6px 13px;font-size:11.5px;color:var(--accent-soft);font-weight:700;margin-bottom:12px}
@@ -486,7 +483,7 @@
   .acc.open>.acc-head .acc-chev{transform:rotate(180deg)}
   .acc.open>.acc-head{border-color:var(--line-strong)}
   .acc-body{display:none}
-  .acc.open>.acc-body{display:block}
+  .acc.open>.acc-body{display:block;padding:12px 6px 2px}
   .acc-body>.set-card:first-child,.acc-body>.acc:first-child{margin-top:10px}
   .acc.gold>.acc-head{border-color:rgba(255,194,61,.30);background:linear-gradient(180deg,rgba(255,194,61,.08),var(--surface))}
   .acc.gold>.acc-head .acc-ttl{color:var(--gold-soft)}
@@ -497,6 +494,9 @@
   /* Navigazione a pagine nelle impostazioni */
   .setpage{display:none}
   .setpage.on{display:block;animation:setSlide .22s ease}
+  /* menu impostazioni: riempi l'altezza e spingi il logout in fondo (thumb zone) */
+  #setMenu.on{display:flex;flex-direction:column;min-height:calc(100vh - 144px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+  #setMenu .logout{margin-top:auto}
   @keyframes setSlide{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
   .navrow{width:100%;display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:15px 16px;cursor:pointer;color:var(--text);font-family:inherit;text-align:left;margin-top:12px}
   .navrow:active{transform:scale(.995)}
@@ -1117,20 +1117,14 @@
 
 <!-- WELCOME · prima schermata (nessuna sessione): scegli il percorso -->
 <div class="overlay hidden" id="welcome"><div class="ob-inner wc-center">
-  <div class="wc-top">
-    <div class="wc-logo"><img src="icon-512.png?v=3" alt=""></div>
-    <div class="wc-name">Fanta<span>Calcetto</span></div>
-    <div class="wc-tag">Il tuo campionato</div>
-  </div>
-  <div class="wc-mid">
-    <h1 class="wc-h">Il fanta del tuo<br><span>calcetto</span></h1>
-    <p class="wc-sub">Crea o entra in una lega.<br>Inizia in un minuto.</p>
-  </div>
-  <div class="wc-actions">
-    <button class="ob-btn" onclick="welcomeGo('create')">➕ Crea la tua lega</button>
-    <button class="ob-btn ghost" onclick="welcomeGo('join')">🔑 Entra in una lega</button>
-    <a class="wc-login" onclick="welcomeGo('login')">Hai già un account in una lega? <b>Accedi</b></a>
-  </div>
+  <div class="wc-logo"><img src="icon-512.png?v=3" alt=""></div>
+  <div class="wc-name">Fanta<span>Calcetto</span></div>
+  <div class="wc-tag">Il tuo campionato</div>
+  <h1 class="wc-h">Il fanta del tuo<br><span>calcetto</span></h1>
+  <p class="wc-sub">Crea o entra in una lega. Inizia in un minuto.</p>
+  <button class="ob-btn" onclick="welcomeGo('create')">➕ Crea la tua lega</button>
+  <button class="ob-btn ghost" onclick="welcomeGo('join')">🔑 Entra in una lega</button>
+  <a class="wc-login" onclick="welcomeGo('login')">Hai già un account in una lega? <b>Accedi</b></a>
 </div></div>
 
 <!-- LOGIN GATE -->
@@ -1486,43 +1480,43 @@
       <div class="section-h"><h2>⚽ Partita</h2></div>
       <div class="acc gold" style="margin-top:12px">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🧤</span>Modalità portiere</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body"><div class="set-card" style="border-color:rgba(255,194,61,.28)">
+        <div class="acc-body">
           <div class="ed-sw" id="gkModeSw" style="margin:2px 0 8px">
             <button class="styb" data-fixed="0" onclick="setGkMode(false)">🔄 Rotazione</button>
             <button class="styb" data-fixed="1" onclick="setGkMode(true)">🧤 Fisso</button>
           </div>
           <p class="vs" id="gkModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">In porta può andare chiunque.</p>
-        </div></div>
+        </div>
       </div>
       <div class="acc gold">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🙋</span>Presenze</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body"><div class="set-card" style="border-color:rgba(255,194,61,.28)">
+        <div class="acc-body">
           <div class="ed-sw" id="presModeSw" style="margin:2px 0 8px">
             <button class="styb" data-self="0" onclick="setPresenceMode(false)">🙋 Admin</button>
             <button class="styb" data-self="1" onclick="setPresenceMode(true)">👥 Giocatori</button>
           </div>
           <p class="vs" id="presModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">Sei tu a segnare chi c'è, dal riquadro «Chi gioca questa giornata» qui sotto.</p>
-        </div></div>
+        </div>
       </div>
       <div class="acc gold" id="seasonCard">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">📅</span>Stagione</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body"><div class="set-card" style="border-color:rgba(255,194,61,.28)"><div id="seasonBox"></div></div></div>
+        <div class="acc-body"><div id="seasonBox"></div></div>
       </div>
       <div class="acc gold" id="mdCard">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">⚽</span>Giornata</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body"><div class="set-card" style="border-color:rgba(255,194,61,.28)">
+        <div class="acc-body">
           <p class="vs" style="color:var(--muted);margin-bottom:4px;font-size:12.5px">Attuale: <b id="mdLabel" style="color:var(--text)">—</b></p>
           <p class="vs" id="mdPhase" style="color:var(--accent-soft);margin-bottom:10px;font-size:12.5px">—</p>
           <div id="mdOpenBox"></div>
           <div id="mdActions"></div>
-        </div></div>
+        </div>
       </div>
       <div class="acc gold" id="presCard">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🟢</span><span id="presTitle">Chi gioca questa giornata</span></span><span class="acc-chev">▾</span></button>
-        <div class="acc-body"><div class="set-card" style="border-color:rgba(255,194,61,.28)">
+        <div class="acc-body">
           <p class="vs" id="presHint" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Tocca per segnare presente/assente.</p>
           <div id="presList" class="preschips"></div>
-        </div></div>
+        </div>
       </div>
     </div>
 
@@ -1532,25 +1526,20 @@
       <div class="section-h"><h2>🏆 Lega</h2></div>
       <div class="acc" id="inviteCard" style="margin-top:12px">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">✉️</span>Invita nella lega</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body"><div class="set-card" style="border-color:rgba(63,151,255,.28)">
+        <div class="acc-body">
           <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Condividi link e password con i tuoi amici.</p>
           <div class="field-lab">Link d'invito</div>
           <div style="display:flex;gap:8px;margin-bottom:10px"><input class="ob-input" id="invLink" readonly style="flex:1;margin:0;font-size:12px"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invLink')">Copia</button></div>
           <div class="field-lab">Password</div>
           <div style="display:flex;gap:8px"><input class="ob-input" id="invPwd" readonly style="flex:1;margin:0"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invPwd')">Copia</button></div>
-        </div></div>
+        </div>
       </div>
       <div class="acc gold" id="manageCard" style="margin-top:12px">
-        <button class="acc-head" onclick="toggleAcc(this)">
-          <span class="acc-ttl"><span class="ic">👥</span>Gestione giocatori</span>
-          <span class="acc-chev">▾</span>
-        </button>
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">👥</span>Gestione giocatori</span><span class="acc-chev">▾</span></button>
         <div class="acc-body">
-          <div class="set-card" style="border-color:rgba(255,194,61,.28)">
-            <p class="vs" style="color:var(--muted);margin-bottom:6px;font-size:12.5px">Modifica, elimina o aggiungi giocatori.</p>
-            <div id="manageList"></div>
-            <button class="addbtn" onclick="openEditPlayer(null)">＋ Nuovo giocatore</button>
-          </div>
+          <p class="vs" style="color:var(--muted);margin-bottom:6px;font-size:12.5px">Modifica, elimina o aggiungi giocatori.</p>
+          <div id="manageList"></div>
+          <button class="addbtn" onclick="openEditPlayer(null)">＋ Nuovo giocatore</button>
         </div>
       </div>
       <div class="set-card" id="creditCard" style="border-color:rgba(255,194,61,.28);display:none">
@@ -1559,10 +1548,10 @@
       </div>
       <div class="acc gold" id="voterCard">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🗳️</span>Voto ai soli-manager</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body"><div class="set-card" style="border-color:rgba(255,194,61,.28)">
+        <div class="acc-body">
           <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Permette di votare anche chi fa solo il manager.</p>
           <div id="voterList" class="preschips"></div>
-        </div></div>
+        </div>
       </div>
     </div>
 
@@ -3164,7 +3153,7 @@ async function loadVoteTrend(id){
                         .filter(p=>isFinite(p.v));
     const bvb=document.getElementById('bestVoteBox');   // miglior voto: box dedicato (anche con 1 sola giornata)
     if(bvb && pts.length){ bvb.querySelector('.v').textContent=Math.round(Math.max(...pts.map(p=>p.v))*100)/100; }
-    if(!pts.length) return;                      // basta 1 presenza: con 1 punto mostriamo comunque il grafico
+    if(pts.length<2) return;                     // il grafico serve almeno 2 giornate
     box.innerHTML=voteTrendHTML(pts);
     box.style.display='block';
   }catch(_){ /* offline o RPC assente: semplicemente non mostriamo il grafico */ }
@@ -3182,18 +3171,6 @@ function voteTrendHTML(pts){
   const n=pts.length;
   const X=i=> padL + (n===1?0.5:(i/(n-1))) * (W-padL-padR);
   const Y=v=> padT + (1-((v-lo)/(hi-lo))) * (H-padT-padB);
-  // Una sola presenza: niente linea/media, solo il punto centrato con un accenno di linea.
-  if(n===1){
-    const p=pts[0], x=X(0), y=Y(p.v), half=36, hiV=p.v>=6;
-    return `<div class="vt-h"><span class="vt-t">📈 Andamento voti</span></div>
-      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Voto della prima presenza">
-        <line x1="${(x-half).toFixed(1)}" y1="${y.toFixed(1)}" x2="${(x+half).toFixed(1)}" y2="${y.toFixed(1)}" stroke="#5aa0ff" stroke-width="2.5" stroke-linecap="round" opacity="0.45"/>
-        <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="${hiV?'#2fd98a':'#ff8aa0'}" stroke="#0b1c34" stroke-width="2"/>
-        <text x="${x.toFixed(1)}" y="${(y-11).toFixed(1)}" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="700" fill="#eaf1fb">${p.v.toFixed(1).replace('.0','')}</text>
-        <text x="${x.toFixed(1)}" y="${(H-8).toFixed(1)}" text-anchor="middle" font-family="'Hanken Grotesk',sans-serif" font-size="9.5" font-weight="700" fill="#8aa3c2">${p.lab}</text>
-        <text x="${(W/2).toFixed(1)}" y="${(padT-9).toFixed(1)}" text-anchor="middle" font-family="'Hanken Grotesk',sans-serif" font-size="9.5" font-weight="600" fill="#8aa3c2">La linea cresce dalla 2ª presenza</text>
-      </svg>`;
-  }
   const xs=pts.map((p,i)=>X(i)), ys=pts.map(p=>Y(p.v));
   // path con curve dolci (Catmull-Rom → Bézier)
   let d='M '+xs[0].toFixed(1)+' '+ys[0].toFixed(1);
