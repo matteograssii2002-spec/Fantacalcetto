@@ -50,6 +50,8 @@
   .pill.a{background:rgba(55,201,138,.15);color:var(--green)} .pill.i{background:rgba(138,163,194,.13);color:var(--muted)}
   .tog{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface2);color:var(--text)}
   .tog.paid{background:rgba(234,178,74,.16);color:var(--gold);border-color:rgba(234,178,74,.4)}
+  .del{font-size:15px;line-height:1;padding:5px 9px;border-radius:9px;border:1px solid rgba(255,107,107,.4);background:rgba(255,107,107,.14);color:var(--red);cursor:pointer}
+  .del:active{transform:scale(.94)}
   .note{color:var(--muted);font-size:11.5px;margin-top:8px;line-height:1.5}
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#13294a;color:#fff;
     padding:11px 18px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:50;border:1px solid var(--line-strong)}
@@ -149,11 +151,11 @@
       <h2>Tutte le leghe</h2>
       <div style="overflow-x:auto">
         <table id="lgTable">
-          <thead><tr><th>#</th><th>Nome</th><th>Membri</th><th>Stato</th><th>Tipo</th></tr></thead>
+          <thead><tr><th>#</th><th>Nome</th><th>Membri</th><th>Stato</th><th>Tipo</th><th>Elimina</th></tr></thead>
           <tbody id="lgBody"></tbody>
         </table>
       </div>
-      <p class="note">Tocca «Gratis/Pagante» per cambiare il tipo della lega.</p>
+      <p class="note">Tocca «Gratis/Pagante» per cambiare il tipo della lega. Il 🗑️ elimina <b>definitivamente</b> la lega e tutti i suoi dati (membri, giocatori, giornate, account email…): chiede una doppia conferma. La lega #1 è protetta 🔒.</p>
     </div>
   </div>
 
@@ -228,19 +230,25 @@ function paintOverview(d){
   b.className='btn '+(on?'green':'danger');
   b.dataset.on=on?'1':'0';
 }
+let leaguesById={};
 async function loadLeagues(){
   try{
     const { data, error } = await sb.rpc('sa_leagues');
     if(error) throw error;
-    const rows=(data||[]).map(l=>{
+    const list=data||[];
+    leaguesById={}; list.forEach(l=>leaguesById[l.id]=l);
+    const rows=list.map(l=>{
       const act=l.active?'<span class="pill a">attiva</span>':'<span class="pill i">inattiva</span>';
       const paid=l.is_paid
         ? `<button class="tog paid" onclick="togglePaid(${l.id},false)">Pagante</button>`
         : `<button class="tog" onclick="togglePaid(${l.id},true)">Gratis</button>`;
       const nm=(l.name||'—').replace(/</g,'&lt;');
-      return `<tr><td class="num">${l.id}</td><td>${nm}</td><td class="num">${l.members_active||0}/${l.members||0}</td><td>${act}</td><td>${paid}</td></tr>`;
+      const del=(l.id===1)
+        ? '<span style="color:var(--muted);font-size:15px">🔒</span>'
+        : `<button class="del" onclick="saDeleteLeague(${l.id})" aria-label="Elimina lega">🗑️</button>`;
+      return `<tr><td class="num">${l.id}</td><td>${nm}</td><td class="num">${l.members_active||0}/${l.members||0}</td><td>${act}</td><td>${paid}</td><td>${del}</td></tr>`;
     }).join('');
-    document.getElementById('lgBody').innerHTML=rows||'<tr><td colspan="5" style="color:var(--muted)">Nessuna lega.</td></tr>';
+    document.getElementById('lgBody').innerHTML=rows||'<tr><td colspan="6" style="color:var(--muted)">Nessuna lega.</td></tr>';
   }catch(e){ toast('Errore elenco leghe'); }
 }
 
@@ -262,6 +270,33 @@ async function togglePaid(id,paid){
     if(error) throw error;
     await gate();
   }catch(e){ toast('Errore'); }
+}
+async function saDeleteLeague(id){
+  if(id===1){ toast('La lega principale non è eliminabile'); return; }
+  const l=leaguesById[id]||{}; const name=l.name||('#'+id);
+  // 1° conferma: avviso forte
+  if(!confirm('⚠️ ELIMINARE DEFINITIVAMENTE la lega «'+name+'» (#'+id+')?\n\n'+
+    'Verranno cancellati PER SEMPRE e senza recupero:\n'+
+    '• giocatori, giornate, voti, formazioni, classifiche\n'+
+    '• sondaggi, notifiche e impostazioni della lega\n'+
+    '• gli ACCOUNT EMAIL di tutti i membri\n\n'+
+    'Questa azione NON è reversibile.')) return;
+  // 2° conferma: scrivi il nome esatto (anti-tocco accidentale)
+  const typed=prompt('Per confermare, scrivi il nome ESATTO della lega:\n\n«'+name+'»');
+  if(typed===null) return;
+  if((typed||'').trim()!==String(name).trim()){ toast('Il nome non combacia. Eliminazione annullata.'); return; }
+  try{
+    const { error } = await sb.rpc('sa_delete_league',{ p_league:id });
+    if(error) throw error;
+    toast('Lega «'+name+'» eliminata ✅');
+    await gate();
+  }catch(e){
+    const m=(e&&e.message)||String(e);
+    if(m.includes('not_superadmin')) toast('Non autorizzato');
+    else if(m.includes('cannot_delete_primary_league')) toast('La lega principale non è eliminabile');
+    else if(m.includes('cannot_delete_own_league')) toast('Non puoi eliminare la lega di cui fai parte');
+    else toast('Errore: '+m);
+  }
 }
 async function saveEconomics(){
   const c=document.getElementById('inCost').value.replace(',','.');

@@ -644,13 +644,13 @@ BACHECA = {
 }
 BACHECA_SQL = {
     "file": "bacheca.sql — GIA' ESEGUITO. Additivo/idempotente: NON tocca tabelle/trigger/funzioni esistenti. Si puo' rilanciare.",
-    "rpc_pubbliche": "get_player_card(p_player_id bigint)->jsonb ; get_team_card(p_manager_id uuid)->jsonb. Entrambe security definer, isolate per my_league(). get_player_card risolve owner_id e include il lato manager della stessa persona + 'next' (prossimo traguardo per la Home).",
+    "rpc_pubbliche": "get_player_card(p_player_id bigint)->jsonb ; get_team_card(p_manager_id uuid)->jsonb. Entrambe security definer, isolate per my_league(). get_player_card risolve owner_id e include il lato manager della stessa persona + 'next' (prossimo traguardo, ora usato in Home E nel banner delle schede stats, vedi SESSIONE_RITOCCHI_38). RPC intatte: nessuna modifica SQL in questa sessione.",
     "helper": "_badge_tier(qty,thresholds[]), _season_rank_history(p_season), _manager_season_facts(), _player_facts(), _next_milestone_player(...), _next_milestone_manager(...).",
     "casi_limite": "inizio stagione (titoli assenti), solo-manager (solo card manager), gk rotazione (no Saracinesca), parita' medie (ordine per id), no MVP, persona senza nulla (pavimento). played_md/leader_days contano SOLO le giornate effettivamente schierate (chi non schiera non risulta 'in meta' alta'/'leader').",
     "trappole_sql_imparate": "league_id e' BIGINT. NON mettere window function (lag) dentro un'aggregata (max): separare in CTE (errore 'aggregate function calls cannot contain window function calls'). _player_facts: presenze con la stessa guardia di get_player_stats (kickoff-1h o closed); voto_season da votes della stagione.",
 }
 BACHECA_CLIENT = {
-    "render_condiviso": "bachecaHTML(card,{includeManager}) + badgeDesc(key,val) (frase chiara sotto ogni traguardo, es. Scalatore->'Balzo record: +3 posizioni in una giornata'). MEDALS=['','🥉','🥈','🥇','💎'] per gradino. loadPlayerCard()/loadTeamCard() chiamano le RPC.",
+    "render_condiviso": "bachecaHTML(card,{includeManager}) + badgeDesc(key,val) (frase chiara sotto ogni traguardo, es. Scalatore->'Balzo record: +3 posizioni in una giornata'). MEDALS=['','🥉','🥈','🥇','💎'] per gradino. loadPlayerCard()/loadTeamCard() chiamano le RPC. AGGIORNATO (SESSIONE_RITOCCHI_38): la scheda GIOCATORE ora passa includeManager:false (niente piu' 'Da manager' li, e' un doppione della scheda squadra); i Titoli sono resi come righe .bch-badge (niente piu' chip .bch-chip); il banner headline ora mostra anche il prossimo traguardo (nextIcon()).",
     "mercato": "tap card -> apre PAGINA bacheca. Le stat esistenti (#statGrid: Presenze/Gol/Assist + Voto medio admin) restano INVARIATE; bacheca AGGIUNTA sotto (#statBacheca). Solo targhe conquistate. Riga 👔 in fondo.",
     "home": "DUE card separate SOTTO la Classifica: #homeBcardPlayer (solo se is_player e myPlayer()) e #homeBcardMgr (per TUTTI, anche soli-manager). renderHomeBcards(force) con throttle 20s; refresh forzato dopo doCloseMatchday. Pagellone automatico full-screen resta indipendente e in cima come prima.",
     "classifica_generale": "lbRowHTML -> onclick openTeamCard(manager_id) (scheda squadra). Vista DI GIORNATA invariata (tap->formazione via openTeamLineup).",
@@ -889,7 +889,7 @@ RIFINITURE_SCHEDE = {
 
 PAGELLONE_ESTESO = {
     "scena_leaders": "nuova scena 'leaders' (I migliori di giornata): piu' gol (Bomber ⚽), piu' assist (Assist-man 🎯), muro (🧤 meno gol presi tra chi schierato in porta, slot g1). Calcolo in loadRecapExtra -> ex.leaders={bomber,assistman,wall} dedup per player_id. In buildRecapCards dopo topflop; PAG_DUR.leaders=5200. CSS .lead-*.",
-    "verdetto_podio": "scena 'winner' ora con 2º e 3º di giornata (🥈🥉) + ultimo rinominato 'Fanalino di coda' (🪶, era 'Cucchiaio di legno'). ex.mdPodium (top3) + ex.mdLast da get_standings_md. Guardia: niente fanalino se = vincitore. CSS .vd-*. NB: il campo dato RPC resta d.cucchiaio, cambiata solo l'etichetta UI.",
+    "verdetto_podio": "scena 'winner' ora con 2º e 3º di giornata (🥈🥉) + ultimo rinominato 'Fanalino di coda' (🙅🏻‍♂️ dalla sessione 39, era 🪶 e prima 'Cucchiaio di legno'). ex.mdPodium (top3) + ex.mdLast da get_standings_md. Guardia: niente fanalino se = vincitore. CSS .vd-*. NB: il campo dato RPC resta d.cucchiaio, cambiata solo l'etichetta UI.",
     "fix_classifica": "BUG: scena 'standings' non era in PAG_DUR -> dur=0 -> barra riempita in 0.4s ma recapNext() mai chiamato -> pagellone bloccato. FIX: aggiunto standings:5600 (animazione lbAnimate ~1.8s, poi avanza a 'share').",
     "carta_png_share": "drawAvatar ora mantiene l'aspetto (contain, niente piu' schiacciato). Layout righe: simbolo a SINISTRA (🏆/⭐/👟), testo al centro, immagine a DESTRA = logo squadra nella riga vincitore (drawLogo+logoBlob dal bucket 'loghi' come blob, no tainting), avatar nelle righe giocatore. Logo vincitore via winnerLogoName(w) (manager_id, fallback team_name su standings->teamLogoBy).",
 }
@@ -913,3 +913,80 @@ FORMAZIONE_GIORNATA_PAGINA = {
 
 FILE_TOCCATI_SESSIONE_37 = ["index.html (solo questo)"]
 DEPLOY_SESSIONE_37 = "Scarica index.html -> carica su GitHub come index.html -> Vercel pubblica. Niente SQL, niente PNG, notify.ts invariato. Chiavi gia' dentro."
+
+# SESSIONE RITOCCHI ESTETICI (mercato / formazioni / bacheca) — solo index.html, RPC intatte
+SESSIONE_RITOCCHI_38 = {
+    "scope": "Solo ritocchi di render lato client. Niente SQL, notify.ts invariato, chiavi gia' dentro. I valori puramente visivi (px avatar, altezza campo, coordinate MODULES, padding, posizioni targhette) NON sono qui: cambiano spesso, si leggono dal sorgente.",
+    "banner_prossimo_traguardo": "bachecaHTML: il banner .bch-head e' a 2 colonne. Sinistra = simbolo attuale (headline). Destra = 'Prossimo' con icona + etichetta + barra progresso now/tot, usando card.next (prima sfruttato SOLO in Home). Nuova funzione nextIcon(next): next.icon se presente, altrimenti mappa per key/label (cecchino->🎯, profeta->🔮, rifinitore->🅰️, ...), fallback 🎯. Se card.next manca -> classe .solo (simbolo a tutta larghezza). I due occhielli 'Il tuo simbolo'/'Prossimo' uniformati e allineati sulla stessa riga (colonne justify-content:flex-start).",
+    "da_manager_tolto_dal_giocatore": "openPlayerStats ora chiama bachecaHTML(card,{includeManager:false}) (era true). I badge manager non compaiono piu' nella scheda GIOCATORE (doppione: ci sono gia' nella scheda SQUADRA come titoli/traguardi del manager). La RPC restituisce ancora card.manager, semplicemente non reso. .bch-mgr/.bch-chip restano in codice ma inutilizzati.",
+    "titoli_come_righe": "La sezione Titoli non usa piu' i chip .bch-chip ma le righe .bch-badge (come i Traguardi): medaglia + nome + sottotitolo 'N° · Stagione N'. Medaglia: 🥇 titolo, 🥈/🥉 podio.",
+    "andamento_voti_no_box": ".vtrend de-boxato (background/border/box-shadow:none, padding:0): restano titolo + grafico SVG sullo sfondo.",
+    "card_infortunato": "Prima .pcard-fc.absent{opacity:.45} smorzava TUTTA la card (targhette incluse). Ora si oscura SOLO l'SVG (.pcard-fc.absent svg{opacity:.5;filter:saturate(.8)}): targhette in primo piano, 🚑 Infortunato (.fc-tag.red) in risalto (rosso acceso + alone). 'absent' assegnata da dim in renderMarket (infortunato OPPURE non-presente a giornata aperta).",
+    "box_stats_squadra_centratura": "teamStatsGridHTML: posizione resa N<span class='deg'>°</span>; .stat-box .v e' inline-block;position:relative e .deg e' position:absolute;left:100% (apice FUORI dal flusso). Cosi' la CIFRA resta centrata e allineata con i numeri degli altri box (il '°' non la sposta).",
+    "targhette_mercato_dentro_scudo": "Targhette = overlay .fc-top DENTRO lo scudo (appuntito in cima: fascia larga ~13-16% dell'altezza). Testo SENZA box. Avatar SVG abbassato (image y=150 h=320, clip y=150) per liberare spazio in alto; colonna ruolo/logo/crediti ribilanciata. Valori esatti nel sorgente.",
+}
+
+FILE_TOCCATI_SESSIONE_38 = ["index.html (solo questo)"]
+DEPLOY_SESSIONE_38 = "Scarica index.html -> carica su GitHub come index.html -> Vercel pubblica. Niente SQL, notify.ts invariato, chiavi gia' dentro."
+
+# ============================================================================
+# SESSIONE 39 — VICE-ADMIN + redesign login/email + bacheca titoli +
+#               notifiche riscritte + rifiniture (2026-07-05)
+# Consegnati: vice_admin.sql (ESEGUITO), notify.ts (ri-deploy dashboard),
+# index.html. NB: a meta' sessione il file di lavoro aveva perso 2 modifiche
+# vecchie (redesign welcome + grafico voti da 1 presenza): RE-INCLUSE.
+# ============================================================================
+SESSIONE_39_VICE_ADMIN = {
+    "decisioni": "Piu' vici per lega; il vice fa SOLO partite e giornate (non le regole); reset giornata INCLUSO; vede la password d'invito. Nominare/rimuovere vice = SOLO proprietario; un vice non puo' mai scavalcare il proprietario.",
+    "sql_tabella": "vice_admins(league_id, user_id, added_by, created_at, PK(league_id,user_id)). RLS on, policy va_read (i membri leggono). Scritture solo via funzioni security definer.",
+    "sql_is_operator": "is_operator() = proprietario (leagues.admin_id=auth.uid()) OPPURE vice della propria lega. is_admin() INVARIATA (= solo proprietario).",
+    "sql_regate": "Operazioni di GIORNATA passate da is_admin() a is_operator(): policy match_stats 'stats admin', matchday_players 'mp write', matchdays 'md admin', extra_voters 'ev_write', e funzione reset_matchday. REGOLE (set_gk_mode/set_presence_mode/set_league_schedule/set_credit_mode), MANUTENZIONE (app_state), LISTONE (players) restano su is_admin().",
+    "sql_password": "get_league_admin_info() ora usa is_operator() -> il vice vede link+password d'invito.",
+    "sql_nomina": "set_vice_admin(p_user) / remove_vice_admin(p_user): SOLO proprietario (guardia admin_id=auth.uid()); valida target membro della lega e non proprietario; on conflict do nothing.",
+    "sql_letture": "get_my_role() -> (is_owner,is_vice,can_operate). list_league_members() -> membri con flag is_vice/is_owner.",
+    "client": "Global opRole={is_owner,is_vice,can_operate} + canOp()=opRole.can_operate||profile.is_admin (proprietario SEMPRE operatore, anche se la RPC fallisce). Popolato da get_my_role() dentro loadProfile() (loadMyRole()).",
+    "client_gate_giornata": "canOp() gata: adminCard(Bonus/Malus)+openLiveStats, mdCard(Giornata), presCard(Chi gioca, +!presenceSelf), voterCard(Voto soli-manager), renderLiveOpenBtn(apri giornata), auto-chiusura client, adminRow(Area amministratore), voto sempre concesso.",
+    "client_solo_proprietario": "profile.is_admin gata: gkCard(Modalita' portiere), presModeCard(Presenze modalita'), seasonCard(Stagione), manageCard(Listone), creditCard(Sondaggio valori), maintCard(Manutenzione), viceCard(nuova). gkCard/presModeCard/seasonCard ora hanno id e sono NASCOSTI ai non-proprietari.",
+    "client_card_vice": "Pagina Lega, solo proprietario. renderVices() usa list_league_members() -> membri come chip; toggleVice(uid,isVice) chiama set_vice_admin/remove_vice_admin.",
+    "notify": "notify.ts: invio push immediato accetta anche il VICE: dopo il check prof.is_admin, se falso controlla vice_admins per (league_id,user_id). Cosi' apertura/chiusura MANUALE del vice manda la push (con auto le push partono gia' lato server).",
+}
+
+SESSIONE_39_NOTIFICHE_TESTI = {
+    "1_apertura_presenze": "titolo '{Giornata}: Sondaggio aperto! Vota la presenza ⚽' / 'Fai sapere se sarai presente nella prossima giornata.'",
+    "2_apertura_admin": "titolo '{Giornata} aperta! ⚽' / 'Schiera la tua formazione prima del fischio d\\'inizio.' (INVARIATA)",
+    "3_presenze_chiuse": "titolo '{Giornata}: Presenze chiuse. Schiera ora la tua formazione! 📋' / 'Scegli i tuoi 5 campioni!'",
+    "4_prom_presenze_2h": "titolo '{Giornata}: Vota la presenza! ⚽' / 'Il sondaggio presenze chiude tra 2h. Segna la presenza!'",
+    "5_prom_formazioni_8h": "titolo '{Giornata}: Schiera la formazione! 📋' / 'Mancano 8h alla chiusura delle formazioni. Schiera ora i tuoi campioni!'",
+    "6_ultima_ora_1h": "titolo '{Giornata}: ⏰ Ultima ora per le formazioni' / 'Manca 1h alla chiusura delle formazioni. Schierala subito!'",
+    "7_chiusa": "titolo '{Giornata} chiusa 🏁' / 'Scopri com\\'e' andata la tua squadra e la classifica.' (INVARIATA)",
+    "NB": "I testi di apertura/chiusura MANUALE vivono anche in index.html (pushNotify) e vanno tenuti allineati.",
+}
+
+SESSIONE_39_WELCOME_GATE = {
+    "welcome": "Tre blocchi: .wc-top (logo+FantaCalcetto+'IL TUO CAMPIONATO'), .wc-mid (h1+sottotitolo), .wc-actions (pulsanti+Accedi). #welcome{display:flex;flex-direction:column} e .wc-center{flex:1;min-height:0;justify-content:flex-start} -> riempie lo schermo affidabile (le altezze %/dvh non si calcolano bene su iPhone; min-height:0 toglie l'overshoot che rendeva scrollabile la pagina). .wc-mid{margin-top:36px} avvicina il claim al brand; .wc-actions{margin-top:auto} spinge i pulsanti in fondo. h1 'Il fanta del tuo calcetto' (24px) e sottotitolo (13.5px) su UNA riga ciascuno, niente <br>.",
+    "gate_email": "Due zone: .gate-top (brand; riga .gate-bar con '‹ Indietro' a sx e PILLOLA a dx sulla stessa riga; occhiello 'Accedi' + h1 'Entra con la tua email' + descrizione) e .gate-bottom (input email + 'Inviami il codice →'). #gate{display:flex;flex-direction:column} + .gate-center{flex:1;min-height:0;justify-content:space-between}. CREA e ENTRA sono la STESSA pagina: cambia solo la pillola (testo in showGate).",
+    "pillola": ".wc-ctx piu' visibile (bg rgba(63,139,255,.22), bordo rgba(127,176,255,.55), testo #dbe8ff, ombra tenue). Create: '➕ Stai creando una nuova lega'; join: '🔑 Stai entrando in una lega'.",
+    "descrizione_email": ".gate-desc: 'Inserisci la tua email per accedere.' + a capo 'Nessuna password richiesta.'",
+}
+
+SESSIONE_39_BACHECA_TITOLI = {
+    "layout": "Righe Titoli (.bch-badge): occhiello stagione .bb-eye (es. 'Stagione 1', con eventuale posizione podio) SOPRA il nome; sottotitolo = spiegazione (come i Traguardi).",
+    "titleDesc": "Nuova titleDesc(key) (per CHIAVE, non label), criteri reali get_player_card:",
+    "pallone": "'Pallone d\\'oro' -> 'Miglior media voto della stagione' (1° per VOTO MEDIO assoluto; gate presenze >=30% giornate chiuse / min 4).",
+    "reparto": "re_att 'Re dell\\'attacco' -> '...tra gli attaccanti'; diga 'Diga' (DIF) -> '...tra i difensori'; saracinesca (POR, solo gk fisso) -> '...tra i portieri'. Tutti per VOTO MEDIO di reparto.",
+    "podio": "podio_att/dif/por 'Sul podio · ...' -> 'Tra i migliori attaccanti/difensori/portieri della stagione'.",
+    "gol_assist": "capocannoniere -> 'Piu' gol nella stagione'; mago_assist 'Mago degli assist' -> 'Piu' assist nella stagione'.",
+    "traguardi": "I Traguardi (player e manager) restano coperti da badgeDesc (invariata).",
+}
+
+SESSIONE_39_DEFAULT_E_RIFINITURE = {
+    "default_wizard": "setupRules: apertura AUTOMATICA (open:'auto', il proprietario sceglie giorno/ora) e presenze GIOCATORI (pres:'players'). Lato DB leagues.presence_self default TRUE.",
+    "grafico_voti_1_presenza": "Visibile DA 1 presenza (gate if(!pts.length)return; con 1 punto X=padL a sinistra, come primo voto normale; media tratteggiata ci passa).",
+    "impostazioni_tendine_no_box": "Gli accordion admin restano (tap per aprire) ma tolto il .set-card contenitore dentro .acc-body (contenuto diretto; .acc.open>.acc-body{padding:12px 6px 2px}).",
+    "logout": "'Esci dall\\'account' spostato in FONDO al menu Impostazioni (#setMenu.on flex column + logout margin-top:auto) e ora CHIEDE CONFERMA. Le altre azioni distruttive avevano gia' conferma.",
+    "fanalino_emoji": "Fanalino di coda: 🪶 -> 🙅🏻‍♂️ (entrambe le occorrenze pag-spoon).",
+    "pagellone_maiuscole": "'Pagellone di giornata' (g minuscola); 'Voti, bonus e pagelle di tutti' (V maiuscola).",
+}
+
+FILE_TOCCATI_SESSIONE_39 = ["vice_admin.sql (nuovo, ESEGUITO)", "notify.ts (push vice + testi gia' riscritti)", "index.html"]
+DEPLOY_SESSIONE_39 = "vice_admin.sql PRIMA (fatto) -> notify.ts dalla dashboard Edge Functions -> index.html su GitHub. Chiavi gia' dentro index.html (nessun re-incolla se si parte dai file consegnati)."

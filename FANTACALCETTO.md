@@ -1612,3 +1612,93 @@ Avatar e Logo squadra ora mostrano **solo la scelta attuale** (miniatura `render
 ### 37.7 Deploy
 
 Solo `index.html`. Scarica → carica su GitHub come `index.html` → Vercel pubblica. Niente SQL, niente PNG, `notify.ts` invariato.
+
+## 38. Sessione ritocchi estetici (mercato · formazioni · bacheca)
+
+Solo `index.html`. Niente SQL, `notify.ts` invariato. Le RPC `get_player_card`/`get_team_card` sono **intatte**: cambia solo il *render* lato client. (I valori puramente visivi — px avatar, altezza campo, coordinate `MODULES`, padding, posizioni targhette — **non** sono elencati qui: cambiano spesso, si leggono dal sorgente.)
+
+### 38.1 Bacheca — banner headline a due colonne + prossimo traguardo nelle stats
+`bachecaHTML` ora usa `card.next` (il **prossimo traguardo**, prima sfruttato **solo in Home**) anche nelle schede stats giocatore/squadra. Il banner `.bch-head` è diviso in due: a sinistra **il simbolo attuale** (`headline`: icona + testo + sub), a destra **"Prossimo"** con icona, etichetta e **barra di progresso** `now/tot`. Nuova funzione **`nextIcon(next)`**: usa `next.icon` se presente, altrimenti mappa per `key`/`label` (cecchino→🎯, profeta→🔮, rifinitore→🅰️, ecc.), fallback 🎯. Se `card.next` è assente → classe `.solo` (simbolo a tutta larghezza). I due occhielli **"Il tuo simbolo" / "Prossimo"** sono **uniformati** (stesso formato) e allineati sulla stessa riga (colonne `justify-content:flex-start`).
+
+### 38.2 "Da manager" tolto dalla scheda giocatore
+`openPlayerStats` ora chiama `bachecaHTML(card,{includeManager:false})` (era `true`): i badge manager **non** compaiono più nella scheda **giocatore** (erano un doppione — stanno già nella scheda **squadra**, come titoli/traguardi propri del manager). La RPC continua a restituire `card.manager`, semplicemente non viene reso lì. Il blocco `.bch-mgr`/`.bch-chip` resta in codice ma di fatto **inutilizzato**.
+
+### 38.3 Titoli come righe (niente chip-scatola)
+La sezione **Titoli** non usa più i chip `.bch-chip` (pillole con tinta) ma le stesse **righe** dei Traguardi (`.bch-badge`: medaglia + nome + sottotitolo «N° · Stagione N»). Medaglia per posizione: 🥇 titolo, 🥈/🥉 podio. `.bch-titles`/`.bch-chip` restano in CSS ma inutilizzati.
+
+### 38.4 Andamento voti senza riquadro
+`.vtrend` de-boxato (`background/border/box-shadow:none`, `padding:0`): restano **titolo + grafico SVG** appoggiati sullo sfondo, come le altre sezioni.
+
+### 38.5 Card infortunato — oscura solo l'illustrazione, targhetta in risalto
+Prima `.pcard-fc.absent{opacity:.45}` smorzava **tutta** la card (targhette incluse). Ora si oscura **solo l'SVG** (`.pcard-fc.absent svg{opacity:.5;filter:saturate(.8)}`): le targhette restano in primo piano e la **🚑 Infortunato** (`.fc-tag.red`) risalta (rosso acceso + alone). Vale anche per i non-presenti a giornata aperta (stessa classe `absent`, assegnata da `dim` in `renderMarket`).
+
+### 38.6 Box stats squadra — cifra centrata anche col "°"
+In `teamStatsGridHTML` la posizione è resa `N<span class="deg">°</span>`; `.stat-box .v` è `inline-block;position:relative` e `.deg` è in `position:absolute;left:100%` (apice **fuori dal flusso**). Così è la **cifra** a restare centrata e allineata con i numeri degli altri box: il "°" non la sposta più.
+
+### 38.7 Targhette mercato dentro lo scudo (riassunto visivo)
+Le targhette (`👑 Capocannoniere`/`🅰️ Assist-man`/`🚑 Infortunato` a sinistra, `Tu` a destra) sono un overlay `.fc-top` **dentro** la sagoma della card (lo scudo è appuntito in cima: la fascia larga inizia ~13–16% dell'altezza). Testo **senza box**. L'avatar nell'SVG è stato **abbassato** (`<image>` a `y=150 h=320`, clip a `y=150`) per liberare spazio in alto; colonna ruolo/logo/crediti ribilanciata. (Valori esatti nel sorgente.)
+
+### 38.8 Deploy
+Solo `index.html`. Niente SQL, `notify.ts` invariato, chiavi già dentro.
+
+## 39. Sessione — VICE-ADMIN + redesign login/email + bacheca titoli + notifiche riscritte + rifiniture
+
+Sessione ampia. Consegnati: `vice_admin.sql` (eseguito), `notify.ts` (ri-deploy dalla dashboard Edge Functions) e `index.html`. **Nota di processo:** a metà sessione il file di lavoro aveva perso due modifiche vecchie (redesign welcome + grafico voti da 1 presenza); sono state **re-incluse**. L'`index.html` corrente contiene TUTTO quanto sotto.
+
+### 39.1 VICE-ADMIN ("operatore di giornata") — IMPLEMENTATO
+Prima solo progettato, ora attivo. Decisioni: **più vici per lega**; il vice fa **solo partite e giornate** (non le regole); **reset giornata incluso**; **vede la password d'invito**. Nominare/rimuovere un vice è **solo del proprietario**; un vice non può mai scavalcare il proprietario.
+
+**SQL (`vice_admin.sql`, già eseguito):**
+- `vice_admins(league_id, user_id, added_by, created_at, PK(league_id,user_id))`, RLS on, policy `va_read` (i membri leggono); scritture solo via funzioni security definer.
+- `is_operator()` = proprietario (`leagues.admin_id=auth.uid()`) **OPPURE** vice della propria lega. `is_admin()` resta = solo proprietario (invariata).
+- Ri-gate da `is_admin()` a `is_operator()` delle **operazioni di giornata**: policy `match_stats "stats admin"`, `matchday_players "mp write"`, `matchdays "md admin"`, `extra_voters "ev_write"`, e funzione `reset_matchday`. Le **regole** (`set_gk_mode/set_presence_mode/set_league_schedule/set_credit_mode`), la **manutenzione** (`app_state`) e il **listone** (`players`) restano su `is_admin()`.
+- `get_league_admin_info()` ora usa `is_operator()` → il vice vede link+password d'invito.
+- `set_vice_admin(p_user)` / `remove_vice_admin(p_user)`: **solo proprietario**; valida target membro della lega e non proprietario; `on conflict do nothing`.
+- Letture: `get_my_role()` → `(is_owner, is_vice, can_operate)`; `list_league_members()` → membri con flag `is_vice`/`is_owner`.
+- `alter table leagues alter column presence_self set default true` (vedi 39.5).
+
+**Client (`index.html`):**
+- Global `opRole={is_owner,is_vice,can_operate}` + `canOp()` = `opRole.can_operate || profile.is_admin` (il proprietario è **sempre** operatore, anche se la RPC fallisce). Popolato da `get_my_role()` dentro `loadProfile()` (`loadMyRole()`).
+- Azioni/UI di **giornata** gated su `canOp()` (non più `profile.is_admin`): pannello Bonus/Malus (`adminCard`, `openLiveStats`), card Giornata (`mdCard`), Chi gioca (`presCard` + `!presenceSelf`), Voto soli-manager (`voterCard`), pulsante apri giornata (`renderLiveOpenBtn`), auto-chiusura client, riga "Area amministratore" (`adminRow`), voto sempre concesso.
+- UI **solo proprietario** su `profile.is_admin`: Modalità portiere (`gkCard`), Presenze modalità (`presModeCard`), Stagione (`seasonCard`), Gestione giocatori (`manageCard`), Sondaggio valori (`creditCard`), Manutenzione (`maintCard`), + nuova card **Vice-admin** (`viceCard`). `gkCard`/`presModeCard`/`seasonCard` hanno ora un id e sono **nascosti ai non-proprietari**.
+- Card **Vice-admin** (pagina Lega, solo proprietario): `renderVices()` usa `list_league_members()` e mostra i membri come chip; `toggleVice(uid,isVice)` chiama `set_vice_admin`/`remove_vice_admin`.
+
+**`notify.ts`:** l'invio push immediato (ex "solo admin") accetta anche il **vice**: dopo il check `prof.is_admin`, se falso controlla `vice_admins` per `(league_id,user_id)`. Così l'apertura/chiusura **manuale** di un vice manda comunque la push (con apertura/chiusura **automatica** le push partono già lato server).
+
+### 39.2 Notifiche push — testi riscritti (`notify.ts`)
+`{Giornata}` = label dinamica.
+1. Apertura mod. presenze → `{Giornata}: Sondaggio aperto! Vota la presenza ⚽` / "Fai sapere se sarai presente nella prossima giornata."
+2. Apertura mod. admin → `{Giornata} aperta! ⚽` / "Schiera la tua formazione prima del fischio d'inizio." (invariata)
+3. Presenze chiuse → `{Giornata}: Presenze chiuse. Schiera ora la tua formazione! 📋` / "Scegli i tuoi 5 campioni!"
+4. Promemoria presenze 2h → `{Giornata}: Vota la presenza! ⚽` / "Il sondaggio presenze chiude tra 2h. Segna la presenza!"
+5. Promemoria formazioni 8h → `{Giornata}: Schiera la formazione! 📋` / "Mancano 8h alla chiusura delle formazioni. Schiera ora i tuoi campioni!"
+6. Ultima ora 1h → `{Giornata}: ⏰ Ultima ora per le formazioni` / "Manca 1h alla chiusura delle formazioni. Schierala subito!"
+7. Giornata chiusa → `{Giornata} chiusa 🏁` / "Scopri com'è andata la tua squadra e la classifica." (invariata)
+NB: i testi di apertura/chiusura **manuale** vivono anche in `index.html` (pushNotify) e vanno tenuti allineati.
+
+### 39.3 Welcome (`#welcome`) e pagina email (`#gate`) — redesign
+- **Welcome:** tre blocchi — `.wc-top` (logo + FantaCalcetto + "IL TUO CAMPIONATO"), `.wc-mid` (h1 + sottotitolo), `.wc-actions` (pulsanti + Accedi). `#welcome{display:flex;flex-direction:column}` e `.wc-center{flex:1;min-height:0;justify-content:flex-start}` → riempie lo schermo in modo affidabile (le altezze in `%`/`dvh` non si calcolano bene su iPhone; `min-height:0` toglie l'overshoot che rendeva la pagina scrollabile). `.wc-mid{margin-top:36px}` avvicina il claim al brand; `.wc-actions{margin-top:auto}` spinge i pulsanti in fondo. Titolo e sottotitolo su **una riga** ciascuno (h1 24px, sub 13.5px, niente `<br>`).
+- **Email (`#gate`):** due zone — `.gate-top` (brand; riga `.gate-bar` con "‹ Indietro" a sx e **pillola** a dx sulla stessa riga; occhiello "Accedi" + h1 "Entra con la tua email" + descrizione) e `.gate-bottom` (input email + "Inviami il codice →"). `#gate{display:flex;flex-direction:column}` + `.gate-center{flex:1;min-height:0;justify-content:space-between}`. **Crea e Entra sono la STESSA pagina**: cambia solo la pillola (testo in `showGate`).
+- **Pillola** (`.wc-ctx`): più visibile (bg `rgba(63,139,255,.22)`, bordo `rgba(127,176,255,.55)`, testo `#dbe8ff`, ombra tenue). Testo create: **"➕ Stai creando una nuova lega"**; join: "🔑 Stai entrando in una lega".
+- **Descrizione** email: "Inserisci la tua email per accedere." + a capo "Nessuna password richiesta." (`.gate-desc`).
+
+### 39.4 Bacheca — Titoli: indice stagione sopra + spiegazione sotto
+Righe Titoli (`.bch-badge`) con **occhiello stagione** (`.bb-eye`, es. "Stagione 1", con eventuale posizione podio) **sopra** il nome, e come sottotitolo una **spiegazione**. Nuova `titleDesc(key)` (per **chiave**), coi criteri reali di `get_player_card`:
+- `pallone` "Pallone d'oro" → "Miglior media voto della stagione" (1° per **voto medio** assoluto; gate presenze ≥30% giornate chiuse / min 4)
+- `re_att` "Re dell'attacco" → "…tra gli attaccanti"; `diga` "Diga" (DIF) → "…tra i difensori"; `saracinesca` (POR, solo gk fisso) → "…tra i portieri"
+- `podio_att/dif/por` "Sul podio · …" → "Tra i migliori attaccanti/difensori/portieri della stagione"
+- `capocannoniere` → "Più gol nella stagione"; `mago_assist` "Mago degli assist" → "Più assist nella stagione"
+I **Traguardi** (player e manager) restano coperti da `badgeDesc`.
+
+### 39.5 Default nuove leghe + grafico voti + tendine impostazioni + conferme
+- **Default wizard** (`setupRules`): apertura = **automatica** (`open:'auto'`; il proprietario sceglie giorno/ora) e presenze = **giocatori** (`pres:'players'`). Lato DB `leagues.presence_self` default **true**.
+- **Grafico andamento voti:** visibile **da 1 presenza** (gate `if(!pts.length)return`; con 1 punto `X=padL`, a sinistra come primo voto, la media tratteggiata ci passa).
+- **Impostazioni admin a tendina SENZA riquadro interno:** gli accordion restano (tap per aprire) ma tolto il `.set-card` dentro `.acc-body` (contenuto diretto, `.acc.open>.acc-body{padding:12px 6px 2px}`).
+- **"Esci dall'account"** in **fondo** al menu Impostazioni (`#setMenu.on` flex column + logout `margin-top:auto`) e ora **chiede conferma**. Le altre azioni distruttive (chiudi giornata/stagione, elimina giocatore, cambio modulo, salva dati partita, chiudi sondaggio) avevano già conferma.
+
+### 39.6 Rifiniture pagellone
+- Fanalino di coda: emoji **🪶 → 🙅🏻‍♂️** (entrambe le occorrenze `pag-spoon`).
+- Titolo "**Pagellone di giornata**" (g minuscola); sottotitolo "**Voti**, bonus e pagelle di tutti" (V maiuscola).
+
+### 39.7 Deploy
+`vice_admin.sql` PRIMA (fatto), poi `notify.ts` dalla dashboard Edge Functions, poi `index.html` su GitHub. Chiavi già dentro `index.html` (nessun re-incolla se si parte dai file consegnati).

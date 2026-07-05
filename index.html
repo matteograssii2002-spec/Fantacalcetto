@@ -33,8 +33,15 @@
   *::-webkit-scrollbar,html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0;background:transparent}
   .overlay,.sheet,.ls-body,.statmodal{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   body{background:radial-gradient(120% 60% at 50% -10%, rgba(63,151,255,.18), transparent 60%),radial-gradient(90% 50% at 50% 110%, rgba(63,151,255,.08), transparent 55%),var(--bg);min-height:100vh;min-height:100dvh}
-  .app{max-width:var(--maxw);margin:0 auto;min-height:100vh;min-height:100dvh;position:relative;padding-bottom:calc(74px + env(safe-area-inset-bottom))}
-  .scrollwrap{padding-bottom:0;padding-top:calc(66px + env(safe-area-inset-top))}
+  .app{max-width:var(--maxw);margin:0 auto;position:relative}
+  /* Contenuto principale come contenitore FISSO tra topbar e nav: niente scroll di documento
+     né dipendenza da 100dvh → il contenuto è sempre alla giusta altezza fin dal primo frame,
+     senza bisogno di scrollare per "assestarlo" (bug iOS status-bar translucida). */
+  .scrollwrap{position:fixed;left:0;right:0;margin:0 auto;width:100%;max-width:var(--maxw);
+    top:calc(66px + env(safe-area-inset-top));
+    bottom:calc(63px + env(safe-area-inset-bottom));
+    overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+    padding:6px 0 16px}
   .num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
 
   .overlay{position:fixed;inset:0;z-index:100;overflow-y:auto;background:radial-gradient(130% 70% at 50% 0%, rgba(63,151,255,.22), transparent 60%),var(--bg);transition:opacity .4s, transform .4s}
@@ -109,6 +116,13 @@
   .gate-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 22px}
   .gate-bar .wc-back{align-self:auto;margin:0}
   .gate-desc{color:var(--muted);font-size:14px;line-height:1.55;margin:0}
+  /* riquadro ben visibile "Stai creando / Stai entrando" per non sbagliare percorso */
+  .ctx-box{display:none;align-items:center;gap:11px;width:100%;margin:16px 0 0;padding:14px 15px;border-radius:16px;font-size:15px;line-height:1.3;box-shadow:0 8px 22px -12px rgba(0,0,0,.6)}
+  .ctx-box.show{display:flex}
+  .ctx-box .ci{font-size:22px;line-height:1;flex:none}
+  .ctx-box.create{background:rgba(63,151,255,.18);border:1.5px solid rgba(127,176,255,.65);color:#e6f0ff}
+  .ctx-box.join{background:rgba(55,201,138,.16);border:1.5px solid rgba(55,201,138,.6);color:#c9f4de}
+  .ctx-box b{font-weight:800}
   .ob-btn.ghost{background:var(--surface);color:var(--text);border:1.5px solid var(--line-strong);box-shadow:none}
   .ob-eye{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-soft);font-weight:700}
   .overlay h1{font-family:'Bricolage Grotesque';font-weight:800;font-size:31px;letter-spacing:-.03em;line-height:1;margin:10px 0 16px}
@@ -1157,11 +1171,11 @@
     <div class="ob-brand"><div class="dot"><img src="icon-512.png?v=3" alt=""></div><b>Fanta<span>Calcetto</span></b></div>
     <div class="gate-bar">
       <a class="wc-back" onclick="showWelcome()">‹ Indietro</a>
-      <span class="wc-ctx" id="gateContext" style="display:none"></span>
     </div>
     <div class="ob-eye">Accedi</div>
     <h1>Entra con la tua email</h1>
     <p class="gate-desc">Inserisci la tua email per accedere.<br>Nessuna password richiesta.</p>
+    <div class="ctx-box" id="gateContext" style="display:none"></div>
   </div>
   <div class="gate-bottom">
     <input class="ob-input" id="gateEmail" type="email" placeholder="latua@email.it" autocomplete="email">
@@ -1863,9 +1877,9 @@ function showGate(intent){
   document.getElementById('gate').classList.remove('hidden');
   const ctx=document.getElementById('gateContext');
   if(ctx){
-    if(intent==='create'){ctx.style.display='inline-flex';ctx.textContent='➕ Stai creando una nuova lega';}
-    else if(intent==='join'){ctx.style.display='inline-flex';ctx.textContent='🔑 Stai entrando in una lega';}
-    else {ctx.style.display='none';ctx.textContent='';}
+    if(intent==='create'){ ctx.className='ctx-box show create'; ctx.innerHTML='<span class="ci">➕</span><span>Stai creando una <b>nuova lega</b></span>'; }
+    else if(intent==='join'){ ctx.className='ctx-box show join'; ctx.innerHTML='<span class="ci">🔑</span><span>Stai entrando in una <b>lega esistente</b></span>'; }
+    else { ctx.className='ctx-box'; ctx.innerHTML=''; }
   }
   hideSplash();
 }
