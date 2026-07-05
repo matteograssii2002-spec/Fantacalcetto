@@ -33,14 +33,12 @@
   *::-webkit-scrollbar,html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0;background:transparent}
   .overlay,.sheet,.ls-body,.statmodal{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   body{background:radial-gradient(120% 60% at 50% -10%, rgba(63,151,255,.18), transparent 60%),radial-gradient(90% 50% at 50% 110%, rgba(63,151,255,.08), transparent 55%),var(--bg);min-height:100vh;min-height:100dvh}
-  .app{max-width:var(--maxw);margin:0 auto;position:relative}
-  /* Contenuto principale come contenitore FISSO tra topbar e nav: niente scroll di documento
-     né dipendenza da 100dvh → il contenuto è sempre alla giusta altezza fin dal primo frame,
-     senza bisogno di scrollare per "assestarlo" (bug iOS status-bar translucida). */
-  .scrollwrap{position:fixed;left:0;right:0;margin:0 auto;width:100%;max-width:var(--maxw);
-    top:calc(66px + env(safe-area-inset-top));
-    bottom:calc(63px + env(safe-area-inset-bottom));
-    overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  /* GUSCIO APP: contenitore FISSO che copre esattamente il viewport visibile (inset:0, niente
+     unità vh/dvh → nessun calcolo sbagliato su iPhone). topbar e nav sono normali elementi flex
+     (non più position:fixed): la barra inferiore è per costruzione l'ultimo elemento in basso e
+     NON può più "salire" al primo paint. Solo la zona centrale scrolla. */
+  .app{max-width:var(--maxw);margin:0 auto;position:fixed;inset:0;display:flex;flex-direction:column}
+  .scrollwrap{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
     padding:6px 0 16px}
   .num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
 
@@ -184,6 +182,12 @@
   .ob-back{flex:none;background:var(--surface);color:var(--text);border:1.5px solid var(--line-strong);border-radius:15px;padding:17px 18px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Hanken Grotesk'}
   .ob-back:active{transform:scale(.98)}
   .ob-navrow .ob-btn{margin-top:0;flex:1}
+  /* Wizard REGOLE lega: il pulsante Avanti/Salva sta SEMPRE nella stessa posizione (in fondo),
+     a prescindere da quanto testo abbia lo step. Ogni step riempie l'altezza e spinge giù il bottone. */
+  #rulesSetup .obstep{flex:1 1 auto;min-height:0}
+  #rulesSetup .obstep.on{display:flex;flex-direction:column}
+  #rulesSetup .obstep > .ob-btn:last-child,
+  #rulesSetup .obstep > .ob-navrow:last-child{margin-top:auto}
 
   /* ---- STRISCIA SQUADRA SUL CAMPO (logo + nome sopra il verde) ---- */
   .campo-team{display:flex;align-items:center;gap:10px;background:linear-gradient(160deg,#10294d,#0a1830);border:1px solid var(--line-strong);border-radius:14px;padding:10px 14px;margin-top:12px}
@@ -196,7 +200,7 @@
   .ed-row .ed-lab{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:7px;text-transform:uppercase;letter-spacing:.05em}
   .ed-sw{display:flex;flex-wrap:wrap;gap:8px}
 
-  .topbar{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:var(--maxw);z-index:40;display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 20px 13px;background:var(--bg);border-bottom:1px solid var(--line)}
+  .topbar{flex:none;position:relative;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 20px 13px;background:var(--bg);border-bottom:1px solid var(--line)}
   .brand{display:flex;align-items:center;gap:9px}
   .brand .dot{width:30px;height:30px;border-radius:9px;overflow:hidden;background:linear-gradient(135deg,var(--accent),#1c6ff2);display:grid;place-items:center;font-size:16px;box-shadow:0 6px 18px rgba(63,151,255,.3)}
   .ob-brand .dot img,.brand .dot img{width:100%;height:100%;object-fit:cover;display:block}
@@ -574,7 +578,7 @@
   .addbtn{width:100%;margin-top:12px;background:var(--surface2);border:1px dashed var(--line-strong);color:var(--accent-soft);font-weight:700;font-size:14px;padding:12px;border-radius:12px;cursor:pointer}
   .logout{width:100%;margin-top:14px;background:none;border:1px solid var(--line-strong);color:var(--muted);font-weight:600;font-size:14px;padding:12px;border-radius:12px;cursor:pointer}
 
-  .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:var(--maxw);z-index:50;padding:5px 12px calc(6px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line)}
+  .nav{flex:none;position:relative;z-index:50;padding:5px 12px calc(6px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line)}
   .nav-inner{display:flex;justify-content:space-around;align-items:flex-end;width:100%;padding:2px 4px 0}
   .nav button{flex:1;background:none;border:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;padding:4px 2px;cursor:pointer;border-radius:13px;transition:color .2s,background .2s}
   .nav button.on{color:#fff;background:none}
@@ -2212,7 +2216,6 @@ async function loadInvite(){
     const {data}=await sb.rpc('get_league_admin_info');
     if(data&&data[0]){
       card.style.display='block';
-      document.getElementById('invName').textContent=data[0].name;
       document.getElementById('invLink').value=location.origin+location.pathname+'?lega='+data[0].slug;
       document.getElementById('invPwd').value=data[0].password;
     } else card.style.display='none';
@@ -4271,7 +4274,7 @@ async function saveEditPlayer(){
   if(editDraft.id){
     ({error}=await sb.from('players').update({name:nm,role:editDraft.role,present:editDraft.present,avatar:editDraft.avatar,cost,valore}).eq('id',editDraft.id));
   }else{
-    ({error}=await sb.from('players').insert({name:nm,role:editDraft.role,present:editDraft.present,avatar:editDraft.avatar,cost,valore,owner_id:null}));
+    ({error}=await sb.from('players').insert({name:nm,role:editDraft.role,present:editDraft.present,avatar:editDraft.avatar,cost,valore,owner_id:null,league_id:profile.league_id}));
   }
   if(error){toast('Errore: '+error.message);return;}
   closeSheet(); await loadPlayers(); renderAll(); openSettings(); toast('Giocatore salvato');
