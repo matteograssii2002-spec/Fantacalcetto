@@ -44,8 +44,8 @@
     padding:6px 0 16px}
   .num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
 
-  .overlay{position:fixed;inset:0;z-index:100;overflow-y:auto;background:radial-gradient(130% 70% at 50% 0%, rgba(63,151,255,.22), transparent 60%),var(--bg);transition:opacity .4s, transform .4s}
-  .overlay.hidden{opacity:0;transform:translateY(-12px);pointer-events:none}
+  .overlay{position:fixed;inset:0;z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(130% 70% at 50% 0%, rgba(63,151,255,.22), transparent 60%),var(--bg);transition:opacity .35s}
+  .overlay.hidden{opacity:0;pointer-events:none}
 
   /* ---- SPLASH / schermata di caricamento — entrata dinamica a sequenza ---- */
   #splash{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
@@ -1712,7 +1712,7 @@ const VAPID_PUBLIC = 'BIVh1NLu5K0JVdcOrjGp_LeNc3XZRhMdIs1gAuTLCcs-rnH873A8bB-77N
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='2026.07.05 · v3';   // ⬅️ cambia a ogni deploy: così vedi subito in Impostazioni quale codice è online
+const APP_VERSION='2026.07.05 · v4';   // ⬅️ cambia a ogni deploy: così vedi subito in Impostazioni quale codice è online
 try{ console.log('FantaCalcetto build', APP_VERSION); }catch(_){}
 // se una chiamata di rete si impianta, non lasciamo l'interfaccia bloccata all'infinito
 function withTimeout(p, ms, label){
@@ -1880,11 +1880,11 @@ function showWelcome(){
   authIntent=null;
   hideSplash();
   ['gate','league','onboard'].forEach(id=>{const e=document.getElementById(id); if(e)e.classList.add('hidden');});
-  const w=document.getElementById('welcome'); if(w)w.classList.remove('hidden');
+  const w=document.getElementById('welcome'); if(w){ w.classList.remove('hidden'); w.scrollTop=0; }
 }
 function showGate(intent){
   const w=document.getElementById('welcome'); if(w)w.classList.add('hidden');
-  document.getElementById('gate').classList.remove('hidden');
+  const g=document.getElementById('gate'); g.classList.remove('hidden'); g.scrollTop=0;
   const ctx=document.getElementById('gateContext');
   if(ctx){
     if(intent==='create'){ ctx.className='ctx-box show create'; ctx.innerHTML='<span class="ci">➕</span><span>Stai creando una <b>nuova lega</b></span>'; }
@@ -2077,7 +2077,7 @@ function routeNewUser(){
 function showLeague(forceMode){
   hideSplash();
   ['welcome','gate','onboard'].forEach(id=>{const e=document.getElementById(id); if(e)e.classList.add('hidden');});
-  document.getElementById('league').classList.remove('hidden');
+  const _lg=document.getElementById('league'); _lg.classList.remove('hidden'); _lg.scrollTop=0;
   const slug=new URLSearchParams(location.search).get('lega');
   if(slug){ lgMode('join'); resolveLeagueSlug(slug); }
   else { lgMode(forceMode||'choose'); }
@@ -2977,7 +2977,7 @@ function renderMatchday(){
 
 /* ---------- ONBOARDING (wizard a più pagine) ---------- */
 function showOnboard(){
-  document.getElementById('onboard').classList.remove('hidden');
+  const _ob=document.getElementById('onboard'); _ob.classList.remove('hidden'); _ob.scrollTop=0;
   playMode=null;
   document.querySelectorAll('#obMode button').forEach(x=>x.classList.remove('on'));
   document.getElementById('obModeHint').textContent="Scegli un'opzione per continuare.";
@@ -3041,10 +3041,11 @@ document.getElementById('obBtn').onclick=async function(){
   if(isCampo&&!obAvatar){toast('Scegli un avatar'); obGo(1); return;}
   if(!pname){toast(isCampo?'Inserisci il nome del personaggio':'Inserisci il tuo nome'); obGo(1); return;}
   if(!team){toast('Inserisci il nome della squadra');return;}
-  btn.disabled=true;
+  const _label=btn.textContent;
+  btn.disabled=true; btn.textContent='Creazione…';
   try{
     // 1) crea il profilo nella lega scelta. Idempotente: se un tentativo precedente
-    //    l'aveva già creato (retry dopo un errore tardivo), non richiamiamo onboard_join.
+    //    l'aveva già creato (retry dopo un intoppo), non richiamiamo onboard_join.
     let prof = await loadProfile();
     if(!prof){
       const {error:e1}=await withTimeout(sb.rpc('onboard_join',{
@@ -3062,29 +3063,24 @@ document.getElementById('obBtn').onclick=async function(){
       prof = await loadProfile();
     }
     profile = prof;
-    await loadMyLeague();   // ora my_league() lato server = alla lega scelta: il giocatore verrà timbrato lì
-    // 2) card giocatore (solo "gioco in campo"). Idempotente: non duplicare se esiste già.
+    await loadMyLeague();   // ora my_league() lato server = alla lega scelta
+    // 2) card giocatore (solo "gioco in campo") creata LATO SERVER, sempre nella lega giusta.
+    //    Non blocca la UI: se lenta/errore, si può ricreare da Impostazioni.
     if(isCampo){
-      const {data:mine}=await sb.from('players').select('id').eq('owner_id',user.id).limit(1);
-      if(!mine || !mine.length){
-        const {error:e2}=await withTimeout(sb.from('players').insert({name:pname,role:myRole,avatar:obAvatar,present:true,cost:PRICE,owner_id:user.id}), 15000, 'player_insert');
-        if(e2){ toast('Errore giocatore: '+e2.message); return; }
-      }
+      try{ await withTimeout(sb.rpc('onboard_create_player',{p_name:pname,p_role:myRole,p_avatar:obAvatar}), 12000, 'create_player'); }
+      catch(err){ try{console.error('create_player',err);}catch(_){}; toast('Giocatore non creato: riprova da Gestione giocatori'); }
     }
-    // 3) logo squadra (aggiornamento additivo: non tocca la RPC onboard_join)
-    if(obLogo){ try{ await sb.from('profiles').update({logo:obLogo}).eq('id',user.id); }catch(_){} }
-    // 4) carica tutto e mostra l'app
-    await loadTeamLogos();
-    await loadPlayers(); await loadStandings(); await loadMatchdayData();
-    applyProfile(); renderAll();
-    await loadMaintenance();
+    // 3) logo squadra (additivo, non blocca)
+    if(obLogo){ try{ await withTimeout(sb.from('profiles').update({logo:obLogo}).eq('id',user.id), 8000, 'logo'); }catch(_){} }
+    // 4) mostra l'app usando lo STESSO percorso del riavvio (che sappiamo funzionare)
     document.getElementById('onboard').classList.add('hidden');
+    await afterLogin();
+    // le regole vengono già proposte da afterLogin (rete fc_pendingRules); ribadiamo per sicurezza
     if(justCreatedLeague){ showRulesSetup(); }
-    else { setTimeout(maybeAskPush,600); }
   }catch(err){
     toast('Errore: '+((err&&err.message)||err));
   }finally{
-    btn.disabled=false;   // il pulsante non resta MAI bloccato, qualunque cosa accada
+    btn.disabled=false; btn.textContent=_label;   // il pulsante non resta MAI bloccato
   }
 };
 
