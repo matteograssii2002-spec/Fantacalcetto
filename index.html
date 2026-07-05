@@ -157,6 +157,8 @@
   .lggrid.locked{opacity:.5;pointer-events:none}
 
   /* ---- WIZARD ONBOARDING (più pagine invece di un unico scroll) ---- */
+  /* onboarding: contenuto un po' più in basso (brand, titolo e riquadri) */
+  #onboard .ob-inner{padding-top:calc(50px + env(safe-area-inset-top))}
   .obstep{display:none}
   .obstep.on{display:block;animation:obFade .25s ease}
   @keyframes obFade{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
@@ -797,6 +799,10 @@
   .lg-res{display:block;padding:13px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-top:8px;cursor:pointer;font-weight:700;transition:border-color .15s}
   .lg-res:active{border-color:var(--accent)}
   .lg-back{display:block;text-align:center;color:var(--accent-soft);font-size:13px;cursor:pointer;margin-top:16px}
+  /* modalità "Crea una nuova lega": campi in alto, pulsanti (Crea/Indietro) ancorati in basso */
+  #lgCreate{flex-direction:column;flex:1;min-height:0}
+  #lgCreate .lg-spacer{flex:1;min-height:16px}
+  #lgCreate .lg-actions{margin-top:auto}
 
   /* ===== PAGELLONE DI FINE GIORNATA ===== */
   .pag-open-btn{width:100%;margin-top:14px;display:flex;align-items:center;gap:13px;text-align:left;
@@ -1293,7 +1299,7 @@
   <div class="ob-brand"><div class="dot"><img src="icon-512.png?v=3" alt=""></div><b>Fanta<span>Calcetto</span></b></div>
   <div class="ob-eye">La tua lega</div>
   <h1 id="lgTitle">Entra o crea<br>la tua lega</h1>
-  <p style="color:var(--muted);font-size:14px;margin-bottom:18px">Ogni gruppo ha la sua lega privata: il vostro campionato. Crea la tua oppure entra in una esistente con la password che ti ha dato l'admin.</p>
+  <p id="lgDesc" style="color:var(--muted);font-size:14px;margin-bottom:18px">Ogni gruppo ha la sua lega privata: il vostro campionato. Crea la tua oppure entra in una esistente con la password che ti ha dato l'admin.</p>
 
   <div id="lgChoose">
     <button class="ob-btn" onclick="lgMode('join')">🔑 Entra in una lega</button>
@@ -1301,12 +1307,17 @@
   </div>
 
   <div id="lgCreate" style="display:none">
-    <div class="field-lab">Nome della lega</div>
-    <input class="ob-input" id="lgName" placeholder="Es. La Fossa di Lissone" maxlength="40" autocomplete="off">
-    <div class="field-lab" style="margin-top:12px">Password (la darai ai tuoi amici)</div>
-    <input class="ob-input" id="lgNewPwd" placeholder="Scegli una password" maxlength="40" autocomplete="off">
-    <button class="ob-btn" id="lgCreateBtn">Crea la lega →</button>
-    <a class="lg-back" onclick="lgMode('choose')">← Indietro</a>
+    <div class="lg-fields">
+      <div class="field-lab">Nome della lega</div>
+      <input class="ob-input" id="lgName" placeholder="Es. La Fossa di Lissone" maxlength="40" autocomplete="off">
+      <div class="field-lab" style="margin-top:12px">Password</div>
+      <input class="ob-input" id="lgNewPwd" placeholder="Scegli una password" maxlength="40" autocomplete="off">
+    </div>
+    <div class="lg-spacer"></div>
+    <div class="lg-actions">
+      <button class="ob-btn" id="lgCreateBtn">Crea la lega →</button>
+      <button class="ob-btn ghost" type="button" style="margin-top:10px" onclick="lgMode('choose')">← Indietro</button>
+    </div>
   </div>
 
   <div id="lgJoin" style="display:none">
@@ -1891,6 +1902,12 @@ async function afterLogin(){
     await loadSeason();
     await loadPlayers(); await loadStandings(); await loadMatchdayData(); await loadPlannedPresences();
     applyProfile(); renderAll();
+    // rete di sicurezza regole lega: se ho appena creato la lega ma l'onboarding si era
+    // interrotto prima di impostare le regole, le richiedo comunque adesso (finché non le salvo).
+    try{
+      const _pend=localStorage.getItem('fc_pendingRules');
+      if(profile.is_admin && _pend && String(profile.league_id)===_pend){ justCreatedLeague=true; showRulesSetup(); }
+    }catch(_){}
     loadSchedule();          // config lega (modalità portiere) per tutti gli utenti
     loadCreditConfig();      // metodo crediti + sondaggio valori per tutti
     ensurePush();            // riaggancia le notifiche se la subscription era scaduta
@@ -2013,6 +2030,7 @@ async function saveRulesSetup(){
     await sb.rpc('set_credit_mode',{p_mode:setupRules.credit});
   }catch(e){ toast('Errore nel salvataggio delle regole'); btn.disabled=false; return; }
   btn.disabled=false; justCreatedLeague=false;
+  try{ localStorage.removeItem('fc_pendingRules'); }catch(_){}   // regole impostate: niente più promemoria
   document.getElementById('rulesSetup').classList.add('hidden');
   await loadSchedule(); renderAll();
   loadCreditConfig();
@@ -2035,8 +2053,20 @@ function showLeague(forceMode){
 function lgMode(m){
   lgStatus('');
   document.getElementById('lgChoose').style.display = m==='choose'?'block':'none';
-  document.getElementById('lgCreate').style.display = m==='create'?'block':'none';
+  document.getElementById('lgCreate').style.display = m==='create'?'flex':'none';
   document.getElementById('lgJoin').style.display   = m==='join'?'block':'none';
+  // titolo + descrizione coerenti con la scelta già fatta (crea / entra / bivio)
+  const tt=document.getElementById('lgTitle'), ds=document.getElementById('lgDesc');
+  if(m==='create'){
+    tt.innerHTML='Crea una nuova lega';
+    ds.textContent='Scegli il nome e la password della lega per fare entrare i tuoi amici.';
+  } else if(m==='join'){
+    tt.innerHTML='Entra in una lega';
+    ds.textContent='Cerca la lega e inserisci la password che ti ha dato l\'admin.';
+  } else {
+    tt.innerHTML='Entra o crea<br>la tua lega';
+    ds.textContent='Ogni gruppo ha la sua lega privata: il vostro campionato. Crea la tua oppure entra in una esistente con la password che ti ha dato l\'admin.';
+  }
   if(m==='join'){ document.getElementById('lgPwdWrap').style.display='none'; lgPick=null; }
   if(m==='create') setTimeout(()=>document.getElementById('lgName').focus(),100);
 }
@@ -2091,6 +2121,9 @@ document.getElementById('lgCreateBtn').onclick=async function(){
   if(error||!data||!data[0]){ lgStatus('Errore: '+(error?error.message:'riprova')); return; }
   pendingLeague={id:data[0].id,name:data[0].name,slug:data[0].slug,password:pwd};
   justCreatedLeague=true;
+  // rete di sicurezza: se l'onboarding si interrompe, al rientro mostriamo comunque
+  // la schermata "Le regole della tua lega" finché l'admin non la salva.
+  try{ localStorage.setItem('fc_pendingRules', String(data[0].id)); }catch(_){}
   document.getElementById('league').classList.add('hidden');
   showOnboard();
 };
@@ -2967,6 +3000,7 @@ document.querySelectorAll('#obMode button').forEach(b=>b.onclick=()=>{
   obGo(1);
 });
 document.getElementById('obBtn').onclick=async function(){
+  const btn=this;
   if(!playMode){toast('Scegli prima come vuoi giocare'); obGo(0); return;}
   if(!pendingLeague){ toast('Scegli prima una lega'); showLeague(); return; }
   const isCampo=playMode==='campo';
@@ -2975,30 +3009,51 @@ document.getElementById('obBtn').onclick=async function(){
   if(isCampo&&!obAvatar){toast('Scegli un avatar'); obGo(1); return;}
   if(!pname){toast(isCampo?'Inserisci il nome del personaggio':'Inserisci il tuo nome'); obGo(1); return;}
   if(!team){toast('Inserisci il nome della squadra');return;}
-  this.disabled=true;
-  const {error:e1}=await sb.rpc('onboard_join',{
-    p_league:pendingLeague.id, p_password:pendingLeague.password,
-    p_team:team, p_player:pname, p_role:myRole, p_avatar:isCampo?obAvatar:'', p_is_player:isCampo
-  });
-  if(e1){
-    this.disabled=false; const m=e1.message||'';
-    if(m.includes('team_taken')) toast('Nome squadra già in uso in questa lega');
-    else if(m.includes('player_taken')){ toast('Nome giocatore già in uso in questa lega'); obGo(1); }
-    else if(m.includes('password')){ toast('Password della lega errata'); showLeague(); }
-    else toast('Errore profilo: '+m);
-    return;
+  btn.disabled=true;
+  try{
+    // 1) crea il profilo nella lega scelta. Idempotente: se un tentativo precedente
+    //    l'aveva già creato (retry dopo un errore tardivo), non richiamiamo onboard_join.
+    let prof = await loadProfile();
+    if(!prof){
+      const {error:e1}=await sb.rpc('onboard_join',{
+        p_league:pendingLeague.id, p_password:pendingLeague.password,
+        p_team:team, p_player:pname, p_role:myRole, p_avatar:isCampo?obAvatar:'', p_is_player:isCampo
+      });
+      if(e1){
+        const m=e1.message||'';
+        if(m.includes('team_taken')) toast('Nome squadra già in uso in questa lega');
+        else if(m.includes('player_taken')){ toast('Nome giocatore già in uso in questa lega'); obGo(1); }
+        else if(m.includes('password')){ toast('Password della lega errata'); showLeague(); }
+        else toast('Errore profilo: '+m);
+        return;   // il finally riabilita il pulsante
+      }
+      prof = await loadProfile();
+    }
+    profile = prof;
+    await loadMyLeague();   // ora my_league() lato server = alla lega scelta: il giocatore verrà timbrato lì
+    // 2) card giocatore (solo "gioco in campo"). Idempotente: non duplicare se esiste già.
+    if(isCampo){
+      const {data:mine}=await sb.from('players').select('id').eq('owner_id',user.id).limit(1);
+      if(!mine || !mine.length){
+        const {error:e2}=await sb.from('players').insert({name:pname,role:myRole,avatar:obAvatar,present:true,cost:PRICE,owner_id:user.id});
+        if(e2){ toast('Errore giocatore: '+e2.message); return; }
+      }
+    }
+    // 3) logo squadra (aggiornamento additivo: non tocca la RPC onboard_join)
+    if(obLogo){ try{ await sb.from('profiles').update({logo:obLogo}).eq('id',user.id); }catch(_){} }
+    // 4) carica tutto e mostra l'app
+    await loadTeamLogos();
+    await loadPlayers(); await loadStandings(); await loadMatchdayData();
+    applyProfile(); renderAll();
+    await loadMaintenance();
+    document.getElementById('onboard').classList.add('hidden');
+    if(justCreatedLeague){ showRulesSetup(); }
+    else { setTimeout(maybeAskPush,600); }
+  }catch(err){
+    toast('Errore: '+((err&&err.message)||err));
+  }finally{
+    btn.disabled=false;   // il pulsante non resta MAI bloccato, qualunque cosa accada
   }
-  if(isCampo){ const {error:e2}=await sb.from('players').insert({name:pname,role:myRole,avatar:obAvatar,present:true,cost:PRICE,owner_id:user.id}); if(e2){this.disabled=false;toast('Errore giocatore: '+e2.message);return;} }
-  // salva il logo scelto (aggiornamento additivo: non tocca la RPC onboard_join)
-  if(obLogo){ try{ await sb.from('profiles').update({logo:obLogo}).eq('id',user.id); }catch(_){} }
-  profile=await loadProfile();
-  await loadMyLeague();
-  await loadTeamLogos();
-  document.getElementById('onboard').classList.add('hidden');
-  await loadPlayers(); await loadStandings(); await loadMatchdayData(); applyProfile(); renderAll();
-  await loadMaintenance();
-  if(justCreatedLeague){ showRulesSetup(); }
-  else { setTimeout(maybeAskPush,600); }
 };
 
 /* ---------- NAV / RENDER ---------- */
