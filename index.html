@@ -93,10 +93,11 @@
   /* ---- WELCOME (schermata iniziale a 3 percorsi: crea / entra / accedi) ---- */
   /* tre zone: brand in alto · claim vicino sotto · azioni in fondo (thumb zone) */
   #welcome{display:flex;flex-direction:column}
-  .wc-center{flex:1;min-height:0;justify-content:flex-start}
+  .wc-center{flex:1;min-height:0;justify-content:flex-start;padding-bottom:200px}
   .wc-top{margin-top:24px}
   .wc-mid{margin-top:36px}
-  .wc-actions{margin-top:auto}
+  /* pulsanti ancorati stabilmente al fondo schermo: niente più "salto" al primo scroll su iOS */
+  .wc-actions{position:fixed;left:0;right:0;bottom:0;margin:0 auto;width:100%;max-width:var(--maxw);padding:16px 24px calc(22px + env(safe-area-inset-bottom));background:linear-gradient(to top, var(--bg) 62%, rgba(10,22,38,0));z-index:3}
   .wc-actions .ob-btn:first-of-type{margin-top:0}
   .wc-logo{width:96px;height:96px;border-radius:27px;overflow:hidden;background:linear-gradient(135deg,var(--accent),#1c6ff2);display:grid;place-items:center;margin:0 auto 16px;box-shadow:0 20px 44px -16px rgba(63,151,255,.7), inset 0 1px 0 rgba(255,255,255,.22)}
   .wc-logo img{width:100%;height:100%;object-fit:cover;display:block}
@@ -1203,7 +1204,8 @@
       <button class="styb" data-m="campo" style="flex:1;padding:14px">🏃 Gioco anche in campo</button>
       <button class="styb" data-m="manager" style="flex:1;padding:14px">👔 Solo manager</button>
     </div>
-    <p class="vs" id="obModeHint" style="color:var(--muted);margin:0 2px 14px;font-size:12.5px">Scegli un'opzione per continuare.</p>
+    <p class="vs" id="obModeHint" style="color:var(--muted);margin:0 2px 14px;font-size:12.5px">Scegli un'opzione, poi premi Avanti.</p>
+    <button class="ob-btn" type="button" onclick="obNextFromMode()">Avanti →</button>
   </div>
 
   <!-- STEP 1 · il tuo personaggio (o il tuo nome) -->
@@ -1730,7 +1732,7 @@ const VAPID_PUBLIC = 'BIVh1NLu5K0JVdcOrjGp_LeNc3XZRhMdIs1gAuTLCcs-rnH873A8bB-77N
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='2026.07.05 · v5';   // ⬅️ cambia a ogni deploy: così vedi subito in Impostazioni quale codice è online
+const APP_VERSION='2026.07.06 · v6';   // ⬅️ cambia a ogni deploy: così vedi subito in Impostazioni quale codice è online
 try{ console.log('FantaCalcetto build', APP_VERSION); }catch(_){}
 // se una chiamata di rete si impianta, non lasciamo l'interfaccia bloccata all'infinito
 function withTimeout(p, ms, label){
@@ -3069,8 +3071,12 @@ document.querySelectorAll('#obMode button').forEach(b=>b.onclick=()=>{
   document.getElementById('obPlayerLab').textContent=isCampo?'Nome del personaggio':'Il tuo nome';
   document.getElementById('playerInput').placeholder=isCampo?'Es. Bomber Cris':'Es. Giulio';
   document.getElementById('obModeHint').textContent=isCampo?'Sarai nel listone e gli altri potranno schierarti.':'Avrai una squadra da fanta-manager, senza essere schierabile in campo.';
-  obGo(1);
+  // NON avanza in automatico: l'utente sceglie con calma e poi preme "Avanti"
 });
+function obNextFromMode(){
+  if(!playMode){ toast('Scegli come vuoi giocare'); return; }
+  obGo(1);
+}
 document.getElementById('obBtn').onclick=async function(){
   const btn=this;
   if(!playMode){toast('Scegli prima come vuoi giocare'); obGo(0); return;}
