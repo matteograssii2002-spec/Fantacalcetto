@@ -84,27 +84,28 @@
   .ob-brand b{font-family:'Bricolage Grotesque';font-weight:800;font-size:19px;letter-spacing:-.03em}
   .ob-brand b span{color:var(--accent-soft)}
   /* ---- WELCOME (schermata iniziale a 3 percorsi: crea / entra / accedi) ---- */
-  /* tre zone: brand in alto · claim al centro · azioni in basso (thumb zone) */
+  /* tre zone: brand in alto · claim vicino sotto · azioni in fondo (thumb zone) */
   #welcome{display:flex;flex-direction:column}
-  .wc-center{flex:1;justify-content:space-between}
+  .wc-center{flex:1;min-height:0;justify-content:flex-start}
   .wc-top{margin-top:24px}
-  .wc-mid{margin:24px 0}
+  .wc-mid{margin-top:36px}
+  .wc-actions{margin-top:auto}
   .wc-actions .ob-btn:first-of-type{margin-top:0}
   .wc-logo{width:96px;height:96px;border-radius:27px;overflow:hidden;background:linear-gradient(135deg,var(--accent),#1c6ff2);display:grid;place-items:center;margin:0 auto 16px;box-shadow:0 20px 44px -16px rgba(63,151,255,.7), inset 0 1px 0 rgba(255,255,255,.22)}
   .wc-logo img{width:100%;height:100%;object-fit:cover;display:block}
   .wc-name{font-family:'Bricolage Grotesque';font-weight:800;font-size:27px;letter-spacing:-.03em;text-align:center}
   .wc-name span{color:var(--accent-soft)}
   .wc-tag{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);text-align:center;margin-top:8px}
-  .wc-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:30px;letter-spacing:-.03em;line-height:1.08;text-align:center;margin:0 6px 16px}
+  .wc-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:24px;letter-spacing:-.03em;line-height:1.1;text-align:center;margin:0 6px 12px}
   .wc-h span{color:var(--text)}
-  .wc-sub{font-size:14.5px;color:var(--muted);text-align:center;line-height:1.55;margin:0 16px}
+  .wc-sub{font-size:13.5px;color:var(--muted);text-align:center;line-height:1.45;margin:0 12px}
   .wc-login{display:block;text-align:center;color:var(--accent-soft);font-size:14px;font-weight:600;margin-top:20px;cursor:pointer}
   .wc-login b{color:var(--text)}
   .wc-back{color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;align-self:flex-start;margin-bottom:2px}
-  .wc-ctx{display:inline-flex;align-items:center;gap:6px;background:rgba(63,139,255,.12);border:1px solid rgba(63,139,255,.30);border-radius:999px;padding:6px 12px;font-size:11px;color:var(--accent-soft);font-weight:700;white-space:nowrap}
+  .wc-ctx{display:inline-flex;align-items:center;gap:6px;background:rgba(63,139,255,.22);border:1px solid rgba(127,176,255,.55);border-radius:999px;padding:7px 13px;font-size:11.5px;color:#dbe8ff;font-weight:800;white-space:nowrap;box-shadow:0 4px 14px -6px rgba(63,139,255,.6)}
   /* pagina email: titoli in alto, form in basso, Indietro+pillola sulla stessa riga */
   #gate{display:flex;flex-direction:column}
-  .gate-center{flex:1;justify-content:space-between}
+  .gate-center{flex:1;min-height:0;justify-content:space-between}
   .gate-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 22px}
   .gate-bar .wc-back{align-self:auto;margin:0}
   .gate-desc{color:var(--muted);font-size:14px;line-height:1.55;margin:0}
@@ -1134,8 +1135,8 @@
     <div class="wc-tag">Il tuo campionato</div>
   </div>
   <div class="wc-mid">
-    <h1 class="wc-h">Il fanta del tuo<br><span>calcetto</span></h1>
-    <p class="wc-sub">Crea o entra in una lega.<br>Inizia in un minuto.</p>
+    <h1 class="wc-h">Il fanta del tuo calcetto</h1>
+    <p class="wc-sub">Crea o entra in una lega. Inizia in un minuto.</p>
   </div>
   <div class="wc-actions">
     <button class="ob-btn" onclick="welcomeGo('create')">➕ Crea la tua lega</button>
@@ -1851,7 +1852,7 @@ function showGate(intent){
   document.getElementById('gate').classList.remove('hidden');
   const ctx=document.getElementById('gateContext');
   if(ctx){
-    if(intent==='create'){ctx.style.display='inline-flex';ctx.textContent='➕ Stai creando una lega';}
+    if(intent==='create'){ctx.style.display='inline-flex';ctx.textContent='➕ Stai creando una nuova lega';}
     else if(intent==='join'){ctx.style.display='inline-flex';ctx.textContent='🔑 Stai entrando in una lega';}
     else {ctx.style.display='none';ctx.textContent='';}
   }
@@ -3034,16 +3035,19 @@ function renderCampoTeam(){
 const MEDALS=['','🥉','🥈','🥇','💎'];   // index = tier (1..4)
 function medalFor(tier){ return MEDALS[tier]||'🏅'; }
 // Descrizione chiara di ogni traguardo, dato il valore raggiunto.
-// Spiegazione breve dei TITOLI di stagione (mappata sul nome visibile).
-function titleDesc(label){
-  switch((label||'').toLowerCase().trim()){
-    case "pallone d'oro":    return "Miglior giocatore della stagione";
-    case "capocannoniere":   return "Più gol nella stagione";
-    case "re dell'attacco":  return "Più gol e assist nella stagione";
-    case "re dell'assist":   return "Più assist nella stagione";
-    case "muro":             return "Miglior difesa della stagione";
-    case "saracinesca":      return "Miglior portiere della stagione";
-    default:                 return "";
+// Spiegazione breve dei TITOLI di stagione (per chiave, criteri reali di get_player_card).
+function titleDesc(key){
+  switch(key){
+    case 'pallone':        return "Miglior media voto della stagione";
+    case 're_att':         return "Miglior media voto tra gli attaccanti";
+    case 'diga':           return "Miglior media voto tra i difensori";
+    case 'saracinesca':    return "Miglior media voto tra i portieri";
+    case 'capocannoniere': return "Più gol nella stagione";
+    case 'mago_assist':    return "Più assist nella stagione";
+    case 'podio_att':      return "Tra i migliori attaccanti della stagione";
+    case 'podio_dif':      return "Tra i migliori difensori della stagione";
+    case 'podio_por':      return "Tra i migliori portieri della stagione";
+    default:               return "";
   }
 }
 function badgeDesc(key,val){
@@ -3109,7 +3113,7 @@ function bachecaHTML(card, opts){
         const medal=t.pos===3?'🥉':(sil||t.pos===2?'🥈':'🥇');
         const pos=t.pos?`${t.pos}° `:'';
         const over=t.season?`${pos}Stagione ${t.season}`:(pos?`${pos}posto`:'');
-        const desc=titleDesc(t.label);
+        const desc=titleDesc(t.key);
         return `<div class="bch-badge"><div class="bb-m">${medal}</div>
         <div class="bb-tx">${over?`<div class="bb-eye">${esc(over)}</div>`:''}<b>${esc(t.label)}</b>${desc?`<span>${esc(desc)}</span>`:''}</div></div>`;
       }).join('')+`</div></div>`;
@@ -4081,7 +4085,10 @@ document.getElementById('setSaveBtn').onclick=async function(){
   profile=await loadProfile(); await loadTeamLogos(); await loadPlayers(); await loadStandings();
   applyProfile(); renderAll(); openSettings(); toast('Modifiche salvate');
 };
-document.getElementById('logoutBtn').onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
+document.getElementById('logoutBtn').onclick=async()=>{
+  if(!confirm('Vuoi uscire dall\'account?\n\nPer rientrare ti servirà la tua email (ricevi un codice via mail). Senza accesso alla mail non potrai rientrare.')) return;
+  await sb.auth.signOut(); location.reload();
+};
 
 /* ---------- GESTIONE GIOCATORI (admin) ---------- */
 function renderManage(){
