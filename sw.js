@@ -1,6 +1,24 @@
-/* Fantacalcetto — service worker per le notifiche push */
+/* Fantacalcetto — service worker
+   - Notifiche push (invariate)
+   - HTML SEMPRE fresca: ogni navigazione va in rete bypassando la cache HTTP,
+     così dopo un deploy si vede subito la versione nuova (niente pagina "vecchia" in cache).
+*/
+const SW_VERSION = '2026-07-05-3';   // cambia questa stringa a OGNI deploy per forzare l'aggiornamento
+
 self.addEventListener('install', e => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+
+// Navigazioni (apertura pagina / PWA): prendi SEMPRE la versione fresca dalla rete.
+// Se offline, ripiega su qualunque risposta il browser abbia (nessuna cache gestita qui).
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      fetch(req, { cache: 'reload' }).catch(() => fetch(req).catch(() => Response.error()))
+    );
+  }
+  // tutte le altre richieste: comportamento di default del browser (nessuna intercettazione)
+});
 
 self.addEventListener('push', event => {
   let d = { title: 'Fantacalcetto', body: '', url: '/' };
