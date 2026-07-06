@@ -33,15 +33,15 @@
   *::-webkit-scrollbar,html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0;background:transparent}
   .overlay,.sheet,.ls-body,.statmodal{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   body{background:radial-gradient(120% 60% at 50% -10%, rgba(63,151,255,.18), transparent 60%),radial-gradient(90% 50% at 50% 110%, rgba(63,151,255,.08), transparent 55%),var(--bg);min-height:100vh;min-height:100dvh}
-  /* GUSCIO APP: altezza ESPLICITA in pixel (--app-h, impostata via JS = viewport reale).
-     Così non ci si affida più a bottom:0 / inset:0, che su iPhone al primo paint viene
-     calcolato contro un viewport misurato male → la barra non "sale" più. Fallback 100dvh/100vh. */
-  .app{max-width:var(--maxw);margin:0 auto;position:fixed;top:0;left:0;right:0;height:var(--app-h,100dvh);display:flex;flex-direction:column}
+  /* GUSCIO APP: ancorato con top:0 e bottom:0 (niente altezza calcolata via JS).
+     Su iPhone (PWA) questo è il modo affidabile: la barra in basso resta SEMPRE ancorata
+     al fondo reale del viewport, senza "alzarsi" al primo paint e senza jitter con la tastiera. */
+  .app{max-width:var(--maxw);margin:0 auto;position:fixed;top:0;bottom:0;left:0;right:0;display:flex;flex-direction:column}
   .scrollwrap{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
     padding:6px 0 16px}
   .num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
 
-  .overlay{position:fixed;top:0;left:0;right:0;height:var(--app-h,100dvh);z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(130% 70% at 50% 0%, rgba(63,151,255,.22), transparent 60%),var(--bg);transition:opacity .35s}
+  .overlay{position:fixed;top:0;bottom:0;left:0;right:0;z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(130% 70% at 50% 0%, rgba(63,151,255,.22), transparent 60%),var(--bg);transition:opacity .35s}
   .overlay.hidden{opacity:0;pointer-events:none}
 
   /* ---- SPLASH / schermata di caricamento — entrata dinamica a sequenza ---- */
@@ -101,22 +101,23 @@
   .wc-name{font-family:'Bricolage Grotesque';font-weight:800;font-size:27px;letter-spacing:-.03em;text-align:center}
   .wc-name span{color:var(--accent-soft)}
   .wc-tag{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);text-align:center;margin-top:8px}
-  .wc-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:24px;letter-spacing:-.03em;line-height:1.1;text-align:center;margin:0 6px 6px}
+  .wc-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:24px;letter-spacing:-.03em;line-height:1.08;text-align:center;margin:0 6px 2px}
   .wc-h span{color:var(--text)}
-  .wc-sub{font-size:13.5px;color:var(--muted);text-align:center;line-height:1.45;margin:0 12px}
-  /* ---- immagine "eroe" al centro della welcome: riempie lo spazio tra claim e pulsanti ---- */
-  .wc-hero{margin-top:auto;position:relative;width:100%;display:flex;align-items:center;justify-content:center;padding:6px 0}
+  .wc-sub{font-size:13.5px;color:var(--muted);text-align:center;line-height:1.4;margin:0 12px}
+  /* ---- immagine "eroe" al centro della welcome: ferma e ben centrata tra claim e pulsanti ---- */
+  .wc-hero{flex:1 1 auto;min-height:0;position:relative;width:100%;display:flex;align-items:center;justify-content:center;padding:6px 0}
   .wc-hero::before{content:"";position:absolute;left:50%;top:53%;transform:translate(-50%,-50%);width:100%;height:90%;background:radial-gradient(56% 60% at 50% 50%, rgba(63,151,255,.30), rgba(63,151,255,.10) 55%, transparent 72%);filter:blur(4px);z-index:0;pointer-events:none}
-  .wc-hero img{position:relative;z-index:1;width:100%;max-width:430px;height:auto;display:block;filter:drop-shadow(0 22px 30px rgba(0,0,0,.5));animation:wcFloat 5.5s ease-in-out infinite;will-change:transform}
-  @keyframes wcFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-  @media (prefers-reduced-motion: reduce){ .wc-hero img{animation:none} }
+  .wc-hero img{position:relative;z-index:1;width:100%;max-width:430px;height:auto;display:block;filter:drop-shadow(0 22px 30px rgba(0,0,0,.5))}
   .wc-login{display:block;text-align:center;color:var(--accent-soft);font-size:14px;font-weight:600;margin-top:20px;cursor:pointer}
   .wc-login b{color:var(--text)}
   .wc-back{color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;align-self:flex-start;margin-bottom:2px}
   .wc-ctx{display:inline-flex;align-items:center;gap:6px;background:rgba(63,139,255,.22);border:1px solid rgba(127,176,255,.55);border-radius:999px;padding:7px 13px;font-size:11.5px;color:#dbe8ff;font-weight:800;white-space:nowrap;box-shadow:0 4px 14px -6px rgba(63,139,255,.6)}
   /* pagina email: titoli in alto, form in basso, Indietro+pillola sulla stessa riga */
   #gate{display:flex;flex-direction:column}
-  .gate-center{flex:1;min-height:0;justify-content:space-between}
+  /* form ancorato in ALTO (non più glued in basso): così con la tastiera aperta il campo
+     resta sopra i tasti e iOS non "scrolla" l'overlay fisso creando salti e spazi vuoti. */
+  .gate-center{flex:1;min-height:0;justify-content:flex-start}
+  .gate-bottom{margin-top:22px}
   .gate-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 22px}
   .gate-bar .wc-back{align-self:auto;margin:0}
   .gate-desc{color:var(--muted);font-size:14px;line-height:1.55;margin:0}
@@ -1139,40 +1140,6 @@
 </style>
 </head>
 <body>
-<script>
-/* Altezza reale del viewport visibile in pixel → guscio app e overlay ancorati bene su iPhone.
-   Risolve la barra inferiore che "si alza" al primo paint (bug iOS con fixed;bottom). */
-(function(){
-  var docEl = document.documentElement;
-  function setAppH(){
-    var h = window.innerHeight || docEl.clientHeight;
-    if(h) docEl.style.setProperty('--app-h', h + 'px');
-  }
-  // "SETTLE": all'apertura e al ritorno in primo piano iOS riporta per un istante un'altezza
-  // più piccola del reale → il guscio .app resta corto e la barra in basso appare "alzata"
-  // finché un tocco non forza il ricalcolo. Qui ri-misuriamo a più riprese (frame + timer scaglionati)
-  // così l'altezza si assesta da sola: la barra scende e si ancora in basso senza spingerla.
-  var timers = [];
-  function settle(){
-    setAppH();
-    requestAnimationFrame(function(){ setAppH(); requestAnimationFrame(setAppH); });
-    timers.forEach(clearTimeout); timers = [];
-    [80,180,320,500,800,1200].forEach(function(ms){ timers.push(setTimeout(setAppH, ms)); });
-  }
-  settle();
-  window.addEventListener('load', settle);
-  window.addEventListener('resize', setAppH);
-  window.addEventListener('pageshow', settle);
-  window.addEventListener('orientationchange', settle);
-  document.addEventListener('visibilitychange', function(){ if(!document.hidden) settle(); });
-  if(window.visualViewport){
-    window.visualViewport.addEventListener('resize', setAppH);
-    // qualunque micro-scroll del viewport ricalcola subito (auto-correzione immediata)
-    window.visualViewport.addEventListener('scroll', setAppH);
-  }
-})();
-</script>
-
 <!-- SPLASH / caricamento iniziale: solo logo, niente login né barra in alto -->
 <div id="splash">
   <div class="sp-logowrap"><div class="sp-logo"><img src="icon-512.png?v=3" alt="FantaCalcetto"></div></div>
