@@ -33,15 +33,16 @@
   *::-webkit-scrollbar,html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0;background:transparent}
   .overlay,.sheet,.ls-body,.statmodal{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   body{background:radial-gradient(120% 60% at 50% -10%, rgba(63,151,255,.18), transparent 60%),radial-gradient(90% 50% at 50% 110%, rgba(63,151,255,.08), transparent 55%),var(--bg);min-height:100vh;min-height:100dvh}
-  /* GUSCIO APP: ancorato con top:0 e bottom:0 (niente altezza calcolata via JS).
-     Su iPhone (PWA) questo è il modo affidabile: la barra in basso resta SEMPRE ancorata
-     al fondo reale del viewport, senza "alzarsi" al primo paint e senza jitter con la tastiera. */
-  .app{max-width:var(--maxw);margin:0 auto;position:fixed;top:0;bottom:0;left:0;right:0;display:flex;flex-direction:column}
+  /* GUSCIO APP: altezza esplicita in pixel (--app-h) impostata via JS leggendo visualViewport.height,
+     che riflette SUBITO l'altezza realmente visibile. Impostare un'altezza in px forza iOS a
+     ridisegnare il guscio: così, dopo il lancio della PWA, la barra si ancora al fondo da sola,
+     senza dover scrollare. Fallback 100dvh se il JS non parte. */
+  .app{max-width:var(--maxw);margin:0 auto;position:fixed;top:0;left:0;right:0;height:var(--app-h,100dvh);display:flex;flex-direction:column}
   .scrollwrap{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
     padding:6px 0 16px}
   .num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
 
-  .overlay{position:fixed;top:0;bottom:0;left:0;right:0;z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(130% 70% at 50% 0%, rgba(63,151,255,.22), transparent 60%),var(--bg);transition:opacity .35s}
+  .overlay{position:fixed;top:0;left:0;right:0;height:var(--app-h,100dvh);z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(130% 70% at 50% 0%, rgba(63,151,255,.22), transparent 60%),var(--bg);transition:opacity .35s}
   .overlay.hidden{opacity:0;pointer-events:none}
 
   /* ---- SPLASH / schermata di caricamento — entrata dinamica a sequenza ---- */
@@ -101,9 +102,9 @@
   .wc-name{font-family:'Bricolage Grotesque';font-weight:800;font-size:27px;letter-spacing:-.03em;text-align:center}
   .wc-name span{color:var(--accent-soft)}
   .wc-tag{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);text-align:center;margin-top:8px}
-  .wc-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:24px;letter-spacing:-.03em;line-height:1.08;text-align:center;margin:0 6px 2px}
+  #welcome .wc-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:24px;letter-spacing:-.03em;line-height:1.05;text-align:center;margin:0 6px 0}
   .wc-h span{color:var(--text)}
-  .wc-sub{font-size:13.5px;color:var(--muted);text-align:center;line-height:1.4;margin:0 12px}
+  .wc-sub{font-size:13.5px;color:var(--muted);text-align:center;line-height:1.3;margin:0 12px}
   /* ---- immagine "eroe" al centro della welcome: ferma e ben centrata tra claim e pulsanti ---- */
   .wc-hero{flex:1 1 auto;min-height:0;position:relative;width:100%;display:flex;align-items:center;justify-content:center;padding:6px 0}
   .wc-hero::before{content:"";position:absolute;left:50%;top:53%;transform:translate(-50%,-50%);width:100%;height:90%;background:radial-gradient(56% 60% at 50% 50%, rgba(63,151,255,.30), rgba(63,151,255,.10) 55%, transparent 72%);filter:blur(4px);z-index:0;pointer-events:none}
@@ -122,11 +123,13 @@
   .gate-bar .wc-back{align-self:auto;margin:0}
   .gate-desc{color:var(--muted);font-size:14px;line-height:1.55;margin:0}
   /* riquadro ben visibile "Stai creando / Stai entrando" per non sbagliare percorso */
-  .ctx-box{display:none;align-items:center;gap:11px;width:100%;margin:16px 0 0;padding:14px 15px;border-radius:16px;font-size:15px;line-height:1.3;box-shadow:0 8px 22px -12px rgba(0,0,0,.6)}
+  .ctx-box{display:none;align-items:center;gap:12px;width:100%;margin:18px 0 0;padding:15px 16px;border-radius:16px;font-size:15.5px;font-weight:600;line-height:1.3}
   .ctx-box.show{display:flex}
-  .ctx-box .ci{font-size:22px;line-height:1;flex:none}
-  .ctx-box.create{background:rgba(63,151,255,.18);border:1.5px solid rgba(127,176,255,.65);color:#e6f0ff}
-  .ctx-box.join{background:rgba(55,201,138,.16);border:1.5px solid rgba(55,201,138,.6);color:#c9f4de}
+  .ctx-box .ci{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:22px;line-height:1;flex:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
+  .ctx-box.create{background:linear-gradient(135deg,rgba(63,151,255,.24),rgba(63,151,255,.10));border:1.5px solid rgba(127,176,255,.72);color:#eaf2ff;box-shadow:0 12px 28px -12px rgba(63,151,255,.8)}
+  .ctx-box.create .ci{background:rgba(63,151,255,.30)}
+  .ctx-box.join{background:linear-gradient(135deg,rgba(55,201,138,.24),rgba(55,201,138,.10));border:1.5px solid rgba(55,201,138,.72);color:#e4fbef;box-shadow:0 12px 28px -12px rgba(55,201,138,.75)}
+  .ctx-box.join .ci{background:rgba(55,201,138,.30)}
   .ctx-box b{font-weight:800}
   .ob-btn.ghost{background:var(--surface);color:var(--text);border:1.5px solid var(--line-strong);box-shadow:none}
   .ob-eye{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-soft);font-weight:700}
@@ -1140,6 +1143,40 @@
 </style>
 </head>
 <body>
+<script>
+/* Altezza reale del viewport → guscio app/overlay ancorati bene su iPhone (PWA).
+   Legge visualViewport.height (che riflette SUBITO l'altezza visibile e scatta un evento
+   quando il viewport si assesta al lancio): impostandola in px forziamo iOS a ridisegnare,
+   così la barra in basso si ancora al fondo da sola senza dover scrollare.
+   Durante la digitazione (tastiera) l'altezza è "congelata" per non far saltare l'interfaccia. */
+(function(){
+  var de = document.documentElement, frozen = false;
+  function apply(){
+    if(frozen) return;
+    var vv = window.visualViewport;
+    var h = (vv && vv.height) ? vv.height : (window.innerHeight || de.clientHeight);
+    if(h) de.style.setProperty('--app-h', Math.round(h) + 'px');
+  }
+  // al lancio/ritorno iOS può assestare il viewport con un attimo di ritardo: ri-applichiamo a più riprese
+  function settle(){
+    apply();
+    requestAnimationFrame(apply);
+    [60,160,300,500,900].forEach(function(ms){ setTimeout(apply, ms); });
+  }
+  settle();
+  window.addEventListener('load', settle);
+  window.addEventListener('pageshow', settle);
+  window.addEventListener('resize', apply);
+  window.addEventListener('orientationchange', settle);
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) settle(); });
+  // congela mentre un campo è a fuoco (tastiera aperta) → nessun salto dell'interfaccia
+  document.addEventListener('focusin', function(e){
+    var t = e.target; if(t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) frozen = true;
+  });
+  document.addEventListener('focusout', function(){ frozen = false; setTimeout(settle, 60); });
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', apply); }
+})();
+</script>
 <!-- SPLASH / caricamento iniziale: solo logo, niente login né barra in alto -->
 <div id="splash">
   <div class="sp-logowrap"><div class="sp-logo"><img src="icon-512.png?v=3" alt="FantaCalcetto"></div></div>
@@ -1188,7 +1225,7 @@
     <div class="ob-eye">Accedi</div>
     <h1>Entra con la tua email</h1>
     <p class="gate-desc">Inserisci la tua email per accedere.<br>Nessuna password richiesta.</p>
-    <div class="ctx-box" id="gateContext" style="display:none"></div>
+    <div class="ctx-box" id="gateContext"></div>
   </div>
   <div class="gate-bottom">
     <input class="ob-input" id="gateEmail" type="email" placeholder="latua@email.it" autocomplete="email">
