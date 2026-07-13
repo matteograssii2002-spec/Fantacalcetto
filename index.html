@@ -593,6 +593,11 @@
   .logout{width:100%;margin-top:14px;background:none;border:1px solid var(--line-strong);color:var(--muted);font-weight:600;font-size:14px;padding:12px;border-radius:12px;cursor:pointer}
 
   .nav{flex:none;position:relative;z-index:50;padding:5px 12px calc(6px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line)}
+  /* RETE DI SICUREZZA iOS: quando il viewport è bugiardo (--vp-gap > 0) iOS non disegna gli ultimi
+     --vp-gap pt del guscio → le scritte della barra ci finivano dentro e sparivano. Con .vp-lie il
+     contenuto della barra risale sopra quella soglia (lo sfondo scuro sotto è identico, non si nota).
+     Appena iOS corregge il viewport, --vp-gap torna 0 e la classe sparisce: barra normale. */
+  html.vp-lie .nav{padding-bottom:calc(var(--vp-gap, 0px) + 6px)}
   .nav-inner{display:flex;justify-content:space-around;align-items:flex-end;width:100%;padding:2px 4px 0}
   .nav button{flex:1;background:none;border:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;padding:4px 2px;cursor:pointer;border-radius:13px;transition:color .2s,background .2s}
   .nav button.on{color:#fff;background:none}
@@ -1147,40 +1152,53 @@
 </head>
 <body>
 <script>
-/* ALTEZZA VERA DEL GUSCIO (--app-h).
-   Problema misurato: in PWA standalone su iPhone, innerHeight/visualViewport/dvh valgono 793
-   mentre lo schermo (e la webview) sono 852: il viewport dichiarato è corto di una safe-area e
-   NON si assesta. Rimedio: prendo il massimo tra le misure disponibili e, SOLO se sono in PWA
-   standalone, in verticale e lo scarto da screen.height è compatibile con una safe-area (<=90px),
-   uso screen.height. Guardie apposta strette: in Safari, su Android o in orizzontale NON si applica
-   (lì screen.height taglierebbe la barra, errore già fatto in passato). */
+/* ALTEZZA VERA DEL GUSCIO (--app-h) + AREA NON DISEGNATA (--vp-gap).
+   Misurato sull'iPhone: schermo/webview 852pt, ma iOS in PWA standalone dichiara un viewport di
+   793pt (=852-59, la safe-area in alto) e NON si corregge da solo. Conseguenze: dvh e bottom:0
+   finiscono a 793 (barra alta, schermo non pieno); se invece forzi 852, la barra va a posto ma
+   iOS DIPINGE SOLO i primi 793pt e quello che ci finisce sotto (le scritte della barra) sparisce.
+   Tre livelli:
+   1) --app-h = screen.height (solo PWA standalone + verticale + scarto da safe-area <=90px:
+      mai in Safari/Android/landscape, dove taglierebbe la barra);
+   2) forzo il descrittore `height=` nel meta viewport: spesso WebKit ricalcola e il viewport
+      diventa davvero 852 (a quel punto dipinge tutto e non serve altro);
+   3) se non basta, --vp-gap dice quanti pt NON vengono disegnati e la classe .vp-lie alza il
+      contenuto della barra dentro l'area visibile (vedi CSS .vp-lie .nav). */
 (function(){
   var de=document.documentElement;
+  var mvp=document.querySelector('meta[name="viewport"]');
+  var BASE=mvp?mvp.getAttribute('content'):'';
+  var forced=false;
   function isStandalone(){
     try{
       if(window.navigator && window.navigator.standalone===true) return true;
       return !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
     }catch(_){ return false; }
   }
-  function realHeight(){
+  function sync(){
     var vv=window.visualViewport;
-    var h=Math.max(window.innerHeight||0, (vv&&vv.height)||0, de.clientHeight||0);
-    try{
-      var sh=(window.screen&&window.screen.height)||0;
-      var portrait=(window.innerWidth||0)<(window.innerHeight||0);
-      if(isStandalone() && portrait && sh>h && (sh-h)<=90) h=sh;   // viewport bugato: fidati dello schermo
-    }catch(_){}
-    return Math.round(h);
+    var m=Math.max(window.innerHeight||0,(vv&&vv.height)||0,de.clientHeight||0);
+    var sh=0, portrait=false;
+    try{ sh=(window.screen&&window.screen.height)||0; portrait=(window.innerWidth||0)<(window.innerHeight||0); }catch(_){}
+    var lie=isStandalone()&&portrait&&sh>m&&(sh-m)<=90;   // viewport bugiardo
+    var h=lie?sh:m, gap=lie?(sh-m):0;
+    if(h) de.style.setProperty('--app-h', Math.round(h)+'px');
+    de.style.setProperty('--vp-gap', Math.round(gap)+'px');
+    de.classList.toggle('vp-lie', gap>0);
+    // una sola volta: chiedo a WebKit di usare l'altezza vera (niente revert -> niente rimbalzi)
+    if(lie && mvp && !forced){ forced=true; try{ mvp.setAttribute('content', BASE+', height='+Math.round(sh)); }catch(_){} }
   }
-  function apply(){ var h=realHeight(); if(h) de.style.setProperty('--app-h', h+'px'); }
-  function settle(){ apply(); requestAnimationFrame(apply); [60,200,500,1000].forEach(function(ms){ setTimeout(apply,ms); }); }
+  function settle(){ sync(); requestAnimationFrame(sync); [60,200,500,1000].forEach(function(ms){ setTimeout(sync,ms); }); }
   settle();
   window.addEventListener('load', settle);
   window.addEventListener('pageshow', settle);
-  window.addEventListener('resize', apply);
-  window.addEventListener('orientationchange', settle);
+  window.addEventListener('resize', sync);
+  window.addEventListener('orientationchange', function(){
+    if(forced && mvp){ forced=false; try{ mvp.setAttribute('content', BASE); }catch(_){} }   // in orizzontale niente height forzata
+    setTimeout(settle, 80);
+  });
   document.addEventListener('visibilitychange', function(){ if(!document.hidden) settle(); });
-  if(window.visualViewport){ window.visualViewport.addEventListener('resize', apply); }
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', sync); }
 })();
 </script>
 <!-- SPLASH / caricamento iniziale: solo logo, niente login né barra in alto -->
@@ -1791,28 +1809,10 @@ const VAPID_PUBLIC = 'BIVh1NLu5K0JVdcOrjGp_LeNc3XZRhMdIs1gAuTLCcs-rnH873A8bB-77N
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='2026.07.13 · v8';   // ⬅️ cambia a ogni deploy: così vedi subito in Impostazioni quale codice è online
-/* DIAGNOSTICA VIEWPORT (temporanea): fotografa le altezze AL LANCIO, prima di qualsiasi scroll.
-   Serve a capire se iOS sbaglia il viewport all'avvio (schermo non riempito). Si legge in
-   Impostazioni, sotto la versione. Si può togliere quando il problema è chiuso. */
-const VP_BOOT={ih:0,vv:0,sh:0,app:0,sa:0};
-(function(){
-  try{
-    VP_BOOT.ih=Math.round(window.innerHeight||0);
-    VP_BOOT.vv=Math.round((window.visualViewport&&window.visualViewport.height)||0);
-    VP_BOOT.sh=Math.round((window.screen&&window.screen.height)||0);
-    VP_BOOT.sa=((window.navigator&&window.navigator.standalone===true)||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches))?1:0;
-    setTimeout(function(){ const a=document.querySelector('.app'); if(a) VP_BOOT.app=Math.round(a.getBoundingClientRect().height); }, 500);
-  }catch(_){}
-})();
-function vpDiagText(){
-  const a=document.querySelector('.app');
-  const nowApp=a?Math.round(a.getBoundingClientRect().height):0;
-  return `avvio vp${VP_BOOT.ih} app${VP_BOOT.app} schermo${VP_BOOT.sh} pwa${VP_BOOT.sa} · ora vp${Math.round(window.innerHeight||0)} app${nowApp}`;
-}
+const APP_VERSION='v9';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
-  if(_av) _av.textContent = APP_VERSION+' · '+vpDiagText();
+  if(_av) _av.textContent = APP_VERSION;
 }
 try{ console.log('FantaCalcetto build', APP_VERSION); }catch(_){}
 // se una chiamata di rete si impianta, non lasciamo l'interfaccia bloccata all'infinito
@@ -4294,7 +4294,6 @@ function setNav(id){
   toTop();
 }
 function openSettings(){
-  refreshVersionLine();   // diagnostica viewport sempre aggiornata
   setAvatarDraft=profile.avatar;
   setLogoDraft=profile.logo||null;
   const isPlayer=profile.is_player!==false;
