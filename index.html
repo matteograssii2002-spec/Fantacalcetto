@@ -33,16 +33,19 @@
   *::-webkit-scrollbar,html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0;background:transparent}
   .overlay,.sheet,.ls-body,.statmodal{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   body{background:radial-gradient(120% 60% at 50% -10%, rgba(63,151,255,.18), transparent 60%),radial-gradient(90% 50% at 50% 110%, rgba(63,151,255,.08), transparent 55%),var(--bg);min-height:100vh;min-height:100dvh}
-  /* GUSCIO APP: NIENTE altezza calcolata (né dvh né JS). Su iPhone (PWA) al lancio innerHeight/
-     visualViewport/dvh SOTTOSTIMANO l'altezza reale (≈793 invece di 852) e si assestano solo dopo
-     uno scroll: da qui la barra in basso "alta" e lo schermo non riempito. Ancorando il guscio con
-     top:0 + bottom:0 (nessuna height), iOS lo attacca ai bordi veri del viewport da subito. */
-  .app{max-width:var(--maxw);margin:0 auto;position:fixed;top:0;bottom:0;left:0;right:0;display:flex;flex-direction:column}
+  /* GUSCIO APP — iOS PWA MENTE SULL'ALTEZZA.
+     Misurato sull'iPhone di Teo: screen.height=852 ma innerHeight/visualViewport/dvh=793
+     (=852-59, esattamente la safe-area in alto) e NON si corregge da solo. La webview però è
+     alta davvero 852 (con la vecchia build, dopo uno scroll la barra andava a fondo schermo).
+     Quindi: né dvh né bottom:0 bastano (finiscono entrambi a 793). L'altezza vera la calcola
+     realHeight() in JS (--app-h), che usa screen.height SOLO in PWA standalone, in verticale e
+     solo se lo scarto è da safe-area (<=90px): mai in Safari/Android/landscape (lì taglierebbe). */
+  .app{max-width:var(--maxw);margin:0 auto;position:fixed;top:0;left:0;right:0;height:var(--app-h,100dvh);display:flex;flex-direction:column}
   .scrollwrap{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
     padding:6px 0 16px}
   .num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
 
-  .overlay{position:fixed;top:0;bottom:0;left:0;right:0;z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(130% 70% at 50% 0%, rgba(63,151,255,.22), transparent 60%),var(--bg);transition:opacity .35s}
+  .overlay{position:fixed;top:0;left:0;right:0;height:var(--app-h,100dvh);z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(130% 70% at 50% 0%, rgba(63,151,255,.22), transparent 60%),var(--bg);transition:opacity .35s}
   .overlay.hidden{opacity:0;pointer-events:none}
 
   /* ---- SPLASH / schermata di caricamento — entrata dinamica a sequenza ---- */
@@ -1143,9 +1146,43 @@
 </style>
 </head>
 <body>
-<!-- Nessuno script di misura del viewport: il guscio (.app/.overlay) è ancorato con
-     position:fixed top:0/bottom:0 (vedi CSS). Misurare l'altezza in JS su iOS PWA dava
-     un valore troppo basso al lancio → barra in basso "alta" finché non si scrollava. -->
+<script>
+/* ALTEZZA VERA DEL GUSCIO (--app-h).
+   Problema misurato: in PWA standalone su iPhone, innerHeight/visualViewport/dvh valgono 793
+   mentre lo schermo (e la webview) sono 852: il viewport dichiarato è corto di una safe-area e
+   NON si assesta. Rimedio: prendo il massimo tra le misure disponibili e, SOLO se sono in PWA
+   standalone, in verticale e lo scarto da screen.height è compatibile con una safe-area (<=90px),
+   uso screen.height. Guardie apposta strette: in Safari, su Android o in orizzontale NON si applica
+   (lì screen.height taglierebbe la barra, errore già fatto in passato). */
+(function(){
+  var de=document.documentElement;
+  function isStandalone(){
+    try{
+      if(window.navigator && window.navigator.standalone===true) return true;
+      return !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    }catch(_){ return false; }
+  }
+  function realHeight(){
+    var vv=window.visualViewport;
+    var h=Math.max(window.innerHeight||0, (vv&&vv.height)||0, de.clientHeight||0);
+    try{
+      var sh=(window.screen&&window.screen.height)||0;
+      var portrait=(window.innerWidth||0)<(window.innerHeight||0);
+      if(isStandalone() && portrait && sh>h && (sh-h)<=90) h=sh;   // viewport bugato: fidati dello schermo
+    }catch(_){}
+    return Math.round(h);
+  }
+  function apply(){ var h=realHeight(); if(h) de.style.setProperty('--app-h', h+'px'); }
+  function settle(){ apply(); requestAnimationFrame(apply); [60,200,500,1000].forEach(function(ms){ setTimeout(apply,ms); }); }
+  settle();
+  window.addEventListener('load', settle);
+  window.addEventListener('pageshow', settle);
+  window.addEventListener('resize', apply);
+  window.addEventListener('orientationchange', settle);
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) settle(); });
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', apply); }
+})();
+</script>
 <!-- SPLASH / caricamento iniziale: solo logo, niente login né barra in alto -->
 <div id="splash">
   <div class="sp-logowrap"><div class="sp-logo"><img src="icon-512.png?v=3" alt="FantaCalcetto"></div></div>
@@ -1754,23 +1791,24 @@ const VAPID_PUBLIC = 'BIVh1NLu5K0JVdcOrjGp_LeNc3XZRhMdIs1gAuTLCcs-rnH873A8bB-77N
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='2026.07.13 · v7';   // ⬅️ cambia a ogni deploy: così vedi subito in Impostazioni quale codice è online
+const APP_VERSION='2026.07.13 · v8';   // ⬅️ cambia a ogni deploy: così vedi subito in Impostazioni quale codice è online
 /* DIAGNOSTICA VIEWPORT (temporanea): fotografa le altezze AL LANCIO, prima di qualsiasi scroll.
    Serve a capire se iOS sbaglia il viewport all'avvio (schermo non riempito). Si legge in
    Impostazioni, sotto la versione. Si può togliere quando il problema è chiuso. */
-const VP_BOOT={ih:0,vv:0,sh:0,app:0};
+const VP_BOOT={ih:0,vv:0,sh:0,app:0,sa:0};
 (function(){
   try{
     VP_BOOT.ih=Math.round(window.innerHeight||0);
     VP_BOOT.vv=Math.round((window.visualViewport&&window.visualViewport.height)||0);
     VP_BOOT.sh=Math.round((window.screen&&window.screen.height)||0);
+    VP_BOOT.sa=((window.navigator&&window.navigator.standalone===true)||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches))?1:0;
     setTimeout(function(){ const a=document.querySelector('.app'); if(a) VP_BOOT.app=Math.round(a.getBoundingClientRect().height); }, 500);
   }catch(_){}
 })();
 function vpDiagText(){
   const a=document.querySelector('.app');
-  const now={ih:Math.round(window.innerHeight||0), app:a?Math.round(a.getBoundingClientRect().height):0};
-  return `avvio vp${VP_BOOT.ih} app${VP_BOOT.app} schermo${VP_BOOT.sh} · ora vp${now.ih} app${now.app}`;
+  const nowApp=a?Math.round(a.getBoundingClientRect().height):0;
+  return `avvio vp${VP_BOOT.ih} app${VP_BOOT.app} schermo${VP_BOOT.sh} pwa${VP_BOOT.sa} · ora vp${Math.round(window.innerHeight||0)} app${nowApp}`;
 }
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
