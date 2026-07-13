@@ -1754,7 +1754,28 @@ const VAPID_PUBLIC = 'BIVh1NLu5K0JVdcOrjGp_LeNc3XZRhMdIs1gAuTLCcs-rnH873A8bB-77N
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='2026.07.06 · v6';   // ⬅️ cambia a ogni deploy: così vedi subito in Impostazioni quale codice è online
+const APP_VERSION='2026.07.13 · v7';   // ⬅️ cambia a ogni deploy: così vedi subito in Impostazioni quale codice è online
+/* DIAGNOSTICA VIEWPORT (temporanea): fotografa le altezze AL LANCIO, prima di qualsiasi scroll.
+   Serve a capire se iOS sbaglia il viewport all'avvio (schermo non riempito). Si legge in
+   Impostazioni, sotto la versione. Si può togliere quando il problema è chiuso. */
+const VP_BOOT={ih:0,vv:0,sh:0,app:0};
+(function(){
+  try{
+    VP_BOOT.ih=Math.round(window.innerHeight||0);
+    VP_BOOT.vv=Math.round((window.visualViewport&&window.visualViewport.height)||0);
+    VP_BOOT.sh=Math.round((window.screen&&window.screen.height)||0);
+    setTimeout(function(){ const a=document.querySelector('.app'); if(a) VP_BOOT.app=Math.round(a.getBoundingClientRect().height); }, 500);
+  }catch(_){}
+})();
+function vpDiagText(){
+  const a=document.querySelector('.app');
+  const now={ih:Math.round(window.innerHeight||0), app:a?Math.round(a.getBoundingClientRect().height):0};
+  return `avvio vp${VP_BOOT.ih} app${VP_BOOT.app} schermo${VP_BOOT.sh} · ora vp${now.ih} app${now.app}`;
+}
+function refreshVersionLine(){
+  const _av=document.getElementById('appVersion');
+  if(_av) _av.textContent = APP_VERSION+' · '+vpDiagText();
+}
 try{ console.log('FantaCalcetto build', APP_VERSION); }catch(_){}
 // se una chiamata di rete si impianta, non lasciamo l'interfaccia bloccata all'infinito
 function withTimeout(p, ms, label){
@@ -1944,7 +1965,7 @@ setTimeout(()=>{ if(!_splashGone){ if(!user) showWelcome(); else hideSplash(); }
 
 /* ---------- AUTH / BOOT ---------- */
 async function boot(){
-  const _av=document.getElementById('appVersion'); if(_av)_av.textContent=APP_VERSION;
+  refreshVersionLine();
   if(SUPABASE_URL.includes('INCOLLA')||SUPABASE_ANON.includes('INCOLLA')){
     showGate('login');
     gateStatus('⚠️ Apri il file e incolla Project URL e anon key nelle prime righe dello script.');
@@ -2716,26 +2737,14 @@ async function setAutoOpen(on){
    Apre ADESSO la giornata programmata qui sopra: kickoff = prossimo giorno+ora impostati.
    Se non c'è ancora una programmazione, ripiega sull'apertura manuale (data/ora a mano). */
 function openNowHintText(){
-  if(schedDraft.weekday==null||!schedDraft.time) return 'Imposta giorno e ora qui sopra: poi potrai aprirla anche subito.';
+  if(schedDraft.weekday==null||!schedDraft.time) return 'Fa partire la giornata ADESSO (data/ora a scelta): niente sondaggio, formazioni subito aperte, presenti li segni tu qui sotto.';
   const k=nextWeeklyKickoffLocal(schedDraft.weekday,schedDraft.time);
-  return `Parte adesso la giornata di ${fmtDayTime(k)}: niente attesa 72h, niente sondaggio, formazioni subito aperte. I presenti li segni tu qui sotto.`;
+  return `Fa partire la giornata ADESSO, senza aspettare le 72h: niente sondaggio, formazioni subito aperte, presenti li segni tu qui sotto. Proporrà ${fmtDayTime(k)}, ma puoi cambiare giorno e ora.`;
 }
 function refreshOpenNowHint(){const h=document.getElementById('openNowHint'); if(h)h.textContent=openNowHintText();}
-async function openNowMatchday(){
+function openNowMatchday(){
   if(currentMd && currentMd.status!=='closed'){ toast('C\'è già una giornata aperta'); return; }
-  if(schedDraft.weekday==null || !schedDraft.time){
-    toast('Scegli data e ora della partita');
-    openMatchdaySheet(true);   // nessuna programmazione: data/ora a mano, sempre senza sondaggio
-    return;
-  }
-  const k=nextWeeklyKickoffLocal(schedDraft.weekday, schedDraft.time);
-  const msg='Apro subito la giornata?\n\n'
-    +'⚽ Fischio d\'inizio: '+fmtDayTime(k)+'\n'
-    +'📋 Niente sondaggio presenze: i presenti li segni tu da «Chi gioca questa giornata».\n'
-    +'👕 Formazioni aperte da subito (si bloccano 5 min prima del via).\n\nConfermi?';
-  if(!confirm(msg)) return;
-  await createMatchday(k.toISOString(), true);
-  toast('Giornata aperta ⚡ Ora segna chi gioca');
+  openMatchdaySheet(true);   // scheda con data/ora precompilata e modificabile
 }
 
 /* ---------- MODALITÀ PORTIERE (rotazione / fisso) ---------- */
@@ -2893,12 +2902,15 @@ function openMatchdaySheet(now){
   const q=!!now;
   document.getElementById('sheetTitle').textContent = q?'Apri subito la giornata':'Apri nuova giornata';
   document.getElementById('sheetHint').textContent = q
-    ? 'Quando si gioca? La giornata parte adesso: niente sondaggio presenze (i presenti li segni tu) e formazioni aperte da subito.'
+    ? 'Conferma quando si gioca (cambialo se giocate in un giorno diverso dal solito). La giornata parte adesso: niente sondaggio presenze (i presenti li segni tu) e formazioni aperte da subito.'
     : 'Quando si gioca? Le formazioni si bloccano 5 min prima del via, i voti aprono ~1h dopo e restano aperti 24h.';
+  // «Apri subito»: precompilo col prossimo orario programmato (se c'è), altrimenti domani alle 20:00
+  let val=defaultKickoff();
+  if(q && schedDraft.weekday!=null && schedDraft.time) val=toLocalInput(nextWeeklyKickoffLocal(schedDraft.weekday,schedDraft.time));
   document.getElementById('sheetList').innerHTML=`
     <div class="field-lab">Data e ora della partita</div>
-    <input class="ob-input" type="datetime-local" id="mdKick" value="${defaultKickoff()}" style="padding:13px;font-size:15px">
-    <button class="save" onclick="confirmMatchday(${q})">${q?'Apri subito':'Apri giornata'}</button>`;
+    <input class="ob-input" type="datetime-local" id="mdKick" value="${val}" style="padding:13px;font-size:15px">
+    <button class="save" onclick="confirmMatchday(${q})">${q?'⚡ Apri subito':'Apri giornata'}</button>`;
   openSheet();
 }
 async function confirmMatchday(skipPoll){
@@ -2933,7 +2945,7 @@ async function createMatchday(kickoffISO, skipPoll){
   await loadSeason();       // la giornata può aver fatto partire una nuova stagione
   await loadMatchdaysList(); await loadMdPresent(); await loadPlayerStats();
   await loadAverages(); subscribeLive(); ensureStats();
-  renderAll(); openSettings(); toast('Aperta '+data.label);
+  renderAll(); openSettings(); toast(skipPoll?('Aperta '+data.label+' ⚡ Ora segna chi gioca'):('Aperta '+data.label));
   pushNotify(data.label+' aperta! ⚽', 'Schiera la tua formazione prima del fischio d\'inizio.');
 }
 function clearRoundLocal(){
@@ -4244,6 +4256,7 @@ function setNav(id){
   toTop();
 }
 function openSettings(){
+  refreshVersionLine();   // diagnostica viewport sempre aggiornata
   setAvatarDraft=profile.avatar;
   setLogoDraft=profile.logo||null;
   const isPlayer=profile.is_player!==false;
