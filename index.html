@@ -354,7 +354,10 @@
   .tl-dotitem.on{color:var(--text)}
   .tl-dotitem.on i{background:var(--accent);box-shadow:0 0 10px rgba(63,151,255,.7)}
   .tl-swipehint{text-align:center;font-size:12px;color:var(--muted);margin-top:10px}
-  .slot .disc{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:rgba(6,16,34,.35);border:2px dashed rgba(255,255,255,.7);transition:transform .15s}
+  /* il cerchio vuoto è alto 54px, la pedina 110px: senza margine il cerchio "galleggiava"
+     56px più in alto di dove poi appare il giocatore. Il margine lo appoggia sulla stessa
+     linea dei piedi della pedina -> slot vuoto e slot pieno nella stessa posizione. */
+  .slot .disc{width:54px;height:54px;margin-top:56px;border-radius:50%;display:grid;place-items:center;background:rgba(6,16,34,.35);border:2px dashed rgba(255,255,255,.7);transition:transform .15s}
   .slot:active .disc,.slot:active .pawn{transform:scale(.94)}
   .slot .plus{font-size:26px;color:#fff;font-weight:300}
   .pawn{position:relative;display:inline-flex;align-items:flex-end;justify-content:center;transition:transform .15s}
@@ -609,9 +612,16 @@
 
   /* feedback al tocco */
   *{-webkit-tap-highlight-color:transparent}
-  button,.opt,.pcard,.lb-row,.rule,.styb,.slot,.mrow,.cta,[onclick]{transition:transform .09s ease, background .15s ease, opacity .15s}
+  button,.opt,.pcard,.lb-row,.rule,.styb,.mrow,.cta,[onclick]{transition:transform .09s ease, background .15s ease, opacity .15s}
   .tapd{transform:scale(.95)}
-  .slot.tapd{transform:translate(-50%,-50%) scale(.95)}
+  /* FIX TOCCO — lo slot del campo NON si muove più al tap.
+     Prima: .slot.tapd applicava translate(-50%,-50%), ma lo slot in campo ha come base
+     translate(-50%,0): al pointerdown l'elemento saliva di METÀ della propria altezza
+     (60-85px), scappando da sotto il dito. Al rilascio il click cadeva sul campo e non
+     sullo slot -> tap perso, servivano più tocchi. Ora si rimpicciolisce solo il
+     cerchio/pedina: l'area cliccabile resta ferma e basta un tocco. */
+  .slot.tapd{transform:translate(-50%,0)}
+  .slot.tapd .disc,.slot.tapd .pawn{transform:scale(.94)}
   .mdot{width:9px;height:9px;border-radius:50%;background:#3f97ff;display:inline-block;animation:mblink 1.2s infinite ease-in-out}
   .mdot:nth-child(2){animation-delay:.2s}.mdot:nth-child(3){animation-delay:.4s}
   @keyframes mblink{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
@@ -1874,10 +1884,16 @@ function lineupBlockReason(){
 function fmt(ms){ if(ms<0)ms=0; const d=Math.floor(ms/86400000),h=Math.floor(ms%86400000/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000),p=n=>String(n).padStart(2,'0'); return (d>0?d+'g ':'')+`${p(h)}:${p(m)}:${p(s)}`; }
 let obAvatar=null, myRole='ATT', setAvatarDraft=null, editDraft=null;
 let obLogo=null, setLogoDraft=null, obStep=0;   // loghi: scelta in onboarding e in impostazioni
+/* POSIZIONI IN CAMPO — y è la % dall'alto del campo (alto 620px) e indica la TESTA della
+   pedina; il cerchio vuoto (con il margine CSS) cade ~83px più sotto, cioè sui piedi.
+   Riferimenti del campo: linea area avversaria 82px (13%) · metà campo 310px (50%) ·
+   linea area nostra 538px (87%).
+   Taratura: ATT sulla linea dell'area avversaria · DIF sulla linea di metà campo ·
+   POR sulla linea dell'area di rigore nostra. */
 const MODULES={
-  '1-2-2':{bonus:0, slots:[{key:"a1",label:"ATT",x:26,y:4},{key:"a2",label:"ATT",x:74,y:4},{key:"d1",label:"DIF",x:18,y:34},{key:"d2",label:"DIF",x:82,y:34},{key:"g1",label:"POR",x:50,y:68}]},
-  '1-3-1':{bonus:5, slots:[{key:"a1",label:"ATT",x:50,y:4},{key:"d1",label:"DIF",x:15,y:31},{key:"d2",label:"DIF",x:50,y:37},{key:"d3",label:"DIF",x:85,y:31},{key:"g1",label:"POR",x:50,y:68}]},
-  '1-1-3':{bonus:-5, slots:[{key:"a1",label:"ATT",x:20,y:3},{key:"a2",label:"ATT",x:50,y:9},{key:"a3",label:"ATT",x:80,y:3},{key:"d1",label:"DIF",x:50,y:37},{key:"g1",label:"POR",x:50,y:68}]}
+  '1-2-2':{bonus:0, slots:[{key:"a1",label:"ATT",x:26,y:4},{key:"a2",label:"ATT",x:74,y:4},{key:"d1",label:"DIF",x:18,y:36.5},{key:"d2",label:"DIF",x:82,y:36.5},{key:"g1",label:"POR",x:50,y:70}]},
+  '1-3-1':{bonus:5, slots:[{key:"a1",label:"ATT",x:50,y:4},{key:"d1",label:"DIF",x:15,y:33.5},{key:"d2",label:"DIF",x:50,y:39.5},{key:"d3",label:"DIF",x:85,y:33.5},{key:"g1",label:"POR",x:50,y:70}]},
+  '1-1-3':{bonus:-5, slots:[{key:"a1",label:"ATT",x:20,y:3},{key:"a2",label:"ATT",x:50,y:9},{key:"a3",label:"ATT",x:80,y:3},{key:"d1",label:"DIF",x:50,y:37},{key:"g1",label:"POR",x:50,y:70}]}
 };
 let formModule='1-2-2';
 let SLOTS=MODULES[formModule].slots;
