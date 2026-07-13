@@ -33,16 +33,16 @@
   *::-webkit-scrollbar,html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0;background:transparent}
   .overlay,.sheet,.ls-body,.statmodal{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   body{background:radial-gradient(120% 60% at 50% -10%, rgba(63,151,255,.18), transparent 60%),radial-gradient(90% 50% at 50% 110%, rgba(63,151,255,.08), transparent 55%),var(--bg);min-height:100vh;min-height:100dvh}
-  /* GUSCIO APP: altezza esplicita in pixel (--app-h) impostata via JS leggendo visualViewport.height,
-     che riflette SUBITO l'altezza realmente visibile. Impostare un'altezza in px forza iOS a
-     ridisegnare il guscio: così, dopo il lancio della PWA, la barra si ancora al fondo da sola,
-     senza dover scrollare. Fallback 100dvh se il JS non parte. */
-  .app{max-width:var(--maxw);margin:0 auto;position:fixed;top:0;left:0;right:0;height:var(--app-h,100dvh);display:flex;flex-direction:column}
+  /* GUSCIO APP: NIENTE altezza calcolata (né dvh né JS). Su iPhone (PWA) al lancio innerHeight/
+     visualViewport/dvh SOTTOSTIMANO l'altezza reale (≈793 invece di 852) e si assestano solo dopo
+     uno scroll: da qui la barra in basso "alta" e lo schermo non riempito. Ancorando il guscio con
+     top:0 + bottom:0 (nessuna height), iOS lo attacca ai bordi veri del viewport da subito. */
+  .app{max-width:var(--maxw);margin:0 auto;position:fixed;top:0;bottom:0;left:0;right:0;display:flex;flex-direction:column}
   .scrollwrap{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
     padding:6px 0 16px}
   .num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
 
-  .overlay{position:fixed;top:0;left:0;right:0;height:var(--app-h,100dvh);z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(130% 70% at 50% 0%, rgba(63,151,255,.22), transparent 60%),var(--bg);transition:opacity .35s}
+  .overlay{position:fixed;top:0;bottom:0;left:0;right:0;z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(130% 70% at 50% 0%, rgba(63,151,255,.22), transparent 60%),var(--bg);transition:opacity .35s}
   .overlay.hidden{opacity:0;pointer-events:none}
 
   /* ---- SPLASH / schermata di caricamento — entrata dinamica a sequenza ---- */
@@ -1143,40 +1143,9 @@
 </style>
 </head>
 <body>
-<script>
-/* Altezza reale del viewport → guscio app/overlay ancorati bene su iPhone (PWA).
-   Legge visualViewport.height (che riflette SUBITO l'altezza visibile e scatta un evento
-   quando il viewport si assesta al lancio): impostandola in px forziamo iOS a ridisegnare,
-   così la barra in basso si ancora al fondo da sola senza dover scrollare.
-   Durante la digitazione (tastiera) l'altezza è "congelata" per non far saltare l'interfaccia. */
-(function(){
-  var de = document.documentElement, frozen = false;
-  function apply(){
-    if(frozen) return;
-    var vv = window.visualViewport;
-    var h = (vv && vv.height) ? vv.height : (window.innerHeight || de.clientHeight);
-    if(h) de.style.setProperty('--app-h', Math.round(h) + 'px');
-  }
-  // al lancio/ritorno iOS può assestare il viewport con un attimo di ritardo: ri-applichiamo a più riprese
-  function settle(){
-    apply();
-    requestAnimationFrame(apply);
-    [60,160,300,500,900].forEach(function(ms){ setTimeout(apply, ms); });
-  }
-  settle();
-  window.addEventListener('load', settle);
-  window.addEventListener('pageshow', settle);
-  window.addEventListener('resize', apply);
-  window.addEventListener('orientationchange', settle);
-  document.addEventListener('visibilitychange', function(){ if(!document.hidden) settle(); });
-  // congela mentre un campo è a fuoco (tastiera aperta) → nessun salto dell'interfaccia
-  document.addEventListener('focusin', function(e){
-    var t = e.target; if(t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) frozen = true;
-  });
-  document.addEventListener('focusout', function(){ frozen = false; setTimeout(settle, 60); });
-  if(window.visualViewport){ window.visualViewport.addEventListener('resize', apply); }
-})();
-</script>
+<!-- Nessuno script di misura del viewport: il guscio (.app/.overlay) è ancorato con
+     position:fixed top:0/bottom:0 (vedi CSS). Misurare l'altezza in JS su iOS PWA dava
+     un valore troppo basso al lancio → barra in basso "alta" finché non si scrollava. -->
 <!-- SPLASH / caricamento iniziale: solo logo, niente login né barra in alto -->
 <div id="splash">
   <div class="sp-logowrap"><div class="sp-logo"><img src="icon-512.png?v=3" alt="FantaCalcetto"></div></div>
@@ -1821,7 +1790,10 @@ const HOUR=3600000, MIN=60000, LINEUP_LOCK_BEFORE=5*MIN, VOTING_OPEN_AFTER=1*HOU
 function mdTimes(md){
   if(!md)return null;
   if(md.kickoff){ const k=new Date(md.kickoff).getTime();
-    return {kickoff:k, presenceClose:k-PRESENCE_CLOSE_BEFORE, lineupLock:k-LINEUP_LOCK_BEFORE, voteOpen:k+VOTING_OPEN_AFTER, voteClose:k+VOTING_OPEN_AFTER+VOTING_WINDOW}; }
+    /* skip_poll = giornata aperta con «Apri subito»: niente sondaggio presenze (presenze a mano
+       dell'admin) → presenceClose nel passato, così le formazioni sono aperte da subito. */
+    const pc = md.skip_poll ? 0 : (k-PRESENCE_CLOSE_BEFORE);
+    return {kickoff:k, presenceClose:pc, lineupLock:k-LINEUP_LOCK_BEFORE, voteOpen:k+VOTING_OPEN_AFTER, voteClose:k+VOTING_OPEN_AFTER+VOTING_WINDOW}; }
   if(md.vote_deadline){ const c=new Date(md.vote_deadline).getTime();
     return {kickoff:null, presenceClose:null, lineupLock:Infinity, voteOpen:0, voteClose:c}; }
   return {kickoff:null, presenceClose:null, lineupLock:Infinity, voteOpen:0, voteClose:Infinity};
@@ -2701,8 +2673,8 @@ function renderOpenMode(){
     <p class="vs" id="schedHint" style="color:var(--accent-soft);font-size:12px;margin-top:9px;line-height:1.5">${schedHintText()}</p>`;
   box.innerHTML=html;
 }
-function refreshSchedHint(){const h=document.getElementById('schedHint'); if(h)h.textContent=schedHintText();}
-function pickSchedDay(d){schedDraft.weekday=d; renderOpenMode();}
+function refreshSchedHint(){const h=document.getElementById('schedHint'); if(h)h.textContent=schedHintText(); refreshOpenNowHint();}
+function pickSchedDay(d){schedDraft.weekday=d; renderOpenMode(); refreshOpenNowHint();}
 /* salva auto_open + (se attivo) giorno/ora. Con p_auto=false la funzione SQL CONSERVA giorno/ora. */
 async function applyAutoOpen(on){
   const wd=schedDraft.weekday, tm=schedDraft.time||'20:00';
@@ -2738,6 +2710,32 @@ async function setAutoOpen(on){
       toast('In pausa e giornata annullata ✅');
     } else { toast('Apertura automatica in pausa ⏸️'); }
   } else { toast('Apertura automatica in pausa ⏸️'); }
+}
+
+/* ---------- APRI SUBITO (senza aspettare le 72h del cron) ----------
+   Apre ADESSO la giornata programmata qui sopra: kickoff = prossimo giorno+ora impostati.
+   Se non c'è ancora una programmazione, ripiega sull'apertura manuale (data/ora a mano). */
+function openNowHintText(){
+  if(schedDraft.weekday==null||!schedDraft.time) return 'Imposta giorno e ora qui sopra: poi potrai aprirla anche subito.';
+  const k=nextWeeklyKickoffLocal(schedDraft.weekday,schedDraft.time);
+  return `Parte adesso la giornata di ${fmtDayTime(k)}: niente attesa 72h, niente sondaggio, formazioni subito aperte. I presenti li segni tu qui sotto.`;
+}
+function refreshOpenNowHint(){const h=document.getElementById('openNowHint'); if(h)h.textContent=openNowHintText();}
+async function openNowMatchday(){
+  if(currentMd && currentMd.status!=='closed'){ toast('C\'è già una giornata aperta'); return; }
+  if(schedDraft.weekday==null || !schedDraft.time){
+    toast('Scegli data e ora della partita');
+    openMatchdaySheet(true);   // nessuna programmazione: data/ora a mano, sempre senza sondaggio
+    return;
+  }
+  const k=nextWeeklyKickoffLocal(schedDraft.weekday, schedDraft.time);
+  const msg='Apro subito la giornata?\n\n'
+    +'⚽ Fischio d\'inizio: '+fmtDayTime(k)+'\n'
+    +'📋 Niente sondaggio presenze: i presenti li segni tu da «Chi gioca questa giornata».\n'
+    +'👕 Formazioni aperte da subito (si bloccano 5 min prima del via).\n\nConfermi?';
+  if(!confirm(msg)) return;
+  await createMatchday(k.toISOString(), true);
+  toast('Giornata aperta ⚡ Ora segna chi gioca');
 }
 
 /* ---------- MODALITÀ PORTIERE (rotazione / fisso) ---------- */
@@ -2891,22 +2889,27 @@ function renderHomePresence(){
     <div class="hp-note">Sondaggio presenze${when}. Poi si schiera chi è presente.</div>`;
 }
 
-function openMatchdaySheet(){
-  document.getElementById('sheetTitle').textContent='Apri nuova giornata';
-  document.getElementById('sheetHint').textContent='Quando si gioca? Le formazioni si bloccano 5 min prima del via, i voti aprono ~1h dopo e restano aperti 24h.';
+function openMatchdaySheet(now){
+  const q=!!now;
+  document.getElementById('sheetTitle').textContent = q?'Apri subito la giornata':'Apri nuova giornata';
+  document.getElementById('sheetHint').textContent = q
+    ? 'Quando si gioca? La giornata parte adesso: niente sondaggio presenze (i presenti li segni tu) e formazioni aperte da subito.'
+    : 'Quando si gioca? Le formazioni si bloccano 5 min prima del via, i voti aprono ~1h dopo e restano aperti 24h.';
   document.getElementById('sheetList').innerHTML=`
     <div class="field-lab">Data e ora della partita</div>
     <input class="ob-input" type="datetime-local" id="mdKick" value="${defaultKickoff()}" style="padding:13px;font-size:15px">
-    <button class="save" onclick="confirmMatchday()">Apri giornata</button>`;
+    <button class="save" onclick="confirmMatchday(${q})">${q?'Apri subito':'Apri giornata'}</button>`;
   openSheet();
 }
-async function confirmMatchday(){
+async function confirmMatchday(skipPoll){
   const v=document.getElementById('mdKick').value;
   if(!v){toast('Scegli data e ora');return;}
   closeSheet();
-  await createMatchday(new Date(v).toISOString());
+  await createMatchday(new Date(v).toISOString(), !!skipPoll);
 }
-async function createMatchday(kickoffISO){
+/* skipPoll=true (apertura «Apri subito»): salta il sondaggio presenze, formazioni aperte da subito,
+   e disarma le due push legate al ciclo presenze (promemoria sondaggio / formazioni aperte). */
+async function createMatchday(kickoffISO, skipPoll){
   await loadSeason();   // numerazione per stagione, sempre aggiornata
   const seasonOpen = currentSeason && currentSeason.status==='open';
   const base = seasonOpen ? (currentSeason.mds_total||0) : 0;   // stagione chiusa/assente -> nuova stagione, riparte da 1
@@ -2916,7 +2919,14 @@ async function createMatchday(kickoffISO){
   }
   const n = base+1;
   const voteClose=new Date(new Date(kickoffISO).getTime()+VOTING_OPEN_AFTER+VOTING_WINDOW).toISOString();
-  const {data,error}=await sb.from('matchdays').insert({label:'Giornata '+n,status:'open',kickoff:kickoffISO,vote_deadline:voteClose}).select().single();
+  const row={label:'Giornata '+n,status:'open',kickoff:kickoffISO,vote_deadline:voteClose};
+  if(skipPoll){ row.skip_poll=true; row.presence_remind_sent=true; row.lineup_open_sent=true; }
+  let {data,error}=await sb.from('matchdays').insert(row).select().single();
+  if(error && skipPoll && /skip_poll/i.test(error.message||'')){   // apri_subito.sql non ancora eseguito
+    delete row.skip_poll;
+    ({data,error}=await sb.from('matchdays').insert(row).select().single());
+    if(!error) toast('Aperta, ma manca skip_poll: esegui apri_subito.sql');
+  }
   if(error){toast('Errore giornata: '+error.message);return;}
   currentMd=data; lineup={}; captain=null; myVotes={}; averages={}; adminStats={}; myNom={mvp:'',sega:''}; mvpPid=0; segaPid=0; formModule='1-2-2'; SLOTS=MODULES[formModule].slots;
   mdPresent=new Set();      // nuova giornata: nessuno preselezionato, l'admin sceglie chi gioca
@@ -3064,11 +3074,19 @@ function renderMatchday(){
     const ml=document.getElementById('mdLabel'); if(ml)ml.textContent=currentMd?currentMd.label:'Nessuna giornata aperta';
     const mp=document.getElementById('mdPhase'); if(mp)mp.textContent=phaseLabel();
     const ma=document.getElementById('mdActions');
-    if(ma) ma.innerHTML = currentMd ? (
-      (currentMd.status!=='closed'?`<button class="set-btn" style="margin-top:10px" onclick="openEditKickoffSheet()">🕑 Modifica orario partita</button>`:'')
-      +(currentMd.status!=='closed'?`<button class="logout" style="border-color:rgba(255,194,61,.4);color:var(--gold-soft);margin-top:10px" onclick="closeMatchday()">Chiudi la giornata adesso</button>`:'')
-      +`<button class="logout" style="border-color:rgba(255,90,90,.45);color:#ff9a9a;margin-top:10px" onclick="resetMatchday()">🗑️ Annulla questa giornata</button>`
-    ) : '';
+    if(ma){
+      const live = !!(currentMd && currentMd.status!=='closed');   // giornata in corso
+      let h='';
+      if(live){
+        h+=`<button class="set-btn" style="margin-top:10px" onclick="openEditKickoffSheet()">🕑 Modifica orario partita</button>`;
+      } else {
+        // nessuna giornata aperta → si può far partire adesso quella programmata (niente attesa 72h)
+        h+=`<button class="save" style="margin-top:12px" onclick="openNowMatchday()">⚡ Apri subito la giornata</button>`
+          +`<p class="vs" id="openNowHint" style="color:var(--muted);font-size:12px;margin:9px 0 0;line-height:1.5">${openNowHintText()}</p>`;
+      }
+      if(currentMd) h+=`<button class="logout" style="border-color:rgba(255,90,90,.45);color:#ff9a9a;margin-top:10px" onclick="resetMatchday()">🗑️ Annulla questa giornata</button>`;
+      ma.innerHTML=h;
+    }
     renderOpenMode();
   }
   startCountdown();

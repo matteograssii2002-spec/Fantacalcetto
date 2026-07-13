@@ -241,6 +241,8 @@ GOTCHAS = [
     "CREDITI alla chiusura = metodo a RANKING (scarto credito vs punti), non piu' delta-voto. Vedi MATCHDAY_LIFECYCLE.crediti_chiusura. forma da players.trend.",
     "BONUS/MALUS via pannello partita LIVE (#liveStats), non piu' tendina per giocatore; bozza in localStorage fc_live_<mdId>.",
     "AUTO-CHIUSURA lato server (close_due_matchdays via cron in notify.ts): chiude a kickoff+25h e applica i crediti, indipendente dall'admin.",
+    "APRI SUBITO (sess. 40): matchdays.skip_poll=true -> niente sondaggio presenze, formazioni aperte da subito, presenze a mano. Si spegne in UN SOLO punto: mdTimes() mette presenceClose=0 (NON null: null = sondaggio sempre aperto!). Il pulsante 'Chiudi la giornata adesso' NON esiste piu'.",
+    "MAI misurare l'altezza del viewport in JS su iOS-PWA (innerHeight/visualViewport/dvh sottostimano al lancio: ~793 vs 852). Il guscio .app/.overlay si ancora con position:fixed top:0+bottom:0, senza height. Vedi LAYOUT_FULLSCREEN_V2.",
     "PRESENZE: all'apertura di una giornata NESSUNO e' presente; l'admin sceglie. presentId/togglePresence aggiornati.",
     "Chiavi placeholder: reincollarle a ogni upload del file intero.",
     "Icona PWA: cambia solo rimuovendo e ri-aggiungendo l'app alla home.",
@@ -990,3 +992,36 @@ SESSIONE_39_DEFAULT_E_RIFINITURE = {
 
 FILE_TOCCATI_SESSIONE_39 = ["vice_admin.sql (nuovo, ESEGUITO)", "notify.ts (push vice + testi gia' riscritti)", "index.html"]
 DEPLOY_SESSIONE_39 = "vice_admin.sql PRIMA (fatto) -> notify.ts dalla dashboard Edge Functions -> index.html su GitHub. Chiavi gia' dentro index.html (nessun re-incolla se si parte dai file consegnati)."
+
+
+# ============================================================================
+# SESSIONE 40 — «APRI SUBITO LA GIORNATA» (skip_poll) + FIX SCHERMO iPHONE
+#               (2026-07-13)  ← VALE QUESTO dove in conflitto con sopra.
+# Consegnati: apri_subito.sql (NUOVO, da eseguire PRIMA), index.html.
+# notify.ts NON toccato. Chiavi gia' dentro index.html.
+# ============================================================================
+SESSIONE_40_APRI_SUBITO = {
+    "perche": "Caso reale: si gioca STASERA ma la certezza arriva stamattina. L'apertura automatica (72h prima) non fa in tempo e il ciclo presenze (sondaggio fino a K-36h, formazioni bloccate fino ad allora) non ci sta dentro. Serve: apro adesso, si schiera adesso, le presenze le mette l'admin a mano.",
+    "sql": "apri_subito.sql (additivo, idempotente): alter table matchdays add column if not exists skip_poll boolean not null default false. NESSUNA policy da toccare (la write su matchdays e' gia' 'md admin' = is_operator(), vale per tutte le colonne).",
+    "semantica": "skip_poll=false (default) -> ciclo normale (auto 72h, sondaggio fino a K-36h, poi formazioni). skip_poll=true -> giornata aperta col pulsante: NIENTE sondaggio presenze, formazioni aperte DA SUBITO, presenze a mano dall'admin.",
+    "pulsante": "Card admin Partita -> Giornata (#mdActions, renderMatchday). Se NON c'e' una giornata aperta (!currentMd || status=='closed') -> '⚡ Apri subito la giornata' (openNowMatchday) + hint #openNowHint (openNowHintText/refreshOpenNowHint) col kickoff che usera'. Se c'e' una giornata in corso -> resta solo '🕑 Modifica orario partita'. '🗑️ Annulla questa giornata' invariato.",
+    "rimosso": "Pulsante 'Chiudi la giornata adesso' RIMOSSO (la chiusura e' automatica: fine finestra voti o tutti hanno votato; altrimenti si annulla). closeMatchday() resta nel file INUTILIZZATA (innocua). doCloseMatchday(true) continua a servire l'auto-chiusura.",
+    "kickoff": "openNowMatchday(): kickoff = nextWeeklyKickoffLocal(schedDraft.weekday, schedDraft.time) = PROSSIMO giorno/ora della programmazione (oggi lunedi' + programmazione Lun 22:00 -> stasera 22:00). Se non c'e' programmazione ripiega su openMatchdaySheet(true) = data/ora a mano, sempre SENZA sondaggio.",
+    "spegnimento_sondaggio": "UN SOLO PUNTO: mdTimes() -> const pc = md.skip_poll ? 0 : (k - PRESENCE_CLOSE_BEFORE). ATTENZIONE: 0, NON null (null = 'sondaggio sempre aperto' nel fallback senza kickoff). A cascata si comportano bene presencePollOpen(), computeLock() (niente presPhase -> formazioni aperte), phaseLabel(), il countdown e renderHomePresence() (niente card 'Ci sei?' ai giocatori).",
+    "presenze_a_mano": "La card admin 'Chi gioca questa giornata' compare comunque (override admin a giornata aperta anche in modalita' giocatori): e' li' che si segnano i presenti. In modalita' giocatori matchday_players parte VUOTA (il trigger seed_presences precompila solo in modalita' admin).",
+    "create": "createMatchday(kickoffISO, skipPoll) e' RI-VIVA (non piu' 'morta' come diceva la sez. 27.5); la label resta comunque del trigger stamp_season. confirmMatchday(skipPoll) / openMatchdaySheet(now) passano il flag.",
+    "push": "Con skipPoll la riga inserita porta anche presence_remind_sent:true e lineup_open_sent:true -> il cron NON manda fuori tempo le 2 push del ciclo presenze ('vota la presenza', 'presenze chiuse, schiera'). Restano il push di apertura (client pushNotify) e il promemoria formazioni a chi non ha schierato.",
+    "degrado": "Se apri_subito.sql non e' stato eseguito: l'insert fallisce sulla colonna mancante -> retry SENZA skip_poll + toast 'Aperta, ma manca skip_poll: esegui apri_subito.sql'. In lettura md.skip_poll undefined = falsy = comportamento normale. Nessun crash.",
+}
+
+LAYOUT_FULLSCREEN_V2 = {
+    "NB": "SOSTITUISCE LAYOUT_FULLSCREEN dove in conflitto. Il guscio fisso e' tornato (.app position:fixed + .scrollwrap interno) e ORA funziona, ma SOLO senza altezze calcolate.",
+    "sintomo": "All'avvio della PWA la barra in basso stava TROPPO IN ALTO, con una fascia vuota sotto; bastava uno scroll e si assestava per sempre.",
+    "causa": "Il guscio .app/.overlay aveva un'ALTEZZA CALCOLATA (height:var(--app-h), con --app-h scritta da JS leggendo visualViewport.height). Su iOS PWA quel valore al lancio e' SOTTOSTIMATO (~793 invece di 852, gli stessi numeri gia' misurati) e si assesta solo dopo uno scroll.",
+    "soluzione": "NIENTE altezza: .app{position:fixed;top:0;bottom:0;left:0;right:0;margin:0 auto;max-width:var(--maxw);display:flex;flex-direction:column} e .overlay{position:fixed;top:0;bottom:0;left:0;right:0}. Rimosso TUTTO lo script che misurava il viewport (--app-h, settle(), il 'freeze' sul focus dei campi). max-width + margin:0 auto con left:0;right:0 continua a centrare il guscio.",
+    "regola": "Su iOS-PWA position:fixed con TOP+BOTTOM e' affidabile (stesso ancoraggio della vecchia .nav{bottom:0} che funzionava). height:100dvh, innerHeight e visualViewport.height NO. NON misurare MAI l'altezza del viewport in JS.",
+    "safe_area": "Le safe-area restano gestite dov'erano: .topbar padding-top calc(14px + env(safe-area-inset-top)), .nav padding-bottom calc(6px + env(safe-area-inset-bottom)). viewport-fit=cover invariato.",
+}
+
+FILE_TOCCATI_SESSIONE_40 = ["apri_subito.sql (nuovo, DA ESEGUIRE PRIMA)", "index.html"]
+DEPLOY_SESSIONE_40 = "1) apri_subito.sql in Supabase SQL Editor. 2) index.html su GitHub (Vercel auto-deploy). notify.ts NON si tocca. Chiavi gia' dentro index.html. Test iPhone: avvio da app chiusa (barra subito in fondo), rientro da background, rotazione, tastiera aperta; poi Apri subito -> segna i presenti -> schiera."

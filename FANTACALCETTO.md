@@ -1702,3 +1702,60 @@ I **Traguardi** (player e manager) restano coperti da `badgeDesc`.
 
 ### 39.7 Deploy
 `vice_admin.sql` PRIMA (fatto), poi `notify.ts` dalla dashboard Edge Functions, poi `index.html` su GitHub. Chiavi già dentro `index.html` (nessun re-incolla se si parte dai file consegnati).
+
+---
+
+## 40. «Apri subito la giornata» (skip_poll) + fix schermo iPhone non riempito al lancio
+
+> Dove in conflitto con sezioni precedenti, **vale questa**. File: `apri_subito.sql` (nuovo) + `index.html`.
+> **Ordine di deploy:** `apri_subito.sql` **PRIMA**, poi `index.html`. Chiavi già dentro `index.html` (nessun re-incolla partendo dal file consegnato). `notify.ts` **non** si tocca.
+
+### 40.1 Perché
+Caso reale: si gioca **stasera** ma la certezza arriva **stamattina**. L'apertura automatica (72h prima) non fa in tempo, e comunque il ciclo presenze (sondaggio fino a K−36h, formazioni bloccate fino ad allora) non ci sta dentro. Serve: **apro adesso, si schiera adesso, le presenze le metto io a mano.**
+
+### 40.2 `apri_subito.sql` — una sola colonna
+```sql
+alter table public.matchdays
+  add column if not exists skip_poll boolean not null default false;
+```
+Additiva e idempotente. **Nessuna policy da toccare**: la write su `matchdays` è la `"md admin"` (`is_operator()`) già esistente e vale per tutte le colonne.
+- `skip_poll=false` (default) → ciclo normale: apertura auto a K−72h, sondaggio presenze fino a K−36h, poi formazioni.
+- `skip_poll=true` → giornata aperta col pulsante: **niente sondaggio presenze**, **formazioni aperte da subito**, presenze inserite a mano dall'admin.
+
+### 40.3 Client — il pulsante
+Card admin **Partita → Giornata** (`renderMatchday` → `#mdActions`), riscritta:
+- **Nessuna giornata aperta** (`!currentMd || status==='closed'`) → **`⚡ Apri subito la giornata`** (`openNowMatchday()`) + riga di hint (`#openNowHint`, `openNowHintText()`/`refreshOpenNowHint()`) che dice quale kickoff userà.
+- **Giornata in corso** → resta solo `🕑 Modifica orario partita`.
+- `🗑️ Annulla questa giornata` invariato (se esiste una giornata).
+- **RIMOSSO** il pulsante *«Chiudi la giornata adesso»*: la chiusura è automatica (fine finestra voti / tutti hanno votato), altrimenti si annulla. La funzione `closeMatchday()` resta nel file **inutilizzata** (innocua); `doCloseMatchday(true)` continua a servire l'auto-chiusura.
+
+`openNowMatchday()`: kickoff = `nextWeeklyKickoffLocal(schedDraft.weekday, schedDraft.time)` (il **prossimo** giorno/ora della programmazione: se oggi è lunedì e la programmazione è Lun 22:00 → stasera 22:00). Conferma con kickoff + "presenze a mano" + "formazioni subito". Se la programmazione non c'è ancora, ripiega su `openMatchdaySheet(true)` (data/ora a mano, **sempre** senza sondaggio).
+
+### 40.4 Client — come si spegne il sondaggio
+Tutto passa da **un solo punto**, `mdTimes()`:
+```js
+const pc = md.skip_poll ? 0 : (k - PRESENCE_CLOSE_BEFORE);
+```
+`presenceClose` nel passato (0, **non** `null`: `null` significa "sondaggio sempre aperto" nel fallback senza kickoff!) → a cascata si comportano bene `presencePollOpen()`, `computeLock()` (niente `presPhase` → formazioni aperte), `phaseLabel()`, il countdown e `renderHomePresence()` (nessuna card "Ci sei?" ai giocatori).
+La card admin **«Chi gioca questa giornata»** compare comunque (override admin a giornata aperta anche in modalità giocatori) → è lì che si segnano i presenti.
+
+### 40.5 Client — creazione della giornata
+`createMatchday(kickoffISO, skipPoll)` (ri-vivo: **non** è più "morto" come diceva §27.5; la label resta comunque del trigger `stamp_season`) e `confirmMatchday(skipPoll)` / `openMatchdaySheet(now)`.
+Con `skipPoll` la riga inserita porta anche `presence_remind_sent:true` e `lineup_open_sent:true` → il cron **non** manda fuori tempo le due push del ciclo presenze ("vota la presenza", "presenze chiuse, schiera"). Restano il push di apertura (client `pushNotify`) e il promemoria formazioni a chi non ha schierato.
+**Degrado sicuro:** se `apri_subito.sql` non è stato eseguito, l'insert fallisce sulla colonna mancante → si ritenta **senza** `skip_poll` e appare il toast «Aperta, ma manca skip_poll: esegui apri_subito.sql» (giornata comunque aperta, ma col sondaggio normale). In lettura `md.skip_poll` `undefined` = falsy = comportamento normale.
+
+### 40.6 Fix — schermo non riempito al lancio (iPhone/PWA)
+**Sintomo:** all'avvio la barra in basso stava **troppo in alto**, con una fascia vuota sotto; scrollando una volta si assestava e restava a posto.
+**Causa:** il guscio `.app`/`.overlay` aveva un'**altezza calcolata** (`height:var(--app-h)`, con `--app-h` scritta da JS leggendo `visualViewport.height`). Su iOS PWA quel valore al lancio è **sottostimato** (~793 invece di 852: gli stessi numeri già misurati in §—LAYOUT_FULLSCREEN) e si assesta solo dopo uno scroll.
+**Soluzione:** **niente altezza**, ancoraggio ai bordi veri del viewport:
+```css
+.app{position:fixed;top:0;bottom:0;left:0;right:0;margin:0 auto;max-width:var(--maxw);display:flex;flex-direction:column}
+.overlay{position:fixed;top:0;bottom:0;left:0;right:0;...}
+```
+Rimosso **tutto** lo script che misurava il viewport (`--app-h`, `settle()`, il "freeze" sul focus dei campi). `max-width` + `margin:0 auto` con `left:0;right:0` continua a centrare il guscio.
+**Regola:** su iOS-PWA `position:fixed` con **top+bottom** è affidabile (è lo stesso ancoraggio della vecchia `.nav{bottom:0}` che funzionava); `height:100dvh`, `innerHeight` e `visualViewport.height` **no**. Non misurare mai l'altezza in JS.
+
+### 40.7 Deploy
+1. `apri_subito.sql` in Supabase → SQL Editor.
+2. `index.html` su GitHub (Vercel deploya da solo).
+3. Test su iPhone: avvio da app chiusa (barra subito in fondo), rientro da background, rotazione, tastiera aperta; poi **Apri subito** → segna i presenti → schiera.
