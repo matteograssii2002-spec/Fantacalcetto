@@ -98,6 +98,39 @@
     .sp-logowrap,.sp-name .np-a,.sp-name .np-b,.sp-tag,.sp-load,.sp-hero,.sp-logo,.sp-logowrap::after{animation-duration:.01ms;animation-iteration-count:1}
   }
   @keyframes spBlink{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+
+  /* ---- OFFLINE / nessuna connessione (vale anche da app nativa: è tutto lato client) ---- */
+  #offline{position:fixed;top:0;bottom:0;left:0;right:0;z-index:1400;display:none;flex-direction:column;
+    background:radial-gradient(130% 78% at 50% 26%, rgba(63,151,255,.15), transparent 62%),var(--bg);
+    opacity:0;transition:opacity .35s ease}
+  #offline.on{opacity:1}
+  .off-inner{max-width:var(--maxw);width:100%;margin:0 auto;flex:1;min-height:0;display:flex;flex-direction:column;
+    padding:calc(26px + env(safe-area-inset-top)) 24px calc(32px + env(safe-area-inset-bottom))}
+  .off-top{margin-top:24px;flex:0 0 auto}
+  /* icona: stessa forma del logo ma spenta, così "si vede" che qualcosa non va */
+  .off-icon{position:relative;width:96px;height:96px;border-radius:27px;margin:0 auto;display:grid;place-items:center;
+    color:var(--accent-soft);background:linear-gradient(135deg,#26436f,#182f52);
+    border:1px solid rgba(127,176,255,.22);
+    box-shadow:0 20px 44px -18px rgba(8,20,40,.9), inset 0 1px 0 rgba(255,255,255,.14)}
+  .off-icon::after{content:"";position:absolute;inset:0;border-radius:27px;
+    box-shadow:0 0 0 0 rgba(63,151,255,.34);animation:offRing 2.6s ease-out .3s infinite}
+  @keyframes offRing{0%{box-shadow:0 0 0 0 rgba(63,151,255,.34)}70%,100%{box-shadow:0 0 0 26px rgba(63,151,255,0)}}
+  .off-icon svg{width:46px;height:46px;display:block}
+  .off-mid{margin-top:32px;flex:0 0 auto}
+  .off-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:24px;letter-spacing:-.03em;line-height:1.05;text-align:center;margin:0}
+  .off-sub{font-size:13.5px;color:var(--muted);text-align:center;line-height:1.45;margin:10px 8px 0}
+  /* illustrazione: la stessa della welcome, ma spenta — la partita è in pausa */
+  .off-hero{flex:1 1 auto;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;padding:8px 0}
+  .off-hero img{width:100%;max-width:360px;max-height:100%;height:auto;object-fit:contain;display:block;
+    opacity:.3;filter:grayscale(.75) brightness(.72)}
+  .off-actions{margin-top:auto;width:100%;flex:0 0 auto;padding-top:8px}
+  .off-status{margin-top:12px;font-size:13px;color:var(--accent-soft);text-align:center;line-height:1.4;min-height:18px}
+  .off-status.bad{color:var(--red)}
+  .off-shake{animation:offShake .42s cubic-bezier(.36,.07,.19,.97) both}
+  @keyframes offShake{10%,90%{transform:translateX(-2px)}30%,70%{transform:translateX(4px)}50%{transform:translateX(-5px)}100%{transform:none}}
+  @media (prefers-reduced-motion: reduce){
+    .off-icon::after,.off-shake{animation:none}
+  }
   .ob-inner{max-width:var(--maxw);margin:0 auto;padding:calc(26px + env(safe-area-inset-top)) 24px calc(40px + env(safe-area-inset-bottom));min-height:100%;display:flex;flex-direction:column}
   .ob-brand{display:flex;align-items:center;gap:11px;margin-bottom:18px}
   .ob-brand .dot{width:36px;height:36px;border-radius:11px;overflow:hidden;background:linear-gradient(135deg,var(--accent),#1c6ff2);display:grid;place-items:center;font-size:19px;box-shadow:0 8px 22px rgba(63,151,255,.4)}
@@ -1235,6 +1268,34 @@
   <div class="sp-load"><i></i><i></i><i></i></div>
 </div>
 
+<!-- OFFLINE · nessuna connessione / modalità aereo (tutto lato client: vale anche da app nativa) -->
+<div id="offline">
+  <div class="off-inner">
+    <div class="off-top">
+      <div class="off-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M1.4 8.9a16 16 0 0 1 5.2-3.1"></path>
+          <path d="M10.9 4.9a16 16 0 0 1 11.7 4"></path>
+          <path d="M5 12.5a11 11 0 0 1 4.2-2.2"></path>
+          <path d="M19 12.5a11 11 0 0 0-2.6-1.7"></path>
+          <path d="M8.6 16.1a6 6 0 0 1 6.8 0"></path>
+          <path d="M12 20h.01"></path>
+          <path d="M2 2l20 20"></path>
+        </svg>
+      </div>
+    </div>
+    <div class="off-mid">
+      <h1 class="off-h">Sei offline</h1>
+      <p class="off-sub">Controlla il Wi-Fi o i dati mobili.<br>La partita ti aspetta. ⚽</p>
+    </div>
+    <div class="off-hero"><img id="offHero" alt="" loading="lazy" decoding="async"></div>
+    <div class="off-actions">
+      <button class="ob-btn" id="offBtn" onclick="retryOffline()">Riprova</button>
+      <div class="off-status" id="offStatus"></div>
+    </div>
+  </div>
+</div>
+
 <!-- MANUTENZIONE (mostrato ai non-admin quando attiva) -->
 <div id="maint" style="display:none;position:fixed;inset:0;z-index:9999;background:linear-gradient(160deg,#091628,#0c1f38);color:#eaf1fb;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:34px">
   <div style="font-size:62px;line-height:1;margin-bottom:20px">⚙️</div>
@@ -1833,11 +1894,11 @@ const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chi
 // Chiave pubblica per le notifiche push (la privata sta nel secret della Edge Function su Supabase)
 const VAPID_PUBLIC = 'BIVh1NLu5K0JVdcOrjGp_LeNc3XZRhMdIs1gAuTLCcs-rnH873A8bB-77NQpro3YmWzI3sgBLboKcB00SDLZoqc';
 
-/* Splash: riuso la STESSA illustrazione della welcome (il base64 sta una volta sola, su #wcHero).
+/* Splash e offline: riuso la STESSA illustrazione della welcome (il base64 sta una volta sola, su #wcHero).
    Gira subito allo script parse: l'immagine dello splash ha comunque 1,5s di ritardo d'animazione. */
 try{
-  const _spH=document.getElementById('spHero'), _wcH=document.getElementById('wcHero');
-  if(_spH&&_wcH&&_wcH.src) _spH.src=_wcH.src;
+  const _wcH=document.getElementById('wcHero');
+  if(_wcH&&_wcH.src) ['spHero','offHero'].forEach(id=>{ const e=document.getElementById(id); if(e) e.src=_wcH.src; });
 }catch(_){}
 
 const PRICE=20;
@@ -2038,7 +2099,73 @@ function showGate(intent){
 }
 function welcomeGo(intent){ authIntent=intent; showGate(intent); }
 /* rete di sicurezza: se qualcosa si blocca, non restare mai fermi sul logo */
-setTimeout(()=>{ if(!_splashGone){ if(!user) showWelcome(); else hideSplash(); } }, 9000);
+setTimeout(()=>{ if(!_splashGone){ if(navigator.onLine===false) showOffline(); else if(!user) showWelcome(); else hideSplash(); } }, 9000);
+
+/* ---------- SCHERMATA OFFLINE ----------
+   Tutto lato client, nessuna dipendenza dal service worker: funziona uguale
+   da sito, da PWA e (in futuro) da app nativa impacchettata con Capacitor.
+   navigator.onLine è affidabile per la modalità aereo / Wi-Fi spento; per il
+   "Riprova" faccio comunque una chiamata vera, perché onLine=true non
+   garantisce che la rete funzioni davvero (hotspot senza traffico, captive portal...). */
+let _offlineOn=false, _offRetrying=false;
+function showOffline(){
+  if(_offlineOn) return; _offlineOn=true;
+  hideSplash();                                  // non lasciare mai l'utente fermo sul logo
+  const o=document.getElementById('offline'); if(!o) return;
+  o.style.display='flex';
+  offStatus('');
+  requestAnimationFrame(()=>o.classList.add('on'));
+}
+function hideOffline(){
+  if(!_offlineOn) return; _offlineOn=false;
+  const o=document.getElementById('offline'); if(!o) return;
+  o.classList.remove('on');
+  setTimeout(()=>{ if(!_offlineOn) o.style.display='none'; }, 400);
+}
+function offStatus(txt,bad){
+  const s=document.getElementById('offStatus'); if(!s) return;
+  s.textContent=txt||''; s.classList.toggle('bad', !!bad);
+}
+// ping reale: qualunque risposta HTTP (anche un 401) significa che la rete c'è.
+// Solo un errore lanciato = davvero offline.
+async function netAlive(){
+  if(navigator.onLine===false) return false;
+  try{
+    const c=new AbortController(); const t=setTimeout(()=>c.abort(), 6000);
+    await fetch(SUPABASE_URL+'/auth/v1/health', {method:'GET',cache:'no-store',signal:c.signal});
+    clearTimeout(t); return true;
+  }catch(_){ return false; }
+}
+// Rientro: se l'app era già avviata (sessione e dati in memoria) basta togliere l'overlay
+// e si torna esattamente dov'era; se invece non era mai partita, ricarico.
+function backOnline(){
+  if(user && _splashGone){ offStatus(''); hideOffline(); }
+  else { offStatus('Connessione trovata, ricarico…'); setTimeout(()=>location.reload(), 500); }
+}
+async function retryOffline(){
+  if(_offRetrying) return; _offRetrying=true;
+  const b=document.getElementById('offBtn');
+  const old=b?b.textContent:'Riprova';
+  if(b){ b.disabled=true; b.textContent='Controllo…'; }
+  offStatus('');
+  const ok=await netAlive();
+  if(b){ b.disabled=false; b.textContent=old; }
+  _offRetrying=false;
+  if(ok) backOnline();
+  else{
+    offStatus('Ancora nessuna connessione.', true);
+    const card=document.querySelector('#offline .off-icon');
+    if(card){ card.classList.remove('off-shake'); void card.offsetWidth; card.classList.add('off-shake'); }
+  }
+}
+// il sistema ci dice che la rete è tornata: verifico e riparto da solo
+window.addEventListener('online', async ()=>{
+  if(!_offlineOn) return;
+  offStatus('Connessione tornata, controllo…');
+  if(await netAlive()) backOnline();
+  else offStatus('');
+});
+window.addEventListener('offline', ()=>showOffline());
 
 /* ---------- AUTH / BOOT ---------- */
 async function boot(){
@@ -2058,7 +2185,11 @@ async function boot(){
     try{ const reg=await navigator.serviceWorker.getRegistration(); if(reg) reg.update(); }catch(_){}
   }catch(_){} }
   sb.auth.onAuthStateChange((_e,session)=>{ if(session&&(!user||user.id!==session.user.id)){ user=session.user; afterLogin(); } });
-  const {data:{session}}=await sb.auth.getSession();
+  // se parto senza rete non ha senso proseguire: mostro subito la schermata offline
+  if(navigator.onLine===false){ showOffline(); return; }
+  let session=null;
+  try{ const r=await sb.auth.getSession(); session=r&&r.data?r.data.session:null; }
+  catch(_){ if(!await netAlive()){ showOffline(); return; } }
   if(session){ user=session.user; afterLogin(); }
   else { showWelcome(); }
 }
