@@ -305,6 +305,15 @@
   .section-h{display:flex;align-items:baseline;justify-content:space-between;margin:26px 2px 12px}
   .section-h h2{font-family:'Bricolage Grotesque';font-weight:800;font-size:21px;letter-spacing:-.02em}
   .section-h a{font-size:13px;color:var(--accent-soft);font-weight:600;text-decoration:none;cursor:pointer}
+  /* selettore ordinamento (mercato): scelte esposte, un tap solo, nessuna pagina in mezzo */
+  .section-h.with-sort{align-items:center}
+  .sortseg{display:inline-flex;flex:none;background:var(--surface);border:1px solid var(--line-strong);border-radius:999px;padding:3px;gap:2px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+  .sortseg button{border:none;background:transparent;color:var(--muted);font-family:'Hanken Grotesk',sans-serif;font-size:12px;font-weight:700;
+    padding:9px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
+  .sortseg button.on{background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#fff;
+    box-shadow:0 8px 16px -10px rgba(63,151,255,.95)}
+  .sortseg button:active{transform:scale(.96)}
 
   .rules{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:6px 4px}
   .rule{display:flex;align-items:center;gap:13px;padding:11px 15px}
@@ -1343,7 +1352,7 @@
     <button class="ob-btn" id="gateBtn">Inviami il codice →</button>
     <div id="gateStep2" style="display:none">
       <div class="field-lab" style="margin-top:18px">Codice ricevuto via email</div>
-      <input class="ob-input" id="gateCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" maxlength="8" style="letter-spacing:6px;text-align:center;font-size:22px">
+      <input class="ob-input" id="gateCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="12345678" maxlength="8" style="letter-spacing:6px;text-align:center;font-size:22px">
       <button class="ob-btn" id="gateVerify">Entra →</button>
       <div style="text-align:center;margin-top:12px"><a id="gateResend" style="color:var(--accent-soft);font-size:13px;cursor:pointer">Rinvia il codice</a></div>
     </div>
@@ -1580,7 +1589,13 @@
   </section>
 
   <section class="view" id="v-mercato">
-    <div class="section-h"><h2>Giocatori</h2></div>
+    <div class="section-h with-sort"><h2>Giocatori</h2>
+      <div class="sortseg" id="marketSort">
+        <button data-s="cost" onclick="setMarketSort('cost')">Crediti</button>
+        <button data-s="role" onclick="setMarketSort('role')">Ruolo</button>
+        <button data-s="form" onclick="setMarketSort('form')">Forma</button>
+      </div>
+    </div>
     <div class="pgrid" id="marketGrid"></div>
     <div id="marketEmpty"></div>
   </section>
@@ -3867,13 +3882,43 @@ function playerCardSVG(p,s){
     <text x="280" y="648" text-anchor="middle" font-family="'Hanken Grotesk'" font-size="14" font-weight="700" fill="#9fb3d4" letter-spacing="3">CARDS</text>
   </svg>`;
 }
+/* ---- ORDINAMENTO MERCATO (crediti · ruolo · forma) ----
+   La scelta resta salvata sul dispositivo, così riaprendo l'app trovi l'ordine che usi di solito. */
+let marketSort='cost';
+try{ const _ms=localStorage.getItem('fc_marketSort'); if(['cost','role','form'].includes(_ms)) marketSort=_ms; }catch(_){}
+const ROLE_ORDER={ATT:0,DIF:1,POR:2};
+const FORM_ORDER={'In forma':0,'Costante':1,'In calo':2};
+function setMarketSort(s){
+  if(!['cost','role','form'].includes(s)) return;
+  marketSort=s;
+  try{ localStorage.setItem('fc_marketSort',s); }catch(_){}
+  renderMarket();
+}
+function sortedMarketPlayers(){
+  const cost=p=>(p.cost==null?PRICE:p.cost);
+  const formOf=p=>(playerStats[p.id]||{}).forma||'Costante';
+  const byName=(a,b)=>String(a.name||'').localeCompare(String(b.name||''),'it');
+  return [...players].sort((a,b)=>{
+    if(marketSort==='role'){
+      const d=(ROLE_ORDER[a.role]??9)-(ROLE_ORDER[b.role]??9); if(d) return d;
+    }else if(marketSort==='form'){
+      const d=(FORM_ORDER[formOf(a)]??9)-(FORM_ORDER[formOf(b)]??9); if(d) return d;
+    }
+    const c=cost(b)-cost(a); return c||byName(a,b);   // a parità: sempre crediti alti prima, poi nome
+  });
+}
+function renderMarketSortUI(){
+  const box=document.getElementById('marketSort'); if(!box) return;
+  box.querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.s===marketSort));
+}
 function renderMarket(){
   const grid=document.getElementById('marketGrid'), emp=document.getElementById('marketEmpty');
+  renderMarketSortUI();
   if(!players.length){grid.innerHTML='';emp.innerHTML='<div class="empty-note">Il pool è vuoto. Le persone compaiono qui quando si registrano, oppure aggiungili tu da <b>Impostazioni → Gestione giocatori</b>.</div>';return;}
   emp.innerHTML='';
   const topGol=Math.max(0,...players.map(p=>(playerStats[p.id]||{}).gol||0));
   const topAst=Math.max(0,...players.map(p=>(playerStats[p.id]||{}).assist||0));
-  grid.innerHTML=[...players].sort((a,b)=>(b.cost??PRICE)-(a.cost??PRICE)).map(p=>{
+  grid.innerHTML=sortedMarketPlayers().map(p=>{
     const dim=p.injured||(currentMd&&currentMd.status!=='closed'&&!isPresent(p));
     const s=playerStats[p.id]||{forma:'Costante'};
     const capo=topGol>0&&((s.gol||0)===topGol);
