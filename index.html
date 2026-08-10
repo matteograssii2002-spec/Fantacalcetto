@@ -947,7 +947,9 @@
   .pag-name.big{font-size:36px}
   .pag-av{width:160px;height:160px;border-radius:30px;background:linear-gradient(160deg,#16315a,#0c1c34);
     display:grid;place-items:center;overflow:hidden;box-shadow:0 24px 50px -20px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.08)}
-  .pag-av img{width:88%!important;height:auto!important;border-radius:0!important}
+  /* avatar SEMPRE intero: si rimpicciolisce per stare dentro il riquadro, non viene mai tagliato */
+  .pag-av img{width:88%!important;height:auto!important;max-width:88%!important;max-height:88%!important;
+    object-fit:contain!important;border-radius:0!important}
   .pag-av.huge{width:188px;height:188px;border-radius:36px}
   .pag-av.gold{box-shadow:0 0 0 3px rgba(255,194,61,.55), 0 24px 56px -18px rgba(255,194,61,.5)}
   .pag-av.sm{width:96px;height:96px;border-radius:20px}
@@ -1001,6 +1003,61 @@
   .pag-cover-teaser{display:flex;align-items:center;gap:14px;margin-top:18px;color:#9db4d2;font-size:14px}
   .pag-cover-teaser b{font-family:'Bricolage Grotesque';color:#fff;font-size:18px;margin-right:4px}
   .pag-cover-teaser i{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.35)}
+  /* ===== RECAP DI FINE STAGIONE =====
+     Stessa grammatica visiva del pagellone (stesse card, stesso ritmo), con
+     l'oro come accento dominante: la stagione è il momento "trofeo" dell'app.
+     Spaziature sulla griglia da 8, ombre tinte del colore di sfondo. */
+  .pag-sbadge{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-soft);
+    background:rgba(255,194,61,.14);border:1px solid rgba(255,194,61,.34);padding:6px 14px;border-radius:999px;margin-bottom:16px}
+  .pag-cover-glow.gold::before{background:radial-gradient(circle,rgba(255,194,61,.5),transparent 68%)}
+  /* righe premio: emoji · avatar · nome · valore */
+  .pag-awd{display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin-top:8px}
+  .pag-awd-row{display:flex;align-items:center;gap:12px;text-align:left;padding:12px 16px;border-radius:20px;
+    background:rgba(255,255,255,.05);border:1px solid var(--line-strong)}
+  .pag-awd-row.gold{background:rgba(255,194,61,.10);border-color:rgba(255,194,61,.40);box-shadow:0 12px 28px -18px rgba(255,194,61,.7)}
+  .pag-awd-row.me{background:rgba(63,151,255,.12);border-color:rgba(127,176,255,.5)}
+  .pag-awd-ic{width:32px;flex:none;font-size:22px;line-height:1;text-align:center}
+  .pag-awd-av{width:44px;height:44px;flex:none;border-radius:14px;overflow:hidden;display:grid;place-items:center;
+    background:linear-gradient(160deg,#16315a,#0c1c34)}
+  .pag-awd-av img{width:auto!important;height:auto!important;max-width:86%!important;max-height:86%!important;
+    object-fit:contain!important;border-radius:0!important;display:block}
+  .pag-awd-tx{flex:1;min-width:0}
+  .pag-awd-k{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .pag-awd-n{font-family:'Bricolage Grotesque';font-weight:800;font-size:17px;line-height:1.2;margin-top:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pag-awd-v{flex:none;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:17px;color:var(--gold-soft);
+    font-variant-numeric:tabular-nums}
+  .pag-awd-row.me .pag-awd-v{color:var(--accent-soft)}
+  /* podio */
+  .pag-pod{display:flex;align-items:flex-end;gap:8px;width:100%;max-width:320px;margin-top:24px}
+  .pag-pod-c{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
+  .pag-pod-nm{font-size:12.5px;font-weight:700;color:#c7d6ec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .pag-pod-bar{width:100%;border-radius:16px 16px 0 0;border:1px solid rgba(127,176,255,.30);border-bottom:none;
+    background:linear-gradient(180deg,rgba(63,151,255,.30),rgba(63,151,255,.06));
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;padding:10px 4px 0}
+  .pag-pod-c.p1 .pag-pod-bar{height:112px;border-color:rgba(255,194,61,.5);
+    background:linear-gradient(180deg,rgba(255,194,61,.34),rgba(255,194,61,.06));box-shadow:0 -8px 32px -14px rgba(255,194,61,.8)}
+  .pag-pod-c.p2 .pag-pod-bar{height:80px}
+  .pag-pod-c.p3 .pag-pod-bar{height:56px}
+  .pag-pod-r{font-family:'Bricolage Grotesque';font-weight:800;font-size:20px;line-height:1}
+  .pag-pod-c.p1 .pag-pod-r{color:var(--gold-soft)}
+  .pag-pod-p{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  /* parabola della posizione in classifica */
+  .pag-path{width:100%;max-width:330px;margin-top:16px}
+  .pag-path svg{width:100%;height:auto;display:block;overflow:visible}
+  .pag-path-lg{display:flex;justify-content:space-between;margin-top:8px;font-size:11.5px;color:var(--muted)}
+  /* riquadro discorsivo (frasi del recap) */
+  .pag-note{margin-top:16px;max-width:330px;font-size:14px;line-height:1.55;color:#c7d6ec;
+    background:rgba(255,255,255,.05);border:1px solid var(--line-strong);border-radius:16px;padding:12px 16px}
+  .pag-note b{color:#fff}
+  .pag-note.gold{background:rgba(255,194,61,.10);border-color:rgba(255,194,61,.34)}
+  .pag-note.gold b{color:var(--gold-soft)}
+  /* duello testa a testa */
+  .pag-duel{display:flex;align-items:center;gap:8px;width:100%;max-width:340px;margin-top:20px}
+  .pag-duel-c{flex:1;min-width:0;border-radius:18px;padding:16px 10px;border:1.5px solid var(--line-strong);background:rgba(255,255,255,.05)}
+  .pag-duel-n{font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;line-height:1.2;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pag-duel-x{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.1em;flex:none}
   .pag-vs-split{display:flex;align-items:stretch;gap:10px;margin-top:22px;width:100%;max-width:340px}
   .pag-vs-split .pvs-col{flex:1;border-radius:18px;padding:16px 8px;border:1.5px solid var(--line-strong);background:rgba(255,255,255,.04)}
   .pag-vs-split .pvs-col.w{border-color:rgba(55,201,126,.5);background:rgba(55,201,126,.10)}
@@ -1199,6 +1256,8 @@
   .pag-open-em{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;
     background:rgba(63,151,255,.10);font-size:24px}
   .pag-open-arr{font-size:22px}
+  /* riga "Albo d'oro": stessa forma, accento oro (è il momento trofeo) */
+  .pag-open-btn.season .pag-open-em{background:rgba(255,194,61,.14)}
 
   /* --- 9. PAGELLONE: stesso linguaggio, più premium ---------------- */
   /* bordi delle card translucide più tenui (meno scatola) + angoli morbidi */
@@ -1583,6 +1642,14 @@
       <button class="pag-open-btn" id="homeRecapBtn" onclick="openRecapLatest()" style="margin-top:0">
         <span class="pag-open-em">📊</span>
         <span class="pag-open-tx"><b>Rivivi l'ultima giornata!</b><small>Voti, bonus e pagelle di tutti</small></span>
+        <span class="pag-open-arr">→</span>
+      </button>
+    </div>
+    <div id="homeSeasonWrap" style="display:none">
+      <div class="section-h"><h2>Albo d'oro</h2></div>
+      <button class="pag-open-btn season" id="homeSeasonBtn" onclick="openSeasonRecapLatest()" style="margin-top:0">
+        <span class="pag-open-em">🏆</span>
+        <span class="pag-open-tx"><b id="homeSeasonTtl">Recap di fine stagione</b><small id="homeSeasonSub">Premi, record e la tua stagione</small></span>
         <span class="pag-open-arr">→</span>
       </button>
     </div>
@@ -2249,9 +2316,14 @@ async function afterLogin(){
     ensurePush();            // riaggancia le notifiche se la subscription era scaduta
     maybeShowLogoNotice();   // AVVISO TEMPORANEO (vedi blocco in fondo) — rimuovibile in un deploy futuro
     maybeShowLogoIntro();    // novità loghi: chiede di scegliere il logo a chi non ce l'ha ancora
-    const _rp=new URLSearchParams(location.search).get('recap');   // deep-link dalla push di chiusura
-    if(_rp && !isNaN(parseInt(_rp))){ openRecap(parseInt(_rp), false); }
-    else { maybeShowRecap(); }                                     // pagellone automatico una volta
+    const _qs=new URLSearchParams(location.search);
+    const _rp=_qs.get('recap'), _sp=_qs.get('srecap');             // deep-link dalle push
+    if(_sp && !isNaN(parseInt(_sp))){ openSeasonRecap(parseInt(_sp), false); }
+    else if(_rp && !isNaN(parseInt(_rp))){ openRecap(parseInt(_rp), false); }
+    else {
+      // fine stagione batte fine giornata: è l'evento più grosso e va visto per primo
+      maybeShowSeasonRecap().then(shown=>{ if(!shown) maybeShowRecap(); });
+    }
     maybeAskPush();          // invito notifiche alla prima apertura (una volta per dispositivo)
     maybeShowNotifBanner();  // banner mensile per chi non le ha ancora attivate
   }
@@ -2270,11 +2342,18 @@ function renderLeagueName(){
 /* ---------- STAGIONE ---------- */
 let currentSeason=null;   // {id,number,name,status,started_at,ended_at,mds_total,mds_closed} | null
 let currentSeasonId=null; // per filtrare le giornate della stagione in corso
+let lastClosedSeason=null;// {id,number,name,ended_at} | null — l'ultima stagione archiviata
 async function loadSeason(){
   try{ const {data}=await sb.rpc('get_current_season'); currentSeason=(data&&data[0])||null; }
   catch(_){ currentSeason=null; }
   currentSeasonId=currentSeason?currentSeason.id:null;
+  // ultima stagione CHIUSA: serve all'albo d'oro e al recap automatico. È separata
+  // da currentSeason perché appena l'admin apre la stagione nuova quella corrente
+  // torna "aperta", ma il recap della precedente deve restare raggiungibile.
+  try{ const {data:ls}=await sb.rpc('get_last_closed_season'); lastClosedSeason=(ls&&ls[0])||null; }
+  catch(_){ lastClosedSeason=null; }
   renderSeasonUI();
+  renderSeasonRecapButton();
 }
 function seasonLabel(){ return 'Stagione '+(currentSeason?currentSeason.number:1); }
 function renderSeasonUI(){
@@ -2297,7 +2376,18 @@ function renderSeasonAdmin(){
     html+=`<button class="addbtn" onclick="openSeasonNow()">＋ Apri una nuova stagione</button>
       <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">Stagione chiusa. Apri una giornata per avviarne una nuova.</p>`;
   }
+  if(lastClosedSeason){
+    html+=`<button class="logout" style="margin-top:14px" onclick="rebuildSeasonRecap()">🔄 Ricalcola il recap della Stagione ${lastClosedSeason.number}</button>
+      <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">Il recap si congela alla chiusura. Se correggi voti o bonus a stagione finita, ricalcolalo da qui.</p>`;
+  }
   box.innerHTML=html;
+}
+async function rebuildSeasonRecap(){
+  if(!lastClosedSeason) return;
+  if(!confirm('Ricalcolare il recap della Stagione '+lastClosedSeason.number+' con i dati attuali?')) return;
+  const {error}=await sb.rpc('rebuild_season_recap',{p_season:lastClosedSeason.id});
+  if(error){ toast('Errore: '+error.message); return; }
+  toast('Recap ricalcolato ✅');
 }
 async function closeSeasonNow(){
   if(currentMd && currentMd.status!=='closed'){
@@ -3518,7 +3608,7 @@ function applyProfile(){
   const arow=document.getElementById('adminRow'); if(arow)arow.style.display=canOp()?'flex':'none';
   ['gkCard','presModeCard','seasonCard'].forEach(id=>{const e=document.getElementById(id); if(e)e.style.display=profile.is_admin?'block':'none';});   // regole: solo proprietario
 }
-function renderAll(){renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderHomeBcards();renderCampoTeam();}
+function renderAll(){renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderSeasonRecapButton();renderHomeBcards();renderCampoTeam();}
 /* striscia squadra (logo + nome) sopra il campo verde */
 function renderCampoTeam(){
   const el=document.getElementById('campoTeam'); if(!el)return;
@@ -4859,9 +4949,15 @@ function dismissLogoIntro(){
    le mostra in stile "storie". Non tocca la logica di chiusura.
    ============================================================ */
 let recapData=null, recapCards=[], recapIdx=0, recapMd=null, recapBusy=false, _recapPending=false, _shareCanvas=null, recapExtra=null;
+let recapMode='md';   // 'md' = pagellone di giornata · 'season' = recap di fine stagione
 // auto-avanzamento "a storie": durata per scena (le scene finali standings/share non avanzano da sole)
 const PAG_DUR={cover:3200, you:6200, topflop:5400, leaders:5200, captains:5200, verdict:5800, forma:5000,
-               numbers:4600, capo:4200, movers:4600, modules:4800, winner:6200, mvp:5400, standings:5600};
+               numbers:4600, capo:4200, movers:4600, modules:4800, winner:6200, mvp:5400, standings:5600,
+               // recap di stagione: scene un filo più lunghe, c'è più da leggere
+               scover:3600, snumbers:5600, srecords:5200, syou:6400, spath:6400, sloyal:5400,
+               scaptain:5400, smodule:6000, splayer:6400, stwin:4800, schamp:6600, spodium:5800,
+               sawards1:5600, sawards2:5600, swanted:5200, sjump:5000, sduel:5000,
+               striples:5400, sfun:6200, spalmares:5600, sfinal:6000};
 let _pagRAF=null, _pagT0=0, _pagElapsed=0, _pagDur=0, _pagActive=false;
 function pagSegFill(){ return document.querySelector('#pagProg .pag-seg.cur i'); }
 function pagTick(){
@@ -4899,7 +4995,7 @@ async function openRecap(md, auto){
   try{
     const {data,error}=await sb.rpc('get_matchday_recap',{md});
     if(error||!data||data.closed===false){ if(!auto) toast('Pagellone non ancora disponibile'); return; }
-    recapData=data; recapMd=md; _shareCanvas=null;
+    recapData=data; recapMd=md; recapMode='md'; _shareCanvas=null;
     try{ recapExtra=await loadRecapExtra(md); }catch(_){ recapExtra={}; }
     recapCards=buildRecapCards(data,recapExtra); recapIdx=0;
     try{ localStorage.setItem('fc_recap_seen_'+md,'1'); }catch(_){ }
@@ -4915,6 +5011,7 @@ function closeRecap(){
   stopPagAuto();
   const p=document.getElementById('pag'); p.classList.remove('open');
   document.body.style.overflow=''; stopConfetti();
+  recapMode='md';   // il prossimo apri-e-chiudi riparte dal pagellone di giornata
   setTimeout(()=>{ const c=document.getElementById('pagCard'); if(c&&!p.classList.contains('open')) c.innerHTML=''; }, 320);
 }
 async function loadRecapExtra(md){
@@ -5069,13 +5166,18 @@ function recapPrev(){ if(recapIdx>0) showRecapCard(recapIdx-1); }
 function showRecapCard(i){
   recapIdx=i; setProgress(i); stopConfetti(); stopPagAuto();
   const card=recapCards[i], el=document.getElementById('pagCard');
-  el.innerHTML=renderRecapHTML(card, recapData);
+  const season=(recapMode==='season');
+  el.innerHTML= season ? renderSeasonHTML(card) : renderRecapHTML(card, recapData);
   el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
   el.scrollTop=0;
-  if(navigator.vibrate){ try{ navigator.vibrate((card.t==='mvp'||card.t==='verdict'||card.t==='winner')?[0,35,40,55]:12);}catch(_){ } }
+  const BIG=['mvp','verdict','winner','schamp','spalmares'];
+  if(navigator.vibrate){ try{ navigator.vibrate(BIG.indexOf(card.t)>=0?[0,35,40,55]:12);}catch(_){ } }
   el.querySelectorAll('[data-count]').forEach(n=>countUp(n, Number(n.dataset.count), n.dataset.dec==='1'));
   if(card.t==='standings') renderRecapStandings();
-  if(card.t==='share') prepShareCard();
+  if(card.t==='sfinal')    renderSeasonStandings();
+  if(card.t==='schamp')    startConfetti();   // il momento di picco della stagione
+  if(card.t==='share')     prepShareCard();
+  if(card.t==='sshare')    prepSeasonShare();
   // auto-avanzamento "a storie": parte da solo sulle scene di racconto, non sulle finali
   const dur=(i<recapCards.length-1)?(PAG_DUR[card.t]||0):0;
   if(dur){ startPagAuto(dur); }
@@ -5559,6 +5661,480 @@ async function maybeShowRecap(){
     await openRecap(md.id, true);
   }catch(_){ }
   finally{ _recapPending=false; }
+}
+
+/* ============================================================================
+   RECAP DI FINE STAGIONE
+   Riusa per intero la macchina del Pagellone (overlay #pag, barra di
+   avanzamento, tap/hold/swipe, coriandoli, count-up): cambia solo la sorgente
+   dati (RPC get_season_recap) e il render delle scene. `recapMode` fa da
+   interruttore. Il picco emotivo è la scena "Campione" (oro + coriandoli),
+   la chiusura è la card condivisibile: le due cose che restano in mente.
+   ========================================================================== */
+let seasonData=null, seasonRecapId=null;
+
+function renderSeasonRecapButton(){
+  const w=document.getElementById('homeSeasonWrap'); if(!w) return;
+  const s=lastClosedSeason;
+  w.style.display = s ? 'block' : 'none';
+  if(!s) return;
+  const t=document.getElementById('homeSeasonTtl');
+  if(t) t.textContent='Rivivi la Stagione '+s.number;
+}
+function openSeasonRecapLatest(){
+  if(!lastClosedSeason){ toast('Nessuna stagione archiviata'); return; }
+  openSeasonRecap(lastClosedSeason.id,false);
+}
+
+async function openSeasonRecap(id, auto){
+  if(recapBusy) return; recapBusy=true;
+  try{
+    const {data,error}=await sb.rpc('get_season_recap', id?{p_season:id}:{});
+    if(error||!data||data.empty||!data.season_id){
+      if(!auto) toast('Recap di stagione non disponibile'); return;
+    }
+    seasonData=data; seasonRecapId=data.season_id; recapMode='season'; _shareCanvas=null;
+    recapCards=buildSeasonCards(data); recapIdx=0;
+    try{ localStorage.setItem('fc_srecap_seen_'+data.season_id,'1'); }catch(_){ }
+    const p=document.getElementById('pag'); p.classList.add('open');
+    document.body.style.overflow='hidden';
+    buildProgress(); showRecapCard(0);
+  }catch(_){ if(!auto) toast('Errore nel caricare il recap'); }
+  finally{ recapBusy=false; }
+}
+
+/* mostrato UNA volta, alla prima apertura dell'app dopo la chiusura della stagione */
+async function maybeShowSeasonRecap(){
+  try{
+    const s=lastClosedSeason; if(!s) return false;
+    // prima installazione del recap: le stagioni già chiuse non devono esplodere in faccia
+    if(!localStorage.getItem('fc_srecap_init')){
+      try{ localStorage.setItem('fc_srecap_seen_'+s.id,'1'); localStorage.setItem('fc_srecap_init','1'); }catch(_){ }
+      return false;
+    }
+    if(localStorage.getItem('fc_srecap_seen_'+s.id)) return false;
+    if(document.getElementById('lnOk')) return false;
+    await openSeasonRecap(s.id,true);
+    return true;
+  }catch(_){ return false; }
+}
+
+/* quali scene ha senso raccontare: se un dato manca, la scena non esiste proprio */
+function buildSeasonCards(d){
+  const a=d.awards||{}, f=d.fun||{}, me=d.mine, mp=d.me_player;
+  const c=[{t:'scover'}];
+  c.push({t:'snumbers'});
+  if(d.records&&d.records.high) c.push({t:'srecords'});
+  if(me) c.push({t:'syou'});
+  if(me&&me.path&&me.path.length>=3) c.push({t:'spath'});
+  if(me&&me.loyal) c.push({t:'sloyal'});
+  if(me&&me.captain) c.push({t:'scaptain'});
+  if(me&&me.modules&&me.modules.length) c.push({t:'smodule'});
+  if(mp) c.push({t:'splayer'});
+  if(mp&&mp.twin) c.push({t:'stwin'});
+  if(d.champion) c.push({t:'schamp'});
+  if(d.podium&&d.podium.length>=3) c.push({t:'spodium'});
+  if(a.capocannoniere||a.assistman||a.goldenball) c.push({t:'sawards1'});
+  if(a.cover||a.wall||a.flag) c.push({t:'sawards2'});
+  if(a.wanted) c.push({t:'swanted'});
+  if(d.jump&&d.jump.jump>0) c.push({t:'sjump'});
+  if(d.duel) c.push({t:'sduel'});
+  if(f.triples&&f.triples.length) c.push({t:'striples'});
+  if(a.worst||a.owngoal||f.lucky) c.push({t:'sfun'});
+  if(seasonPalmares(d).length) c.push({t:'spalmares'});
+  if(d.standings&&d.standings.length) c.push({t:'sfinal'});
+  c.push({t:'sshare'});
+  return c;
+}
+
+/* i premi vinti da CHI STA GUARDANDO (giocatore o manager) */
+const SEASON_AWARD_LABELS={
+  capocannoniere:['👟','Capocannoniere', v=>v+' gol'],
+  assistman:     ['🎯','Re degli assist', v=>v+' assist'],
+  goldenball:    ['🏅','Pallone d\'oro',  v=>Number(v).toFixed(2)+' di media'],
+  cover:         ['⭐','Uomo copertina',  v=>v+' MVP'],
+  wall:          ['🧤','Saracinesca',     v=>Number(v).toFixed(2)+' gol subiti a partita'],
+  flag:          ['🚩','Bandiera',        v=>v+' presenze'],
+  worst:         ['🫠','Il migliore (degli scarsi)', v=>Number(v).toFixed(2)+' di media'],
+  owngoal:       ['🙈','Autogol d\'autore', v=>v+' autogol'],
+  wanted:        ['🔥','Il più desiderato', v=>v+' volte schierato'],
+  excluded:      ['👻','Il grande escluso', v=>v+' volte schierato']
+};
+function seasonPalmares(d){
+  const a=d.awards||{}, mePid=d.me_player_id, out=[];
+  if(!mePid) return out;
+  ['capocannoniere','assistman','goldenball','cover','wall','flag','wanted'].forEach(k=>{
+    const w=a[k];
+    if(w && Number(w.player_id)===Number(mePid)) out.push({key:k, val:w.val});
+  });
+  return out;
+}
+
+/* parabola della posizione: SVG puro, nessuna libreria.
+   L'asse Y è invertito (1° in alto) perché è così che si legge una classifica. */
+function seasonPathSVG(path, teams){
+  const n=path.length; if(n<2) return '';
+  const W=320,H=150,PX=14,PY=16;
+  const maxR=Math.max(teams||2, ...path.map(p=>p.rank));
+  const x=i=> PX + (W-PX*2)*(n===1?0.5:i/(n-1));
+  const y=r=> PY + (H-PY*2)*((r-1)/Math.max(1,maxR-1));
+  const pts=path.map((p,i)=>[x(i),y(p.rank)]);
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=line+' L'+pts[n-1][0].toFixed(1)+' '+(H-PY)+' L'+pts[0][0].toFixed(1)+' '+(H-PY)+' Z';
+  const dots=pts.map((p,i)=>{
+    const last=(i===n-1);
+    return `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${last?5:3}"
+      fill="${last?'#ffc23d':'#7ec2ff'}" ${last?'stroke="#0b1a30" stroke-width="2"':''}/>`;
+  }).join('');
+  return `<div class="pag-path"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Andamento in classifica">
+      <defs><linearGradient id="spGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="rgba(63,151,255,.34)"/><stop offset="100%" stop-color="rgba(63,151,255,0)"/>
+      </linearGradient></defs>
+      <path d="${area}" fill="url(#spGrad)"/>
+      <path d="${line}" fill="none" stroke="#5aa0ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      ${dots}
+    </svg>
+    <div class="pag-path-lg"><span>1ª giornata</span><span>${esc(path[n-1].label||'Fine')}</span></div>
+  </div>`;
+}
+
+/* riga premio: emoji · avatar · etichetta+nome · valore */
+function sAwd(icon,label,who,val,cls){
+  if(!who) return '';
+  return `<div class="pag-awd-row ${cls||''}">
+    <span class="pag-awd-ic">${icon}</span>
+    <span class="pag-awd-av">${av(who.avatar,44)}</span>
+    <span class="pag-awd-tx"><span class="pag-awd-k">${esc(label)}</span><span class="pag-awd-n">${esc(who.name)}</span></span>
+    <span class="pag-awd-v">${val}</span></div>`;
+}
+function sIsMe(who){ return !!(who && seasonData && seasonData.me_player_id && Number(who.player_id)===Number(seasonData.me_player_id)); }
+
+function renderSeasonHTML(card){
+  const d=seasonData||{}, a=d.awards||{}, f=d.fun||{}, n=d.numbers||{}, me=d.mine, mp=d.me_player;
+  const num='Stagione '+(d.number||1);
+  switch(card.t){
+
+    case 'scover':
+      return `<div class="pag-sbadge">${esc(d.league||'FantaCalcetto')}</div>
+        <div class="pag-cover-glow gold"><div class="pag-cover-emoji">🏆</div></div>
+        <h2 class="pag-title">${esc(num)}</h2>
+        <div class="pag-cover-md">L'annata è archiviata</div>
+        <div class="pag-cover-teaser"><span><b>${d.md_count||0}</b> giornate</span><i></i><span><b>${n.goals||0}</b> gol</span></div>
+        <div class="pag-hint">tocca per iniziare →</div>`;
+
+    case 'snumbers':
+      return `<div class="pag-eyebrow">La stagione in numeri</div>
+        <div class="pag-stats">
+          <div class="pag-stat"><div class="pag-statv" data-count="${n.goals||0}">0</div><div class="pag-statk">gol</div></div>
+          <div class="pag-stat"><div class="pag-statv" data-count="${n.assists||0}">0</div><div class="pag-statk">assist</div></div>
+        </div>
+        <div class="pag-stats" style="margin-top:8px">
+          <div class="pag-stat"><div class="pag-statv" data-count="${n.presences||0}">0</div><div class="pag-statk">presenze</div></div>
+          <div class="pag-stat"><div class="pag-statv" data-count="${n.votes||0}">0</div><div class="pag-statk">voti dati</div></div>
+        </div>
+        <div class="pag-note">Media di <b>${esc(String(n.avg_goals||0))}</b> gol a giornata${
+          n.best_md?`, e la più scoppiettante è stata <b>${esc(n.best_md.label)}</b> con ${n.best_md.goals} gol`:''}.</div>`;
+
+    case 'srecords':{
+      const h=d.records.high, l=d.records.low;
+      return `<div class="pag-eyebrow">I record di giornata</div>
+        <div class="pag-awd">
+          <div class="pag-awd-row gold"><span class="pag-awd-ic">🚀</span>
+            <span class="pag-awd-tx"><span class="pag-awd-k">Punteggio più alto · ${esc(h.label)}</span>
+              <span class="pag-awd-n">${esc(h.team_name)}</span></span>
+            <span class="pag-awd-v">${fmtPts(h.points)}</span></div>
+          ${l?`<div class="pag-awd-row"><span class="pag-awd-ic">🪫</span>
+            <span class="pag-awd-tx"><span class="pag-awd-k">Punteggio più basso · ${esc(l.label)}</span>
+              <span class="pag-awd-n">${esc(l.team_name)}</span></span>
+            <span class="pag-awd-v">${fmtPts(l.points)}</span></div>`:''}
+        </div>`;
+    }
+
+    case 'syou':{
+      const b=me.best_md, w=me.worst_md;
+      return `<div class="pag-eyebrow">La tua stagione</div>
+        <h2 class="pag-name">${esc(me.team_name||'La tua squadra')}</h2>
+        <div class="pag-bigline"><span data-count="${me.points||0}" data-dec="1">0</span></div>
+        <div class="pag-ptlabel">punti in ${d.md_count||0} giornate</div>
+        <div class="pag-stats" style="margin-top:20px">
+          <div class="pag-stat"><div class="pag-statv" data-count="${me.rank||0}">0</div><div class="pag-statk">posizione su ${me.teams||'—'}</div></div>
+          <div class="pag-stat"><div class="pag-statv" data-count="${me.best_pos||me.rank||0}">0</div><div class="pag-statk">miglior posizione</div></div>
+        </div>
+        ${b?`<div class="pag-note">Il tuo capolavoro: <b>${fmtPts(b.points)} punti</b> in ${esc(b.label)}${
+          w?`. La serata storta invece è stata ${esc(w.label)}, con ${fmtPts(w.points)}`:''}.</div>`:''}`;
+    }
+
+    case 'spath':{
+      const lead=me.leader_days||0;
+      return `<div class="pag-eyebrow">La tua parabola</div>
+        <h2 class="pag-name" style="font-size:24px">Dove sei stato, giornata per giornata</h2>
+        ${seasonPathSVG(me.path, me.teams)}
+        <div class="pag-note">${lead>0
+          ? `Hai comandato la classifica per <b>${lead} giornat${lead===1?'a':'e'}</b> e il tuo punto più alto è stato il <b>${me.best_pos}º posto</b>.`
+          : `Il tuo punto più alto della stagione è stato il <b>${me.best_pos||me.rank}º posto</b>.`}</div>`;
+    }
+
+    case 'sloyal':{
+      const L=me.loyal;
+      return `<div class="pag-eyebrow">Il tuo fedelissimo</div>
+        <div class="pag-av">${av(L.avatar,150)}</div>
+        <h2 class="pag-name">${esc(L.name)}</h2>
+        <div class="pag-bigline"><span data-count="${L.times}">0</span>×</div>
+        <div class="pag-ptlabel">volte in formazione</div>
+        <div class="pag-note">Con te ha messo insieme <b>${L.gol||0} gol</b> e <b>${L.assist||0} assist</b>.</div>`;
+    }
+
+    case 'scaptain':{
+      const C=me.captain, pct=C.tot?Math.round((C.hits/C.tot)*100):0;
+      return `<div class="pag-eyebrow">La fascia</div>
+        <div class="pag-av">${av(C.avatar,150)}</div>
+        <h2 class="pag-name">${esc(C.name)}</h2>
+        <div class="pag-bigline"><span data-count="${C.times}">0</span>×</div>
+        <div class="pag-ptlabel">capitano</div>
+        <div class="pag-note">${C.tot?`Le tue fasce hanno ripagato <b>${C.hits} volte su ${C.tot}</b> (${pct}%) tra gol e MVP.`
+          :'Una scelta di cuore, più che di numeri.'}</div>`;
+    }
+
+    case 'smodule':{
+      const M=me.modules, top=M[0];
+      const most=M.slice().sort((x,y)=>y.times-x.times)[0];
+      return `<div class="pag-eyebrow">Il tuo modulo</div>
+        <h2 class="pag-name" style="font-size:26px">${esc(most.module)}</h2>
+        <div class="pag-ptlabel">usato ${most.times} volt${most.times===1?'a':'e'}</div>
+        <div class="pag-awd" style="margin-top:20px">
+          ${M.map(m=>`<div class="pag-awd-row ${m.module===top.module?'gold':''}">
+            <span class="pag-awd-ic">${m.module===top.module?'📈':'📋'}</span>
+            <span class="pag-awd-tx"><span class="pag-awd-k">${m.times} giornat${m.times===1?'a':'e'}</span>
+              <span class="pag-awd-n">${esc(m.module)}</span></span>
+            <span class="pag-awd-v">${fmtPts(m.avg)}</span></div>`).join('')}
+        </div>
+        ${(most.module!==top.module)
+          ? `<div class="pag-note">Curioso: il tuo preferito è il <b>${esc(most.module)}</b>, ma quello che rende di più è il <b>${esc(top.module)}</b>.</div>`
+          : `<div class="pag-note">Il modulo che usi di più è anche quello che ti rende di più: <b>${fmtPts(top.avg)}</b> punti a giornata.</div>`}`;
+    }
+
+    case 'splayer':
+      return `<div class="pag-eyebrow">Tu in campo</div>
+        <div class="pag-av">${av(mp.avatar,150)}</div>
+        <h2 class="pag-name">${esc(mp.name)}</h2>
+        <div class="pag-stats" style="margin-top:18px">
+          <div class="pag-stat"><div class="pag-statv" data-count="${mp.gol||0}">0</div><div class="pag-statk">gol</div></div>
+          <div class="pag-stat"><div class="pag-statv" data-count="${mp.ast||0}">0</div><div class="pag-statk">assist</div></div>
+        </div>
+        <div class="pag-stats" style="margin-top:8px">
+          <div class="pag-stat"><div class="pag-statv" data-count="${mp.pres||0}">0</div><div class="pag-statk">presenze</div></div>
+          <div class="pag-stat"><div class="pag-statv" data-count="${mp.vote||0}" data-dec="1">0</div><div class="pag-statk">voto medio</div></div>
+        </div>
+        ${mp.best?`<div class="pag-note">La tua serata migliore: <b>${Number(mp.best.vote).toFixed(2)}</b> in ${esc(mp.best.label)}${
+          mp.mvp?`. E ti sei preso <b>${mp.mvp} MVP</b>`:''}.</div>`:''}`;
+
+    case 'stwin':
+      return `<div class="pag-eyebrow">Il tuo gemello</div>
+        <div class="pag-av">${av(mp.twin.avatar,150)}</div>
+        <h2 class="pag-name">${esc(mp.twin.name)}</h2>
+        <div class="pag-note">Siete finiti nella stessa formazione <b>${mp.twin.times} volte</b>. Un pacchetto difficile da separare.</div>`;
+
+    case 'schamp':{
+      const w=d.champion;
+      return `<div class="pag-eyebrow gold">Campione della stagione</div>
+        <div class="pag-trophy">🏆</div>
+        <div style="margin-top:12px">${teamLogoHTML(w.manager_id,86)}</div>
+        <h2 class="pag-name gold big">${esc(w.team_name)}</h2>
+        <div class="pag-win-tag">${esc(w.player_name||'')}</div>
+        <div class="pag-bigline"><span data-count="${w.points||0}" data-dec="1">0</span></div>
+        <div class="pag-ptlabel">punti${w.gap!=null?` · ${fmtPts(w.gap)} sul secondo`:''}</div>`;
+    }
+
+    case 'spodium':{
+      const p=d.podium, ord=[p[1],p[0],p[2]], cls=['p2','p1','p3'], med=['🥈','🥇','🥉'];
+      return `<div class="pag-eyebrow">Il podio</div>
+        <div class="pag-pod">
+          ${ord.map((t,i)=>t?`<div class="pag-pod-c ${cls[i]}">
+            <div class="pag-pod-nm">${esc(t.team_name)}</div>
+            <div class="pag-pod-bar"><div class="pag-pod-r">${med[i]}</div><div class="pag-pod-p">${fmtPts(t.points)}</div></div>
+          </div>`:'').join('')}
+        </div>
+        ${d.last?`<div class="pag-note">🥄 Cucchiaio di legno a <b>${esc(d.last.team_name)}</b>: c'è sempre un anno prossimo.</div>`:''}`;
+    }
+
+    case 'sawards1':
+      return `<div class="pag-eyebrow gold">I premi della stagione</div>
+        <div class="pag-awd">
+          ${sAwd('👟','Capocannoniere',a.capocannoniere,(a.capocannoniere?a.capocannoniere.val+' ⚽':''),sIsMe(a.capocannoniere)?'me':'gold')}
+          ${sAwd('🎯','Re degli assist',a.assistman,(a.assistman?a.assistman.val+' 🅰️':''),sIsMe(a.assistman)?'me':'')}
+          ${sAwd('🏅','Pallone d\'oro',a.goldenball,(a.goldenball?Number(a.goldenball.val).toFixed(2):''),sIsMe(a.goldenball)?'me':'')}
+        </div>`;
+
+    case 'sawards2':
+      return `<div class="pag-eyebrow gold">I premi della stagione</div>
+        <div class="pag-awd">
+          ${sAwd('⭐','Uomo copertina',a.cover,(a.cover?a.cover.val+' MVP':''),sIsMe(a.cover)?'me':'gold')}
+          ${sAwd('🧤','Saracinesca',a.wall,(a.wall?Number(a.wall.val).toFixed(2):''),sIsMe(a.wall)?'me':'')}
+          ${sAwd('🚩','Bandiera',a.flag,(a.flag?a.flag.val+' pres.':''),sIsMe(a.flag)?'me':'')}
+        </div>
+        ${a.wall?`<div class="pag-note">La Saracinesca è il portiere meno battuto: gol subiti a partita.</div>`:''}`;
+
+    case 'swanted':
+      return `<div class="pag-eyebrow">Mercato</div>
+        <div class="pag-awd">
+          ${sAwd('🔥','Il più desiderato',a.wanted,(a.wanted?a.wanted.val+'×':''),sIsMe(a.wanted)?'me':'gold')}
+          ${sAwd('👻','Il grande escluso',a.excluded,(a.excluded?a.excluded.val+'×':''),sIsMe(a.excluded)?'me':'')}
+        </div>
+        <div class="pag-note">Quante volte sono finiti in una formazione, sommando tutte le squadre.</div>`;
+
+    case 'sjump':{
+      const j=d.jump;
+      return `<div class="pag-eyebrow">Il sorpasso dell'anno</div>
+        <div class="pag-cover-emoji">🚀</div>
+        <h2 class="pag-name">${esc(j.team_name||'—')}</h2>
+        <div class="pag-bigline">+<span data-count="${j.jump}">0</span></div>
+        <div class="pag-ptlabel">posizioni in una sola giornata</div>
+        <div class="pag-note">È successo in <b>${esc(j.label)}</b>, chiusa al ${j.pos}º posto.</div>`;
+    }
+
+    case 'sduel':{
+      const q=d.duel;
+      return `<div class="pag-eyebrow">Il duello</div>
+        <h2 class="pag-name" style="font-size:24px">${q.pos}º contro ${q.pos+1}º</h2>
+        <div class="pag-duel">
+          <div class="pag-duel-c"><div class="pag-duel-n">${esc(q.t1)}</div></div>
+          <div class="pag-duel-x">VS</div>
+          <div class="pag-duel-c"><div class="pag-duel-n">${esc(q.t2)}</div></div>
+        </div>
+        <div class="pag-note">Divise da <b>${fmtPts(q.gap)} punti</b> dopo un'intera stagione.</div>`;
+    }
+
+    case 'striples':{
+      const T=(f.triples||[]).slice(0,4);
+      const nameOf=g=> g>=5?'Manita':(g===4?'Poker':'Tripletta');
+      const icoOf =g=> g>=5?'🖐️':(g===4?'🎰':'🎩');
+      return `<div class="pag-eyebrow">Serate da ricordare</div>
+        <div class="pag-awd">
+          ${T.map(t=>`<div class="pag-awd-row ${t.gol>=4?'gold':''}">
+            <span class="pag-awd-ic">${icoOf(t.gol)}</span>
+            <span class="pag-awd-av">${av(t.avatar,44)}</span>
+            <span class="pag-awd-tx"><span class="pag-awd-k">${nameOf(t.gol)} · ${esc(t.label)}</span>
+              <span class="pag-awd-n">${esc(t.name)}</span></span>
+            <span class="pag-awd-v">${t.gol} ⚽</span></div>`).join('')}
+        </div>`;
+    }
+
+    case 'sfun':
+      return `<div class="pag-eyebrow">Premi speciali</div>
+        <div class="pag-awd">
+          ${sAwd('🫠','Il migliore (degli scarsi)',a.worst,(a.worst?Number(a.worst.val).toFixed(2):''),sIsMe(a.worst)?'me':'')}
+          ${sAwd('🙈','Autogol d\'autore',a.owngoal,(a.owngoal?a.owngoal.val+'':''),sIsMe(a.owngoal)?'me':'')}
+          ${f.lucky?`<div class="pag-awd-row"><span class="pag-awd-ic">🍀</span>
+            <span class="pag-awd-tx"><span class="pag-awd-k">Mister Fortuna</span>
+              <span class="pag-awd-n">${esc(f.lucky.team_name||'—')}</span></span>
+            <span class="pag-awd-v">${fmtPts(f.lucky.val)}</span></div>`:''}
+        </div>
+        <div class="pag-note">Mister Fortuna è chi ha raccolto più punti dal risultato della squadra vera, invece che dalle prestazioni.${
+          a.worst?` Il "migliore degli scarsi" si assegna solo con almeno ${a.gate||4} presenze: nessuno vince per caso.`:''}</div>`;
+
+    case 'spalmares':{
+      const P=seasonPalmares(d);
+      return `<div class="pag-eyebrow gold">Il tuo palmarès</div>
+        <div class="pag-cover-emoji">🎖️</div>
+        <h2 class="pag-name gold" style="font-size:26px">${P.length===1?'Un premio è tuo':P.length+' premi sono tuoi'}</h2>
+        <div class="pag-awd" style="margin-top:20px">
+          ${P.map(p=>{const L=SEASON_AWARD_LABELS[p.key];
+            return `<div class="pag-awd-row gold"><span class="pag-awd-ic">${L[0]}</span>
+              <span class="pag-awd-tx"><span class="pag-awd-k">${esc(num)}</span>
+                <span class="pag-awd-n">${esc(L[1])}</span></span>
+              <span class="pag-awd-v">${esc(L[2](p.val))}</span></div>`;}).join('')}
+        </div>`;
+    }
+
+    case 'sfinal':
+      return `<div class="pag-eyebrow">Classifica finale</div>
+        <div class="pag-lb" id="pagLb">${skeletonRows('lb',Math.min(5,(d.standings||[]).length||3))}</div>
+        <div class="pag-hint">swipe giù per chiudere</div>`;
+
+    case 'sshare':
+      return `<div class="pag-eyebrow">Portala con te</div>
+        <div class="pag-share-wrap" id="pagShareWrap"><div class="pag-share-load">Preparo l'immagine…</div></div>
+        <button class="pag-share-btn" onclick="shareSeason()" data-stop>📤 Condividi</button>
+        <div class="pag-hint">swipe giù per chiudere</div>`;
+  }
+  return '';
+}
+
+/* classifica finale: le righe sono quelle della lega, ma i punti sono della stagione archiviata */
+function renderSeasonStandings(){
+  const box=document.getElementById('pagLb'); if(!box) return;
+  const rows=(seasonData&&seasonData.standings)||[];
+  box.innerHTML=rows.map((t,i)=>lbRowHTML(t,i,t.points,false)).join('');
+}
+
+/* card PNG di fine stagione */
+async function buildSeasonShareCard(){
+  const d=seasonData, W=1080, H=1350, me=d.mine, mp=d.me_player;
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const ctx=cv.getContext('2d');
+  try{ await document.fonts.ready; }catch(_){ }
+  const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#12203a'); bg.addColorStop(1,'#070f1f');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  const gl=ctx.createRadialGradient(W*0.5,H*0.16,40,W*0.5,H*0.16,W*0.75);
+  gl.addColorStop(0,'rgba(255,194,61,.26)'); gl.addColorStop(1,'rgba(255,194,61,0)');
+  ctx.fillStyle=gl; ctx.fillRect(0,0,W,H);
+  ctx.textAlign='center';
+  ctx.fillStyle='#ffd470'; ctx.font='800 34px "Hanken Grotesk",sans-serif';
+  ctx.fillText((d.league||'FANTACALCETTO').toUpperCase(), W/2, 120);
+  ctx.fillStyle='#eaf1fb'; ctx.font='800 84px "Bricolage Grotesque",sans-serif';
+  ctx.fillText('Stagione '+(d.number||1), W/2, 214);
+  let y=300;
+  async function block(emoji,label,name,sub,opts){
+    opts=opts||{};
+    rr(ctx,80,y,W-160,200,34); ctx.fillStyle='rgba(255,255,255,.05)'; ctx.fill();
+    ctx.lineWidth=2; ctx.strokeStyle='rgba(180,205,245,.18)'; rr(ctx,80,y,W-160,200,34); ctx.stroke();
+    ctx.font='80px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(emoji||'⭐', 175, y+100); ctx.textBaseline='alphabetic';
+    const isize=140, ix=W-80-26-isize, iy=y+(200-isize)/2;
+    if(opts.logoName!==undefined) await drawLogo(ctx,opts.logoName,ix,iy,isize);
+    else if(opts.avatarName!==undefined) await drawAvatar(ctx,opts.avatarName,ix,iy,isize,name);
+    const tx=272, maxNameW=(opts.logoName!==undefined||opts.avatarName!==undefined?ix:W-80-26)-tx-24;
+    ctx.textAlign='left';
+    ctx.fillStyle='#8aa0c0'; ctx.font='800 28px "Hanken Grotesk",sans-serif'; ctx.fillText(label.toUpperCase(), tx, y+70);
+    ctx.fillStyle='#eaf1fb'; ctx.font='800 50px "Bricolage Grotesque",sans-serif';
+    let nm=name||'—'; while(ctx.measureText(nm).width>maxNameW && nm.length>3){ nm=nm.slice(0,-2); }
+    if(nm!==(name||'—')) nm+='…';
+    ctx.fillText(nm, tx, y+124);
+    if(sub){ ctx.fillStyle='#ffd470'; ctx.font='800 34px "JetBrains Mono",monospace'; ctx.fillText(sub, tx, y+172); }
+    ctx.textAlign='center'; y+=232;
+  }
+  if(me) await block('📋','La mia squadra', me.team_name,
+        me.rank+'º su '+me.teams+' · '+fmtPts(me.points)+' punti', {logoName:teamLogoName(me.manager_id||d.me_manager_id)});
+  if(mp) await block('👟','Le mie cifre', mp.name,
+        (mp.gol||0)+' gol · '+(mp.ast||0)+' assist · '+(mp.pres||0)+' pres.', {avatarName:mp.avatar});
+  if(d.champion) await block('🏆','Campione', d.champion.team_name, fmtPts(d.champion.points)+' punti',
+        {logoName:teamLogoName(d.champion.manager_id)});
+  ctx.fillStyle='#5d76a0'; ctx.font='600 28px "Hanken Grotesk",sans-serif'; ctx.textAlign='center';
+  ctx.fillText('fantacalcettoitalia.it', W/2, H-70);
+  return cv;
+}
+async function prepSeasonShare(){
+  const wrap=document.getElementById('pagShareWrap'); if(!wrap) return;
+  try{
+    const cv=await buildSeasonShareCard();
+    if(document.getElementById('pag').classList.contains('open')){
+      wrap.innerHTML=''; cv.className='pag-share-canvas'; wrap.appendChild(cv); _shareCanvas=cv;
+    }
+  }catch(_){ wrap.innerHTML='<div class="pag-share-load">Immagine non disponibile</div>'; }
+}
+function shareSeason(){
+  if(!_shareCanvas){ toast('Immagine non ancora pronta'); return; }
+  const nm='stagione-'+((seasonData&&seasonData.number)||1)+'.png';
+  _shareCanvas.toBlob(async(blob)=>{
+    if(!blob){ toast('Errore immagine'); return; }
+    const file=new File([blob],nm,{type:'image/png'});
+    try{
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:'Fine stagione', text:'La mia stagione al FantaCalcetto 🏆'}); return;
+      }
+    }catch(_){ return; }
+    try{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=nm;
+      document.body.appendChild(a); a.click(); a.remove(); toast('Immagine salvata'); }catch(_){ toast('Non riesco a salvare'); }
+  },'image/png');
 }
 
 /* navigazione storie: tap breve = avanti/indietro · tieni premuto = pausa (no skip al rilascio) · swipe giù = chiudi */
