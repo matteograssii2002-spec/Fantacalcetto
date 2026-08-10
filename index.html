@@ -174,8 +174,8 @@
   .ctx-box{display:none;align-items:center;gap:12px;width:100%;margin:18px 0 0;padding:15px 16px;border-radius:16px;font-size:15.5px;font-weight:600;line-height:1.3}
   .ctx-box.show{display:flex}
   .ctx-box .ci{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:22px;line-height:1;flex:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
-  .ctx-box.create{background:linear-gradient(135deg,rgba(63,151,255,.24),rgba(63,151,255,.10));border:1.5px solid rgba(127,176,255,.72);color:#eaf2ff;box-shadow:0 12px 28px -12px rgba(63,151,255,.8)}
-  .ctx-box.create .ci{background:rgba(63,151,255,.30)}
+  .ctx-box.create{background:linear-gradient(135deg,rgba(255,93,107,.24),rgba(255,93,107,.10));border:1.5px solid rgba(255,93,107,.72);color:#ffeaec;box-shadow:0 12px 28px -12px rgba(255,93,107,.75)}
+  .ctx-box.create .ci{background:rgba(255,93,107,.30)}
   .ctx-box.join{background:linear-gradient(135deg,rgba(55,201,138,.24),rgba(55,201,138,.10));border:1.5px solid rgba(55,201,138,.72);color:#e4fbef;box-shadow:0 12px 28px -12px rgba(55,201,138,.75)}
   .ctx-box.join .ci{background:rgba(55,201,138,.30)}
   .ctx-box b{font-weight:800}
@@ -1528,7 +1528,7 @@
   </div>
 
   <div id="lgJoin" style="display:none">
-    <div class="field-lab">Cerca la lega per nome</div>
+    <div class="field-lab" id="lgSearchLab">Cerca la lega per nome</div>
     <input class="ob-input" id="lgSearch" placeholder="Scrivi il nome della lega" maxlength="40" autocomplete="off" oninput="lgSearchNow()">
     <div id="lgResults"></div>
     <div id="lgPwdWrap" style="display:none;margin-top:12px">
@@ -1536,7 +1536,7 @@
       <input class="ob-input" id="lgPwd" placeholder="Password ricevuta dall'admin" maxlength="40" autocomplete="off">
       <button class="ob-btn" id="lgJoinBtn">Entra →</button>
     </div>
-    <a class="lg-back" onclick="lgMode('choose')">← Indietro</a>
+    <a class="lg-back" id="lgBack" onclick="lgMode('choose')">← Indietro</a>
   </div>
 
   <div class="gate-status" id="lgStatus"></div>
@@ -2107,7 +2107,13 @@ function showGate(intent){
   const ctx=document.getElementById('gateContext');
   if(ctx){
     if(intent==='create'){ ctx.className='ctx-box show create'; ctx.innerHTML='<span class="ci">➕</span><span>Stai creando una <b>nuova lega</b></span>'; }
-    else if(intent==='join'){ ctx.className='ctx-box show join'; ctx.innerHTML='<span class="ci">🔑</span><span>Stai entrando in una <b>lega esistente</b></span>'; }
+    else if(intent==='join'){
+      ctx.className='ctx-box show join';
+      // se arrivo dal link d'invito so già QUALE lega: lo scrivo per esteso
+      ctx.innerHTML = (inviteLeague && inviteLeague.name)
+        ? '<span class="ci">🔑</span><span>Stai entrando in <b>'+esc(inviteLeague.name)+'</b></span>'
+        : '<span class="ci">🔑</span><span>Stai entrando in una <b>lega esistente</b></span>';
+    }
     else { ctx.className='ctx-box'; ctx.innerHTML=''; }
   }
   hideSplash();
@@ -2206,7 +2212,16 @@ async function boot(){
   try{ const r=await sb.auth.getSession(); session=r&&r.data?r.data.session:null; }
   catch(_){ if(!await netAlive()){ showOffline(); return; } }
   if(session){ user=session.user; afterLogin(); }
-  else { showWelcome(); }
+  else {
+    // LINK D'INVITO (?lega=slug): salto la welcome e vado dritto al login,
+    // già in modalità "entra in una lega" e con il nome della lega a schermo.
+    const _slug=new URLSearchParams(location.search).get('lega');
+    if(_slug){
+      const lg=await resolveInvite();
+      if(lg){ authIntent='join'; showGate('join'); return; }
+    }
+    showWelcome();
+  }
 }
 async function afterLogin(){
   await loadAvatars();
@@ -2395,7 +2410,12 @@ function showLeague(forceMode){
   ['welcome','gate','onboard'].forEach(id=>{const e=document.getElementById(id); if(e)e.classList.add('hidden');});
   const _lg=document.getElementById('league'); _lg.classList.remove('hidden'); _lg.scrollTop=0;
   const slug=new URLSearchParams(location.search).get('lega');
-  if(slug){ lgMode('join'); resolveLeagueSlug(slug); }
+  // se l'utente ha scelto ESPRESSAMENTE di creare, il link d'invito non deve forzarlo a entrare
+  if(forceMode!=='create' && (inviteLeague || slug)){
+    lgMode('join');
+    if(inviteLeague){ lgSelect(inviteLeague); lgLockInvite(); }
+    else resolveInvite().then(l=>{ if(l){ lgSelect(l); lgLockInvite(); } });
+  }
   else { lgMode(forceMode||'choose'); }
 }
 function lgMode(m){
@@ -2418,9 +2438,38 @@ function lgMode(m){
   if(m==='join'){ document.getElementById('lgPwdWrap').style.display='none'; lgPick=null; }
   if(m==='create') setTimeout(()=>document.getElementById('lgName').focus(),100);
 }
-async function resolveLeagueSlug(slug){
-  try{ const {data}=await sb.rpc('league_by_slug',{p_slug:slug}); if(data&&data[0]) lgSelect(data[0]); }catch(_){}
+/* ---- LINK D'INVITO (?lega=slug) ----
+   Se arrivo dal link che manda l'admin so già in quale lega sto entrando:
+   risolvo lo slug UNA volta e tengo il nome in memoria (inviteLeague), così
+   la schermata "entra in una lega" parte col nome già compilato e bloccato
+   e all'utente resta da scrivere solo la password. */
+let inviteLeague=null;
+async function resolveInvite(){
+  if(inviteLeague) return inviteLeague;
+  const slug=new URLSearchParams(location.search).get('lega');
+  if(!slug || !sb) return null;
+  try{
+    const {data}=await sb.rpc('league_by_slug',{p_slug:slug});
+    if(data&&data[0]) inviteLeague={id:data[0].id,name:data[0].name,slug:slug};
+  }catch(_){}
+  return inviteLeague;
 }
+function lgLockInvite(){
+  const s=document.getElementById('lgSearch'); if(s){ s.readOnly=true; s.style.opacity='.85'; }
+  const lab=document.getElementById('lgSearchLab'); if(lab) lab.textContent='Lega dell\'invito';
+  const res=document.getElementById('lgResults'); if(res) res.innerHTML='';
+  const ds=document.getElementById('lgDesc');
+  if(ds && inviteLeague) ds.textContent='Sei stato invitato in «'+inviteLeague.name+'». Inserisci la password che ti ha dato l\'admin.';
+  const b=document.getElementById('lgBack');
+  if(b){ b.textContent='← Entra in un\'altra lega'; b.setAttribute('onclick','lgInviteBack()'); }
+}
+function lgUnlockInvite(){
+  const s=document.getElementById('lgSearch'); if(s){ s.readOnly=false; s.style.opacity=''; s.value=''; }
+  const lab=document.getElementById('lgSearchLab'); if(lab) lab.textContent='Cerca la lega per nome';
+  const b=document.getElementById('lgBack');
+  if(b){ b.textContent='← Indietro'; b.setAttribute('onclick','lgMode(\'choose\')'); }
+}
+function lgInviteBack(){ inviteLeague=null; lgUnlockInvite(); lgMode('choose'); }
 function lgSearchNow(){
   clearTimeout(lgT);
   const q=document.getElementById('lgSearch').value.trim();
