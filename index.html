@@ -9,16 +9,25 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FantaCalcetto">
 <meta name="theme-color" content="#0a1626">
-<link rel="apple-touch-icon" href="icon-180.png?v=3">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=3">
-<link rel="shortcut icon" href="icon-512.png?v=3">
-<link rel="manifest" href='data:application/manifest+json,{"name":"FantaCalcetto","short_name":"FantaCalcetto","display":"standalone","background_color":"%230a1626","theme_color":"%230a1626","start_url":".","icons":[{"src":"icon-512.png?v=3","sizes":"512x512","type":"image/png"}]}'>
+<!-- ICONE PWA — vedi §ICONE in FANTACALCETTO.md
+     apple-touch-icon punta a icon-512.png (iOS la riscala da solo): icon-180.png
+     mancante/404 era la causa dell'icona "F" generica sulla schermata Home.
+     Il manifest NON è più un data: URI: gli URL relativi dentro un data: URI non
+     si risolvono (base = il data: stesso) → nessuna icona valida per il browser. -->
+<link rel="apple-touch-icon" sizes="180x180" href="icon-512.png?v=4">
+<link rel="apple-touch-icon" href="icon-512.png?v=4">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=4">
+<link rel="shortcut icon" href="icon-512.png?v=4">
+<link rel="manifest" href="manifest.webmanifest?v=4">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
   :root{--bg:#0a1626;--bg2:#0e1d34;--surface:#15294b;--surface2:#1f3a6c;--line:rgba(150,185,240,.07);--line-strong:rgba(150,185,240,.15);
     --text:#eef4fd;--muted:#9bb2d6;--accent:#3f97ff;--accent-soft:#7ec2ff;--accent-deep:#1c6ff2;--gold:#ffc23d;--gold-soft:#ffd470;--green:#2fd98a;--red:#ff5d6b;--neutral:#e8eef9;--maxw:460px;
+    /* colore della parola "Calcetto" nel logotipo: allineato all'argento dello stemma.
+       Se un giorno lo si rivuole azzurro basta rimettere var(--accent-soft) qui. */
+    --brand-mark:#dbe5f6;
     --shadow-card:0 12px 34px -24px rgba(0,8,24,.9);--shadow-pop:0 18px 44px -22px rgba(0,8,24,.85)}
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -72,7 +81,7 @@
   /* 2) FANTA da sinistra + CALCETTO da destra, si uniscono */
   .sp-name{display:flex;justify-content:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:26px;letter-spacing:-.03em;margin-top:22px}
   .sp-name .np-a{opacity:0;animation:spLeft .8s cubic-bezier(.2,.8,.2,1) .68s both}
-  .sp-name .np-b{color:var(--accent-soft);opacity:0;animation:spRight .8s cubic-bezier(.2,.8,.2,1) .68s both}
+  .sp-name .np-b{color:var(--brand-mark);opacity:0;animation:spRight .8s cubic-bezier(.2,.8,.2,1) .68s both}
   @keyframes spLeft{0%{opacity:0;transform:translateX(-44px)}100%{opacity:1;transform:none}}
   @keyframes spRight{0%{opacity:0;transform:translateX(44px)}100%{opacity:1;transform:none}}
   /* 3) "IL TUO CAMPIONATO" sale dal basso */
@@ -135,7 +144,7 @@
   .ob-brand{display:flex;align-items:center;gap:11px;margin-bottom:18px}
   .ob-brand .dot{width:36px;height:36px;border-radius:11px;overflow:hidden;background:linear-gradient(135deg,var(--accent),#1c6ff2);display:grid;place-items:center;font-size:19px;box-shadow:0 8px 22px rgba(63,151,255,.4)}
   .ob-brand b{font-family:'Bricolage Grotesque';font-weight:800;font-size:19px;letter-spacing:-.03em}
-  .ob-brand b span{color:var(--accent-soft)}
+  .ob-brand b span{color:var(--brand-mark)}
   /* ---- WELCOME (schermata iniziale a 3 percorsi: crea / entra / accedi) ---- */
   /* tre zone: brand in alto · claim vicino sotto · azioni in fondo (thumb zone) */
   #welcome{display:flex;flex-direction:column}
@@ -264,7 +273,7 @@
   .brand .dot{width:30px;height:30px;border-radius:9px;overflow:hidden;background:linear-gradient(135deg,var(--accent),#1c6ff2);display:grid;place-items:center;font-size:16px;box-shadow:0 6px 18px rgba(63,151,255,.3)}
   .ob-brand .dot img,.brand .dot img{width:100%;height:100%;object-fit:cover;display:block}
   .brand b{font-family:'Bricolage Grotesque';font-weight:800;font-size:18px;letter-spacing:-.03em}
-  .brand b span{color:var(--accent-soft)}
+  .brand b span{color:var(--brand-mark)}
   .tb-right{display:flex;align-items:center;gap:10px}
   .wallet{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);padding:7px 11px;border-radius:999px;font-size:13px;font-weight:600}
   .wallet .num{color:var(--gold);font-weight:700}
@@ -2376,8 +2385,14 @@ function renderSeasonAdmin(){
     html+=`<button class="addbtn" onclick="openSeasonNow()">＋ Apri una nuova stagione</button>
       <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">Stagione chiusa. Apri una giornata per avviarne una nuova.</p>`;
   }
+  if(!lastClosedSeason && !open){
+    // stagione risulta chiusa ma get_last_closed_season() non la vede: senza questa riga
+    // l'unico sintomo era "il recap non si apre", senza capire da che lato stesse il problema.
+    html+=`<p class="vs" style="color:var(--red);font-size:12px;margin-top:14px;line-height:1.5">⚠️ Nessuna stagione archiviata rilevata: il recap non può comparire. Verifica che <b>stagione_recap.sql</b> sia stato eseguito.</p>`;
+  }
   if(lastClosedSeason){
-    html+=`<button class="logout" style="margin-top:14px" onclick="rebuildSeasonRecap()">🔄 Ricalcola il recap della Stagione ${lastClosedSeason.number}</button>
+    html+=`<button class="save" style="margin-top:14px" onclick="openSeasonRecapLatest()">🏆 Apri il recap della Stagione ${lastClosedSeason.number}</button>`
+      +`<button class="logout" style="margin-top:10px" onclick="rebuildSeasonRecap()">🔄 Ricalcola il recap della Stagione ${lastClosedSeason.number}</button>
       <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">Il recap si congela alla chiusura. Se correggi voti o bonus a stagione finita, ricalcolalo da qui.</p>`;
   }
   box.innerHTML=html;
@@ -2390,8 +2405,14 @@ async function rebuildSeasonRecap(){
   toast('Recap ricalcolato ✅');
 }
 async function closeSeasonNow(){
+  // Una giornata aperta al momento della chiusura resta ORFANA: non entra nel recap
+  // (congelato alla prima apertura) e senza il tasto di chiusura manuale non si sblocca più.
+  // Quindi la chiudiamo prima, contestualmente.
   if(currentMd && currentMd.status!=='closed'){
-    if(!confirm('C\'è ancora una giornata aperta. Chiudi prima la giornata in corso, poi la stagione. Vuoi chiudere comunque la stagione adesso?')) return;
+    const ok=confirm('«'+currentMd.label+'» è ancora aperta.\n\nLa chiudo adesso e poi archivio la stagione, così la giornata viene conteggiata?\n\n(Annulla = non faccio niente.)');
+    if(!ok) return;
+    await doCloseMatchday(false);
+    if(currentMd && currentMd.status!=='closed'){ toast('Non sono riuscito a chiudere la giornata: stagione non archiviata'); return; }
   }
   if(!confirm('Chiudere la Stagione '+(currentSeason?currentSeason.number:'')+'? La classifica viene congelata. Si potrà iniziare una nuova stagione aprendo una nuova giornata.')) return;
   const {error}=await sb.rpc('close_season');
@@ -3333,10 +3354,35 @@ async function doCloseMatchday(auto){
   toast(auto?'Giornata chiusa in automatico 🏁':'Giornata chiusa');
   pushNotify(lbl+' chiusa 🏁', 'Scopri com\'è andata la tua squadra e la classifica.');
 }
+/* Testo sotto il tasto «Chiudi la giornata adesso»: cambia in base alla fase, perché
+   chiudere a voti ancora aperti ha una conseguenza vera (chi non ha votato resta fuori). */
+function closeMdHintText(){
+  if(!currentMd) return '';
+  const t=mdTimes(currentMd), now=Date.now();
+  if(t && t.voteOpen && now<t.voteOpen)
+    return '⚠️ I voti non sono ancora aperti: chiudendo adesso la giornata conta come giocata ma resta senza voti.';
+  if(t && isFinite(t.voteClose) && now<=t.voteClose)
+    return '⚠️ I voti sono ancora aperti: chi non ha ancora votato non potrà più farlo. Normalmente la giornata si chiude da sola a fine votazioni.';
+  return 'Votazioni finite: chiudi qui se la chiusura automatica non è scattata. Blocca i voti, aggiorna classifica e crediti.';
+}
 async function closeMatchday(){
   if(!currentMd)return;
-  if(!confirm('Chiudere '+currentMd.label+' adesso? I voti vengono bloccati e la giornata conta come giocata.'))return;
+  if(currentMd.status==='closed'){ toast('Giornata già conclusa'); return; }
+  const t=mdTimes(currentMd), now=Date.now();
+  let msg='Chiudere '+currentMd.label+' adesso? I voti vengono bloccati e la giornata conta come giocata.';
+  if(t && isFinite(t.voteClose) && now<=t.voteClose)
+    msg+='\n\n⚠️ Le votazioni sono ANCORA APERTE: chi non ha votato non potrà più farlo.';
+  msg+='\n\nÈ diverso da «Annulla questa giornata», che invece la cancella.';
+  if(!confirm(msg))return;
   await doCloseMatchday(false);
+  // se la stagione è già stata archiviata, il recap era stato congelato SENZA questa
+  // giornata: va ricalcolato, altrimenti resta indietro per sempre.
+  if(lastClosedSeason && currentSeason && currentSeason.status==='closed'){
+    if(confirm('La Stagione '+lastClosedSeason.number+' è già chiusa: il suo recap non contiene questa giornata.\n\nLo ricalcolo adesso?')){
+      const {error}=await sb.rpc('rebuild_season_recap',{p_season:lastClosedSeason.id});
+      toast(error?('Errore ricalcolo: '+error.message):'Recap di stagione aggiornato ✅');
+    }
+  }
 }
 async function resetMatchday(){
   if(!currentMd)return;
@@ -3452,7 +3498,9 @@ function renderMatchday(){
       const live = !!(currentMd && currentMd.status!=='closed');   // giornata in corso
       let h='';
       if(live){
-        h+=`<button class="set-btn" style="margin-top:10px" onclick="openEditKickoffSheet()">🕑 Modifica orario partita</button>`;
+        h+=`<button class="set-btn" style="margin-top:10px" onclick="openEditKickoffSheet()">🕑 Modifica orario partita</button>`
+          +`<button class="save" style="margin-top:10px" onclick="closeMatchday()">🏁 Chiudi la giornata adesso</button>`
+          +`<p class="vs" style="color:var(--muted);font-size:12px;margin:9px 0 0;line-height:1.5">${closeMdHintText()}</p>`;
       } else {
         // nessuna giornata aperta → si può far partire adesso quella programmata (niente attesa 72h)
         h+=`<button class="save" style="margin-top:12px" onclick="openNowMatchday()">⚡ Apri subito la giornata</button>`
@@ -5691,7 +5739,11 @@ async function openSeasonRecap(id, auto){
   try{
     const {data,error}=await sb.rpc('get_season_recap', id?{p_season:id}:{});
     if(error||!data||data.empty||!data.season_id){
-      if(!auto) toast('Recap di stagione non disponibile'); return;
+      // l'errore vero serve: "non disponibile" nascondeva sia un errore SQL sia
+      // "zero giornate chiuse", che si risolvono in due modi completamente diversi.
+      if(!auto) toast(error ? ('Recap: '+error.message)
+                            : 'Recap vuoto: la stagione non ha giornate chiuse (chiudi la giornata e ricalcola).');
+      return;
     }
     seasonData=data; seasonRecapId=data.season_id; recapMode='season'; _shareCanvas=null;
     recapCards=buildSeasonCards(data); recapIdx=0;
@@ -5699,7 +5751,7 @@ async function openSeasonRecap(id, auto){
     const p=document.getElementById('pag'); p.classList.add('open');
     document.body.style.overflow='hidden';
     buildProgress(); showRecapCard(0);
-  }catch(_){ if(!auto) toast('Errore nel caricare il recap'); }
+  }catch(e){ if(!auto) toast('Errore recap: '+((e&&e.message)||e)); }
   finally{ recapBusy=false; }
 }
 
