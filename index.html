@@ -2820,6 +2820,7 @@ async function loadPlayers(){
    una stagione archiviata non altera niente del gioco in corso. */
 let allSeasons=[], viewSeasonId=null, lbStandings=null, lbBusy=false;
 let cardSeasonAware=null;   // null = non ancora verificato, false = SQL schede non applicata
+let voteTrendSeasonAware=null;   // idem per il grafico voti
 
 async function loadSeasonsList(){
   try{
@@ -4000,12 +4001,12 @@ function openPlayerStats(id){
   if(bch) bch.innerHTML='<div class="bch-empty">Carico la bacheca…</div>';
   _statCardId=id;
   openBacheca('player');
-  loadVoteTrend(id);
   refreshPlayerCard(id);
 }
 /* ricarica la bacheca giocatore per la stagione selezionata (viewSeasonId) */
 function refreshPlayerCard(id){
   const bch=document.getElementById('statBacheca'); if(!bch) return;
+  loadVoteTrend(id, viewSeasonId);   // il grafico segue la stagione selezionata
   loadPlayerCard(id, viewSeasonId).then(card=>{
     // se nel frattempo si è chiuso o si è aperta un'altra card, non sovrascrivere
     if(_statCardId!==id) return;
@@ -4018,21 +4019,39 @@ function closeStatModal(){ closeBacheca(); }
 /* ---------- ANDAMENTO VOTI: grafichino della stagione (solo voto, niente bonus) ---------- */
 // Estrae il numero di giornata dalla label "Giornata N" (fallback: indice progressivo).
 function mdShortLabel(lab,i){ const m=/(\d+)/.exec(lab||''); return m?('G'+m[1]):('G'+(i+1)); }
-async function loadVoteTrend(id){
+/* Grafico voti giornata per giornata.
+   Con p_season mostra SOLO le giornate di quella stagione (prima le mescolava
+   tutte). Se la RPC a due argomenti non c'è ancora, ricade su quella storica.
+   Non sparisce più in silenzio: senza dati dice perché. */
+async function loadVoteTrend(id, seasonId){
   const box=document.getElementById('statChart'); if(!box) return;
-  box.style.display='none'; box.innerHTML='';
-  try{
-    const {data,error}=await sb.rpc('get_player_vote_trend',{p_player:id});
-    if(_statCardId!==id) return;                 // card cambiata nel frattempo
-    if(error) return;                            // RPC non ancora installata → niente grafico, nessun crash
-    const pts=(data||[]).map((r,i)=>({lab:mdShortLabel(r.md_label,i), v:Number(r.voto)}))
-                        .filter(p=>isFinite(p.v));
-    const bvb=document.getElementById('bestVoteBox');   // miglior voto: box dedicato (anche con 1 sola giornata)
-    if(bvb && pts.length){ bvb.querySelector('.v').textContent=Math.round(Math.max(...pts.map(p=>p.v))*100)/100; }
-    if(!pts.length) return;                      // basta 1 presenza: mostriamo comunque il grafico
-    box.innerHTML=voteTrendHTML(pts);
-    box.style.display='block';
-  }catch(_){ /* offline o RPC assente: semplicemente non mostriamo il grafico */ }
+  box.style.display='block';
+  box.innerHTML='<div class="bch-empty">Carico i voti…</div>';
+  let data=null, err=null;
+  if(seasonId!=null && voteTrendSeasonAware!==false){
+    try{
+      const r=await sb.rpc('get_player_vote_trend',{p_player:id,p_season:seasonId});
+      if(!r.error){ data=r.data; voteTrendSeasonAware=true; }
+      else if(_noSeasonArg(r.error)) voteTrendSeasonAware=false;
+      else err=r.error;
+    }catch(e){ if(_noSeasonArg(e)) voteTrendSeasonAware=false; else err=e; }
+  }
+  if(data==null && !err){
+    try{ const r=await sb.rpc('get_player_vote_trend',{p_player:id}); data=r.data; err=r.error; }
+    catch(e){ err=e; }
+  }
+  if(_statCardId!==id) return;                 // card cambiata nel frattempo
+  if(err){ box.style.display='none'; box.innerHTML=''; return; }   // RPC assente: niente grafico, nessun crash
+  const pts=(data||[]).map((r,i)=>({lab:mdShortLabel(r.md_label,i), v:Number(r.voto)}))
+                      .filter(p=>isFinite(p.v));
+  const bvb=document.getElementById('bestVoteBox');   // miglior voto: box dedicato (anche con 1 sola giornata)
+  if(bvb) bvb.querySelector('.v').textContent = pts.length ? (Math.round(Math.max(...pts.map(p=>p.v))*100)/100) : '—';
+  if(!pts.length){
+    const sn=seasonById(seasonId);
+    box.innerHTML='<div class="bch-empty">Nessun voto'+(sn?(' nella Stagione '+sn.number):'')+'.</div>';
+    return;
+  }
+  box.innerHTML=voteTrendHTML(pts);
 }
 // Disegna una linea morbida con pallini e voto sopra ogni punto. Semplice e carino, non da ingegnere.
 function voteTrendHTML(pts){
