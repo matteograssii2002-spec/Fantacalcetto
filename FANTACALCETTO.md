@@ -1759,3 +1759,289 @@ Rimosso **tutto** lo script che misurava il viewport (`--app-h`, `settle()`, il 
 1. `apri_subito.sql` in Supabase → SQL Editor.
 2. `index.html` su GitHub (Vercel deploya da solo).
 3. Test su iPhone: avvio da app chiusa (barra subito in fondo), rientro da background, rotazione, tastiera aperta; poi **Apri subito** → segna i presenti → schiera.
+
+---
+
+## 41. Link d'invito diretto, riquadro «crea» rosso, avatar interi nel Pagellone, RECAP DI FINE STAGIONE
+
+> Dove in conflitto con sezioni precedenti, **vale questa**. File: `stagione_recap.sql` (nuovo) + `notify.ts` + `index.html`.
+> **Ordine di deploy obbligatorio:** `stagione_recap.sql` **PRIMA** → `notify.ts` (dashboard Edge Functions) → `index.html` su GitHub. Invertendo 1 e 3 il client chiama RPC che non esistono ancora. Chiavi già dentro `index.html`. `sw.js` e `admin.html` **non** toccati.
+
+### 41.1 Riquadro «Stai creando una nuova lega» → ROSSO
+
+Il `.ctx-box` del gate era **blu** per «crea» e verde per «entra»: due percorsi opposti col blu che è anche l'accento generale dell'app, quindi poco distinguibile. Ora «crea» usa `var(--red)` (#ff5d6b) con lo **stesso identico trattamento** del verde (sfondo sfumato, bordo, alone, iconcina). «Entra» resta verde.
+
+### 41.2 Link d'invito → dritto alla password
+
+Prima: `?lega=slug` veniva letto **solo** in `showLeague()`, cioè dopo il login; l'utente passava comunque dalla welcome e sceglieva a mano «crea o entra».
+
+Adesso:
+
+- **`boot()`** — niente sessione + slug presente → `resolveInvite()` risolve il nome via `league_by_slug`, poi `authIntent='join'` e `showGate('join')`: la **welcome viene saltata**.
+- **`showGate('join')`** — il riquadro verde scrive il nome vero: «Stai entrando in **La Fossa di Lissone**» invece del generico «una lega esistente».
+- **Dopo il login** — `showLeague()` va in join con il nome **già compilato e bloccato**: `lgLockInvite()` mette `lgSearch.readOnly`, cambia `#lgSearchLab` in «Lega dell'invito», riscrive `#lgDesc` («Sei stato invitato in «X»…») e trasforma `#lgBack` in «← Entra in un'altra lega» (`lgInviteBack()` → azzera `inviteLeague`, `lgUnlockInvite()`, `lgMode('choose')`). Resta **solo la password** da scrivere; `lgSelect` focalizza già `#lgPwd`.
+- **Via di fuga** — `showLeague(forceMode)`: se `forceMode==='create'` l'invito **non** forza il join. Prima lo slug vinceva sempre e chi voleva creare restava intrappolato.
+- **Senza link** — flusso invariato: si scrive il nome e `find_leagues` suggerisce le leghe mentre si digita.
+
+**Stato:** globale `inviteLeague` + `async resolveInvite()` (risolve **una volta** e tiene il risultato). Sostituisce `resolveLeagueSlug(slug)`, **rimossa** (nessun riferimento residuo).
+
+**Nota:** `emailRedirectTo` è `origin+pathname` (senza query), ma non serve: il codice OTP si inserisce in pagina, la URL non cambia mai e `?lega=` sopravvive.
+
+### 41.3 Pagellone — avatar mai tagliati
+
+**Sintomo:** nelle storie gli avatar venivano rifilati sopra e sotto.
+**Causa:** `.pag-av img{width:88%;height:auto}` dentro un riquadro **quadrato** con `overflow:hidden`: gli avatar più alti che larghi sfondavano.
+**Fix:**
+
+```css
+.pag-av img{width:88%!important;height:auto!important;
+  max-width:88%!important;max-height:88%!important;object-fit:contain!important}
+```
+
+L'immagine si **rimpicciolisce** per stare intera. Vale per tutte le misure (`.pag-av`, `.huge`, `.sm`). La card PNG non era interessata: `drawAvatar`/`drawLogo` facevano già il *contain* a mano.
+
+**Regola di progetto:** gli avatar si mostrano **sempre interi** (contain), mai ritagliati (cover).
+
+### 41.4 RECAP DI FINE STAGIONE — cos'è
+
+Un secondo «pagellone», ma dell'**annata**: ~22 scene a storie che partono da sole alla prima apertura dopo la chiusura della stagione, più una push a tutta la lega.
+
+**Non è un motore nuovo.** Riusa per intero quello del Pagellone (overlay `#pag`, `buildProgress`, `showRecapCard`, tap/hold/swipe, coriandoli, `countUp`, `skeletonRows`, `lbRowHTML`). L'interruttore è la globale **`recapMode`** (`'md'` | `'season'`): `showRecapCard` sceglie `renderSeasonHTML(card)` invece di `renderRecapHTML(card, recapData)`. `closeRecap()` e `openRecap()` rimettono `recapMode='md'`.
+
+**Design (skill `mobile-app-ui-design`):** il Pagellone di giornata resta **blu**, la stagione è **oro** — due eventi diversi, due accenti diversi. Un solo picco emotivo: la scena **Campione** (oro + logo + coriandoli + vibrazione lunga). La chiusura è la card PNG condivisibile. Griglia da 8px, ombre tinte, avatar interi.
+
+### 41.5 Il recap è CONGELATO (e perché)
+
+Si calcola **una volta sola** e si salva in `season_recaps(season_id pk, league_id, data jsonb, created_at)`.
+
+- Ricalcolare fino a 38 giornate a ogni apertura sarebbe lento.
+- A stagione chiusa i numeri **non cambiano più**.
+- Diventa un **albo d'oro** consultabile per sempre.
+
+Se si correggono voti/bonus a stagione già chiusa serve `rebuild_season_recap` (bottone admin in Impostazioni → stagione).
+
+**Niente trigger sulla chiusura**: build **lazy** alla prima `get_season_recap`. Motivo: `get_standings_md` filtra per `my_league()` (quindi `auth.uid()`), va chiamata nel contesto di un membro della lega; un trigger dentro `close_season` funzionerebbe solo per l'admin e, in caso di errore, farebbe fallire la chiusura stessa.
+
+### 41.6 `stagione_recap.sql` — struttura
+
+Additivo e idempotente, non tocca tabelle/trigger/funzioni esistenti.
+
+**Temp table** (tutte `on commit drop`):
+
+- `_sr_md` — classifica di **ogni** giornata chiusa via `lateral get_standings_md(m.id)`, più il flag `played` (= quel manager ha schierato).
+- `_sr_mvp` — MVP effettivo di ogni giornata, **stessa regola** di `get_standings_md` (più nomination, tie-break per id).
+- `_sr_hist` — classifica **cumulativa progressiva** → `leader_days`, `best_pos`, sorpassi.
+- `_sr_pl` — statistiche stagionali per giocatore (presenze, gol, assist, autogol, media voto, MVP, volte schierato, giornate da portiere e gol subiti).
+
+**SQL DINAMICO — non toglierlo.** Ogni query che tocca una temp table gira dentro `execute $q$…$q$` con parametri `USING`. In plpgsql statico il piano cachato punta alla **vecchia** temp table e dalla seconda chiamata nella stessa sessione arriva `relation ... does not exist`. Dollar-quote annidati: `$fn$` per il corpo funzione, `$q$` per le query interne.
+
+**Scoping lega.** `v_league` si prende da `seasons.league_id`; `_sr_pl` filtra `players` per `league_id`. Le funzioni sono `security definer` (girano da proprietario → **RLS bypassata**), quindi il filtro lega va messo **a mano**. `get_standings_md` invece si filtra da sola con `my_league()`.
+
+**Punteggio: NON duplicato.** La formula di `scoreOf`/`get_standings_md` non è stata replicata. Il «fedelissimo» riporta **volte schierato + gol/assist**, non «punti portati», proprio per non rischiare una divergenza. Unica eccezione consapevole: *Mister Fortuna* somma l'esito (V=+2/S=−1), pezzo isolato e stabile.
+
+### 41.7 RPC nuove
+
+| funzione | cosa fa |
+|---|---|
+| `build_season_recap(p_season)` | **interna** (`revoke` da public/anon). Ritorna il jsonb completo: globale + `managers` + `players`. |
+| `get_season_recap(p_season default null)` | pubblica. `null` = ultima stagione **chiusa** della propria lega. Legge la cache; se manca chiama build e la scrive. Ritorna il globale **senza** `managers`/`players` + `me_manager_id`, `me_player_id`, `mine`, `me_player`: così non si scarica la stagione altrui. |
+| `get_last_closed_season()` | leggera: `(id, number, name, ended_at)`. Chiamata a ogni `loadSeason()` → `lastClosedSeason`. |
+| `rebuild_season_recap(p_season)` | (admin) ricalcola e sovrascrive la cache. |
+
+### 41.8 Notifica di fine stagione
+
+Nuova colonna **`seasons.recap_notified`** (bool, default false).
+
+`notify.ts` → **`runSeasonRecap()`** nel blocco cron: prende le `seasons` con `status='closed'` e `recap_notified=false`, manda `sendAll('Stagione N archiviata 🏆', url '/?srecap=<id>')` alla lega, poi alza il flag. Copre **sia** la chiusura a mano **sia** l'auto-chiusura alle 38 giornate. Ritardo massimo 10 minuti (cron `*/10`).
+
+**Niente push retroattive:** l'SQL fa `update seasons set recap_notified=true where status='closed'` in installazione. Lato client stessa idea col flag `fc_srecap_init`: alla prima apertura dopo il deploy le stagioni già chiuse vengono marcate come viste (il recap resta comunque raggiungibile dall'Albo d'oro).
+
+### 41.9 Client — dove si vede
+
+- **Automatico**: `maybeShowSeasonRecap()`, una volta sola (`localStorage fc_srecap_seen_<season_id>`, stesso schema del Pagellone).
+- **Precedenza**: in `afterLogin` `?srecap` batte `?recap`; senza deep-link `maybeShowSeasonRecap().then(shown => if(!shown) maybeShowRecap())` → **la fine stagione batte la fine giornata**.
+- **`lastClosedSeason`**: globale nuova, caricata in `loadSeason()`. **Separata da `currentSeason`**: appena l'admin apre la stagione nuova `currentSeason` torna «aperta», ma il recap della precedente deve restare raggiungibile.
+- **Albo d'oro**: nuova riga in Home sotto il Pagellone (`#homeSeasonWrap`, `.pag-open-btn.season`, «Rivivi la Stagione N»), da `renderSeasonRecapButton()` chiamata da `loadSeason` e `renderAll`. Visibile solo se esiste una stagione chiusa.
+- **Admin**: in `renderSeasonAdmin` bottone «🔄 Ricalcola il recap della Stagione N» → `rebuildSeasonRecap()`.
+
+### 41.10 Le scene
+
+`scover, snumbers, srecords, syou, spath, sloyal, scaptain, smodule, splayer, stwin, schamp, spodium, sawards1, sawards2, swanted, sjump, sduel, striples, sfun, spalmares, sfinal, sshare`.
+
+`buildSeasonCards(d)` le include **solo se il dato c'è**: una lega con 1 sola squadra + un solo-manager senza personaggio degrada a **6 scene** senza rompere niente (testato con dati finti su tutte le scene).
+
+**Pezzi notevoli:**
+
+- **`spath` — la parabola**: `seasonPathSVG(path, teams)`, SVG puro, nessuna libreria. Asse Y **invertito** (1º in alto, è così che si legge una classifica), area sfumata + linea + pallini, ultimo pallino oro. `path` arriva già pronto dall'SQL (una voce per giornata: `label`, `rank`, `pts`).
+- **`spalmares` — il tuo palmarès**: `seasonPalmares(d)` raccoglie i premi vinti da chi guarda. `sIsMe(who)` confronta `who.player_id` con `seasonData.me_player_id` e tinge di blu (`.pag-awd-row.me`) la riga del premio vinto dall'utente anche nelle scene dei premi.
+- **`sshare` — la card PNG**: `buildSeasonShareCard()`/`prepSeasonShare()`/`shareSeason()`, stessa impalcatura di `buildShareCard` ma 3 blocchi (La mia squadra col logo, Le mie cifre con avatar, Campione col logo), file `stagione-N.png`. **NB:** `mine` non contiene `manager_id` (tolto dall'SQL con `- 'manager_id'`) → si usa `d.me_manager_id`.
+
+### 41.11 Premi e soglie
+
+Rinominato su richiesta: **«Pallone di piombo» → «Il migliore (degli scarsi)» 🫠**. Sta nella scena `sfun` insieme ad **Autogol d'autore** e **Mister Fortuna** (chi ha raccolto più punti dall'esito della squadra vera invece che dalle prestazioni). Per toglierli: cancellare la riga `{t:'sfun'}` in `buildSeasonCards`.
+
+**Gate presenze** (stessa filosofia dei Titoli della Bacheca, così nessuno vince per caso):
+
+- Pallone d'oro e Il migliore (degli scarsi): `pres >= greatest(4, ceil(md_count*0.30))`.
+- Saracinesca: `gk_mds >= greatest(2, ceil(md_count*0.20))`.
+
+La card lo dice esplicitamente all'utente.
+
+### 41.12 Casi limite gestiti
+
+0 giornate chiuse → `{empty:true}`, il client non apre nulla. 1 sola squadra → niente gap/duello/podio/cucchiaio. Solo-manager senza personaggio → `me_player` null, scene giocatore saltate. Nessun voto → `vm` null, premi da media assenti.
+
+### 41.13 Deploy e collaudo
+
+1. `stagione_recap.sql` in Supabase → SQL Editor.
+2. `notify.ts` dalla dashboard Edge Functions. **Mai su GitHub** (contiene `VAPID_PRIVATE` e `CRON_SECRET`); «Verify JWT» resta **disattivato**.
+3. `index.html` su GitHub (Vercel auto-deploy).
+
+**Test:** chiudere la stagione → ricaricare (il recap parte da solo) → entro 10 minuti arriva la push → riaprirlo dalla riga **Albo d'oro** in Home. La **prima** apertura è più lenta (build), le successive istantanee. Controllare la parabola (1º in alto, ultimo pallino oro) e che nella card PNG i loghi escano interi.
+
+---
+
+## 42. SESSIONE 42 — Icone PWA, chiusura giornata, fix recap, restyling storie, SELETTORE STAGIONE
+
+Sessione lunga, cinque filoni: due bug bloccanti, un blocco di fix estetici sul recap di stagione, il selettore di stagione (la novità funzionale vera) e le gesture native.
+
+### 42.1 Icona PWA — perché sulla Home usciva una «F»
+
+Due cause sommate:
+
+1. `apple-touch-icon` puntava a `icon-180.png`, file **assente/404** sul dominio. iOS ripiega su una lettera generata dal nome del sito.
+2. Il manifest era un **`data:` URI**. Dentro un data URI gli URL relativi (`icon-512.png`) **non si risolvono**: la base è il data URI stesso, non il sito. Per il browser il manifest era quindi senza icone valide.
+
+**Fix:** `apple-touch-icon` → `icon-512.png?v=4` (file che esiste di sicuro, iOS la riscala da sé) e manifest spostato in un **file vero**, `manifest.webmanifest`, con percorsi assoluti (`/icon-512.png?v=4`), `scope`, `start_url` e la variante `purpose:"maskable"` per Android.
+
+**Regola di progetto:** mai un manifest come data URI. Dopo il deploy iOS tiene in cache l'icona: va **rimossa e ri-aggiunta** l'app alla schermata Home per vederla cambiare.
+
+### 42.2 Manca(va) il tasto «Chiudi la giornata»
+
+`closeMatchday()` esisteva nel sorgente ma **non era agganciata a nessun bottone**: funzione orfana. Una giornata si chiudeva solo in automatico (fine finestra voti, `kickoff+25h`) o dal cron. Conseguenza: chiudendo la stagione con una giornata ancora aperta, quella restava **orfana** — fuori dal recap (congelato) e senza modo di sbloccarla.
+
+**Fix in `renderMatchday`:** nel ramo `live` c'è ora `🏁 Chiudi la giornata adesso`, con `closeMdHintText()` che cambia il testo secondo la fase (avvisa esplicitamente se i voti sono ancora aperti). Il `confirm` distingue **chiudere** da **annullare**, che erano confondibili.
+
+**`closeSeasonNow()` non lascia più orfani:** se c'è una giornata aperta propone di chiuderla e poi archiviare, in un colpo solo; se la chiusura fallisce, non archivia. E se si chiude una giornata a stagione già archiviata, l'app **propone di ricalcolare il recap** (altrimenti resterebbe congelato senza quella giornata per sempre).
+
+### 42.3 `fix_recap_mvp.sql` — «missing FROM-clause entry for table "mvp"»
+
+In `build_season_recap`, temp table `_sr_pl`: la CTE `mvp` (conteggio MVP per giocatore) era **definita ma mai unita**. La select usava `coalesce(mvp.n,0)` mentre nella FROM c'erano solo `st/vt/pr/fld/gk`.
+
+**Fix:** una riga, `left join mvp on mvp.player_id = p.id`. Controllate tutte le altre CTE della funzione: era l'unica scollegata.
+
+**Nota di metodo:** il bug ha resistito settimane perché il recap è **lazy** — si costruisce alla prima `get_season_recap`, cioè molto dopo l'esecuzione dell'SQL. Prima di dare l'app a gruppi esterni, chiudere una stagione finta di 2-3 giornate su una lega di prova.
+
+**Diagnostica aggiunta:** `openSeasonRecap` non dice più «Recap non disponibile» per tutto; mostra il messaggio SQL vero, oppure «recap vuoto: nessuna giornata chiusa». In `renderSeasonAdmin` compare un avviso rosso se la stagione risulta chiusa ma `get_last_closed_season()` non la vede, più un tasto «🏆 Apri il recap».
+
+### 42.4 Recap di stagione — fix estetici
+
+**Righe premio sovrapposte.** `.pag-awd-k` e `.pag-awd-n` erano `<span>` **inline**: etichetta e nome finivano attaccati («CAPOCANNONIEREBenzo») e `text-overflow:ellipsis` non può funzionare su un inline, quindi il nome sfondava sopra il valore. Ora sono `display:block`, `.pag-awd-v` ha `margin-left:auto` + `white-space:nowrap`, icona e padding ridotti per fare spazio.
+
+**«Giornata 5» spezzata a metà.** In `srecords` il label va in `<span class="nb">` (`white-space:nowrap`).
+
+**Avatar tagliati sui piedi.** `.pag-av img` usava `max-height:88%`. Una **max-height percentuale su un grid item** non si risolve in modo affidabile su Safari iOS (l'altezza dell'area viene trattata come indefinita → la percentuale diventa `none`), l'immagine sfondava e `overflow:hidden` la tagliava.
+**Regola di progetto:** in questi riquadri le soglie vanno in **px**, mai in %. Valori attuali: `.pag-av` 132 · `.huge` 154 · `.sm` 79 · `.pag-duo` 69 · `.pag-awd-av` 38.
+
+**Coriandoli rimossi.** Coprivano barra di stato e barra di avanzamento. `startConfetti()` non viene più chiamata (funzione e canvas restano inerti). Al suo posto `.pag-trophy.pulse` → keyframe `trophyIn`: il trofeo entra ruotando con bagliore oro e si posa. Rispetta `prefers-reduced-motion`.
+
+**Parabola riscritta (`seasonPathSVG`).** Prima era solo una curva: non diceva a che **posto** fossi. Ora ha corsia sinistra con le posizioni (`1º` in alto, ultimo in basso), linee guida, il numero di posizione **su ogni pallino** (fino a 8 giornate; oltre, solo primo e ultimo) e le etichette X che usano il **label vero** della giornata (`Giornata 1` / `Giornata 5`), non più «1ª giornata». Geometria: `W=320 H=176 L=30 R=12 T=18 B=30`. Con più di 6 squadre mostra solo prima/metà/ultima posizione, altrimenti tutte.
+
+### 42.5 Gesture native
+
+- **Storie (`initRecap`)**: aggiunto lo **swipe orizzontale** (soglia 64px, direzione dominante ×1.4) → scena precedente/successiva, con vibrazione da 8ms. Convive con lo swipe giù che chiude e col tap. Flag `swiped` per non far scattare anche il tap al rilascio.
+- **Classifica (`bindSeasonSwipe`)** e **schede (`bindCardSeasonSwipe`)**: swipe orizzontale = stagione precedente/successiva.
+
+### 42.6 SELETTORE DI STAGIONE — il concetto
+
+Prima si vedeva solo la stagione in corso: chiusa la 1 e aperta la 2, la 1 spariva ovunque tranne che nel recap.
+
+**Chiave dell'architettura: `viewSeasonId` è SEPARATO da `currentSeasonId`.**
+`currentSeasonId` è la stagione **in corso** e continua a governare Home, campo, voti, crediti, apertura giornate. `viewSeasonId` è solo «quale stagione sto guardando» in Classifica e nelle schede. Tenendole distinte, sfogliare un'annata archiviata **non può alterare niente del gioco attivo**.
+
+Stesso principio per i dati: `standings` resta la classifica corrente (la usa la Home), `lbStandings` è quella della stagione consultata. `lbRows()` sceglie quale mostrare.
+
+### 42.7 `stagioni_selettore.sql`
+
+| funzione | cosa fa |
+|---|---|
+| `get_seasons()` | **nuova**. `(id, number, status, ended_at, mds_closed)` della propria lega, dalla più recente. Alimenta `allSeasons`. |
+| `get_standings_season(p_season bigint default null)` | la precedente + parametro. `null` = stagione corrente (comportamento storico invariato, inclusa la chiamata dentro `get_team_card`). |
+
+**Qui il `drop` è servito:** un parametro con `default` accanto alla versione a zero argomenti rende **ambigua** `get_standings_season()` (due candidati validi → errore). Quindi `drop function get_standings_season()` prima del `create`.
+
+**Sicurezza:** `p_season` arriva dal client e non è fidato. Il filtro resta dentro la CTE:
+```sql
+select s.id from seasons s
+ where s.league_id = my_league()
+   and (p_season is null or s.id = p_season)
+ order by (s.status='open') desc, s.number desc limit 1
+```
+Chiedere la stagione di un'altra lega non trova la riga → classifica vuota, mai dati altrui.
+
+### 42.8 `schede_per_stagione.sql` — il pattern «guscio», NIENTE drop
+
+Quattro funzioni, ognuna in **due versioni**:
+
+- la **nuova** con `p_season` **obbligatorio** → contiene la logica
+- la **vecchia**, firma invariata → guscio di una riga che chiama la nuova con `null`
+
+```sql
+create or replace function get_player_card(p_player_id bigint)
+returns jsonb language sql stable security definer set search_path to 'public'
+as $fn$ select public.get_player_card(p_player_id, null::bigint) $fn$;
+```
+
+**Perché obbligatorio e non `default`:** con `p_season ... default null` una chiamata a un argomento troverebbe due candidati (`(bigint)` e `(bigint,bigint)`) → `function is not unique`. Per evitarlo bisognerebbe **cancellare** le funzioni esistenti. Con il parametro obbligatorio le firme sono distinte, `get_player_card(5)` continua a risolversi sulla vecchia, **non si cancella niente** e in caso di problemi il vecchio comportamento è ancora lì.
+PostgREST risolve per **nomi dei parametri** nel payload: `{p_player_id}` → 1 arg, `{p_player_id, p_season}` → 2 arg.
+
+Funzioni toccate: `_player_facts(p_season)`, `_manager_season_facts(p_season)`, `get_team_card(uuid, bigint)`, `get_player_card(bigint, bigint)`.
+
+**Cosa resta all-time e cosa diventa per stagione — distinzione voluta:**
+
+- **Traguardi (all-time)**: gol, assist, MVP, presenze in carriera, Manita/Poker/Tripletta. Sono traguardi di **carriera**: azzerarli per stagione svuoterebbe la Bacheca.
+- **Titoli (di stagione)**: Pallone d'oro, Re dell'attacco, Diga, Saracinesca, Capocannoniere, Mago degli assist — gate presenze incluso (`pres_season`, `voto_season` da `_player_facts(v_season)`).
+- **Lato manager**: punti, posizione, `best_pos`, Re della giornata, Al comando, Scalatore, Profeta, Capitano coraggioso — tutti sulla stagione scelta.
+
+Aprendo la scheda di un giocatore che è anche manager, il blocco 👔 eredita la **stessa** stagione: `get_team_card(v_owner, v_season)`.
+
+**Guardia esplicita:** se `p_season` non è null e non trova una stagione della propria lega, le due schede tornano `{'error':'season_not_found'}` invece di ripiegare in silenzio sulla corrente mostrando dati con l'etichetta sbagliata.
+
+**`_season_rank_history(v_season)`** accettava già l'id di stagione: nessuna modifica.
+
+### 42.9 `grafico_voti_stagione.sql`
+
+`get_player_vote_trend(p_player)` mostrava **tutte** le giornate chiuse della lega, mescolando le stagioni. Aggiunta `get_player_vote_trend(p_player bigint, p_season bigint)` — stesso pattern del guscio, ma qui la vecchia **non è nemmeno toccata**: la nuova ha firma distinta e basta.
+
+Client: `loadVoteTrend(id, seasonId)` prova la due-argomenti, ricade sulla storica, e **non sparisce più in silenzio** — senza dati scrive «Nessun voto nella Stagione N». Viene richiamata da `refreshPlayerCard`, quindi il grafico **segue il selettore**.
+
+### 42.10 Client — pezzi nuovi
+
+| simbolo | ruolo |
+|---|---|
+| `allSeasons`, `viewSeasonId`, `lbStandings`, `lbBusy` | stato del browsing per stagione |
+| `cardSeasonAware`, `voteTrendSeasonAware` | `null` = da verificare, `false` = SQL non applicata → il selettore resta **nascosto** invece di mostrare un controllo inerte |
+| `loadSeasonsList()` | `get_seasons()`, con fallback che ricostruisce da `currentSeason` + `lastClosedSeason` |
+| `seasonById`, `viewingCurrentSeason`, `lbRows` | helper |
+| `loadSeasonStandingsFor(id)`, `setViewSeason(id)` | caricamento + cambio stagione (skeleton + vibrazione prima della rete) |
+| `renderSeasonBar()` | segmented control in Classifica (`#lbSeasonBar`), nascosto se `allSeasons.length < 2` |
+| `cardSeasonBarHTML()`, `setCardSeason()` | stesso controllo dentro le schede; tiene allineata anche la Classifica |
+| `refreshPlayerCard()`, `refreshTeamCard()` | ricarica scheda (+ grafico voti) per la stagione scelta |
+| `_noSeasonArg(err)` | riconosce «RPC senza p_season» (match su `p_season` / `does not exist` / `PGRST202`) |
+
+CSS: `.seasonbar` — segmented control iOS, scroll orizzontale con `scroll-snap`, `.on` / `.on.past` (oro per le archiviate), `.sb-dot` verde sulla stagione aperta.
+
+Sulle stagioni archiviate le frecce ▲▼ sono disattivate (non hanno senso su una classifica congelata) e `#lbHint` scrive «Classifica finale della Stagione N · archiviata».
+
+### 42.11 Ordine di esecuzione
+
+1. `fix_recap_mvp.sql`
+2. `stagioni_selettore.sql`
+3. `schede_per_stagione.sql` (richiede il 2)
+4. `grafico_voti_stagione.sql`
+5. `manifest.webmanifest` nella root del repo
+6. `index.html` (chiavi Supabase da re-incollare)
+
+`notify.ts`, `sw.js` e `admin.html` **non toccati**. Dopo un DDL, PostgREST impiega qualche secondo a rigenerare la cache dello schema.
+
+**Collaudo:** aprire la scheda di un giocatore che ha vinto titoli nella Stagione 1 e passare da 2 a 1 — Capocannoniere e Pallone d'oro devono comparire sulla 1 e sparire sulla 2, mentre Cecchino e Uomo copertina (carriera) restano fermi. Il grafico voti deve cambiare con la stagione.
