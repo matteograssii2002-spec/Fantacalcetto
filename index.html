@@ -922,6 +922,27 @@
   .seasonbar button.on.past{background:rgba(255,194,61,.18);color:var(--gold-soft)}
   .seasonbar button:active{transform:scale(.97)}
   .seasonbar .sb-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:6px;vertical-align:1px}
+  /* SELETTORE STAGIONE: la barra a segmenti non regge oltre 3-4 stagioni, quindi
+     il titolo stesso diventa il selettore e apre l'elenco completo in un foglio. */
+  button.hh-season{font-family:inherit;line-height:1.15}
+  button.hh-season[disabled]{opacity:1;cursor:default}
+  .hh-season.pick{cursor:pointer;touch-action:manipulation}
+  .hh-season.pick::after{content:'⌄';margin-left:6px;font-size:13px;opacity:.8;vertical-align:1px}
+  .hh-season.pick:active{transform:scale(.96)}
+  .lb-back{display:flex;align-items:center;gap:10px;background:rgba(255,194,61,.10);border:1px solid rgba(255,194,61,.28);
+           border-radius:14px;padding:10px 12px;margin:0 0 10px;font-size:12.5px;color:var(--gold-soft)}
+  .lb-back button{margin-left:auto;flex:none;background:rgba(255,194,61,.18);border:1px solid rgba(255,194,61,.35);
+           color:var(--gold-soft);font-family:inherit;font-size:12px;font-weight:800;padding:6px 11px;border-radius:999px;
+           cursor:pointer;touch-action:manipulation}
+  .lb-back button:active{transform:scale(.96)}
+  .opt .oav.emo{width:38px;text-align:center;font-size:23px;line-height:38px}
+  .opt .pr.on{color:var(--accent)}
+  /* HOME in intervallo fra due stagioni */
+  .hero-note{margin:12px 2px 0;font-size:12.5px;line-height:1.5;color:rgba(255,255,255,.62)}
+  .hero-2nd{width:100%;margin-top:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);
+           color:var(--text);font-family:inherit;font-weight:800;font-size:14px;padding:13px;border-radius:14px;
+           cursor:pointer;touch-action:manipulation}
+  .hero-2nd:active{transform:scale(.985)}
   .lg-res{display:block;padding:13px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-top:8px;cursor:pointer;font-weight:700;transition:border-color .15s}
   .lg-res:active{border-color:var(--accent)}
   .lg-back{display:block;text-align:center;color:var(--accent-soft);font-size:13px;cursor:pointer;margin-top:16px}
@@ -1668,8 +1689,9 @@
         <span class="hh-season" id="heroSeason">Stagione 1</span>
       </div>
       <div class="hero-top"><span class="ko" id="heroKo">● FantaCalcetto</span><span class="teampill" id="heroTeam">La tua squadra</span></div>
-      <h1>Pronto a <span class="hot">schierare?</span></h1>
-      <button class="cta" onclick="go('formazione')">Schiera la formazione →</button>
+      <h1 id="heroTitle">Pronto a <span class="hot">schierare?</span></h1>
+      <button class="cta" id="heroCta" onclick="go('formazione')">Schiera la formazione →</button>
+      <div id="heroExtra"></div>
     </div>
     <div class="hpcard" id="homeValuePoll" style="display:none"></div>
     <div class="hpcard" id="homePresence" style="display:none"></div>
@@ -1750,8 +1772,8 @@
 
   <section class="view" id="v-classifica">
     <div class="section-h"><h2>Classifica</h2></div>
-    <div class="lega-head"><div class="league-badge" id="legaLeague"></div><span class="hh-season" id="legaSeason">Stagione 1</span></div>
-    <div class="seasonbar" id="lbSeasonBar" style="display:none"></div>
+    <div class="lega-head"><div class="league-badge" id="legaLeague"></div><button class="hh-season pick" id="legaSeason" onclick="openSeasonPicker('lb')">Stagione 1</button></div>
+    <div id="lbBack"></div>
     <select class="vselect" id="mdSelect" onchange="onSelectStandingsMd()" style="width:100%;margin-bottom:6px"></select>
     <p class="vs" id="lbHint" style="color:var(--muted);margin:0 2px 12px;font-size:12.5px"></p>
     <div class="lb" id="lbList"></div>
@@ -2387,6 +2409,33 @@ function renderLeagueName(){
 let currentSeason=null;   // {id,number,name,status,started_at,ended_at,mds_total,mds_closed} | null
 let currentSeasonId=null; // per filtrare le giornate della stagione in corso
 let lastClosedSeason=null;// {id,number,name,ended_at} | null — l'ultima stagione archiviata
+/* STAGIONE DI RIFERIMENTO (displaySeason) ------------------------------------
+   currentSeason è dove finiscono le giornate NUOVE (logica di scrittura).
+   displaySeason è la stagione a cui si riferisce quello che l'app MOSTRA.
+   Le due divergono in un caso solo: la stagione nuova è aperta ma non ha ancora
+   nemmeno una giornata. Lì l'app deve continuare a parlare della stagione appena
+   archiviata, altrimenti si vede «Stagione 2» in testata con la classifica e le
+   statistiche della 1 — che è esattamente l'incoerenza da togliere.
+   La stagione nuova prende il posto della vecchia quando nasce la sua prima giornata. */
+let displaySeason=null, displaySeasonId=null;
+function seasonIsEmptyOpen(s){ return !!(s && s.status==='open' && s.mds_total!=null && Number(s.mds_total)===0); }
+function computeDisplaySeason(){
+  if(seasonIsEmptyOpen(currentSeason) && lastClosedSeason){
+    displaySeason={ id:Number(lastClosedSeason.id), number:Number(lastClosedSeason.number),
+                    name:lastClosedSeason.name, status:'closed', mds_total:null, mds_closed:null };
+  } else {
+    displaySeason=currentSeason;
+  }
+  displaySeasonId=displaySeason?Number(displaySeason.id):null;
+}
+/* true = siamo nell'intervallo fra due stagioni: l'ultima è archiviata e la
+   prossima non è ancora davvero cominciata (nessuna giornata). */
+function seasonBreak(){ return !!(displaySeason && displaySeason.status!=='open'); }
+/* numero della stagione che verrà: se ne esiste già una aperta e vuota è la sua. */
+function nextSeasonNumber(){
+  if(seasonIsEmptyOpen(currentSeason)) return Number(currentSeason.number);
+  return Number((displaySeason?displaySeason.number:0))+1;
+}
 async function loadSeason(){
   try{ const {data}=await sb.rpc('get_current_season'); currentSeason=(data&&data[0])||null; }
   catch(_){ currentSeason=null; }
@@ -2396,32 +2445,44 @@ async function loadSeason(){
   // torna "aperta", ma il recap della precedente deve restare raggiungibile.
   try{ const {data:ls}=await sb.rpc('get_last_closed_season'); lastClosedSeason=(ls&&ls[0])||null; }
   catch(_){ lastClosedSeason=null; }
+  computeDisplaySeason();    // PRIMA dell'elenco: viewSeasonId parte da qui
   await loadSeasonsList();   // elenco stagioni consultabili + viewSeasonId
   renderSeasonUI();
   renderSeasonRecapButton();
 }
-function seasonLabel(){ return 'Stagione '+(currentSeason?currentSeason.number:1); }
+function seasonLabel(){ return 'Stagione '+(displaySeason?displaySeason.number:1); }
 function renderSeasonUI(){
   const a=document.getElementById('heroSeason'); if(a)a.textContent=seasonLabel();
-  const b=document.getElementById('legaSeason'); if(b)b.textContent=seasonLabel();
+  renderLegaSeasonHead();
+  renderHero();
   renderSeasonAdmin();
 }
 function renderSeasonAdmin(){
   const box=document.getElementById('seasonBox'); if(!box) return;
   if(!(profile&&profile.is_admin)){ box.innerHTML=''; return; }
-  const s=currentSeason;
-  const num=s?s.number:1, tot=s?s.mds_total:0, status=s?s.status:'open';
-  const open=(status==='open');
-  let html=`<p class="vs" style="color:var(--muted);margin-bottom:4px;font-size:12.5px">In corso: <b style="color:var(--text)">Stagione ${num}</b> · ${open?'aperta':'chiusa'}</p>
-    <p class="vs" style="color:var(--accent-soft);margin-bottom:10px;font-size:12.5px">${tot}/38 giornate giocate${tot>=38?' · stagione al completo':''}</p>`;
-  if(open){
-    html+=`<button class="logout" style="border-color:rgba(255,194,61,.4);color:var(--gold-soft);margin-top:0" onclick="closeSeasonNow()">Chiudi la stagione adesso</button>
-      <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">Chiude e congela la classifica. La prossima giornata avvia una <b>nuova stagione</b>.</p>`;
-  }else{
-    html+=`<button class="addbtn" onclick="openSeasonNow()">＋ Apri una nuova stagione</button>
-      <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">Stagione chiusa. Apri una giornata per avviarne una nuova.</p>`;
+  const _mut='color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5';
+  const num=displaySeason?displaySeason.number:1;
+  const brk=seasonBreak();
+  const waiting=seasonIsEmptyOpen(currentSeason);   // stagione nuova aperta ma senza nemmeno una giornata
+  let html='';
+  if(!brk){
+    const tot=Number((currentSeason&&currentSeason.mds_total)||0);
+    html+=`<p class="vs" style="color:var(--muted);margin-bottom:4px;font-size:12.5px">In corso: <b style="color:var(--text)">Stagione ${num}</b></p>
+      <p class="vs" style="color:var(--accent-soft);margin-bottom:10px;font-size:12.5px">${tot}/38 giornate giocate${tot>=38?' · stagione al completo':''}</p>
+      <button class="logout" style="border-color:rgba(255,194,61,.4);color:var(--gold-soft);margin-top:0" onclick="closeSeasonNow()">🏁 Chiudi la Stagione ${num}</button>
+      <p class="vs" style="${_mut}">Congela la classifica e archivia la stagione. <b>Non</b> ne apre un'altra: la lega resta in pausa finché non inizi tu.</p>`;
+  } else {
+    html+=`<p class="vs" style="color:var(--muted);margin-bottom:10px;font-size:12.5px">Archiviata: <b style="color:var(--gold-soft)">Stagione ${num}</b> · la lega è in pausa</p>`;
+    if(waiting){
+      html+=`<p class="vs" style="color:var(--accent-soft);margin-bottom:4px;font-size:12.5px">Stagione ${currentSeason.number} già aperta · in attesa della prima giornata</p>
+        <p class="vs" style="${_mut}">Programma la prima giornata dal riquadro «Giornata» qui sotto. Fino alla prima giornata l'app continua a mostrare la Stagione ${num} (classifica, statistiche, bacheca): una stagione vuota non ha niente da raccontare. La Stagione ${currentSeason.number} subentra da sola appena nasce la sua Giornata 1.</p>
+        <button class="logout" style="margin-top:12px" onclick="cancelEmptySeason()">↩︎ Annulla l'apertura della Stagione ${currentSeason.number}</button>`;
+    } else {
+      html+=`<button class="save" style="margin-top:0" onclick="openSeasonNow()">▶︎ Inizia la Stagione ${nextSeasonNumber()}</button>
+        <p class="vs" style="${_mut}">Classifica e statistiche di stagione ripartono da zero con la prima giornata. Traguardi, gol in carriera e albo d'oro restano.</p>`;
+    }
   }
-  if(!lastClosedSeason && !open){
+  if(!lastClosedSeason && brk){
     // stagione risulta chiusa ma get_last_closed_season() non la vede: senza questa riga
     // l'unico sintomo era "il recap non si apre", senza capire da che lato stesse il problema.
     html+=`<p class="vs" style="color:var(--red);font-size:12px;margin-top:14px;line-height:1.5">⚠️ Nessuna stagione archiviata rilevata: il recap non può comparire. Verifica che <b>stagione_recap.sql</b> sia stato eseguito.</p>`;
@@ -2450,19 +2511,60 @@ async function closeSeasonNow(){
     await doCloseMatchday(false);
     if(currentMd && currentMd.status!=='closed'){ toast('Non sono riuscito a chiudere la giornata: stagione non archiviata'); return; }
   }
-  if(!confirm('Chiudere la Stagione '+(currentSeason?currentSeason.number:'')+'? La classifica viene congelata. Si potrà iniziare una nuova stagione aprendo una nuova giornata.')) return;
+  const _n=currentSeason?currentSeason.number:'';
+  if(!confirm('Chiudere la Stagione '+_n+'?\n\nLa classifica viene congelata e la stagione archiviata.\nLa lega resta in pausa: l\'app continua a mostrare la Stagione '+_n+' finché non inizi tu la prossima.')) return;
   const {error}=await sb.rpc('close_season');
   if(error){ toast('Errore: '+error.message); return; }
   await loadSeason(); await loadStandings(); await loadMatchdaysList();
-  renderAll();
+  renderAll(); renderHomeBcards(true);
   toast('Stagione chiusa 🏁');
 }
 async function openSeasonNow(){
+  const _n=nextSeasonNumber();
+  if(!confirm('Iniziare la Stagione '+_n+'?\n\nClassifica e statistiche di stagione ripartono da zero con la prima giornata.\nTraguardi, gol in carriera e albo d\'oro restano.')) return;
   const {error}=await sb.rpc('ensure_open_season');
   if(error){ toast('Errore: '+error.message); return; }
   await loadSeason(); await loadStandings(); await loadMatchdaysList();
-  renderAll();
-  toast('Nuova stagione aperta ✅');
+  renderAll(); renderHomeBcards(true);
+  toast('Stagione '+_n+' aperta · programma la prima giornata');
+}
+/* Annulla una stagione appena aperta ma ancora VUOTA (zero giornate): serve
+   quando la si apre per sbaglio, così la lega torna pulita sull'ultima archiviata. */
+async function cancelEmptySeason(){
+  if(!seasonIsEmptyOpen(currentSeason)) return;
+  if(!confirm('Annullare l\'apertura della Stagione '+currentSeason.number+'?\n\nNon ha ancora nessuna giornata, quindi non si perde niente.')) return;
+  const {data,error}=await sb.rpc('cancel_empty_season');
+  if(error){ toast(/does not exist|PGRST202/i.test(String(error.message)) ? 'Serve stagioni_stato.sql' : ('Errore: '+error.message)); return; }
+  if(data===false){ toast('La stagione ha già delle giornate: non si può annullare'); return; }
+  await loadSeason(); await loadStandings(); await loadMatchdaysList();
+  renderAll(); renderHomeBcards(true);
+  toast('Apertura annullata ↩︎');
+}
+/* HOME — la testata cambia faccia nell'intervallo fra due stagioni: senza questo
+   l'app inviterebbe a schierare una formazione per una giornata che non esiste. */
+function renderHero(){
+  const t=document.getElementById('heroTitle'), c=document.getElementById('heroCta'), x=document.getElementById('heroExtra');
+  if(!t||!c) return;
+  if(seasonBreak()){
+    const n=displaySeason?displaySeason.number:1;
+    t.innerHTML='Stagione '+n+' <span class="hot">conclusa</span>';
+    c.textContent='🏆 Rivivi la Stagione '+n;
+    c.setAttribute('onclick','openSeasonRecapLatest()');
+    if(x){
+      const waiting=seasonIsEmptyOpen(currentSeason);
+      let h=`<p class="hero-note">${waiting
+        ? 'La Stagione '+currentSeason.number+' comincerà con la prima giornata: fino ad allora resta tutto sulla Stagione '+n+'.'
+        : 'Classifica, statistiche e bacheca restano sulla Stagione '+n+' finché non comincia la prossima.'}</p>`;
+      if(profile&&profile.is_admin&&!waiting)
+        h+=`<button class="hero-2nd" onclick="openSeasonNow()">▶︎ Inizia la Stagione ${nextSeasonNumber()}</button>`;
+      x.innerHTML=h;
+    }
+  } else {
+    t.innerHTML='Pronto a <span class="hot">schierare?</span>';
+    c.textContent='Schiera la formazione →';
+    c.setAttribute('onclick',"go('formazione')");
+    if(x) x.innerHTML='';
+  }
 }
 
 /* ---------- SCELTA LEGA (crea / entra) ---------- */
@@ -2835,17 +2937,28 @@ async function loadSeasonsList(){
       tmp.push({id:Number(lastClosedSeason.id),number:Number(lastClosedSeason.number),status:'closed',mds_closed:0});
     allSeasons=tmp.sort((a,b)=>b.number-a.number);
   }
-  if(viewSeasonId==null || !allSeasons.some(s=>s.id===viewSeasonId)) viewSeasonId=currentSeasonId;
+  // una stagione appena aperta e ancora senza giornate non è consultabile: non
+  // ha classifica né statistiche, comparirebbe solo per mostrare una lista vuota
+  if(seasonIsEmptyOpen(currentSeason) && allSeasons.length>1)
+    allSeasons=allSeasons.filter(s=>Number(s.id)!==Number(currentSeason.id));
+  if(viewSeasonId==null || !allSeasons.some(s=>s.id===viewSeasonId)) viewSeasonId=displaySeasonId;
 }
 function seasonById(id){ return allSeasons.find(s=>s.id===Number(id))||null; }
-function viewingCurrentSeason(){ return viewSeasonId==null || viewSeasonId===currentSeasonId; }
-/* righe da mostrare in Classifica: la stagione corrente riusa `standings`
+/* sto guardando la stagione di riferimento (quella a cui punta tutta l'app)
+   o ne sto sfogliando una archiviata? */
+function viewingMainSeason(){ return viewSeasonId==null || viewSeasonId===displaySeasonId; }
+/* righe da mostrare in Classifica: la stagione di riferimento riusa `standings`
    (già caricata), le altre hanno il loro elenco a parte. */
-function lbRows(){ return viewingCurrentSeason() ? standings : (lbStandings||[]); }
+function lbRows(){ return viewingMainSeason() ? standings : (lbStandings||[]); }
 
 async function loadStandings(){
   let data=null,error=null;
-  try{ const r=await sb.rpc('get_standings_season'); data=r.data; error=r.error; }catch(e){ error=e; }
+  // esplicita sulla stagione di riferimento: senza parametro la SQL prende la
+  // stagione APERTA, che nell'intervallo fra due stagioni è quella vuota
+  if(displaySeasonId!=null){
+    try{ const r=await sb.rpc('get_standings_season',{p_season:displaySeasonId}); data=r.data; error=r.error; }catch(e){ error=e; }
+  }
+  if(error||!data){ try{ const r=await sb.rpc('get_standings_season'); data=r.data; error=r.error; }catch(e){ error=e; } }
   if(error||!data){ const r=await sb.rpc('get_standings'); data=r.data; error=r.error; }  // fallback: SQL stagioni non ancora applicata
   if(error||!data){standings=[];standingsLoaded=true;return;}
   standings=data.map(r=>({manager_id:r.manager_id,team_name:r.team_name,player_name:r.player_name,points:Number(r.points),delta:r.delta||0}));
@@ -2853,7 +2966,7 @@ async function loadStandings(){
 }
 /* classifica di una stagione archiviata */
 async function loadSeasonStandingsFor(id){
-  if(viewingCurrentSeason()){ lbStandings=null; return; }
+  if(viewingMainSeason()){ lbStandings=null; return; }
   try{
     const {data,error}=await sb.rpc('get_standings_season',{p_season:id});
     if(error||!data) throw error||new Error('no data');
@@ -2870,23 +2983,51 @@ async function setViewSeason(id){
   viewSeasonId=n;
   selStandingsMd='';                    // la giornata scelta appartiene all'altra stagione
   mdStandings=[];
-  renderSeasonBar();                    // feedback immediato, prima della rete
+  renderLegaSeasonHead();               // feedback immediato, prima della rete
   const el=document.getElementById('lbList'); if(el) el.innerHTML=skeletonRows('lb',5);
   if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){ } }
   try{ await loadSeasonStandingsFor(n); } finally { lbBusy=false; }
   renderLB();
 }
-function renderSeasonBar(){
-  const bar=document.getElementById('lbSeasonBar'); if(!bar) return;
-  if(allSeasons.length<2){ bar.style.display='none'; bar.innerHTML=''; return; }   // una sola stagione: niente selettore inutile
-  bar.style.display='';
-  bar.innerHTML=allSeasons.map(s=>{
-    const on=(s.id===viewSeasonId), live=(s.status==='open');
-    return `<button class="${on?('on'+(live?'':' past')):''}" onclick="setViewSeason(${s.id})">${
-      live?'<i class="sb-dot"></i>':''}Stagione ${s.number}</button>`;
+/* Testata della pagina Lega: il titolo È il selettore. Con una sola stagione
+   resta un'etichetta muta, così non si offre un controllo che non fa niente. */
+function renderLegaSeasonHead(){
+  const btn=document.getElementById('legaSeason');
+  const many=allSeasons.length>1;
+  if(btn){
+    const sn=seasonById(viewSeasonId);
+    btn.textContent='Stagione '+(sn?sn.number:(displaySeason?displaySeason.number:1));
+    btn.classList.toggle('pick',many);
+    btn.disabled=!many;
+  }
+  const back=document.getElementById('lbBack');
+  if(back){
+    if(viewingMainSeason()){ back.innerHTML=''; }
+    else{
+      const sn=seasonById(viewSeasonId), main=displaySeason?displaySeason.number:'';
+      back.innerHTML=`<div class="lb-back"><span>📁 Stai guardando la <b>Stagione ${sn?sn.number:''}</b>, archiviata.</span>`
+        +`<button onclick="setViewSeason(${displaySeasonId})">Stagione ${main}</button></div>`;
+    }
+  }
+}
+/* Elenco stagioni in un foglio a comparsa: scala a 20 stagioni senza diventare
+   una fila di pillole illeggibile. */
+function openSeasonPicker(ctx,kind,ref){
+  if(allSeasons.length<2) return;
+  document.getElementById('sheetTitle').textContent='Stagioni';
+  document.getElementById('sheetHint').textContent='Scegli quale stagione guardare.';
+  const q=(ctx==='card')
+    ? (kind==='player'?`setCardSeason('player',${ref},`:`setCardSeason('team','${String(ref).replace(/'/g,"\\'")}',`)
+    : 'setViewSeason(';
+  document.getElementById('sheetList').innerHTML=allSeasons.map(s=>{
+    const on=(s.id===viewSeasonId), live=(s.status==='open'), mds=Number(s.mds_closed||0);
+    const sub=live ? ('In corso'+(mds?' · '+mds+(mds===1?' giornata':' giornate'):'')) 
+                   : ('Archiviata'+(mds?' · '+mds+(mds===1?' giornata':' giornate'):''));
+    return `<div class="opt" onclick="closeSheet();${q}${s.id})"><div class="oav emo">${live?'⚽':'🏆'}</div>`
+      +`<div class="info"><b>Stagione ${s.number}</b><span>${sub}</span></div>`
+      +`<span class="pr on">${on?'✓':''}</span></div>`;
   }).join('');
-  const act=bar.querySelector('button.on');
-  if(act && act.scrollIntoView) try{ act.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'}); }catch(_){ }
+  openSheet();
 }
 /* swipe orizzontale sulla classifica = stagione precedente/successiva,
    come lo sfogliare le schede in un'app nativa */
@@ -3341,7 +3482,7 @@ function renderHomeBcards(force){
   const mp=(typeof myPlayer==='function')?myPlayer():null;
   const amPlayer=mp && profile && profile.is_player!==false;
   if(amPlayer){
-    loadPlayerCard(mp.id).then(card=>{
+    loadPlayerCard(mp.id, displaySeasonId).then(card=>{
       if(!card||card.error){ pc.style.display='none'; updateStatsWrap(); return; }
       _homeCardCache.player=card;
       const meta=[];
@@ -3360,7 +3501,7 @@ function renderHomeBcards(force){
   } else { pc.style.display='none'; updateStatsWrap(); }
   // ---- Card MANAGER 👔: per tutti ----
   if(user){
-    loadTeamCard(user.id).then(card=>{
+    loadTeamCard(user.id, displaySeasonId).then(card=>{
       if(!card||card.error){ mc.style.display='none'; updateStatsWrap(); return; }
       _homeCardCache.team=card;
       const st=card.stats||{};
@@ -3776,7 +3917,7 @@ function applyProfile(){
   const arow=document.getElementById('adminRow'); if(arow)arow.style.display=canOp()?'flex':'none';
   ['gkCard','presModeCard','seasonCard'].forEach(id=>{const e=document.getElementById(id); if(e)e.style.display=profile.is_admin?'block':'none';});   // regole: solo proprietario
 }
-function renderAll(){renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderSeasonRecapButton();renderHomeBcards();renderCampoTeam();}
+function renderAll(){renderHero();renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderSeasonRecapButton();renderHomeBcards();renderCampoTeam();}
 /* striscia squadra (logo + nome) sopra il campo verde */
 function renderCampoTeam(){
   const el=document.getElementById('campoTeam'); if(!el)return;
@@ -3932,12 +4073,10 @@ async function loadTeamCard(managerId, seasonId){
    un controllo che non cambia niente. */
 function cardSeasonBarHTML(kind,ref){
   if(cardSeasonAware!==true || allSeasons.length<2) return '';
-  const q=(kind==='player')?`setCardSeason('player',${ref},`:`setCardSeason('team','${String(ref).replace(/'/g,"\\'")}',`;
-  return `<div class="seasonbar" style="margin-bottom:14px">`+allSeasons.map(s=>{
-    const on=(s.id===viewSeasonId), live=(s.status==='open');
-    return `<button class="${on?('on'+(live?'':' past')):''}" onclick="${q}${s.id})">${
-      live?'<i class="sb-dot"></i>':''}Stagione ${s.number}</button>`;
-  }).join('')+`</div>`;
+  const sn=seasonById(viewSeasonId);
+  const arg=(kind==='player')?String(ref):`'${String(ref).replace(/'/g,"\\'")}'`;
+  return `<div style="margin-bottom:14px"><button class="hh-season pick" onclick="openSeasonPicker('card','${kind}',${arg})">`
+    +`Stagione ${sn?sn.number:(displaySeason?displaySeason.number:1)}</button></div>`;
 }
 function setCardSeason(kind,ref,id){
   const n=Number(id); if(n===viewSeasonId) return;
@@ -3947,7 +4086,7 @@ function setCardSeason(kind,ref,id){
   if(box) box.innerHTML=cardSeasonBarHTML(kind,ref)+'<div class="bch-empty">Carico la Stagione '+((seasonById(n)||{}).number||'')+'…</div>';
   if(kind==='player') refreshPlayerCard(ref); else refreshTeamCard(ref);
   // la Classifica resta allineata alla stagione scelta qui
-  if(!viewingCurrentSeason()) loadSeasonStandingsFor(n).then(()=>renderLB()); else { lbStandings=null; renderLB(); }
+  if(!viewingMainSeason()) loadSeasonStandingsFor(n).then(()=>renderLB()); else { lbStandings=null; renderLB(); }
 }
 function bindCardSeasonSwipe(boxId,kind,ref){
   const el=document.getElementById(boxId); if(!el||el._sw) return; el._sw=1;
@@ -4765,8 +4904,8 @@ async function submitVotes(){
   }catch(_){}
 }
 function renderLB(){
-  renderSeasonBar(); bindSeasonSwipe();
-  const seasonForList = (viewSeasonId!=null) ? viewSeasonId : currentSeasonId;
+  renderLegaSeasonHead(); bindSeasonSwipe();
+  const seasonForList = (viewSeasonId!=null) ? viewSeasonId : displaySeasonId;
   const sel=document.getElementById('mdSelect');
   if(sel){
     const cur=sel.value;
@@ -4795,10 +4934,13 @@ function renderLB(){
     return;
   }
   if(!selStandingsMd){
-    const rows=lbRows(), past=!viewingCurrentSeason(), sn=seasonById(viewSeasonId);
+    const rows=lbRows(), past=!viewingMainSeason(), sn=seasonById(viewSeasonId);
     if(hint){
-      // sfogliando una stagione archiviata lo dico, altrimenti sembra la classifica in corso
-      if(past && sn){ hint.textContent='Classifica finale della Stagione '+sn.number+' · archiviata.'; hint.style.display=''; }
+      // in pausa fra due stagioni la classifica è già definitiva: va detto,
+      // altrimenti sembra ancora in gioco. Se sto sfogliando un'altra stagione
+      // lo dice già la fascia qui sopra, quindi qui non ripeto.
+      if(!past && seasonBreak() && displaySeason){ hint.textContent='Classifica finale della Stagione '+displaySeason.number+'.'; hint.style.display=''; }
+      else if(past && sn){ hint.textContent='Classifica finale della Stagione '+sn.number+' · archiviata.'; hint.style.display=''; }
       else { hint.textContent=''; hint.style.display='none'; }
     }
     if(!rows.length){ el.innerHTML = (standingsLoaded||past) ? '<div class="empty-note">Nessuna squadra in questa stagione.</div>' : skeletonRows('lb',5); return; }
