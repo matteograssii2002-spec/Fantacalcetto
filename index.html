@@ -793,12 +793,14 @@
      (3 gol valgono diverso se il capocannoniere ne ha 4 o 12); le presenze sono
      una fila di tacche, che si contano a colpo d'occhio senza leggere niente. */
   #statGrid{display:block}
-  .pg-hero{display:flex;align-items:center;gap:15px;background:rgba(126,194,255,.05);border-radius:18px;padding:15px 16px}
-  .pg-ring{position:relative;width:78px;height:78px;flex:none}
-  .pg-ring svg{width:78px;height:78px;display:block;transform:rotate(-90deg)}
-  .pg-ring .rv{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .pg-ring .rv b{font-family:'JetBrains Mono';font-weight:700;font-size:20px;line-height:1;letter-spacing:-.03em}
-  .pg-ring .rv i{font-style:normal;font-size:9px;color:var(--muted);font-weight:700;margin-top:4px;text-transform:uppercase;letter-spacing:.08em}
+  .pg-hero{display:flex;align-items:center;gap:16px;background:rgba(126,194,255,.05);border-radius:18px;padding:16px}
+  .pg-ringwrap{flex:none;width:82px;text-align:center}
+  .pg-ring{position:relative;width:82px;height:82px}
+  .pg-ring svg{width:82px;height:82px;display:block;transform:rotate(-90deg)}
+  .pg-ring .rv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .pg-ring .rv b{font-family:'JetBrains Mono';font-weight:700;font-size:21px;line-height:1;letter-spacing:-.03em}
+  /* l'etichetta sta SOTTO l'anello: dentro finiva a cavallo del cerchio */
+  .pg-rlab{display:block;font-size:10.5px;color:var(--muted);font-weight:600;margin-top:8px;line-height:1.2}
   .pg-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
   .pg-mini .k{font-size:11px;color:var(--muted);font-weight:600}
   .pg-mini .v{font-family:'JetBrains Mono';font-weight:700;font-size:18px;line-height:1;margin-top:4px}
@@ -829,10 +831,16 @@
   .tm-pts span{font-size:11.5px;color:var(--muted);font-weight:600;display:block;margin-top:5px}
   .tm-track{margin-top:14px;height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
   .tm-track i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold),#f0c674)}
-  .tm-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-  .tm-chip{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.05);border-radius:999px;
-           padding:9px 13px;font-size:12.5px;font-weight:600;color:var(--text)}
-  .tm-chip em{font-style:normal;font-family:'JetBrains Mono';font-weight:700;color:var(--gold-soft)}
+  .tm-chips{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}
+  /* dispari: l'ultimo occupa tutta la riga invece di lasciare un buco */
+  .tm-chips>.tm-rec:last-child:nth-child(odd){grid-column:1 / -1}
+  .tm-rec{display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.05);border-radius:14px;padding:11px 13px;min-width:0}
+  .tm-rec .ic{font-size:19px;line-height:1;flex:none}
+  .tm-rec .tx{min-width:0}
+  .tm-rec .tv{font-family:'JetBrains Mono';font-weight:700;font-size:17px;line-height:1;color:var(--gold-soft);letter-spacing:-.02em}
+  .tm-rec.z .tv{color:var(--muted)}
+  .tm-rec .tk{font-size:11px;color:var(--muted);font-weight:600;margin-top:4px;
+              overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* ---- ANDAMENTO VOTI (grafichino stagione) ---- */
   .vtrend{margin-top:15px;background:linear-gradient(165deg,rgba(63,151,255,.10),rgba(16,36,67,.55));
     border:1px solid var(--line);border-radius:16px;padding:14px 12px 10px}
@@ -889,26 +897,16 @@
   /* pagina formazione di giornata */
   #teamLineupPage .tlp-title{font-family:'Bricolage Grotesque';font-weight:800;font-size:23px;letter-spacing:-.01em;margin:2px 2px 4px}
   #teamLineupPage .shint{font-size:13px;color:var(--muted);margin:0 2px 16px;line-height:1.5}
-  /* ---- HOME: mini-card bacheca ---- */
-  .bcard{margin-top:12px;border-radius:18px;padding:14px 15px;cursor:pointer;position:relative;overflow:hidden;border:1px solid var(--line-strong);background:linear-gradient(160deg,#13294a,#0c1a31);transition:transform .15s}
-  .bcard:active{transform:scale(.99)}
-  .bcard.manager{background:linear-gradient(160deg,#1a2540,#0e1526)}
-  .bcard-top{display:flex;align-items:center;gap:12px}
-  .bcard .bc-ic{font-size:30px;line-height:1;flex-shrink:0;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
-  .bcard .bc-tx{flex:1;min-width:0}
-  .bcard .bc-eyebrow{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-soft);margin-bottom:2px}
-  .bcard.manager .bc-eyebrow{color:var(--gold-soft)}
-  .bcard .bc-title{font-family:'Bricolage Grotesque';font-weight:800;font-size:18px;letter-spacing:-.02em;line-height:1.05}
-  .bcard .bc-sub{font-size:12px;color:var(--muted);margin-top:2px}
-  .bcard .bc-arr{color:var(--muted);font-size:18px;flex-shrink:0}
-  .bcard .bc-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
-  .bcard .bc-pill{font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid var(--line);color:var(--text);display:inline-flex;align-items:center;gap:5px}
-  .bcard .bc-next{margin-top:12px}
-  .bcard .bc-next-top{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;margin-bottom:5px}
-  .bcard .bc-next-top b{font-weight:700;color:var(--text)} .bcard .bc-next-top span{color:var(--muted);font-family:'JetBrains Mono'}
-  .bcard .bc-bar{height:7px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
-  .bcard .bc-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),#5b8cff)}
-  .bcard.manager .bc-bar i{background:linear-gradient(90deg,var(--gold),#f0c674)}
+  /* ---- HOME: le schede «Statistiche» usano lo STESSO componente di «Rivivi»
+     (.rvcard): stessa forma, stessa griglia di dati, stessa riga d'apertura.
+     Prima erano due linguaggi diversi impilati a 40px di distanza. ---- */
+  .rvcard .rv-prog{margin-top:1px}
+  .rvcard .rv-prog .pt{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;margin-bottom:6px}
+  .rvcard .rv-prog .pt b{font-weight:700;color:var(--text)}
+  .rvcard .rv-prog .pt span{color:var(--muted);font-family:'JetBrains Mono'}
+  .rvcard .rv-prog .pb{height:7px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+  .rvcard .rv-prog .pb i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),#5b8cff)}
+  .rvcard.gold .rv-prog .pb i{background:linear-gradient(90deg,var(--gold),#f0c674)}
   .sheet h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:19px;margin:8px 2px 4px}
   .sheet .shint{font-size:12.5px;color:var(--muted);margin:0 2px 14px}
   .opt{display:flex;align-items:center;gap:13px;padding:10px 12px;border-radius:14px;cursor:pointer;transition:background .15s}
@@ -1390,18 +1388,6 @@
   /* andamento voti: pannello più morbido, niente bordo netto */
   .vtrend{background:none;border:none;box-shadow:none;padding:0;border-radius:0}
 
-  /* HOME — "Da giocatore / Da manager": due blocchi morbidi distinti per
-     colore (azzurro vs oro), così non si confondono tra loro né con la classifica.
-     Niente bordo né divisorio: solo una tinta tenue. */
-  .bcard{background:rgba(63,151,255,.06);border:none;border-radius:16px;
-    padding:14px 14px;margin-top:10px;box-shadow:none}
-  .bcard.manager{background:rgba(255,194,61,.06)}
-  .bcard .bc-ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;
-    font-size:24px;background:rgba(63,151,255,.14);filter:none}
-  .bcard.manager .bc-ic{background:rgba(255,194,61,.16)}
-  .bcard .bc-arr{font-size:22px}
-  .bcard .bc-pill{background:rgba(255,255,255,.05);border-color:transparent}
-
   /* --- 8. VIA LE "PILL"-SCATOLA: diventano etichette pulite ------- */
   /* Stagione, Giornata, Squadra (hero) e Lega (classifica): niente più
      riquadro con bordo, solo testo. Restano leggibili come etichette. */
@@ -1811,8 +1797,8 @@
     <div id="homeStatsWrap" style="display:none">
       <div class="section-h"><h2>Statistiche</h2></div>
       <div class="bctrack" id="homeBcardTrack">
-        <div class="bcard" id="homeBcardPlayer" style="display:none" onclick="openMyPlayerBacheca()"></div>
-        <div class="bcard manager" id="homeBcardMgr" style="display:none" onclick="openMyTeamBacheca()"></div>
+        <div class="rvcard" id="homeBcardPlayer" style="display:none" onclick="openMyPlayerBacheca()"></div>
+        <div class="rvcard gold" id="homeBcardMgr" style="display:none" onclick="openMyTeamBacheca()"></div>
       </div>
       <div class="bcdots" id="homeBcardDots"></div>
     </div>
@@ -3580,8 +3566,8 @@ function nextBarHTML(next){
   if(!next) return '';
   const now=Number(next.now)||0, tot=Number(next.next)||1;
   const pct=Math.max(0,Math.min(100,Math.round(now/tot*100)));
-  return `<div class="bc-next"><div class="bc-next-top"><b>Prossimo: ${esc(next.label)}</b><span>${now}/${tot}</span></div>
-    <div class="bc-bar"><i style="width:${pct}%"></i></div></div>`;
+  return `<div class="rv-prog"><div class="pt"><b>Prossimo: ${esc(next.label)}</b><span>${now}/${tot}</span></div>
+    <div class="pb"><i style="width:${pct}%"></i></div></div>`;
 }
 function updateStatsWrap(){
   const w=document.getElementById('homeStatsWrap'); if(!w) return;
@@ -3605,17 +3591,18 @@ function renderHomeBcards(force){
     loadPlayerCard(mp.id, displaySeasonId).then(card=>{
       if(!card||card.error){ pc.style.display='none'; updateStatsWrap(); return; }
       _homeCardCache.player=card;
-      const meta=[];
-      if(card.forma) meta.push(`<span class="bc-pill">📈 ${esc(card.forma)}</span>`);
-      if(card.dept) meta.push(`<span class="bc-pill">🎯 ${card.dept.pos}° tra ${esc(card.dept.label)}</span>`);
-      pc.innerHTML=`<div class="bcard-top">
-          <div class="bc-ic">${card.headline?card.headline.icon:'🏅'}</div>
-          <div class="bc-tx"><div class="bc-eyebrow">Da giocatore</div>
-            <div class="bc-title">${esc(card.headline?card.headline.text:'In gioco')}</div>
-            <div class="bc-sub">${esc(card.headline?card.headline.sub:'')}</div></div>
-          <div class="bc-arr">›</div></div>
-        ${meta.length?`<div class="bc-meta">${meta.join('')}</div>`:''}
-        ${nextBarHTML(card.next)}`;
+      const facts=[];
+      if(card.forma) facts.push(rvFactHTML('📈',esc(card.forma),'Forma'));
+      if(card.dept)  facts.push(rvFactHTML('🎯',card.dept.pos+'°','Tra '+esc(card.dept.label)));
+      pc.innerHTML=hcardHTML({
+        wm: card.headline?card.headline.icon:'🏅',
+        eye:'Da giocatore',
+        ttl: card.headline?card.headline.text:'In gioco',
+        sub: card.headline?card.headline.sub:'',
+        facts: facts,
+        prog: nextBarHTML(card.next),
+        go:'Vedi la tua scheda'
+      });
       pc.style.display='block'; updateStatsWrap();
     });
   } else { pc.style.display='none'; updateStatsWrap(); }
@@ -3625,18 +3612,22 @@ function renderHomeBcards(force){
       if(!card||card.error){ mc.style.display='none'; updateStatsWrap(); return; }
       _homeCardCache.team=card;
       const st=card.stats||{};
-      const meta=[];
-      if(st.pos) meta.push(`<span class="bc-pill">🏆 ${st.pos}° in classifica</span>`);
-      if(st.wins) meta.push(`<span class="bc-pill">👑 Re giornata ×${st.wins}</span>`);
-      if(st.leader_days) meta.push(`<span class="bc-pill">🚩 Al comando ×${st.leader_days}</span>`);
-      mc.innerHTML=`<div class="bcard-top">
-          <div class="bc-ic">${card.headline?card.headline.icon:'👔'}</div>
-          <div class="bc-tx"><div class="bc-eyebrow">Da manager</div>
-            <div class="bc-title">${esc(card.headline?card.headline.text:'Manager')}</div>
-            <div class="bc-sub">${esc(card.headline?card.headline.sub:'')}</div></div>
-          <div class="bc-arr">›</div></div>
-        ${meta.length?`<div class="bc-meta">${meta.join('')}</div>`:''}
-        ${nextBarHTML(card.next)}`;
+      // due dati, sempre due: se i record sono ancora a zero non ha senso
+      // mostrarli («×0» non è un traguardo), meglio i punti della stagione
+      const facts=[];
+      if(st.pos) facts.push(rvFactHTML('🏆',st.pos+'°','In classifica'));
+      if(st.wins)             facts.push(rvFactHTML('👑','×'+st.wins,'Re della giornata'));
+      else if(st.leader_days) facts.push(rvFactHTML('🚩','×'+st.leader_days,'Giornate da leader'));
+      else                    facts.push(rvFactHTML('📊',fmtPts(st.points||0),'Punti stagione'));
+      mc.innerHTML=hcardHTML({
+        wm: card.headline?card.headline.icon:'👔',
+        eye:'Da manager',
+        ttl: card.headline?card.headline.text:'Manager',
+        sub: card.headline?card.headline.sub:'',
+        facts: facts,
+        prog: nextBarHTML(card.next),
+        go:'Vedi la tua squadra'
+      });
       mc.style.display='block'; updateStatsWrap();
     });
   } else { mc.style.display='none'; updateStatsWrap(); }
@@ -4296,14 +4287,15 @@ function closeBacheca(){
    Nota: il colore va nello `style`, non nell'attributo `stroke` — Safari non
    risolve le variabili CSS negli attributi di presentazione SVG. */
 function pgRingHTML(val,label,pct,color){
-  const R=33, C=2*Math.PI*R, on=Math.max(0,Math.min(1,Number(pct)||0))*C;
-  return `<div class="pg-ring">
-    <svg viewBox="0 0 78 78" aria-hidden="true">
-      <circle cx="39" cy="39" r="${R}" fill="none" style="stroke:rgba(255,255,255,.08)" stroke-width="7"></circle>
-      <circle cx="39" cy="39" r="${R}" fill="none" style="stroke:${color}" stroke-width="7" stroke-linecap="round"
+  const R=35, C=2*Math.PI*R, on=Math.max(0,Math.min(1,Number(pct)||0))*C;
+  return `<div class="pg-ringwrap"><div class="pg-ring">
+    <svg viewBox="0 0 82 82" aria-hidden="true">
+      <circle cx="41" cy="41" r="${R}" fill="none" style="stroke:rgba(255,255,255,.08)" stroke-width="7"></circle>
+      <circle cx="41" cy="41" r="${R}" fill="none" style="stroke:${color}" stroke-width="7" stroke-linecap="round"
               stroke-dasharray="${on.toFixed(1)} ${(C-on).toFixed(1)}"></circle>
     </svg>
-    <div class="rv"><b style="color:${color}">${val}</b><i>${label}</i></div></div>`;
+    <div class="rv"><b style="color:${color}">${val}</b></div></div>
+    <span class="pg-rlab">${esc(label)}</span></div>`;
 }
 /* Scheda giocatore. Le barre sono rapportate al MIGLIORE della lega, non a un
    massimo teorico: è l'unico paragone che significhi qualcosa in un gruppo di
@@ -4327,7 +4319,7 @@ function playerStatsGridHTML(s){
       <span class="bt"><i style="width:${max?Math.round(val/max*100):0}%"></i></span>
       <span class="bv">${val}</span></div>`;
   return `<div class="pg-hero">
-      ${pgRingHTML(vm,'voto medio',voto/10,'var(--gold)')}
+      ${pgRingHTML(vm,'Voto medio',voto/10,'var(--gold)')}
       <div class="pg-side">
         <div class="pg-mini"><div class="k">Presenze</div>
           <div class="pg-ticks">${ticks}</div>
@@ -4395,7 +4387,9 @@ async function loadVoteTrend(id, seasonId){
   const pts=(data||[]).map((r,i)=>({lab:mdShortLabel(r.md_label,i), v:Number(r.voto)}))
                       .filter(p=>isFinite(p.v));
   const bvb=document.getElementById('bestVoteBox');   // miglior voto: box dedicato (anche con 1 sola giornata)
-  if(bvb) bvb.querySelector('.v').textContent = pts.length ? (Math.round(Math.max(...pts.map(p=>p.v))*100)/100) : '—';
+  if(bvb) bvb.querySelector('.v').textContent = pts.length
+    ? String(Math.round(Math.max(...pts.map(p=>p.v))*100)/100).replace('.',',')   // virgola, non punto
+    : '—';
   if(!pts.length){
     const sn=seasonById(seasonId);
     box.innerHTML='<div class="bch-empty">Nessun voto'+(sn?(' nella Stagione '+sn.number):'')+'.</div>';
@@ -4466,15 +4460,18 @@ function teamStatsGridHTML(card){
     h+=`<div class="tm-track"><i style="width:${Math.max(5,pct)}%"></i></div>`;
   }
   h+='</div>';
-  // 2) I record sono aneddoti, non metriche: stanno in medagliette, non in box.
-  const chip=(ic,lab,val)=>`<span class="tm-chip">${ic} ${lab} <em>${val}</em></span>`;
-  const chips=[];
-  if(st.best_pos) chips.push(chip('🥇','Miglior posizione',st.best_pos+'°'));
-  chips.push(chip('👑','Re della giornata','×'+(st.wins||0)));
-  chips.push(chip('🚩','Giornate da leader','×'+(st.leader_days||0)));
-  if(st.best_climb) chips.push(chip('📈','Miglior balzo','+'+st.best_climb));
-  if(st.best_md!=null) chips.push(chip('🏅','Miglior giornata',fmtPts(st.best_md)));
-  h+=`<div class="tm-chips">${chips.join('')}</div>`;
+  // 2) I record: riquadri di uguale misura su due colonne. Le chip a larghezza
+  //    variabile andavano a capo in modo casuale e sembravano sbilenche.
+  //    Quelli ancora a zero restano visibili ma spenti: sono obiettivi, non risultati.
+  const rec=(ic,val,lab,zero)=>`<div class="tm-rec${zero?' z':''}"><span class="ic">${ic}</span>
+      <span class="tx"><span class="tv">${val}</span><span class="tk">${lab}</span></span></div>`;
+  const recs=[];
+  if(st.best_pos) recs.push(rec('🥇',st.best_pos+'°','Miglior posizione'));
+  recs.push(rec('👑','×'+(st.wins||0),'Re della giornata',!st.wins));
+  recs.push(rec('🚩','×'+(st.leader_days||0),'Giornate da leader',!st.leader_days));
+  recs.push(rec('📈','+'+(st.best_climb||0),'Miglior balzo',!st.best_climb));
+  if(st.best_md!=null) recs.push(rec('🏅',fmtPts(st.best_md),'Miglior giornata'));
+  h+=`<div class="tm-chips">${recs.join('')}</div>`;
   return h;
 }
 function openTeamCard(managerId){
@@ -5653,6 +5650,19 @@ function rvFactHTML(icon,val,key,cls){
   return `<div class="rv-fact ${cls||''}"><div class="rv-fv">${icon||''}<span>${val}</span></div>`
     +`<div class="rv-fk">${key}</div></div>`;
 }
+/* Un unico componente per TUTTE le card della home (Statistiche e Rivivi):
+   filigrana, occhiello, titolo, sottotitolo, due riquadri-dato, eventuale barra
+   di avanzamento, riga d'apertura. Se un giorno cambia la forma della card,
+   cambia qui una volta sola e cambiano tutte insieme. */
+function hcardHTML(o){
+  return `<span class="rv-wm">${o.wm||''}</span>
+    <div><div class="rv-eye">${esc(o.eye||'')}</div>
+      <div class="rv-ttl">${esc(o.ttl||'')}</div>
+      ${o.sub?`<div class="rv-sub">${esc(o.sub)}</div>`:''}</div>
+    ${(o.facts&&o.facts.length)?`<div class="rv-facts"${o.factsId?' id="'+o.factsId+'"':''}>${o.facts.join('')}</div>`:''}
+    ${o.prog||''}
+    ${o.go?`<div class="rv-go"><span>${esc(o.go)}</span><span class="arr">→</span></div>`:''}`;
+}
 function rvSkelFacts(){ return rvFactHTML('','—','—','skel')+rvFactHTML('','—','—','skel'); }
 function rvShortDate(d){ try{ return d.toLocaleDateString('it-IT',{day:'numeric',month:'short'}); }catch(_){ return ''; } }
 
@@ -5688,14 +5698,11 @@ async function rvFillMd(mdId){
 }
 function rvMdCardHTML(md){
   const when=md.kickoff?rvShortDate(new Date(md.kickoff)):'';
-  return `<div class="rvcard" onclick="openRecapLatest()">
-    <span class="rv-wm">📊</span>
-    <div><div class="rv-eye">Ultima giornata</div>
-      <div class="rv-ttl">${esc(md.label)}</div>
-      <div class="rv-sub">Pagellone${when?' · giocata il '+when:''}</div></div>
-    <div class="rv-facts" id="rvMdFacts">${rvSkelFacts()}</div>
-    <div class="rv-go"><span>Apri il pagellone</span><span class="arr">→</span></div>
-  </div>`;
+  return `<div class="rvcard" onclick="openRecapLatest()">${hcardHTML({
+    wm:'📊', eye:'Ultima giornata', ttl:md.label,
+    sub:'Pagellone'+(when?' · giocata il '+when:''),
+    facts:[rvSkelFacts()], factsId:'rvMdFacts', go:'Apri il pagellone'
+  })}</div>`;
 }
 function rvSeasonCardHTML(s){
   const n=Number(s.number);
@@ -5713,14 +5720,11 @@ function rvSeasonCardHTML(s){
     facts+=rvFactHTML('🏅','Premi','Chi ha vinto cosa');
   }
   facts+=rvFactHTML('🗓',gg?String(gg):'—',gg===1?'Giornata giocata':'Giornate giocate');
-  return `<div class="rvcard gold" onclick="openSeasonRecapLatest()">
-    <span class="rv-wm">🏆</span>
-    <div><div class="rv-eye">Stagione archiviata</div>
-      <div class="rv-ttl">Stagione ${n}</div>
-      <div class="rv-sub">Premi, record e la tua stagione</div></div>
-    <div class="rv-facts">${facts}</div>
-    <div class="rv-go"><span>Apri il recap</span><span class="arr">→</span></div>
-  </div>`;
+  return `<div class="rvcard gold" onclick="openSeasonRecapLatest()">${hcardHTML({
+    wm:'🏆', eye:'Stagione archiviata', ttl:'Stagione '+n,
+    sub:'Premi, record e la tua stagione',
+    facts:[facts], go:'Apri il recap'
+  })}</div>`;
 }
 function renderRecapButton(){
   const w=document.getElementById('homeRvWrap'), g=document.getElementById('homeRvGrid');
