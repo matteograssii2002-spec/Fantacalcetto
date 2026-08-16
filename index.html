@@ -623,6 +623,38 @@
   #setMenu .logout{margin-top:auto}
   @keyframes setSlide{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
   .navrow{width:100%;display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:15px 16px;cursor:pointer;color:var(--text);font-family:inherit;text-align:left;margin-top:12px}
+  /* intestazioni di gruppo del menu Impostazioni: separano «io» da «la lega» */
+  .setgrp{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:22px 4px 2px}
+  /* CENTRO GIORNATA: la giornata come sequenza di fasi, con una sola azione
+     principale per volta. Il resto sta sotto «Azioni avanzate». */
+  .mdc-head{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-top:12px}
+  .mdc-head b{display:block;font-family:'Bricolage Grotesque';font-weight:800;font-size:17px}
+  .mdc-head span{display:block;font-size:12.5px;color:var(--accent-soft);margin-top:3px;line-height:1.45}
+  .mdc-steps{margin:14px 2px 0;padding-left:4px}
+  .mdc-step{display:flex;gap:12px;align-items:flex-start;position:relative;padding-bottom:14px}
+  .mdc-step:last-child{padding-bottom:0}
+  .mdc-step .dot{flex:none;width:13px;height:13px;border-radius:50%;margin-top:2px;background:var(--surface2);
+                 border:2px solid var(--line-strong);position:relative;z-index:1}
+  .mdc-step:not(:last-child)::before{content:'';position:absolute;left:6px;top:15px;bottom:0;width:1px;background:var(--line-strong)}
+  .mdc-step.done .dot{background:var(--line-strong);border-color:var(--line-strong)}
+  .mdc-step.now .dot{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 4px rgba(63,151,255,.18)}
+  .mdc-step .tx{flex:1;min-width:0}
+  .mdc-step .tx b{display:block;font-size:14px;font-weight:700;color:var(--muted)}
+  .mdc-step.now .tx b{color:var(--text)}
+  .mdc-step.done .tx b{color:var(--muted)}
+  .mdc-step .tx small{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.45}
+  .mdc-step.now .tx small{color:var(--accent-soft)}
+  /* HOME — riquadri «Rivivi» affiancati */
+  .rvgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+  .rvgrid.one{grid-template-columns:1fr}
+  .rvtile{display:block;text-align:left;background:linear-gradient(160deg,#13294a,#0c1a31);border:1px solid var(--line-strong);
+          border-radius:18px;padding:14px 15px;cursor:pointer;color:var(--text);font-family:inherit;transition:transform .15s}
+  .rvtile:active{transform:scale(.985)}
+  .rvtile.gold{background:linear-gradient(160deg,#2a2211,#161207);border-color:rgba(255,194,61,.30)}
+  .rvtile .rv-em{display:block;font-size:24px;line-height:1;margin-bottom:9px}
+  .rvtile b{display:block;font-family:'Bricolage Grotesque';font-weight:800;font-size:15.5px;letter-spacing:-.01em}
+  .rvtile small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rvtile.gold b{color:var(--gold-soft)}
   .navrow:active{transform:scale(.995)}
   .navrow .ic{font-size:20px;width:26px;text-align:center;flex:none}
   .navrow .lab{flex:1;min-width:0;font-family:'Bricolage Grotesque';font-weight:800;font-size:16px}
@@ -1717,21 +1749,9 @@
       </div>
       <div class="bcdots" id="homeBcardDots"></div>
     </div>
-    <div id="homeRecapWrap" style="display:none">
-      <div class="section-h"><h2>Pagellone di giornata</h2></div>
-      <button class="pag-open-btn" id="homeRecapBtn" onclick="openRecapLatest()" style="margin-top:0">
-        <span class="pag-open-em">📊</span>
-        <span class="pag-open-tx"><b>Rivivi l'ultima giornata!</b><small>Voti, bonus e pagelle di tutti</small></span>
-        <span class="pag-open-arr">→</span>
-      </button>
-    </div>
-    <div id="homeSeasonWrap" style="display:none">
-      <div class="section-h"><h2>Albo d'oro</h2></div>
-      <button class="pag-open-btn season" id="homeSeasonBtn" onclick="openSeasonRecapLatest()" style="margin-top:0">
-        <span class="pag-open-em">🏆</span>
-        <span class="pag-open-tx"><b id="homeSeasonTtl">Recap di fine stagione</b><small id="homeSeasonSub">Premi, record e la tua stagione</small></span>
-        <span class="pag-open-arr">→</span>
-      </button>
+    <div id="homeRvWrap" style="display:none">
+      <div class="section-h"><h2>Rivivi</h2></div>
+      <div class="rvgrid" id="homeRvGrid"></div>
     </div>
   </section>
 
@@ -1801,10 +1821,17 @@
     <div class="setpage on" id="setMenu">
       <div class="section-h"><h2>Impostazioni</h2></div>
       <div class="prof"><div id="setPreview"></div><div class="pinfo"><b id="setTeamName">La tua squadra</b><span id="setPlayerName">Giocatore</span></div></div>
+      <div class="setgrp">Il mio account</div>
       <button class="navrow" onclick="setNav('page-profilo')"><span class="ic">👤</span><span class="lab">Profilo<small>Nome, squadra, avatar</small></span><span class="go">›</span></button>
       <button class="navrow" onclick="setNav('page-notifiche')"><span class="ic">🔔</span><span class="lab">Notifiche<small>Avvisi delle giornate</small></span><span class="go">›</span></button>
+      <div class="setgrp">La lega</div>
       <button class="navrow" onclick="setNav('page-regolamento')"><span class="ic">📖</span><span class="lab">Regolamento<small>Come si fanno i punti</small></span><span class="go">›</span></button>
-      <button class="navrow gold" id="adminRow" onclick="setNav('page-admin')" style="display:none"><span class="ic">🔒</span><span class="lab">Area amministratore<small>Partita e lega</small></span><span class="go">›</span></button>
+      <button class="navrow" id="alboRow" onclick="openAlboSheet()" style="display:none"><span class="ic">🏆</span><span class="lab">Albo d'oro<small id="alboSub">Le stagioni archiviate</small></span><span class="go">›</span></button>
+      <div class="setgrp" id="admGrp" style="display:none">Gestione</div>
+      <button class="navrow gold adminRow" onclick="setNav('page-giornata')" style="display:none"><span class="ic">⚽</span><span class="lab">Centro giornata<small id="admMdSub">—</small></span><span class="go">›</span></button>
+      <button class="navrow gold adminRow" onclick="setNav('page-stagione')" style="display:none"><span class="ic">📅</span><span class="lab">Stagione<small id="admSeaSub">—</small></span><span class="go">›</span></button>
+      <button class="navrow gold adminRow" onclick="setNav('page-regole')" style="display:none"><span class="ic">⚙️</span><span class="lab">Regole della partita<small>Portiere e presenze</small></span><span class="go">›</span></button>
+      <button class="navrow gold adminRow" onclick="setNav('page-lega')" style="display:none"><span class="ic">🏆</span><span class="lab">Gestione lega<small>Inviti, giocatori, vice</small></span><span class="go">›</span></button>
       <button class="logout" id="logoutBtn">Esci dall'account</button>
       <p style="text-align:center;color:var(--muted);font-size:11px;margin:14px 0 0;letter-spacing:.03em">FantaCalcetto · <span id="appVersion">—</span></p>
     </div>
@@ -1861,49 +1888,23 @@
       </div>
     </div>
 
-    <!-- ===== AREA AMMINISTRATORE (menu) ===== -->
-    <div class="setpage" id="page-admin">
+    <!-- ===== CENTRO GIORNATA ===== -->
+    <div class="setpage" id="page-giornata">
       <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
-      <div class="section-h"><h2>Area amministratore</h2></div>
-      <button class="navrow gold" onclick="setNav('page-partita')"><span class="ic">⚽</span><span class="lab">Partita<small>Giornata, presenze, squadre</small></span><span class="go">›</span></button>
-      <button class="navrow gold" onclick="setNav('page-lega')"><span class="ic">🏆</span><span class="lab">Lega<small>Inviti, giocatori, sondaggio</small></span><span class="go">›</span></button>
-    </div>
-
-    <!-- ===== PARTITA ===== -->
-    <div class="setpage" id="page-partita">
-      <button class="subback" onclick="setNav('page-admin')">‹ Area amministratore</button>
-      <div class="section-h"><h2>⚽ Partita</h2></div>
-      <div class="acc gold" id="gkCard" style="margin-top:12px">
-        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🧤</span>Modalità portiere</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body">
-          <div class="ed-sw" id="gkModeSw" style="margin:2px 0 8px">
-            <button class="styb" data-fixed="0" onclick="setGkMode(false)">🔄 Rotazione</button>
-            <button class="styb" data-fixed="1" onclick="setGkMode(true)">🧤 Fisso</button>
-          </div>
-          <p class="vs" id="gkModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">In porta può andare chiunque.</p>
+      <div class="section-h"><h2>Centro giornata</h2></div>
+      <div id="mdCard">
+        <div class="mdc-head">
+          <b id="mdLabel">—</b>
+          <span id="mdPhase">—</span>
         </div>
-      </div>
-      <div class="acc gold" id="presModeCard">
-        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🙋</span>Presenze</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body">
-          <div class="ed-sw" id="presModeSw" style="margin:2px 0 8px">
-            <button class="styb" data-self="0" onclick="setPresenceMode(false)">🙋 Admin</button>
-            <button class="styb" data-self="1" onclick="setPresenceMode(true)">👥 Giocatori</button>
+        <div class="mdc-steps" id="mdcSteps"></div>
+        <div id="mdcPrimary"></div>
+        <div class="acc gold" id="mdAdvCard">
+          <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🛠️</span>Azioni avanzate</span><span class="acc-chev">▾</span></button>
+          <div class="acc-body">
+            <div id="mdOpenBox"></div>
+            <div id="mdActions"></div>
           </div>
-          <p class="vs" id="presModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">Sei tu a segnare chi c'è, dal riquadro «Chi gioca questa giornata» qui sotto.</p>
-        </div>
-      </div>
-      <div class="acc gold" id="seasonCard">
-        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">📅</span>Stagione</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body"><div id="seasonBox"></div></div>
-      </div>
-      <div class="acc gold" id="mdCard">
-        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">⚽</span>Giornata</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body">
-          <p class="vs" style="color:var(--muted);margin-bottom:4px;font-size:12.5px">Attuale: <b id="mdLabel" style="color:var(--text)">—</b></p>
-          <p class="vs" id="mdPhase" style="color:var(--accent-soft);margin-bottom:10px;font-size:12.5px">—</p>
-          <div id="mdOpenBox"></div>
-          <div id="mdActions"></div>
         </div>
       </div>
       <div class="acc gold" id="presCard">
@@ -1915,10 +1916,43 @@
       </div>
     </div>
 
+    <!-- ===== STAGIONE ===== -->
+    <div class="setpage" id="page-stagione">
+      <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
+      <div class="section-h"><h2>Stagione</h2></div>
+      <div class="set-card" id="seasonCard"><div id="seasonBox"></div></div>
+    </div>
+
+    <!-- ===== REGOLE DELLA PARTITA ===== -->
+    <div class="setpage" id="page-regole">
+      <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
+      <div class="section-h"><h2>Regole della partita</h2></div>
+      <div class="acc gold open" id="gkCard" style="margin-top:12px">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🧤</span>Modalità portiere</span><span class="acc-chev">▾</span></button>
+        <div class="acc-body">
+          <div class="ed-sw" id="gkModeSw" style="margin:2px 0 8px">
+            <button class="styb" data-fixed="0" onclick="setGkMode(false)">🔄 Rotazione</button>
+            <button class="styb" data-fixed="1" onclick="setGkMode(true)">🧤 Fisso</button>
+          </div>
+          <p class="vs" id="gkModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">In porta può andare chiunque.</p>
+        </div>
+      </div>
+      <div class="acc gold open" id="presModeCard">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🙋</span>Presenze</span><span class="acc-chev">▾</span></button>
+        <div class="acc-body">
+          <div class="ed-sw" id="presModeSw" style="margin:2px 0 8px">
+            <button class="styb" data-self="0" onclick="setPresenceMode(false)">🙋 Admin</button>
+            <button class="styb" data-self="1" onclick="setPresenceMode(true)">👥 Giocatori</button>
+          </div>
+          <p class="vs" id="presModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">Sei tu a segnare chi c'è, dal Centro giornata.</p>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== LEGA ===== -->
     <div class="setpage" id="page-lega">
-      <button class="subback" onclick="setNav('page-admin')">‹ Area amministratore</button>
-      <div class="section-h"><h2>🏆 Lega</h2></div>
+      <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
+      <div class="section-h"><h2>Gestione lega</h2></div>
       <div class="acc gold" id="inviteCard" style="margin-top:12px">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">✉️</span>Invita nella lega</span><span class="acc-chev">▾</span></button>
         <div class="acc-body">
@@ -3787,8 +3821,60 @@ function renderMatchday(){
       ma.innerHTML=h;
     }
     renderOpenMode();
+    renderMdCenter();
   }
+  const g=document.getElementById('admMdSub'); if(g) g.textContent=currentMd?(currentMd.label+' \u00b7 '+mdcPhaseShort()):'Nessuna giornata aperta';
+  const q=document.getElementById('admSeaSub');
+  if(q) q.textContent = seasonBreak()
+    ? ('Stagione '+(displaySeason?displaySeason.number:1)+' archiviata')
+    : ('Stagione '+(displaySeason?displaySeason.number:1)+' \u00b7 '+Number((currentSeason&&currentSeason.mds_total)||0)+'/38');
   startCountdown();
+}
+/* ---------- CENTRO GIORNATA (admin) ----------
+   Le fasi di una giornata in fila, con evidenziata quella attiva e UNA sola
+   azione principale: prima erano tutti i tasti sempre visibili insieme, e
+   capire quale servisse adesso era a carico dell'admin. */
+function mdcPhaseIdx(){
+  const md=currentMd; if(!md) return -1;
+  if(md.status==='closed') return 5;
+  const t=mdTimes(md), now=Date.now();
+  if(!t||t.lineupLock===Infinity) return 2;
+  if(presenceSelf && t.presenceClose!=null && now<t.presenceClose) return 1;
+  if(now<t.lineupLock) return 2;
+  if(now<t.voteOpen) return 3;
+  if(now<=t.voteClose) return 4;
+  return 4;
+}
+function mdcPhaseShort(){
+  const i=mdcPhaseIdx();
+  return ['Programmata','Sondaggio presenze','Formazioni aperte','Partita in corso','Voti aperti','Conclusa'][i<0?0:i];
+}
+function renderMdCenter(){
+  const box=document.getElementById('mdcSteps'), pr=document.getElementById('mdcPrimary');
+  if(!box||!pr) return;
+  const md=currentMd, t=md?mdTimes(md):null, i=mdcPhaseIdx();
+  const poll = !!(presenceSelf && t && t.presenceClose);
+  const steps=[
+    {k:0,n:'Giornata programmata',s:md?(t&&t.kickoff?('Fischio d\'inizio '+fmtDayTime(new Date(t.kickoff))):'Aperta'):'Nessuna giornata aperta'},
+    {k:1,n:'Sondaggio presenze',s:poll?'Chiude 36h prima del via':'Non previsto in questa giornata'},
+    {k:2,n:'Formazioni',s:'Si bloccano 5 min prima del via'},
+    {k:3,n:'Partita',s:'I voti aprono 1h dopo il fischio'},
+    {k:4,n:'Voti',s:'Restano aperti 24h'},
+    {k:5,n:'Conclusa',s:'Classifica e crediti aggiornati'}
+  ].filter(x=>!(x.k===1&&!poll));
+  box.innerHTML=steps.map(x=>{
+    const st=(i<0)?'':(x.k<i?'done':(x.k===i?'now':''));
+    return `<div class="mdc-step ${st}"><span class="dot"></span><div class="tx"><b>${x.n}</b><small>${esc(x.s)}</small></div></div>`;
+  }).join('');
+  // una sola azione, quella che ha senso adesso
+  let h='';
+  if(i<0) h=`<button class="save" style="margin-top:14px" onclick="openNowMatchday()">\u26a1 Apri subito la giornata</button>`;
+  else if(i===1||i===2) h=`<button class="set-btn" style="margin-top:14px" onclick="openEditKickoffSheet()">\ud83d\udd51 Modifica orario partita</button>`;
+  else if(i===3) h=`<button class="save" style="margin-top:14px" onclick="openLiveStats()">\ud83d\udcca Apri pannello partita</button>`;
+  else if(i===4) h=`<button class="save" style="margin-top:14px" onclick="closeMatchday()">\ud83c\udfc1 Chiudi la giornata adesso</button>`
+    +`<p class="vs" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${closeMdHintText()}</p>`;
+  else if(i===5) h=`<button class="set-btn" style="margin-top:14px" onclick="openRecap(${md.id},false)">\ud83d\udcca Vedi il pagellone</button>`;
+  pr.innerHTML=h;
 }
 
 /* ---------- ONBOARDING (wizard a più pagine) ---------- */
@@ -3930,7 +4016,9 @@ function applyProfile(){
   const vtc=document.getElementById('voterCard'); if(vtc)vtc.style.display=canOp()?'block':'none';
   const mtc=document.getElementById('maintCard'); if(mtc)mtc.style.display=profile.is_admin?'block':'none';   // manutenzione (solo proprietario)
   const vcc=document.getElementById('viceCard'); if(vcc)vcc.style.display=profile.is_admin?'block':'none';     // gestione vice (solo proprietario)
-  const arow=document.getElementById('adminRow'); if(arow)arow.style.display=canOp()?'flex':'none';
+  const _adm=canOp();
+  document.querySelectorAll('.navrow.adminRow').forEach(r=>{ r.style.display=_adm?'flex':'none'; });
+  const agrp=document.getElementById('admGrp'); if(agrp)agrp.style.display=_adm?'block':'none';
   ['gkCard','presModeCard','seasonCard'].forEach(id=>{const e=document.getElementById(id); if(e)e.style.display=profile.is_admin?'block':'none';});   // regole: solo proprietario
 }
 function renderAll(){renderHero();renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderSeasonRecapButton();renderHomeBcards();renderCampoTeam();}
@@ -5436,9 +5524,22 @@ const _avBlob={};
 function latestClosedMd(){
   return (matchdaysList||[]).filter(m=>m.status==='closed').sort((a,b)=>b.id-a.id)[0]||null;
 }
+/* HOME — «Rivivi»: pagellone di giornata e recap di stagione erano due sezioni
+   con due intestazioni per un bottone ciascuna. Ora sono due riquadri affiancati
+   nella stessa fascia; se ce n'è uno solo occupa tutta la larghezza. */
 function renderRecapButton(){
-  const hw=document.getElementById('homeRecapWrap');
-  if(hw){ const md=latestClosedMd(); hw.style.display=md?'block':'none'; }
+  const w=document.getElementById('homeRvWrap'), g=document.getElementById('homeRvGrid');
+  if(!w||!g) return;
+  const md=latestClosedMd(), s=lastClosedSeason;
+  w.style.display=(md||s)?'block':'none';
+  if(!md&&!s){ g.innerHTML=''; return; }
+  let h='';
+  if(md) h+=`<button class="rvtile" onclick="openRecapLatest()"><span class="rv-em">\ud83d\udcca</span>`
+    +`<b>Pagellone</b><small>${esc(md.label)}</small></button>`;
+  if(s) h+=`<button class="rvtile gold" onclick="openSeasonRecapLatest()"><span class="rv-em">\ud83c\udfc6</span>`
+    +`<b>Stagione ${s.number}</b><small>Premi e record</small></button>`;
+  g.className='rvgrid'+((md&&s)?'':' one');
+  g.innerHTML=h;
 }
 function openRecapLatest(){ const md=latestClosedMd(); if(md) openRecap(md.id,false); }
 
@@ -6125,13 +6226,33 @@ async function maybeShowRecap(){
    ========================================================================== */
 let seasonData=null, seasonRecapId=null;
 
+/* i due riquadri li disegna renderRecapButton: qui resta solo la riga
+   «Albo d'oro» del menu Impostazioni, che compare a stagione archiviata. */
 function renderSeasonRecapButton(){
-  const w=document.getElementById('homeSeasonWrap'); if(!w) return;
-  const s=lastClosedSeason;
-  w.style.display = s ? 'block' : 'none';
-  if(!s) return;
-  const t=document.getElementById('homeSeasonTtl');
-  if(t) t.textContent='Rivivi la Stagione '+s.number;
+  renderRecapButton();
+  const r=document.getElementById('alboRow');
+  if(r){
+    r.style.display=lastClosedSeason?'flex':'none';
+    const sub=document.getElementById('alboSub');
+    const n=allSeasons.filter(x=>x.status!=='open').length;
+    if(sub&&lastClosedSeason) sub.textContent=n>1?(n+' stagioni archiviate'):('La Stagione '+lastClosedSeason.number+' archiviata');
+  }
+}
+/* Elenco delle stagioni archiviate: da qui si riapre il recap di ognuna,
+   non solo dell'ultima. Con 10 stagioni resta una lista, non una fila di pillole. */
+function openAlboSheet(){
+  const past=allSeasons.filter(s=>s.status!=='open');
+  if(!past.length){ toast('Nessuna stagione archiviata'); return; }
+  if(past.length===1){ openSeasonRecap(past[0].id,false); return; }
+  document.getElementById('sheetTitle').textContent="Albo d'oro";
+  document.getElementById('sheetHint').textContent='Riapri il recap di una stagione.';
+  document.getElementById('sheetList').innerHTML=past.map(s=>{
+    const mds=Number(s.mds_closed||0);
+    return `<div class="opt" onclick="closeSheet();openSeasonRecap(${s.id},false)"><div class="oav emo">\ud83c\udfc6</div>`
+      +`<div class="info"><b>Stagione ${s.number}</b><span>${mds?(mds+(mds===1?' giornata':' giornate')):'Archiviata'}</span></div>`
+      +`<span class="pr">\u203a</span></div>`;
+  }).join('');
+  openSheet();
 }
 function openSeasonRecapLatest(){
   if(!lastClosedSeason){ toast('Nessuna stagione archiviata'); return; }
