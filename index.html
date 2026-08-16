@@ -90,7 +90,7 @@
   @keyframes spUp{0%{opacity:0;transform:translateY(18px)}100%{opacity:1;transform:none}}
   /* 4) l'immagine della squadra sale dal basso (stessa illustrazione della welcome) */
   .sp-hero{flex:1 1 auto;min-height:0;width:100%;position:relative;display:flex;align-items:center;justify-content:center;
-    padding:8px 22px 78px;opacity:0;
+    padding:8px 22px 116px;opacity:0;
     animation:spHero .95s cubic-bezier(.2,.8,.2,1) 1.5s both}
   .sp-hero::before{content:"";position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);width:100%;height:82%;
     background:radial-gradient(56% 60% at 50% 50%, rgba(63,151,255,.30), rgba(63,151,255,.10) 55%, transparent 72%);
@@ -98,13 +98,17 @@
   .sp-hero img{position:relative;z-index:1;width:100%;max-width:430px;max-height:100%;height:auto;object-fit:contain;display:block;
     filter:drop-shadow(0 22px 30px rgba(0,0,0,.5))}
   @keyframes spHero{0%{opacity:0;transform:translateY(30px) scale(.95)}100%{opacity:1;transform:none}}
-  /* 5) i puntini compaiono per ultimi */
-  .sp-load{display:flex;gap:7px;position:absolute;bottom:calc(46px + env(safe-area-inset-bottom));opacity:0;animation:spFadeIn .55s ease 1.62s both}
+  /* 5) la frase di caricamento e poi i puntini. La frase cambia a ogni avvio:
+     riempie il vuoto in fondo e dà un motivo per guardare lo splash. */
+  .sp-tip{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(80px + env(safe-area-inset-bottom));
+    width:calc(100% - 52px);max-width:330px;text-align:center;font-size:13px;line-height:1.4;color:var(--muted);
+    opacity:0;animation:spFadeIn .6s ease 1.72s both}
+  .sp-load{display:flex;gap:7px;position:absolute;bottom:calc(40px + env(safe-area-inset-bottom));opacity:0;animation:spFadeIn .55s ease 1.62s both}
   @keyframes spFadeIn{to{opacity:1}}
   .sp-load i{width:8px;height:8px;border-radius:50%;background:var(--accent-soft);animation:spBlink 1.1s infinite ease-in-out}
   .sp-load i:nth-child(2){animation-delay:.16s}.sp-load i:nth-child(3){animation-delay:.32s}
   @media (prefers-reduced-motion: reduce){
-    .sp-logowrap,.sp-name .np-a,.sp-name .np-b,.sp-tag,.sp-load,.sp-hero,.sp-logo,.sp-logowrap::after{animation-duration:.01ms;animation-iteration-count:1}
+    .sp-logowrap,.sp-name .np-a,.sp-name .np-b,.sp-tag,.sp-tip,.sp-load,.sp-hero,.sp-logo,.sp-logowrap::after{animation-duration:.01ms;animation-iteration-count:1}
   }
   @keyframes spBlink{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
 
@@ -836,10 +840,11 @@
   .tm-chips>.tm-rec:last-child:nth-child(odd){grid-column:1 / -1}
   .tm-rec{display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.05);border-radius:14px;padding:11px 13px;min-width:0}
   .tm-rec .ic{font-size:19px;line-height:1;flex:none}
-  .tm-rec .tx{min-width:0}
-  .tm-rec .tv{font-family:'JetBrains Mono';font-weight:700;font-size:17px;line-height:1;color:var(--gold-soft);letter-spacing:-.02em}
+  .tm-rec .tx{min-width:0;flex:1}
+  .tm-rec .tv{display:block;font-family:'JetBrains Mono';font-weight:700;font-size:17px;line-height:1;color:var(--gold-soft);letter-spacing:-.02em}
   .tm-rec.z .tv{color:var(--muted)}
-  .tm-rec .tk{font-size:11px;color:var(--muted);font-weight:600;margin-top:4px;
+  .tm-rec .tv small{font-family:'Hanken Grotesk';font-size:11px;font-weight:600;color:var(--muted);letter-spacing:0}
+  .tm-rec .tk{display:block;font-size:11px;color:var(--muted);font-weight:600;margin-top:5px;
               overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* ---- ANDAMENTO VOTI (grafichino stagione) ---- */
   .vtrend{margin-top:15px;background:linear-gradient(165deg,rgba(63,151,255,.10),rgba(16,36,67,.55));
@@ -1494,6 +1499,7 @@
   </div>
   <!-- stessa illustrazione della welcome: la src viene copiata da #wcHero (niente doppione del base64) -->
   <div class="sp-hero"><img id="spHero" alt="" loading="eager" decoding="async"></div>
+  <div class="sp-tip" id="spTip"></div>
   <div class="sp-load"><i></i><i></i><i></i></div>
 </div>
 
@@ -2152,6 +2158,31 @@ const VAPID_PUBLIC = 'BIVh1NLu5K0JVdcOrjGp_LeNc3XZRhMdIs1gAuTLCcs-rnH873A8bB-77N
 try{
   const _wcH=document.getElementById('wcHero');
   if(_wcH&&_wcH.src) ['spHero','offHero'].forEach(id=>{ const e=document.getElementById(id); if(e) e.src=_wcH.src; });
+}catch(_){}
+
+/* Frasi dello splash: una a caso a ogni avvio. Metà spiegano una regola, metà
+   prendono in giro il calcetto vero — è la parte che fa sorridere chi apre
+   l'app per la ventesima volta. */
+const SPLASH_TIPS=[
+  'Gonfio i palloni…',
+  'Cerco un volontario per la porta…',
+  'Conto chi ha detto «ci sono» e poi sparisce',
+  'Il capitano vale doppio. Sceglilo bene.',
+  'Metto le pettorine in lavatrice…',
+  'Il 1-3-1 vale +5. Coraggio o incoscienza?',
+  'Aggiorno la classifica. Spoiler: sei sempre lì.',
+  'Chi perde paga il campo…',
+  'Rileggo i voti: qualcuno si è dato 8',
+  'L\'autogol conta lo stesso, mi dispiace',
+  'Cerco scuse per sabato scorso…',
+  'Convoco i cinque titolari…',
+  'Preparo il pagellone…',
+  'Il campo è prenotato. Credo.',
+  'Nessuno vuole fare il portiere. Come sempre.'
+];
+try{
+  const _tip=document.getElementById('spTip');
+  if(_tip) _tip.textContent=SPLASH_TIPS[Math.floor(Math.random()*SPLASH_TIPS.length)];
 }catch(_){}
 
 const PRICE=20;
@@ -3808,16 +3839,37 @@ function statsOpen(){
   if(!t.voteOpen)return true;            // giornata legacy senza kickoff: sempre aperta
   return Date.now()>=t.voteOpen;
 }
+/* ---------- FASE DELLA GIORNATA: unica fonte di verità ----------
+   Prima la fase si calcolava in due posti: phaseLabel() per l'intestazione e
+   mdcPhaseIdx() per la timeline, con due elenchi di stati diversi. La prima
+   conosceva «Voti chiusi», la seconda no: a finestra voti scaduta la testata e
+   i pallini raccontavano due storie diverse. Ora c'è un solo indice e un solo
+   elenco — nome per la timeline, forma breve per i sottotitoli del menu,
+   descrizione per la riga sotto al titolo. */
+const MD_PHASES=[
+  {n:'Giornata programmata', short:'Programmata',        desc:"In attesa del fischio d'inizio"},
+  {n:'Sondaggio presenze',   short:'Sondaggio presenze', desc:'Chiude 36h prima del via'},
+  {n:'Formazioni',           short:'Formazioni aperte',  desc:'Si bloccano 5 min prima del via'},
+  {n:'Partita',              short:'Partita in corso',   desc:'I voti aprono 1h dopo il fischio'},
+  {n:'Voti',                 short:'Voti aperti',        desc:'Restano aperti 24h'},
+  {n:'Voti chiusi',          short:'Da archiviare',      desc:'La giornata si chiude da sola a breve'},
+  {n:'Conclusa',             short:'Conclusa',           desc:'Classifica e crediti aggiornati'}
+];
+function mdPhaseIdx(){
+  const md=currentMd; if(!md) return -1;
+  if(md.status==='closed') return 6;
+  const t=mdTimes(md), now=Date.now();
+  if(!t||t.lineupLock===Infinity) return 2;          // giornata senza orario: tutto aperto
+  if(presenceSelf && t.presenceClose!=null && now<t.presenceClose) return 1;
+  if(now<t.lineupLock) return 2;
+  if(now<t.voteOpen)   return 3;
+  if(now<=t.voteClose) return 4;
+  return 5;
+}
+function mdPhaseShort(){ const i=mdPhaseIdx(); return i<0?'Nessuna giornata aperta':MD_PHASES[i].short; }
 function phaseLabel(){
-  if(!currentMd)return 'Nessuna giornata aperta';
-  if(currentMd.status==='closed')return 'Conclusa';
-  const t=mdTimes(currentMd),now=Date.now();
-  if(!t||t.lineupLock===Infinity)return 'Formazioni e voti aperti';
-  if(presenceSelf&&t.presenceClose!=null&&now<t.presenceClose)return 'Sondaggio presenze aperto (formazioni 36h prima del via)';
-  if(now<t.lineupLock)return 'Formazioni aperte (si bloccano 5 min prima del via)';
-  if(now<t.voteOpen)return 'Formazioni bloccate · partita in corso';
-  if(now<=t.voteClose)return 'Voti aperti';
-  return 'Voti chiusi';
+  const i=mdPhaseIdx();
+  return i<0 ? 'Nessuna giornata aperta' : (MD_PHASES[i].short+' \u00b7 '+MD_PHASES[i].desc);
 }
 function startCountdown(){
   if(cdTimer)clearInterval(cdTimer);
@@ -3865,26 +3917,10 @@ function renderMatchday(){
     mc.style.display=(canOp())?'block':'none';
     const ml=document.getElementById('mdLabel'); if(ml)ml.textContent=currentMd?currentMd.label:'Nessuna giornata aperta';
     const mp=document.getElementById('mdPhase'); if(mp)mp.textContent=phaseLabel();
-    const ma=document.getElementById('mdActions');
-    if(ma){
-      const live = !!(currentMd && currentMd.status!=='closed');   // giornata in corso
-      let h='';
-      if(live){
-        h+=`<button class="set-btn" style="margin-top:10px" onclick="openEditKickoffSheet()">🕑 Modifica orario partita</button>`
-          +`<button class="save" style="margin-top:10px" onclick="closeMatchday()">🏁 Chiudi la giornata adesso</button>`
-          +`<p class="vs" style="color:var(--muted);font-size:12px;margin:9px 0 0;line-height:1.5">${closeMdHintText()}</p>`;
-      } else {
-        // nessuna giornata aperta → si può far partire adesso quella programmata (niente attesa 72h)
-        h+=`<button class="save" style="margin-top:12px" onclick="openNowMatchday()">⚡ Apri subito la giornata</button>`
-          +`<p class="vs" id="openNowHint" style="color:var(--muted);font-size:12px;margin:9px 0 0;line-height:1.5">${openNowHintText()}</p>`;
-      }
-      if(currentMd) h+=`<button class="logout" style="border-color:rgba(255,90,90,.45);color:#ff9a9a;margin-top:10px" onclick="resetMatchday()">🗑️ Annulla questa giornata</button>`;
-      ma.innerHTML=h;
-    }
     renderOpenMode();
     renderMdCenter();
   }
-  const g=document.getElementById('admMdSub'); if(g) g.textContent=currentMd?(currentMd.label+' \u00b7 '+mdcPhaseShort()):'Nessuna giornata aperta';
+  const g=document.getElementById('admMdSub'); if(g) g.textContent=currentMd?(currentMd.label+' \u00b7 '+mdPhaseShort()):'Nessuna giornata aperta';
   const q=document.getElementById('admSeaSub');
   if(q) q.textContent = seasonBreak()
     ? ('Stagione '+(displaySeason?displaySeason.number:1)+' archiviata')
@@ -3892,50 +3928,70 @@ function renderMatchday(){
   startCountdown();
 }
 /* ---------- CENTRO GIORNATA (admin) ----------
-   Le fasi di una giornata in fila, con evidenziata quella attiva e UNA sola
-   azione principale: prima erano tutti i tasti sempre visibili insieme, e
-   capire quale servisse adesso era a carico dell'admin. */
-function mdcPhaseIdx(){
-  const md=currentMd; if(!md) return -1;
-  if(md.status==='closed') return 5;
-  const t=mdTimes(md), now=Date.now();
-  if(!t||t.lineupLock===Infinity) return 2;
-  if(presenceSelf && t.presenceClose!=null && now<t.presenceClose) return 1;
-  if(now<t.lineupLock) return 2;
-  if(now<t.voteOpen) return 3;
-  if(now<=t.voteClose) return 4;
-  return 4;
+   Le fasi della giornata in fila, quella attiva evidenziata, e UNA sola azione:
+   quella che ha senso adesso. `mdcPrimary()` decide qual è, e `renderMdActions()`
+   costruisce le «azioni avanzate» a partire da quella scelta, TOGLIENDOLA
+   dall'elenco: prima i due blocchi erano scritti a mano separatamente e la
+   stessa azione (chiudi giornata, modifica orario) compariva due volte nella
+   stessa schermata, una volta come primaria e una dentro la fisarmonica. */
+const MD_ACTIONS={
+  open:   {cls:'save',    ic:'\u26a1', lab:'Apri subito la giornata',  fn:'openNowMatchday()'},
+  kick:   {cls:'set-btn', ic:'\ud83d\udd51', lab:'Modifica orario partita', fn:'openEditKickoffSheet()'},
+  panel:  {cls:'save',    ic:'\ud83d\udcca', lab:'Apri pannello partita',   fn:'openLiveStats()'},
+  close:  {cls:'save',    ic:'\ud83c\udfc1', lab:'Chiudi la giornata adesso', fn:'closeMatchday()'},
+  recap:  {cls:'set-btn', ic:'\ud83d\udcca', lab:'Vedi il pagellone',      fn:'openRecapCurrent()'}
+};
+function mdActionHTML(k,mt){
+  const a=MD_ACTIONS[k]; if(!a) return '';
+  return `<button class="${a.cls}" style="margin-top:${mt||10}px" onclick="${a.fn}">${a.ic} ${a.lab}</button>`;
 }
-function mdcPhaseShort(){
-  const i=mdcPhaseIdx();
-  return ['Programmata','Sondaggio presenze','Formazioni aperte','Partita in corso','Voti aperti','Conclusa'][i<0?0:i];
+/* quale azione è LA azione, in questo momento */
+function mdcPrimaryKey(){
+  const i=mdPhaseIdx();
+  if(i<0) return 'open';
+  if(i===1||i===2) return 'kick';
+  if(i===3) return 'panel';
+  if(i===4||i===5) return 'close';
+  return 'recap';
 }
+function openRecapCurrent(){ if(currentMd) openRecap(currentMd.id,false); }
 function renderMdCenter(){
   const box=document.getElementById('mdcSteps'), pr=document.getElementById('mdcPrimary');
   if(!box||!pr) return;
-  const md=currentMd, t=md?mdTimes(md):null, i=mdcPhaseIdx();
+  const md=currentMd, t=md?mdTimes(md):null, i=mdPhaseIdx();
   const poll = !!(presenceSelf && t && t.presenceClose);
-  const steps=[
-    {k:0,n:'Giornata programmata',s:md?(t&&t.kickoff?('Fischio d\'inizio '+fmtDayTime(new Date(t.kickoff))):'Aperta'):'Nessuna giornata aperta'},
-    {k:1,n:'Sondaggio presenze',s:poll?'Chiude 36h prima del via':'Non previsto in questa giornata'},
-    {k:2,n:'Formazioni',s:'Si bloccano 5 min prima del via'},
-    {k:3,n:'Partita',s:'I voti aprono 1h dopo il fischio'},
-    {k:4,n:'Voti',s:'Restano aperti 24h'},
-    {k:5,n:'Conclusa',s:'Classifica e crediti aggiornati'}
-  ].filter(x=>!(x.k===1&&!poll));
+  // le tappe arrivano da MD_PHASES: stesso elenco della fase, nessun doppione.
+  // Il sondaggio sparisce se non previsto; «Voti chiusi» compare solo mentre ci sei.
+  const steps=MD_PHASES.map((ph,k)=>({
+    k, n:ph.n,
+    s: k===0 ? (md?(t&&t.kickoff?("Fischio d'inizio "+fmtDayTime(new Date(t.kickoff))):'Aperta'):'Nessuna giornata aperta')
+     : k===1 ? (poll?ph.desc:'Non previsto in questa giornata')
+     : ph.desc
+  })).filter(x=>!(x.k===1&&!poll)).filter(x=>!(x.k===5&&i!==5));
   box.innerHTML=steps.map(x=>{
     const st=(i<0)?'':(x.k<i?'done':(x.k===i?'now':''));
     return `<div class="mdc-step ${st}"><span class="dot"></span><div class="tx"><b>${x.n}</b><small>${esc(x.s)}</small></div></div>`;
   }).join('');
-  // una sola azione, quella che ha senso adesso
-  let h='';
-  if(i<0) h=`<button class="save" style="margin-top:14px" onclick="openNowMatchday()">\u26a1 Apri subito la giornata</button>`;
-  else if(i===1||i===2) h=`<button class="set-btn" style="margin-top:14px" onclick="openEditKickoffSheet()">\ud83d\udd51 Modifica orario partita</button>`;
-  else if(i===3) h=`<button class="save" style="margin-top:14px" onclick="openLiveStats()">\ud83d\udcca Apri pannello partita</button>`;
-  else if(i===4) h=`<button class="save" style="margin-top:14px" onclick="closeMatchday()">\ud83c\udfc1 Chiudi la giornata adesso</button>`
-    +`<p class="vs" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${closeMdHintText()}</p>`;
-  else if(i===5) h=`<button class="set-btn" style="margin-top:14px" onclick="openRecap(${md.id},false)">\ud83d\udcca Vedi il pagellone</button>`;
+  // l'azione del momento, da sola, con la sua spiegazione
+  const key=mdcPrimaryKey();
+  let h=mdActionHTML(key,14);
+  if(key==='open')  h+=`<p class="vs" id="openNowHint" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${openNowHintText()}</p>`;
+  if(key==='close') h+=`<p class="vs" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${closeMdHintText()}</p>`;
   pr.innerHTML=h;
+  renderMdActions(key);
+}
+/* «Azioni avanzate»: tutto quello che NON è già l'azione primaria. */
+function renderMdActions(primary){
+  const ma=document.getElementById('mdActions'); if(!ma) return;
+  const live=!!(currentMd && currentMd.status!=='closed');
+  const rest=[];
+  if(live){
+    if(primary!=='kick')  rest.push('kick');
+    if(primary!=='close') rest.push('close');
+  }
+  let h=rest.map(k=>mdActionHTML(k)).join('');
+  if(currentMd) h+=`<button class="logout" style="border-color:rgba(255,90,90,.45);color:#ff9a9a;margin-top:10px" onclick="resetMatchday()">\ud83d\uddd1\ufe0f Annulla questa giornata</button>`;
+  ma.innerHTML=h;
 }
 
 /* ---------- ONBOARDING (wizard a più pagine) ---------- */
@@ -4470,7 +4526,7 @@ function teamStatsGridHTML(card){
   recs.push(rec('👑','×'+(st.wins||0),'Re della giornata',!st.wins));
   recs.push(rec('🚩','×'+(st.leader_days||0),'Giornate da leader',!st.leader_days));
   recs.push(rec('📈','+'+(st.best_climb||0),'Miglior balzo',!st.best_climb));
-  if(st.best_md!=null) recs.push(rec('🏅',fmtPts(st.best_md),'Miglior giornata'));
+  if(st.best_md!=null) recs.push(rec('🏅',fmtPts(st.best_md)+'<small> pts</small>','Miglior giornata'));
   h+=`<div class="tm-chips">${recs.join('')}</div>`;
   return h;
 }
