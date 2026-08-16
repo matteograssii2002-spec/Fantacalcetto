@@ -1258,3 +1258,148 @@ DEPLOY_SESSIONE_42 = (
     "e Pallone d'oro devono comparire sulla 1 e sparire sulla 2, mentre Cecchino e Uomo copertina (carriera) "
     "restano fermi. Il grafico voti deve cambiare con la stagione."
 )
+
+# =============================================================================
+# SESSIONE 43 — Stagione di riferimento, selettore a foglio, Centro giornata,
+#               Impostazioni riorganizzate, Home compattata
+# Dove in conflitto con sezioni precedenti, VALE QUESTA (sostituisce parti della
+# sessione 42 sul selettore stagione e il vecchio menu Impostazioni).
+# =============================================================================
+
+SESSIONE_43 = {
+    "bug_stagione": (
+        "SINTOMO: chiusa la Stagione 1 e premuto 'Apri una nuova stagione', la testata diceva "
+        "'Stagione 2' mentre classifica/statistiche/bacheca erano ancora della Stagione 1, e la "
+        "mini-classifica mostrava tutti a 0 punti (erano i punti inesistenti della S2). "
+        "CAUSA: seasonLabel() e viewSeasonId leggevano SEMPRE currentSeason (la stagione aperta piu' "
+        "recente): bastava una stagione aperta e vuota per spostare le etichette senza spostare i dati. "
+        "VERIFICATO IN SQL che nessuno crea stagioni in automatico alla chiusura (ended_at S1 e "
+        "started_at S2 distavano 1'38'', quindi transazioni diverse): close_season e' a posto, era "
+        "solo un problema di presentazione. Nessuna patch SQL a close_season."
+    ),
+    "display_season": (
+        "TRE CONCETTI DA NON CONFONDERE: currentSeason/currentSeasonId = dove finiscono le giornate "
+        "NUOVE (scrittura). displaySeason/displaySeasonId = la stagione di cui l'app PARLA (etichette, "
+        "classifica, statistiche, bacheca). viewSeasonId = quale sto SFOGLIANDO in Classifica/schede. "
+        "computeDisplaySeason() gira in loadSeason() PRIMA di loadSeasonsList(): se la corrente e' "
+        "aperta e ha ZERO giornate ed esiste un'archiviata -> displaySeason = l'archiviata. "
+        "seasonIsEmptyOpen(s) richiede s.mds_total != null (se la RPC non lo riportasse si ricade sul "
+        "comportamento storico invece di mostrare la stagione sbagliata). seasonBreak() = displaySeason "
+        "non aperta = siamo in pausa fra due stagioni. nextSeasonNumber(). "
+        "REGOLA DI PRODOTTO: la stagione nuova subentra quando nasce la sua PRIMA GIORNATA, non quando "
+        "viene aperta. Una stagione vuota non ha niente da raccontare."
+    ),
+    "conseguenze": (
+        "seasonLabel() legge displaySeason. loadStandings() passa ESPLICITAMENTE {p_season: "
+        "displaySeasonId} a get_standings_season (fallback: senza argomenti, poi get_standings): senza "
+        "parametro la SQL prende la stagione aperta = quella vuota. loadSeasonsList() ESCLUDE dall'elenco "
+        "la stagione aperta e vuota e il default di viewSeasonId e' displaySeasonId. "
+        "viewingCurrentSeason() RINOMINATA viewingMainSeason() e confronta con displaySeasonId. "
+        "renderLB(): seasonForList ripiega su displaySeasonId. Home: loadPlayerCard/loadTeamCard "
+        "ricevono displaySeasonId."
+    ),
+    "home_pausa": (
+        "renderHero() (da renderAll e renderSeasonUI) con nuovi id #heroTitle #heroCta #heroExtra. "
+        "In corso: 'Pronto a schierare?' + CTA formazione. In pausa: 'Stagione N conclusa' + "
+        "'Rivivi la Stagione N' + nota + (solo proprietario) 'Inizia la Stagione N+1'. "
+        "Prima l'app invitava a schierare una formazione per una giornata inesistente."
+    ),
+    "sql_nuova": (
+        "stagioni_stato.sql (NUOVO) -> cancel_empty_season(): security definer, solo profiles.is_admin, "
+        "cancella la stagione APERTA della propria lega SOLO se ha zero giornate (altrimenti ritorna "
+        "false); delete from season_recaps protetto da 'exception when undefined_table'. Serve a "
+        "rimediare a un'apertura per sbaglio. renderSeasonAdmin() ha ora TRE stati: in corso / "
+        "archiviata / archiviata con la prossima gia' aperta e vuota. closeSeasonNow e openSeasonNow "
+        "chiedono conferma e dicono la verita': chiudere NON apre niente."
+    ),
+    "selettore_stagione": (
+        "SOSTITUISCE la .seasonbar della sessione 42 (non reggeva oltre 3-4 stagioni; il CSS resta nel "
+        "file ma non e' piu' usato). #legaSeason da <span> a <button class='hh-season pick'>: il titolo "
+        "E' il selettore, chevron via ::after, disabled con una sola stagione. "
+        "openSeasonPicker(ctx,kind,ref) riusa il foglio generico #sheet con righe .opt (⚽ in corso, "
+        "🏆 archiviata, spunta sull'attiva): scala a 20 stagioni. renderLegaSeasonHead() sostituisce "
+        "renderSeasonBar() e disegna anche #lbBack (fascia oro 'Stai guardando la Stagione N' + ritorno). "
+        "cardSeasonBarHTML() usa lo stesso bottone-pillola. Lo swipe (bindSeasonSwipe / "
+        "bindCardSeasonSwipe) resta invariato."
+    ),
+    "home_classifica": (
+        "Mini-classifica: sempre i primi tre; se la propria squadra e' fuori dal podio si AGGANCIA in "
+        "fondo con la posizione reale e un divisore tratteggiato (.mini-row.split). Ovunque compaia, la "
+        "propria squadra ha '(tu)' (.youtag). Nuovi isMyRow(t) e miniRowHTML(t,i,split). isMyRow "
+        "confronta il MANAGER_ID (prima il nome squadra: due squadre omonime si confondevano)."
+    ),
+    "caroselli": (
+        "Meccanica UNICA per statistiche e 'Rivivi'. CSS .bctrack (flex + scroll-snap-type:x mandatory, "
+        "overscroll-behavior-x:contain, scrollbar nascosta), .bctrack>*{flex:0 0 100%}, .bcdots col "
+        "pallino attivo che si allunga in trattino. JS renderTrackDots(trackId,dotsId) e "
+        "bindTrack(trackId,dotsId) generici, con _dotAt[trackId] per NON riscrivere il DOM a ogni pixel "
+        "di scroll. renderBcDots()/bindBcTrack() restano come alias per le statistiche. Con meno di 2 "
+        "schede visibili i pallini spariscono e overflow-x va a hidden."
+    ),
+    "rivivi": (
+        "Le sezioni 'Pagellone di giornata' e 'Albo d'oro' (due intestazioni per un bottone ciascuna, "
+        "~200px) diventano UNA fascia #homeRvWrap con pista #homeRvGrid + #homeRvDots e due riquadri "
+        ".rvtile (blu il pagellone, .gold la stagione). Li disegna renderRecapButton(); "
+        "renderSeasonRecapButton() ora lo richiama e si occupa solo della riga 'Albo d'oro' in "
+        "Impostazioni. ID RIMOSSI: homeRecapWrap, homeSeasonWrap, homeRecapBtn, homeSeasonBtn, "
+        "homeSeasonTtl, homeSeasonSub."
+    ),
+    "impostazioni": (
+        "ELIMINATI il livello intermedio page-admin ('Area amministratore' -> Partita/Lega) e la pagina "
+        "page-partita: erano due tap per arrivare ovunque. Menu #setMenu diviso in gruppi .setgrp: "
+        "IL MIO ACCOUNT (Profilo, Notifiche) / LA LEGA (Regolamento, Albo d'oro #alboRow solo a stagione "
+        "archiviata) / GESTIONE (#admGrp + .navrow.adminRow: Centro giornata, Stagione, Regole della "
+        "partita, Gestione lega). L'id singolo adminRow e' sostituito dalla CLASSE .navrow.adminRow (4 "
+        "righe): applyProfile cicla su querySelectorAll('.navrow.adminRow') e mostra #admGrp. "
+        "Sottotitoli VIVI: #admMdSub 'Giornata 6 · Voti aperti', #admSeaSub 'Stagione 1 · 5/38' oppure "
+        "'Stagione 1 archiviata', aggiornati in renderMatchday(). openAlboSheet(): con piu' stagioni "
+        "archiviate apre l'elenco nel foglio e riapre il recap di QUALSIASI annata. "
+        "Piede del menu = .setfoot (logout + versione) con margin-top:auto E padding-top:26px: senza il "
+        "padding, a menu pieno margin-top:auto collassa a zero e 'Esci' si incolla alla riga sopra. "
+        "NUOVE .setpage: page-giornata, page-stagione, page-regole. page-lega invariata nel contenuto "
+        "(cambia subback -> setMenu e titolo 'Gestione lega')."
+    ),
+    "vincolo_id": (
+        "CONFERMATO: gli id che il JS usa per show/hide (mdCard, presCard, seasonCard, gkCard, "
+        "presModeCard, voterCard, inviteCard, manageCard, creditCard) restano sull'elemento ESTERNO "
+        "anche dopo lo spostamento fra pagine. seasonCard non e' piu' un .acc ma un .set-card (contiene "
+        "solo #seasonBox). mdCard non e' piu' un .acc ma un <div> semplice. maintCard e' referenziato in "
+        "applyProfile ma NON esiste nel markup da tempo: riga innocua (guardia if(mtc))."
+    ),
+    "centro_giornata": (
+        "mdcPhaseIdx() -> 0 Programmata, 1 Sondaggio presenze, 2 Formazioni, 3 Partita, 4 Voti, "
+        "5 Conclusa (-1 = nessuna giornata); stessa logica di phaseLabel()/computeLock(). "
+        "mdcPhaseShort() per il sottotitolo del menu. renderMdCenter() disegna in #mdcSteps la sequenza "
+        "verticale (.mdc-step con .dot, stati .done/.now, filo via ::before); il passo 'Sondaggio "
+        "presenze' compare SOLO se presenceSelf && t.presenceClose. In #mdcPrimary UNA SOLA azione: "
+        "nessuna giornata -> openNowMatchday(); presenze/formazioni -> openEditKickoffSheet(); partita "
+        "-> openLiveStats(); voti -> closeMatchday() (con closeMdHintText() sotto); conclusa -> "
+        "openRecap(md.id,false). Tutto il resto (programmazione #mdOpenBox, vecchi #mdActions con "
+        "modifica orario / chiudi / ANNULLA GIORNATA) sotto l'accordion 'Azioni avanzate' (#mdAdvCard), "
+        "chiuso: i tasti distruttivi non sono piu' a portata di pollice. renderMatchday() chiama "
+        "renderMdCenter() dopo renderOpenMode(). Modalita' portiere e presenze spostate in 'Regole della "
+        "partita' (sono configurazioni di lega, non operazioni di giornata); tendine CHIUSE di default."
+    ),
+}
+
+FILE_TOCCATI_SESSIONE_43 = [
+    "stagioni_stato.sql (NUOVO)",
+    "index.html",
+    "sw.js (solo SW_VERSION -> 2026-08-16-1)",
+    "notify.ts NON toccato",
+    "admin.html NON toccato",
+    "manifest.webmanifest NON toccato",
+]
+DEPLOY_SESSIONE_43 = (
+    "ORDINE: 1) stagioni_stato.sql  2) index.html (chiavi Supabase da re-incollare)  3) sw.js. "
+    "COLLAUDO: con una stagione archiviata e nessuna nuova, la Home deve dire 'Stagione N conclusa' e "
+    "la classifica deve mostrare i punti VERI dell'ultima stagione giocata, non zeri. Aprire una "
+    "stagione nuova non deve cambiare niente finche' non si programma la prima giornata. Nel Centro "
+    "giornata, a giornata conclusa, la sequenza e' tutta spenta con l'ultimo passo acceso e 'Vedi il "
+    "pagellone' come azione."
+)
+IN_SOSPESO_43 = (
+    "Multi-lega per sondaggio.html (aperto da tempo). "
+    "Split del sito: '/' landing pubblica + '/app/' gioco (vedi PROSSIMI_PASSI.md); quando si fara', in "
+    "notify.ts vanno cambiati TUTTI gli url delle push ('/' -> '/app/', '/?srecap=' -> '/app/?srecap=')."
+)

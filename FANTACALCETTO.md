@@ -2045,3 +2045,210 @@ Sulle stagioni archiviate le frecce ▲▼ sono disattivate (non hanno senso su 
 `notify.ts`, `sw.js` e `admin.html` **non toccati**. Dopo un DDL, PostgREST impiega qualche secondo a rigenerare la cache dello schema.
 
 **Collaudo:** aprire la scheda di un giocatore che ha vinto titoli nella Stagione 1 e passare da 2 a 1 — Capocannoniere e Pallone d'oro devono comparire sulla 1 e sparire sulla 2, mentre Cecchino e Uomo copertina (carriera) restano fermi. Il grafico voti deve cambiare con la stagione.
+
+---
+
+## 43. SESSIONE 43 — Stagione di riferimento, selettore stagione a foglio, Centro giornata, Impostazioni riorganizzate, Home compattata
+
+> Dove in conflitto con sezioni precedenti, **vale questa** (in particolare sostituisce
+> parti della §42 sul selettore stagione e della §40.x/§39.x sul menu Impostazioni).
+> File: `index.html` + `stagioni_stato.sql` (nuovo) + `sw.js` (solo bump versione).
+> `notify.ts`, `admin.html`, `manifest.webmanifest` **non toccati**.
+
+### 43.1 Il bug: «Stagione 2» in testata sopra i dati della Stagione 1
+
+Chiusa la Stagione 1, l'admin ha premuto «Apri una nuova stagione». Da quel momento la
+testata diceva **Stagione 2** mentre classifica, statistiche e bacheca erano ancora quelle
+della **Stagione 1** — e la mini-classifica in Home mostrava tutti a **0 punti** (erano i
+punti, inesistenti, della Stagione 2).
+
+Causa: `seasonLabel()` e `viewSeasonId` leggevano **sempre** `currentSeason`, cioè la
+stagione aperta più recente. Bastava l'esistenza di una stagione aperta e vuota per
+spostare tutte le etichette senza spostare i dati. Verificato con SQL che **nessuno**
+crea stagioni in automatico alla chiusura (`ended_at` S1 e `started_at` S2 distavano
+1'38"): `close_season` è a posto, il problema era solo di presentazione.
+
+### 43.2 `displaySeason` — la stagione di riferimento
+
+Tre concetti distinti, da non confondere mai più:
+
+| globale | significato |
+|---|---|
+| `currentSeason` / `currentSeasonId` | dove finiscono le giornate **nuove** (logica di scrittura) |
+| `displaySeason` / `displaySeasonId` | la stagione di cui l'app **parla** (etichette, classifica, statistiche, bacheca) |
+| `viewSeasonId` | quale stagione sto **sfogliando** in Classifica / schede |
+
+`computeDisplaySeason()` (chiamata in `loadSeason()`, **prima** di `loadSeasonsList()`):
+se la stagione corrente è aperta **e ha zero giornate** e ne esiste una archiviata, allora
+`displaySeason` = l'archiviata; altrimenti = `currentSeason`.
+
+- `seasonIsEmptyOpen(s)` — vero solo se `status==='open' && s.mds_total!=null && mds_total===0`.
+  Il controllo su `!=null` è voluto: se la RPC non riportasse `mds_total`, si ricade sul
+  comportamento storico invece di mostrare la stagione sbagliata.
+- `seasonBreak()` — vero quando `displaySeason.status!=='open'`, cioè **siamo in pausa fra
+  due stagioni**.
+- `nextSeasonNumber()` — se esiste già una stagione aperta e vuota è il suo numero,
+  altrimenti `displaySeason.number + 1`.
+
+**Regola di prodotto:** la stagione nuova prende il posto della vecchia **quando nasce la
+sua prima giornata**, non quando viene aperta. Una stagione vuota non ha niente da
+raccontare.
+
+Conseguenze applicate:
+- `seasonLabel()` legge `displaySeason`.
+- `loadStandings()` passa **esplicitamente** `{p_season: displaySeasonId}` a
+  `get_standings_season` (con fallback alla chiamata senza argomenti e poi a
+  `get_standings`). Senza parametro la SQL prende la stagione aperta = quella vuota.
+- `loadSeasonsList()` **esclude** dall'elenco la stagione aperta e vuota, e il default di
+  `viewSeasonId` è `displaySeasonId` (non più `currentSeasonId`).
+- `viewingCurrentSeason()` → **rinominata `viewingMainSeason()`**, confronta con `displaySeasonId`.
+- `renderLB()`: `seasonForList` ripiega su `displaySeasonId`.
+- Home: `loadPlayerCard`/`loadTeamCard` ricevono `displaySeasonId`.
+
+### 43.3 Home in pausa fra due stagioni
+
+Hero dinamico (`renderHero()`, chiamata da `renderAll` e `renderSeasonUI`). Nuovi id nel
+markup: `#heroTitle`, `#heroCta`, `#heroExtra`.
+
+- Stagione in corso: «Pronto a **schierare?**» + «Schiera la formazione →» (come prima).
+- In pausa: «Stagione N **conclusa**» + «🏆 Rivivi la Stagione N», più una nota che spiega
+  perché tutto è fermo lì, e (solo proprietario) «▶︎ Inizia la Stagione N+1».
+
+Senza questo l'app invitava a schierare una formazione per una giornata inesistente.
+
+### 43.4 Card admin Stagione riscritta + `cancel_empty_season()`
+
+`renderSeasonAdmin()` ora ha **tre stati**: in corso / archiviata / archiviata con la
+prossima già aperta e vuota. `closeSeasonNow()` e `openSeasonNow()` chiedono conferma e
+dicono la verità: chiudere **non** apre niente, aprire non cambia nulla finché non c'è la
+prima giornata.
+
+`stagioni_stato.sql` (nuovo) aggiunge **`cancel_empty_season()`** — `security definer`,
+solo `profiles.is_admin`, cancella la stagione aperta della propria lega **solo se ha zero
+giornate** (ritorna `false` altrimenti), con `delete from season_recaps` protetto da
+`exception when undefined_table`. Serve a rimediare a un'apertura per sbaglio.
+
+### 43.5 Selettore stagione — via la barra, dentro il foglio
+
+`.seasonbar` (segmented control della §42) **rimossa dall'uso**: non regge oltre 3-4
+stagioni. Sostituita da:
+
+- `#legaSeason` che da `<span>` diventa **`<button class="hh-season pick">`**: il titolo
+  **è** il selettore, con `⌄` via `::after`. Con una sola stagione è `disabled` e resta
+  un'etichetta muta.
+- `openSeasonPicker(ctx, kind, ref)` — riusa il foglio generico (`#sheet`) con righe `.opt`:
+  ⚽ per la stagione in corso, 🏆 per le archiviate, spunta su quella attiva. Scala a 20 stagioni.
+- `renderLegaSeasonHead()` sostituisce `renderSeasonBar()`; disegna anche `#lbBack`, la
+  fascia oro «📁 Stai guardando la Stagione N, archiviata» + tasto di ritorno.
+- `cardSeasonBarHTML()` nelle schede bacheca usa lo stesso bottone-pillola.
+- Lo **swipe** orizzontale (`bindSeasonSwipe`, `bindCardSeasonSwipe`) resta invariato.
+- `#lbHint` ora dice «Classifica finale della Stagione N» anche quando si è in pausa sulla
+  stagione di riferimento (prima sembrava ancora in gioco).
+
+Il CSS `.seasonbar` resta nel file ma **non è più usato da nessuno**.
+
+### 43.6 Home — mini-classifica e caroselli
+
+**Mini-classifica**: sempre i primi tre; se la propria squadra è fuori dal podio si
+**aggancia in fondo** con la posizione reale e un divisore tratteggiato (`.mini-row.split`).
+Ovunque compaia, la propria squadra ha `(tu)` (`.youtag`). Nuovi helper `isMyRow(t)` e
+`miniRowHTML(t,i,split)`. `isMyRow` confronta il **`manager_id`** (prima confrontava il nome
+squadra: due squadre omonime si confondevano).
+
+**Caroselli**: meccanica unica per statistiche e «Rivivi».
+- CSS `.bctrack` (flex + `scroll-snap-type:x mandatory`, `overscroll-behavior-x:contain`,
+  scrollbar nascosta), `.bctrack>*{flex:0 0 100%}`, `.bcdots` con il pallino attivo che si
+  allunga in trattino.
+- JS `renderTrackDots(trackId, dotsId)` e `bindTrack(trackId, dotsId)`, generici, con
+  `_dotAt[trackId]` per **non riscrivere il DOM a ogni pixel di scroll**. `renderBcDots()`
+  e `bindBcTrack()` restano come alias per le statistiche.
+- Con meno di 2 schede visibili i pallini spariscono e `overflow-x` va a `hidden`.
+
+**«Rivivi»**: le due sezioni «Pagellone di giornata» e «Albo d'oro» (due intestazioni per
+un bottone ciascuna, ~200px) diventano **una sola fascia** `#homeRvWrap` con la pista
+`#homeRvGrid` + `#homeRvDots` e due riquadri `.rvtile` (blu il pagellone, `.gold` la
+stagione). Disegnati da `renderRecapButton()`; `renderSeasonRecapButton()` ora la richiama
+e si occupa solo della riga «Albo d'oro» in Impostazioni.
+Id rimossi: `homeRecapWrap`, `homeSeasonWrap`, `homeRecapBtn`, `homeSeasonBtn`,
+`homeSeasonTtl`, `homeSeasonSub`.
+
+### 43.7 Impostazioni riorganizzate
+
+Il livello intermedio **`page-admin`** («Area amministratore» → Partita / Lega) è
+**eliminato**: erano due tap per arrivare ovunque. Anche **`page-partita`** non esiste più.
+
+Menu (`#setMenu`) diviso in gruppi con intestazione `.setgrp`:
+
+```
+IL MIO ACCOUNT   Profilo · Notifiche
+LA LEGA          Regolamento · Albo d'oro (#alboRow, solo a stagione archiviata)
+GESTIONE         Centro giornata · Stagione · Regole della partita · Gestione lega
+                 (#admGrp + .navrow.adminRow, visibili se canOp())
+```
+
+- L'id singolo `adminRow` è sostituito dalla **classe** `.navrow.adminRow` (4 righe);
+  `applyProfile` cicla su `document.querySelectorAll('.navrow.adminRow')` e mostra `#admGrp`.
+- Sottotitoli **vivi**: `#admMdSub` = «Giornata 6 · Voti aperti», `#admSeaSub` =
+  «Stagione 1 · 5/38» oppure «Stagione 1 archiviata». Aggiornati in `renderMatchday()`.
+- `openAlboSheet()`: con più stagioni archiviate apre l'elenco nel foglio e riapre il
+  recap di **qualsiasi** annata; con una sola va dritto al recap.
+- Il piede del menu è ora `.setfoot` (logout + versione) con `margin-top:auto` **e**
+  `padding-top:26px`. Senza il padding, a menu pieno `margin-top:auto` collassa a zero e
+  «Esci» si incolla alla riga sopra.
+
+Nuove pagine (`.setpage`): **`page-giornata`**, **`page-stagione`**, **`page-regole`**.
+`page-lega` invariata nel contenuto, cambia solo il `subback` (→ `setMenu`) e il titolo
+(«Gestione lega»).
+
+**Vincolo confermato:** gli id che il JS usa per show/hide (`mdCard`, `presCard`,
+`seasonCard`, `gkCard`, `presModeCard`, `voterCard`, `inviteCard`, `manageCard`,
+`creditCard`) restano sull'elemento **esterno**, anche dopo lo spostamento fra pagine.
+`seasonCard` non è più un `.acc` ma un `.set-card` (contiene solo `#seasonBox`).
+`mdCard` non è più un `.acc` ma un `<div>` semplice.
+`maintCard` è referenziato in `applyProfile` ma **non esiste nel markup** da tempo: la
+riga è innocua (guardia `if(mtc)`).
+
+### 43.8 Centro giornata
+
+Il pezzo che risolve il «bordello»: prima tutti i tasti erano visibili insieme e capire
+quale servisse adesso era a carico dell'admin.
+
+- `mdcPhaseIdx()` → 0 Programmata · 1 Sondaggio presenze · 2 Formazioni · 3 Partita ·
+  4 Voti · 5 Conclusa (−1 = nessuna giornata). Stessa logica di `phaseLabel()`/`computeLock()`.
+- `mdcPhaseShort()` → etichetta breve per il sottotitolo nel menu.
+- `renderMdCenter()` disegna in `#mdcSteps` la **sequenza verticale** (`.mdc-step` con
+  `.dot`, stati `.done` / `.now`, filo di collegamento via `::before`). Il passo
+  «Sondaggio presenze» compare **solo** se quella giornata lo prevede
+  (`presenceSelf && t.presenceClose`).
+- In `#mdcPrimary` **una sola azione**, quella pertinente:
+  nessuna giornata → `openNowMatchday()` · presenze/formazioni → `openEditKickoffSheet()` ·
+  partita → `openLiveStats()` · voti → `closeMatchday()` (con `closeMdHintText()` sotto) ·
+  conclusa → `openRecap(md.id,false)`.
+- Tutto il resto (programmazione automatica `#mdOpenBox`, i vecchi `#mdActions` con
+  modifica orario / chiudi / **annulla giornata**) sta sotto l'accordion **«Azioni
+  avanzate»** (`#mdAdvCard`), chiuso. I tasti distruttivi non sono più a portata di pollice.
+- `renderMatchday()` chiama `renderMdCenter()` dopo `renderOpenMode()` e aggiorna i due
+  sottotitoli del menu.
+
+Modalità portiere e presenze sono passate in **Regole della partita**: sono configurazioni
+di lega, non operazioni di giornata, e stavano in mezzo ai comandi. Le tendine partono
+**chiuse** come ovunque nell'app.
+
+### 43.9 Ordine di esecuzione
+
+1. `stagioni_stato.sql` (Supabase SQL Editor)
+2. `index.html` (chiavi Supabase da re-incollare)
+3. `sw.js` (solo `SW_VERSION` bumpata)
+
+**Collaudo:** con una stagione archiviata e nessuna nuova, la Home deve dire «Stagione N
+conclusa» e la classifica deve mostrare i punti **veri** dell'ultima stagione giocata, non
+zeri. Aprire una stagione nuova non deve cambiare niente finché non si programma la prima
+giornata. Nel Centro giornata, a giornata conclusa, la sequenza è tutta spenta con
+l'ultimo passo acceso e «Vedi il pagellone» come azione.
+
+### 43.10 In sospeso
+
+- Multi-lega per `sondaggio.html` (aperto da tempo).
+- Split del sito: `/` landing pubblica + `/app/` gioco — vedi `PROSSIMI_PASSI.md`.
+  Quando si farà, in `notify.ts` vanno cambiati **tutti** gli `url` delle push
+  (`"/"` → `"/app/"`, `"/?srecap="` → `"/app/?srecap="`).
