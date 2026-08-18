@@ -90,7 +90,7 @@
   @keyframes spUp{0%{opacity:0;transform:translateY(18px)}100%{opacity:1;transform:none}}
   /* 4) l'immagine della squadra sale dal basso (stessa illustrazione della welcome) */
   .sp-hero{flex:1 1 auto;min-height:0;width:100%;position:relative;display:flex;align-items:center;justify-content:center;
-    padding:8px 22px 116px;opacity:0;
+    padding:8px 22px 138px;opacity:0;
     animation:spHero .95s cubic-bezier(.2,.8,.2,1) 1.5s both}
   .sp-hero::before{content:"";position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);width:100%;height:82%;
     background:radial-gradient(56% 60% at 50% 50%, rgba(63,151,255,.30), rgba(63,151,255,.10) 55%, transparent 72%);
@@ -100,8 +100,9 @@
   @keyframes spHero{0%{opacity:0;transform:translateY(30px) scale(.95)}100%{opacity:1;transform:none}}
   /* 5) la frase di caricamento e poi i puntini. La frase cambia a ogni avvio:
      riempie il vuoto in fondo e dà un motivo per guardare lo splash. */
-  .sp-tip{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(80px + env(safe-area-inset-bottom));
-    width:calc(100% - 52px);max-width:330px;text-align:center;font-size:13px;line-height:1.4;color:var(--muted);
+  .sp-tip{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));
+    width:calc(100% - 44px);max-width:348px;text-align:center;font-size:15.5px;line-height:1.45;font-weight:600;
+    letter-spacing:-.005em;color:#dce8fb;text-shadow:0 1px 12px rgba(4,12,26,.6);
     opacity:0;animation:spFadeIn .6s ease 1.72s both}
   .sp-load{display:flex;gap:7px;position:absolute;bottom:calc(40px + env(safe-area-inset-bottom));opacity:0;animation:spFadeIn .55s ease 1.62s both}
   @keyframes spFadeIn{to{opacity:1}}
@@ -696,6 +697,9 @@
   .navrow .go{color:var(--muted);font-size:22px;font-weight:400;flex:none}
   .navrow.gold{border-color:rgba(255,194,61,.3);background:linear-gradient(180deg,rgba(255,194,61,.07),var(--surface))}
   .navrow.gold .lab{color:var(--gold-soft)}
+  /* riga di spiegazione in cima a una pagina di impostazioni: dice a cosa serve
+     la pagina, cosi' l'elenco di righe sotto non ha bisogno di didascalie */
+  .setintro{color:var(--muted);font-size:12.5px;line-height:1.55;margin:2px 4px 2px}
   .subback{display:inline-flex;align-items:center;gap:3px;background:none;border:none;color:var(--accent-soft);font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;padding:8px 2px;margin-top:2px}
   .subback:active{opacity:.7}
   .setpage>.section-h{margin-top:6px}
@@ -1674,7 +1678,7 @@
     <div id="suAutoBox" style="display:none;margin-top:14px">
       <div class="field-lab">Giorno della partita</div>
       <div class="preschips" id="suDays" style="margin-bottom:12px"></div>
-      <div class="field-lab">Ora del fischio d'inizio</div>
+      <div class="field-lab">Ora abituale del fischio d'inizio</div>
       <input class="ob-input" type="time" id="suTime" value="20:00" oninput="setupRules.time=this.value" style="padding:11px;font-size:15px">
     </div>
     <p id="suErr" class="rule-err" style="display:none">⚠️ Scegli il <b>giorno</b> della partita e l'<b>ora</b> del fischio d'inizio per continuare.</p>
@@ -1889,9 +1893,10 @@
       <button class="navrow" id="alboRow" onclick="openAlboSheet()" style="display:none"><span class="ic">🏆</span><span class="lab">Albo d'oro<small id="alboSub">Le stagioni archiviate</small></span><span class="go">›</span></button>
       <div class="setgrp" id="admGrp" style="display:none">Gestione</div>
       <button class="navrow gold adminRow" onclick="setNav('page-giornata')" style="display:none"><span class="ic">⚽</span><span class="lab">Centro giornata<small id="admMdSub">—</small></span><span class="go">›</span></button>
-      <button class="navrow gold adminRow" onclick="setNav('page-stagione')" style="display:none"><span class="ic">📅</span><span class="lab">Stagione<small id="admSeaSub">—</small></span><span class="go">›</span></button>
-      <button class="navrow gold adminRow" onclick="setNav('page-regole')" style="display:none"><span class="ic">⚙️</span><span class="lab">Regole della partita<small>Portiere e presenze</small></span><span class="go">›</span></button>
-      <button class="navrow gold adminRow" onclick="setNav('page-lega')" style="display:none"><span class="ic">🏆</span><span class="lab">Gestione lega<small>Inviti, giocatori, vice</small></span><span class="go">›</span></button>
+      <button class="navrow gold ownerRow" onclick="setNav('page-stagione')" style="display:none"><span class="ic">📅</span><span class="lab">Stagione<small id="admSeaSub">—</small></span><span class="go">›</span></button>
+      <button class="navrow gold ownerRow" onclick="setNav('page-regole')" style="display:none"><span class="ic">⚙️</span><span class="lab">Regole della lega<small>Quando giocate, presenze, portiere, crediti</small></span><span class="go">›</span></button>
+      <button class="navrow gold adminRow" onclick="setNav('page-lega')" style="display:none"><span class="ic">🏆</span><span class="lab">Gestione lega<small>Inviti, giocatori, permessi</small></span><span class="go">›</span></button>
+      <button class="navrow gold ownerRow" onclick="setNav('page-manutenzione')" style="display:none"><span class="ic">🛠️</span><span class="lab">Manutenzione<small>Ricalcoli e app offline</small></span><span class="go">›</span></button>
       <div class="setfoot">
         <button class="logout" id="logoutBtn">Esci dall'account</button>
         <p style="text-align:center;color:var(--muted);font-size:11px;margin:14px 0 0;letter-spacing:.03em">FantaCalcetto · <span id="appVersion">—</span></p>
@@ -1964,7 +1969,6 @@
         <div class="acc gold" id="mdAdvCard">
           <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🛠️</span>Azioni avanzate</span><span class="acc-chev">▾</span></button>
           <div class="acc-body">
-            <div id="mdOpenBox"></div>
             <div id="mdActions"></div>
           </div>
         </div>
@@ -1985,71 +1989,156 @@
       <div class="set-card" id="seasonCard"><div id="seasonBox"></div></div>
     </div>
 
-    <!-- ===== REGOLE DELLA PARTITA ===== -->
+    <!-- ===== REGOLE DELLA LEGA (elenco) =====
+         Criterio: qui stanno gli INTERRUTTORI, cioè le regole permanenti che si
+         toccano due volte l'anno. Tutto quello che riguarda la giornata in corso
+         resta nel Centro giornata; tutto quello che riguarda delle PERSONE sta in
+         Gestione lega. Ogni voce è una riga con drill-in (niente fisarmoniche:
+         su iPhone costano un tap per aprire, uno scroll e uno per richiudere).
+         Gli id gkCard / presModeCard restano sull'elemento ESTERNO (la riga),
+         perché applyProfile() li usa per mostrarli al solo proprietario. -->
     <div class="setpage" id="page-regole">
       <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
-      <div class="section-h"><h2>Regole della partita</h2></div>
-      <div class="acc gold" id="gkCard" style="margin-top:12px">
-        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🧤</span>Modalità portiere</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body">
-          <div class="ed-sw" id="gkModeSw" style="margin:2px 0 8px">
-            <button class="styb" data-fixed="0" onclick="setGkMode(false)">🔄 Rotazione</button>
-            <button class="styb" data-fixed="1" onclick="setGkMode(true)">🧤 Fisso</button>
-          </div>
-          <p class="vs" id="gkModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">In porta può andare chiunque.</p>
+      <div class="section-h"><h2>Regole della lega</h2></div>
+      <p class="setintro">Si impostano una volta e valgono per tutte le giornate. Quello che riguarda la giornata in corso sta nel <b>Centro giornata</b>.</p>
+      <button class="navrow gold" id="schedCard" onclick="setNav('page-quando')"><span class="ic">🗓️</span><span class="lab">Quando giocate di solito<small id="schedSub">—</small></span><span class="go">›</span></button>
+      <button class="navrow gold" id="presModeCard" onclick="setNav('page-presenze')"><span class="ic">🙋</span><span class="lab">Presenze<small id="presModeSub">—</small></span><span class="go">›</span></button>
+      <button class="navrow gold" id="gkCard" onclick="setNav('page-portiere')"><span class="ic">🧤</span><span class="lab">Modalità portiere<small id="gkSub">—</small></span><span class="go">›</span></button>
+      <button class="navrow gold" id="creditRow" onclick="setNav('page-crediti')"><span class="ic">💰</span><span class="lab">Crediti dei giocatori<small id="creditSub">—</small></span><span class="go">›</span></button>
+    </div>
+
+    <!-- ===== REGOLA: QUANDO GIOCATE (era «Apertura automatica» dentro le Azioni
+         avanzate del Centro giornata: è una regola ricorrente, non un'azione della
+         giornata in corso). Il contenitore si chiama schedBox, non più mdOpenBox. -->
+    <div class="setpage" id="page-quando">
+      <button class="subback" onclick="setNav('page-regole')">‹ Regole della lega</button>
+      <div class="section-h"><h2>Quando giocate di solito</h2></div>
+      <p class="setintro">Giorno e ora abituali del match. Con l'apertura automatica la giornata parte da sola <b>72h prima</b> del fischio d'inizio: non devi fare niente.</p>
+      <div class="set-card"><div id="schedBox"></div></div>
+      <p class="setintro" style="margin-top:12px">Serve spostare <b>solo questa</b> giornata? Si fa dal Centro giornata, con «🕑 Modifica orario di questa giornata».</p>
+    </div>
+
+    <!-- ===== REGOLA: PRESENZE ===== -->
+    <div class="setpage" id="page-presenze">
+      <button class="subback" onclick="setNav('page-regole')">‹ Regole della lega</button>
+      <div class="section-h"><h2>Presenze</h2></div>
+      <p class="setintro">Chi segna i presenti di ogni giornata.</p>
+      <div class="set-card">
+        <div class="ed-sw" id="presModeSw" style="margin:2px 0 8px">
+          <button class="styb" data-self="0" onclick="setPresenceMode(false)">🙋 Admin</button>
+          <button class="styb" data-self="1" onclick="setPresenceMode(true)">👥 Giocatori</button>
         </div>
-      </div>
-      <div class="acc gold" id="presModeCard">
-        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🙋</span>Presenze</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body">
-          <div class="ed-sw" id="presModeSw" style="margin:2px 0 8px">
-            <button class="styb" data-self="0" onclick="setPresenceMode(false)">🙋 Admin</button>
-            <button class="styb" data-self="1" onclick="setPresenceMode(true)">👥 Giocatori</button>
-          </div>
-          <p class="vs" id="presModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">Sei tu a segnare chi c'è, dal Centro giornata.</p>
-        </div>
+        <p class="vs" id="presModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">Sei tu a segnare chi c'è, dal Centro giornata.</p>
       </div>
     </div>
 
-    <!-- ===== LEGA ===== -->
-    <div class="setpage" id="page-lega">
-      <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
-      <div class="section-h"><h2>Gestione lega</h2></div>
-      <div class="acc gold" id="inviteCard" style="margin-top:12px">
-        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">✉️</span>Invita nella lega</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body">
-          <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Condividi link e password con i tuoi amici.</p>
-          <div class="field-lab">Link d'invito</div>
-          <div style="display:flex;gap:8px;margin-bottom:10px"><input class="ob-input" id="invLink" readonly style="flex:1;margin:0;font-size:12px"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invLink')">Copia</button></div>
-          <div class="field-lab">Password</div>
-          <div style="display:flex;gap:8px"><input class="ob-input" id="invPwd" readonly style="flex:1;margin:0"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invPwd')">Copia</button></div>
+    <!-- ===== REGOLA: PORTIERE ===== -->
+    <div class="setpage" id="page-portiere">
+      <button class="subback" onclick="setNav('page-regole')">‹ Regole della lega</button>
+      <div class="section-h"><h2>Modalità portiere</h2></div>
+      <p class="setintro">Chi può occupare lo slot di portiere nelle formazioni.</p>
+      <div class="set-card">
+        <div class="ed-sw" id="gkModeSw" style="margin:2px 0 8px">
+          <button class="styb" data-fixed="0" onclick="setGkMode(false)">🔄 Rotazione</button>
+          <button class="styb" data-fixed="1" onclick="setGkMode(true)">🧤 Fisso</button>
         </div>
+        <p class="vs" id="gkModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">In porta può andare chiunque.</p>
       </div>
-      <div class="acc gold" id="manageCard" style="margin-top:12px">
-        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">👥</span>Gestione giocatori</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body">
-          <p class="vs" style="color:var(--muted);margin-bottom:6px;font-size:12.5px">Modifica, elimina o aggiungi giocatori.</p>
-          <div id="manageList"></div>
-          <button class="addbtn" onclick="openEditPlayer(null)">＋ Nuovo giocatore</button>
+    </div>
+
+    <!-- ===== REGOLA: CREDITI (interruttore rimasto orfano dalla sessione 31.5:
+         la scelta esisteva solo nel wizard di creazione lega, che compare una volta
+         sola e prometteva «potrai cambiare tutto dalle Impostazioni»). -->
+    <div class="setpage" id="page-crediti">
+      <button class="subback" onclick="setNav('page-regole')">‹ Regole della lega</button>
+      <div class="section-h"><h2>Crediti dei giocatori</h2></div>
+      <p class="setintro">Quanto costa ogni giocatore al mercato. Ogni squadra ha 100 crediti da spendere.</p>
+      <div class="set-card">
+        <div class="ed-sw" id="creditModeSw" style="margin:2px 0 8px">
+          <button class="styb" data-mode="manual" onclick="askCreditManual()">✏️ Manuale</button>
+          <button class="styb" data-mode="poll" onclick="askCreditPoll()">🗳️ Sondaggio</button>
         </div>
-      </div>
-      <div class="acc gold" id="viceCard" style="margin-top:12px;display:none">
-        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🛡️</span>Vice-admin</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body">
-          <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Scegli chi può gestire partite e giornate al posto tuo (aprire/chiudere, bonus/esito, presenze, reset). Non potrà cambiare le regole né la lega. Tocca un nome per nominarlo o rimuoverlo.</p>
-          <div id="viceList" class="preschips"></div>
-        </div>
-      </div>
-      <div class="acc gold" id="voterCard" style="margin-top:12px">
-        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🗳️</span>Voto ai soli-manager</span><span class="acc-chev">▾</span></button>
-        <div class="acc-body">
-          <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Permette di votare anche chi fa solo il manager.</p>
-          <div id="voterList" class="preschips"></div>
-        </div>
+        <p class="vs" id="creditModeHint" style="color:var(--muted);font-size:12px;line-height:1.5"></p>
       </div>
       <div class="set-card" id="creditCard" style="margin-top:12px;display:none">
         <h3>💰 Sondaggio valori <span class="lockpill" style="color:var(--accent-soft)">admin</span></h3>
         <div id="creditPollBox"></div>
+      </div>
+      <div id="creditReopen"></div>
+    </div>
+
+    <!-- ===== GESTIONE LEGA (elenco) =====
+         Qui stanno le PERSONE: chi entra, chi è in rosa, chi può fare cosa.
+         Se una voce chiede di scegliere delle persone sta qui; se è un
+         interruttore sta in Regole della lega. Il «Sondaggio valori» è andato
+         via di qui: era una regola, ora vive in Regole → Crediti dei giocatori. -->
+    <div class="setpage" id="page-lega">
+      <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
+      <div class="section-h"><h2>Gestione lega</h2></div>
+      <p class="setintro">Le persone della lega. Le regole del gioco stanno in <b>Regole della lega</b>.</p>
+      <button class="navrow gold" id="inviteCard" onclick="setNav('page-invita')"><span class="ic">✉️</span><span class="lab">Invita nella lega<small>Link d'invito e password</small></span><span class="go">›</span></button>
+      <button class="navrow gold" id="manageCard" onclick="setNav('page-giocatori')"><span class="ic">👥</span><span class="lab">Giocatori<small id="manageSub">—</small></span><span class="go">›</span></button>
+      <button class="navrow gold" id="viceCard" onclick="setNav('page-vice')" style="display:none"><span class="ic">🛡️</span><span class="lab">Vice-admin<small>Chi gestisce le giornate al posto tuo</small></span><span class="go">›</span></button>
+      <button class="navrow gold" id="voterCard" onclick="setNav('page-votanti')"><span class="ic">🗳️</span><span class="lab">Chi può votare<small>Abilita anche i soli-manager</small></span><span class="go">›</span></button>
+    </div>
+
+    <!-- ===== LEGA: INVITA ===== -->
+    <div class="setpage" id="page-invita">
+      <button class="subback" onclick="setNav('page-lega')">‹ Gestione lega</button>
+      <div class="section-h"><h2>Invita nella lega</h2></div>
+      <p class="setintro">Condividi link e password con i tuoi amici: con questi due entrano da soli.</p>
+      <div class="set-card">
+        <div class="field-lab">Link d'invito</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px"><input class="ob-input" id="invLink" readonly style="flex:1;margin:0;font-size:12px"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invLink')">Copia</button></div>
+        <div class="field-lab">Password</div>
+        <div style="display:flex;gap:8px"><input class="ob-input" id="invPwd" readonly style="flex:1;margin:0"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invPwd')">Copia</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LEGA: GIOCATORI ===== -->
+    <div class="setpage" id="page-giocatori">
+      <button class="subback" onclick="setNav('page-lega')">‹ Gestione lega</button>
+      <div class="section-h"><h2>Giocatori</h2></div>
+      <p class="setintro">Il listone della lega: modifica, elimina o aggiungi giocatori. I <b>crediti</b> di un giocatore si cambiano dalla sua ✏️.</p>
+      <div class="set-card">
+        <div id="manageList"></div>
+        <button class="addbtn" onclick="openEditPlayer(null)">＋ Nuovo giocatore</button>
+      </div>
+    </div>
+
+    <!-- ===== LEGA: VICE-ADMIN ===== -->
+    <div class="setpage" id="page-vice">
+      <button class="subback" onclick="setNav('page-lega')">‹ Gestione lega</button>
+      <div class="section-h"><h2>Vice-admin</h2></div>
+      <p class="setintro">Chi può gestire partite e giornate al posto tuo: aprire e chiudere, bonus ed esito, presenze, reset. Non potrà cambiare le regole né la lega. Tocca un nome per nominarlo o rimuoverlo.</p>
+      <div class="set-card"><div id="viceList" class="preschips"></div></div>
+    </div>
+
+    <!-- ===== LEGA: CHI PUÒ VOTARE ===== -->
+    <div class="setpage" id="page-votanti">
+      <button class="subback" onclick="setNav('page-lega')">‹ Gestione lega</button>
+      <div class="section-h"><h2>Chi può votare</h2></div>
+      <p class="setintro">Di norma votano i giocatori scesi in campo. Da qui abiliti al voto anche chi fa <b>solo il manager</b>. Tocca un nome per abilitarlo o toglierlo.</p>
+      <div class="set-card"><div id="voterList" class="preschips"></div></div>
+    </div>
+
+    <!-- ===== MANUTENZIONE =====
+         Ricalcoli e diagnostica non sono gestione: si usano una volta ogni tanto
+         e stavano appesi in fondo alla pagina Stagione, che già faceva troppi
+         mestieri. Qui dentro torna anche l'interruttore «app offline», rimasto
+         senza pulsante (setMaintenance esisteva ma non la chiamava nessuno). -->
+    <div class="setpage" id="page-manutenzione">
+      <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
+      <div class="section-h"><h2>Manutenzione</h2></div>
+      <p class="setintro">Roba che serve di rado. In condizioni normali qui non devi entrare.</p>
+      <div class="set-card" id="maintCard">
+        <h3>App offline</h3>
+        <p class="vs" style="color:var(--muted);font-size:12px;line-height:1.5;margin:6px 0 10px">Chiude l'app a tutti tranne che a te: utile mentre carichi una versione nuova o sistemi i dati.</p>
+        <button class="set-btn" id="maintBtn" onclick="toggleMaintenance()">🛠️ Metti in manutenzione</button>
+      </div>
+      <div class="set-card" style="margin-top:12px">
+        <h3>Recap di stagione</h3>
+        <div id="maintRecapBox"></div>
       </div>
     </div>
 
@@ -2187,7 +2276,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v9';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v10';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -2618,17 +2707,28 @@ function renderSeasonAdmin(){
         <p class="vs" style="${_mut}">Classifica e statistiche di stagione ripartono da zero con la prima giornata. Traguardi, gol in carriera e albo d'oro restano.</p>`;
     }
   }
-  if(!lastClosedSeason && brk){
-    // stagione risulta chiusa ma get_last_closed_season() non la vede: senza questa riga
-    // l'unico sintomo era "il recap non si apre", senza capire da che lato stesse il problema.
-    html+=`<p class="vs" style="color:var(--red);font-size:12px;margin-top:14px;line-height:1.5">⚠️ Nessuna stagione archiviata rilevata: il recap non può comparire. Verifica che <b>stagione_recap.sql</b> sia stato eseguito.</p>`;
-  }
+  // Ricalcolo del recap e avviso diagnostico stavano qui sotto: sono MANUTENZIONE,
+  // non gestione della stagione. Sono passati in Impostazioni → Manutenzione.
   if(lastClosedSeason){
-    html+=`<button class="save" style="margin-top:14px" onclick="openSeasonRecapLatest()">🏆 Apri il recap della Stagione ${lastClosedSeason.number}</button>`
-      +`<button class="logout" style="margin-top:10px" onclick="rebuildSeasonRecap()">🔄 Ricalcola il recap della Stagione ${lastClosedSeason.number}</button>
-      <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">Il recap si congela alla chiusura. Se correggi voti o bonus a stagione finita, ricalcolalo da qui.</p>`;
+    html+=`<button class="save" style="margin-top:14px" onclick="openSeasonRecapLatest()">🏆 Apri il recap della Stagione ${lastClosedSeason.number}</button>`;
   }
   box.innerHTML=html;
+  renderMaintBox();
+}
+/* Pagina Manutenzione: ricalcolo del recap + diagnostica, cioè le due cose che
+   appesantivano la pagina Stagione senza servire quasi mai. */
+function renderMaintBox(){
+  const box=document.getElementById('maintRecapBox'); if(!box) return;
+  if(!(profile&&profile.is_admin)){ box.innerHTML=''; return; }
+  if(lastClosedSeason){
+    box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12.5px;margin:6px 0 10px">Ultima archiviata: <b style="color:var(--gold-soft)">Stagione ${lastClosedSeason.number}</b></p>
+      <button class="logout" style="margin-top:0" onclick="rebuildSeasonRecap()">🔄 Ricalcola il recap della Stagione ${lastClosedSeason.number}</button>
+      <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">Il recap si congela alla chiusura. Se correggi voti o bonus a stagione finita, ricalcolalo da qui.</p>`;
+  } else if(seasonBreak()){
+    box.innerHTML=`<p class="vs" style="color:var(--red);font-size:12px;margin-top:6px;line-height:1.5">⚠️ La stagione risulta chiusa ma nessuna stagione archiviata viene rilevata: il recap non può comparire. Verifica che <b>stagione_recap.sql</b> sia stato eseguito.</p>`;
+  } else {
+    box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12.5px;margin-top:6px">Nessuna stagione archiviata: non c'è ancora niente da ricalcolare.</p>`;
+  }
 }
 async function rebuildSeasonRecap(){
   if(!lastClosedSeason) return;
@@ -2919,7 +3019,7 @@ async function loadInvite(){
   try{
     const {data}=await sb.rpc('get_league_admin_info');
     if(data&&data[0]){
-      card.style.display='block';
+      card.style.display='';
       document.getElementById('invLink').value=location.origin+location.pathname+'?lega='+data[0].slug;
       document.getElementById('invPwd').value=data[0].password;
     } else card.style.display='none';
@@ -2970,6 +3070,10 @@ function renderMaintBtn(){
   const b=document.getElementById('maintBtn'); if(!b) return;
   b.textContent=maintOn?'🟢 Torna live':'🛠️ Metti in manutenzione';
   b.className='set-btn'+(maintOn?' danger':'');
+}
+function toggleMaintenance(){
+  if(!maintOn && !confirm('Mettere l\'app in manutenzione?\n\nGli altri membri della lega vedranno la schermata \u00abManutenzione in corso\u00bb finch\u00e9 non torni live. Tu continui a vedere tutto.')) return;
+  setMaintenance(!maintOn);
 }
 let gateEmailVal='';
 async function sendCode(){
@@ -3338,7 +3442,8 @@ async function loadCreditConfig(){
     }
   }catch(_){}
   renderHomeValuePoll();
-  if(profile&&profile.is_admin) renderCreditAdmin();
+  if(profile&&profile.is_admin){ renderCreditAdmin(); renderCreditRule(); }
+  renderRuleRows();
 }
 
 function renderHomeValuePoll(){
@@ -3422,6 +3527,37 @@ async function setCreditMode(mode){
   await loadCreditConfig();
   toast(mode==='poll'?'Sondaggio aperto':'Metodo manuale');
 }
+/* Metodo dei crediti: l'interruttore esisteva SOLO nel wizard di creazione lega
+   (che compare una volta sola), quindi da Stagione 2 in poi non c'era più modo
+   di rifare i valori. set_credit_mode('poll') riapre value_poll_open lato SQL:
+   è anche il «Riapri il sondaggio». La verifica dopo la chiamata serve a non
+   raccontare bugie se un domani l'RPC cambiasse comportamento. */
+function renderCreditRule(){
+  const sw=document.getElementById('creditModeSw');
+  if(sw) sw.querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.mode===creditMode));
+  const h=document.getElementById('creditModeHint');
+  if(h) h.textContent = creditMode!=='poll'
+    ? 'I crediti li scrivi tu: Gestione lega \u2192 Giocatori \u2192 \u270f\ufe0f su un giocatore.'
+    : (valuePollOpen
+      ? 'Sondaggio aperto: i membri votano dalla Home. I crediti cambiano solo quando premi \u00abChiudi e calcola\u00bb.'
+      : 'Sondaggio chiuso: i crediti attuali vengono dai voti. Riaprilo per rifarli \u2014 serve a inizio stagione, quando i valori dell\'anno prima non dicono pi\u00f9 niente.');
+  const box=document.getElementById('creditReopen');
+  if(box) box.innerHTML = (creditMode==='poll' && !valuePollOpen)
+    ? `<button class="set-btn" style="margin-top:12px" onclick="askCreditPoll()">\ud83d\udd01 Riapri il sondaggio</button>`
+      +`<p class="vs" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">I membri rivotano dalla Home; chi non rivota tiene il voto della volta scorsa. I crediti restano quelli attuali finch\u00e9 non premi \u00abChiudi e calcola i crediti\u00bb.</p>`
+    : '';
+}
+async function askCreditPoll(){
+  if(creditMode==='poll' && valuePollOpen){ toast('Il sondaggio \u00e8 gi\u00e0 aperto'); return; }
+  if(!confirm('Aprire il sondaggio valori?\n\nOgni membro vota gli altri giocatori da 1 a 10 dalla Home.\nI crediti restano quelli attuali finch\u00e9 non premi \u00abChiudi e calcola i crediti\u00bb.')) return;
+  await setCreditMode('poll');
+  if(!valuePollOpen) toast('Metodo impostato, ma il sondaggio non risulta aperto');
+}
+async function askCreditManual(){
+  if(creditMode==='manual' && !valuePollOpen) return;
+  if(valuePollOpen && !confirm('Passare ai crediti manuali?\n\nIl sondaggio aperto viene chiuso senza calcolare niente: i crediti restano quelli di adesso e li modifichi a mano dalla scheda di ogni giocatore.')) return;
+  await setCreditMode('manual');
+}
 async function closeAndApplyPoll(){
   if(!confirm('Chiudere il sondaggio e calcolare i crediti di tutti i giocatori? I crediti attuali verranno sovrascritti (potrai poi modificarli a mano).')) return;
   try{ await sb.rpc('close_value_poll_and_apply'); }
@@ -3447,8 +3583,11 @@ function schedHintText(){
   const open=new Date(k.getTime()-72*HOUR);
   return `Si aprirà da sola: ${fmtDayTime(open)} (72h prima del fischio d'inizio di ${fmtDayTime(k)}).`;
 }
+/* «Quando giocate di solito» — vive in Impostazioni → Regole della lega →
+   page-quando. Era dentro le «Azioni avanzate» del Centro giornata, cioè nella
+   schermata della giornata IN CORSO, mentre è una regola permanente della lega. */
 function renderOpenMode(){
-  const box=document.getElementById('mdOpenBox'); if(!box) return;
+  const box=document.getElementById('schedBox'); if(!box) return;
   const on=!!schedDraft.auto_open;
   let html=`<div class="ed-lab" style="margin-bottom:9px">🤖 Apertura automatica</div>
     <div class="ed-sw" style="margin-bottom:12px">
@@ -3459,20 +3598,37 @@ function renderOpenMode(){
     const when = schedDraft.weekday!=null ? ` (${WD_LABELS[schedDraft.weekday]} ${schedDraft.time||''})` : '';
     html+=`<p class="vs" style="color:var(--muted);font-size:12.5px;margin:0 0 4px;line-height:1.5">Apertura automatica <b style="color:var(--gold-soft)">in pausa</b>: nessuna giornata parte finché non riattivi.${when}</p>`;
     if(currentMd && currentMd.status!=='closed'){
-      html+=`<p class="vs" style="color:#ff9a9a;font-size:12px;margin:9px 0 0;line-height:1.5">⚠️ «${currentMd.label}» è ancora aperta: puoi annullarla o chiuderla qui sotto.</p>`;
+      html+=`<p class="vs" style="color:#ff9a9a;font-size:12px;margin:9px 0 0;line-height:1.5">⚠️ «${currentMd.label}» è ancora aperta: puoi chiuderla o annullarla dal <b>Centro giornata</b>.</p>`;
     }
-    box.innerHTML=html; return;
+    box.innerHTML=html; renderRuleRows(); return;
   }
   html+=`<p class="vs" style="color:var(--muted);font-size:12px;margin:0 0 12px;line-height:1.5">Giorno e ora del match. La giornata si apre da sola <b>72h prima</b>.</p>
     <div class="field-lab">Giorno della partita</div>
     <div class="preschips" style="margin-bottom:12px">`+
     WD_ORDER.map(d=>`<div class="preschip ${schedDraft.weekday===d?'on':''}" onclick="pickSchedDay(${d})">${WD_LABELS[d]}</div>`).join('')+
     `</div>
-    <div class="field-lab">Ora del fischio d'inizio</div>
+    <div class="field-lab">Ora abituale del fischio d'inizio</div>
     <input class="ob-input" type="time" id="schedTime" value="${schedDraft.time||'20:00'}" oninput="schedDraft.time=this.value;refreshSchedHint()" style="padding:12px;font-size:15px;margin-bottom:10px">
     <button class="save" onclick="saveSchedule()">Salva programmazione</button>
     <p class="vs" id="schedHint" style="color:var(--accent-soft);font-size:12px;margin-top:9px;line-height:1.5">${schedHintText()}</p>`;
   box.innerHTML=html;
+  renderRuleRows();
+}
+/* Le righe di «Regole della lega» e «Gestione lega» dicono già com'è impostata
+   la regola: senza questo bisognerebbe entrare in ognuna per sapere lo stato.
+   Unico punto che scrive i sottotitoli — chiamato da chi cambia lo stato. */
+function renderRuleRows(){
+  const set=(id,tx)=>{const e=document.getElementById(id); if(e)e.textContent=tx;};
+  const wd=schedDraft.weekday, tm=schedDraft.time||'20:00';
+  set('schedSub', schedDraft.auto_open
+    ? (wd!=null ? 'Ogni '+WD_LABELS[wd]+' alle '+tm+' \u00b7 apertura automatica' : 'Automatica \u00b7 manca giorno e ora')
+    : (wd!=null ? 'In pausa \u00b7 '+WD_LABELS[wd]+' '+tm : 'Non programmato'));
+  set('presModeSub', presenceSelf?'Le segnano i giocatori':'Le segni tu');
+  set('gkSub', gkFixed?'In porta solo chi ha ruolo Portiere':'In porta pu\u00f2 andare chiunque');
+  set('creditSub', creditMode==='poll'
+    ? (valuePollOpen?'Sondaggio aperto':'Calcolati dal sondaggio')
+    : 'Li imposti tu a mano');
+  set('manageSub', players.length ? (players.length+(players.length===1?' giocatore in rosa':' giocatori in rosa')) : 'Nessun giocatore');
 }
 function refreshSchedHint(){const h=document.getElementById('schedHint'); if(h)h.textContent=schedHintText(); refreshOpenNowHint();}
 function pickSchedDay(d){schedDraft.weekday=d; renderOpenMode(); refreshOpenNowHint();}
@@ -3535,6 +3691,7 @@ function renderGkMode(){
   if(h) h.textContent = gkFixed
     ? 'In porta solo chi ha ruolo Portiere (POR).'
     : 'In porta può andare chiunque.';
+  renderRuleRows();
 }
 async function setGkMode(fixed){
   const {error}=await sb.rpc('set_gk_mode',{p_fixed:!!fixed});
@@ -3555,9 +3712,10 @@ function renderPresenceMode(){
     sw.querySelectorAll('button').forEach(b=>b.classList.toggle('on',(b.dataset.self==='1')===presenceSelf));
     const h=document.getElementById('presModeHint');
     if(h) h.textContent=presenceSelf
-      ? 'I giocatori si segnano da soli dalla Home. Puoi correggere qui sotto.'
-      : 'Segni tu chi c\'è, qui sotto.';
+      ? 'I giocatori si segnano da soli dalla Home. Puoi correggerli dal Centro giornata.'
+      : 'Segni tu chi c\'è, dal Centro giornata.';
   }
+  renderRuleRows();
   renderPresence();
   renderHomePresence();
 }
@@ -3802,7 +3960,7 @@ async function resetMatchday(){
 function openEditKickoffSheet(){
   if(!currentMd){toast('Nessuna giornata aperta');return;}
   if(currentMd.status==='closed'){toast('Giornata conclusa');return;}
-  document.getElementById('sheetTitle').textContent='Modifica orario partita';
+  document.getElementById('sheetTitle').textContent='Modifica orario di questa giornata';
   document.getElementById('sheetHint').textContent='Sposta data/ora del match: presenze, formazioni e voti si ricalcolano da qui. Meglio farlo almeno 36h prima del via, così resta tempo per il sondaggio presenze.';
   const cur=currentMd.kickoff?toLocalInput(new Date(currentMd.kickoff)):defaultKickoff();
   document.getElementById('sheetList').innerHTML=`
@@ -3917,9 +4075,9 @@ function renderMatchday(){
     mc.style.display=(canOp())?'block':'none';
     const ml=document.getElementById('mdLabel'); if(ml)ml.textContent=currentMd?currentMd.label:'Nessuna giornata aperta';
     const mp=document.getElementById('mdPhase'); if(mp)mp.textContent=phaseLabel();
-    renderOpenMode();
     renderMdCenter();
   }
+  renderOpenMode();   // vive in un'altra pagina: non dipende più da #mdCard
   const g=document.getElementById('admMdSub'); if(g) g.textContent=currentMd?(currentMd.label+' \u00b7 '+mdPhaseShort()):'Nessuna giornata aperta';
   const q=document.getElementById('admSeaSub');
   if(q) q.textContent = seasonBreak()
@@ -3936,7 +4094,7 @@ function renderMatchday(){
    stessa schermata, una volta come primaria e una dentro la fisarmonica. */
 const MD_ACTIONS={
   open:   {cls:'save',    ic:'\u26a1', lab:'Apri subito la giornata',  fn:'openNowMatchday()'},
-  kick:   {cls:'set-btn', ic:'\ud83d\udd51', lab:'Modifica orario partita', fn:'openEditKickoffSheet()'},
+  kick:   {cls:'set-btn', ic:'\ud83d\udd51', lab:'Modifica orario di questa giornata', fn:'openEditKickoffSheet()'},
   panel:  {cls:'save',    ic:'\ud83d\udcca', lab:'Apri pannello partita',   fn:'openLiveStats()'},
   close:  {cls:'save',    ic:'\ud83c\udfc1', lab:'Chiudi la giornata adesso', fn:'closeMatchday()'},
   recap:  {cls:'set-btn', ic:'\ud83d\udcca', lab:'Vedi il pagellone',      fn:'openRecapCurrent()'}
@@ -3975,7 +4133,8 @@ function renderMdCenter(){
   // l'azione del momento, da sola, con la sua spiegazione
   const key=mdcPrimaryKey();
   let h=mdActionHTML(key,14);
-  if(key==='open')  h+=`<p class="vs" id="openNowHint" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${openNowHintText()}</p>`;
+  if(key==='open')  h+=`<p class="vs" id="openNowHint" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${openNowHintText()}</p>`
+    +`<button class="set-btn" style="margin-top:10px" onclick="setNav('page-quando')">\ud83d\uddd3\ufe0f Quando giocate di solito</button>`;
   if(key==='close') h+=`<p class="vs" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${closeMdHintText()}</p>`;
   pr.innerHTML=h;
   renderMdActions(key);
@@ -4128,15 +4287,19 @@ function applyProfile(){
   document.getElementById('heroTeam').innerHTML=teamLogoHTML(user.id,18)+`<span class="tnm">${esc(profile.team_name)}</span>`;
   renderCampoTeam();
   document.getElementById('adminCard').style.display=canOp()?'block':'none';               // Bonus/Malus (operatore)
-  document.getElementById('manageCard').style.display=profile.is_admin?'block':'none';       // listone (solo proprietario)
+  const mgc=document.getElementById('manageCard'); if(mgc)mgc.style.display=profile.is_admin?'':'none';       // listone (solo proprietario)
   const pc=document.getElementById('presCard'); if(pc)pc.style.display=(canOp()&&!presenceSelf)?'block':'none';
-  const vtc=document.getElementById('voterCard'); if(vtc)vtc.style.display=canOp()?'block':'none';
-  const mtc=document.getElementById('maintCard'); if(mtc)mtc.style.display=profile.is_admin?'block':'none';   // manutenzione (solo proprietario)
-  const vcc=document.getElementById('viceCard'); if(vcc)vcc.style.display=profile.is_admin?'block':'none';     // gestione vice (solo proprietario)
+  const vtc=document.getElementById('voterCard'); if(vtc)vtc.style.display=canOp()?'':'none';
+  const mtc=document.getElementById('maintCard'); if(mtc)mtc.style.display=profile.is_admin?'':'none';   // manutenzione (solo proprietario)
+  const vcc=document.getElementById('viceCard'); if(vcc)vcc.style.display=profile.is_admin?'':'none';     // gestione vice (solo proprietario)
   const _adm=canOp();
   document.querySelectorAll('.navrow.adminRow').forEach(r=>{ r.style.display=_adm?'flex':'none'; });
+  // ownerRow: pagine che il vice non deve nemmeno vedere (regole, stagione, manutenzione).
+  // Prima erano adminRow come le altre: il vice apriva «Regole» e trovava una pagina vuota.
+  document.querySelectorAll('.navrow.ownerRow').forEach(r=>{ r.style.display=profile.is_admin?'flex':'none'; });
   const agrp=document.getElementById('admGrp'); if(agrp)agrp.style.display=_adm?'block':'none';
-  ['gkCard','presModeCard','seasonCard'].forEach(id=>{const e=document.getElementById(id); if(e)e.style.display=profile.is_admin?'block':'none';});   // regole: solo proprietario
+  ['gkCard','presModeCard','schedCard','creditRow','seasonCard'].forEach(id=>{const e=document.getElementById(id); if(e)e.style.display=profile.is_admin?'':'none';});   // regole: solo proprietario
+  renderRuleRows();
 }
 function renderAll(){renderHero();renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderSeasonRecapButton();renderHomeBcards();renderCampoTeam();}
 /* striscia squadra (logo + nome) sopra il campo verde */
@@ -5374,7 +5537,7 @@ function openSettings(){
   renderAvCur(); collapseDisc('av'); collapseDisc('logo');
   if(canOp()){ renderVoters(); loadInvite(); }
   if(profile.is_admin){ renderManage(); loadSchedule(); loadCreditConfig(); renderVices(); }
-  renderNotifBtn(); renderMaintBtn();
+  renderNotifBtn(); renderMaintBtn(); renderMaintBox(); renderRuleRows();
 }
 function renderSetLogo(){
   const grid=document.getElementById('setLogoGrid');
@@ -5426,6 +5589,7 @@ function renderManage(){
       <div class="mbtn" onclick="openEditPlayer(${p.id})">✏️</div>
       <div class="mbtn del" onclick="deletePlayer(${p.id})">🗑</div>
     </div>`).join('') || '<div class="empty-note" style="padding:14px">Nessun giocatore.</div>';
+  renderRuleRows();
 }
 async function toggleInjured(id){
   const p=players.find(x=>x.id===id); if(!p)return;
