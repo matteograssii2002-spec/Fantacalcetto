@@ -206,7 +206,11 @@
   .ob-preview{display:grid;place-items:center;background:linear-gradient(160deg,#10294d,#0a1830);border:1px solid var(--line-strong);border-radius:20px;padding:14px;margin-bottom:14px;min-height:120px}
   .ob-btn{width:100%;margin-top:16px;background:linear-gradient(135deg,var(--accent),#1c6ff2);color:#fff;font-weight:700;font-size:16px;border:none;padding:17px;border-radius:15px;cursor:pointer;box-shadow:0 14px 32px -10px rgba(63,151,255,.6);transition:transform .15s}
   .ob-btn:active{transform:scale(.98)}
-  .gate-status{margin-top:14px;font-size:13.5px;color:var(--accent-soft);line-height:1.5;min-height:20px}
+  .gate-status{margin-top:14px;font-size:13.5px;color:var(--accent-soft);line-height:1.5;min-height:20px;transition:color .2s}
+  /* errori: rossi, in grassetto e dentro un riquadro, perché un avviso che non si
+     vede è come non averlo scritto. Il riquadro compare solo se c'è del testo. */
+  .gate-status.bad{color:var(--red);font-weight:700}
+  .gate-status.bad:not(:empty){background:rgba(255,93,107,.10);border:1px solid rgba(255,93,107,.38);border-radius:13px;padding:12px 14px;margin-top:16px}
   .gate-spacer{flex:1}
   .field-lab{font-size:12px;color:var(--muted);font-weight:600;margin:4px 2px 7px;text-transform:uppercase;letter-spacing:.06em}
   .ob-input{width:100%;background:var(--surface);border:1.5px solid var(--line-strong);border-radius:15px;padding:16px 18px;color:var(--text);font-family:'Hanken Grotesk';font-size:17px;font-weight:600;outline:none;transition:border-color .2s}
@@ -1619,7 +1623,7 @@
     <!-- PASSO 2 · codice via email (registrazione, recupero, porta di servizio) -->
     <div id="gateStepCode" style="display:none">
       <div class="field-lab" style="margin-top:18px">Codice ricevuto via email</div>
-      <input class="ob-input" id="gateCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="12345678" maxlength="8" style="letter-spacing:6px;text-align:center;font-size:22px">
+      <input class="ob-input" id="gateCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" maxlength="6" style="letter-spacing:8px;text-align:center;font-size:24px">
       <button class="ob-btn" id="gateVerify">Entra →</button>
       <div style="text-align:center;margin-top:12px"><a id="gateResend" style="color:var(--accent-soft);font-size:13px;cursor:pointer">Rinvia il codice</a></div>
     </div>
@@ -2531,7 +2535,11 @@ function logoImg(name,px){
 }
 function teamLogoName(managerId){ return teamLogoBy[managerId]||''; }
 function teamLogoHTML(managerId,px){ return logoImg(teamLogoName(managerId),px); }
-function gateStatus(msg){document.getElementById('gateStatus').textContent=msg;}
+function gateStatus(msg,bad){
+  const e=document.getElementById('gateStatus'); if(!e) return;
+  e.textContent=msg||'';
+  e.classList.toggle('bad', !!bad && !!msg);
+}
 
 /* ---------- SPLASH (logo durante il caricamento) ---------- */
 let _splashGone=false;
@@ -2646,6 +2654,14 @@ async function boot(){
     gateStatus('⚠️ Apri il file e incolla Project URL e anon key nelle prime righe dello script.');
     document.getElementById('gateBtn').disabled=true; return;
   }
+  /* LINK di recupero: Supabase riporta qui con un token in coda all'indirizzo e apre
+     la sessione da solo. Va riconosciuto PRIMA di creare il client, altrimenti il
+     listener fa in tempo a portarci dentro l'app. */
+  try{
+    const _h=new URLSearchParams(String(location.hash||'').replace(/^#/,''));
+    const _q=new URLSearchParams(location.search);
+    if(_h.get('type')==='recovery'||_q.get('type')==='recovery'){ _recoveryLink=true; _gateAwaitNewPw=true; }
+  }catch(_){ }
   sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
   if('serviceWorker' in navigator){ try{
     await navigator.serviceWorker.register('sw.js');
@@ -2657,12 +2673,20 @@ async function boot(){
   }catch(_){} }
   // durante il recupero password la verifica del codice apre già una sessione: se lasciassi
   // passare questo listener l'app entrerebbe PRIMA che la nuova password sia stata salvata.
-  sb.auth.onAuthStateChange((_e,session)=>{ if(_gateAwaitNewPw) return; if(session&&(!user||user.id!==session.user.id)){ user=session.user; afterLogin(); } });
+  sb.auth.onAuthStateChange((_e,session)=>{
+    // Supabase avvisa quando la sessione nasce da un link di recupero: è la rete
+    // più affidabile, perché con alcuni tipi di link il token non si vede nell'indirizzo.
+    if(_e==='PASSWORD_RECOVERY'){ gateEnterRecovery(session&&session.user?session.user.email:''); return; }
+    if(_gateAwaitNewPw) return;
+    if(session&&(!user||user.id!==session.user.id)){ user=session.user; afterLogin(); }
+  });
   // se parto senza rete non ha senso proseguire: mostro subito la schermata offline
   if(navigator.onLine===false){ showOffline(); return; }
   let session=null;
   try{ const r=await sb.auth.getSession(); session=r&&r.data?r.data.session:null; }
   catch(_){ if(!await netAlive()){ showOffline(); return; } }
+  // sessione aperta dal link di recupero: prima la nuova password, poi si entra
+  if(session&&_recoveryLink){ gateEnterRecovery(session.user?session.user.email:''); return; }
   if(session){ user=session.user; afterLogin(); }
   else {
     // LINK D'INVITO (?lega=slug): salto la welcome e vado dritto al login,
@@ -3212,11 +3236,12 @@ function toggleMaintenance(){
    REGOLA DI FONDO: nessun LINK in nessuna email. Registrazione e recupero
    passano dal codice ({{ .Token }}), perch\u00e9 i link si rompono nella PWA in
    standalone su iOS \u2014 \u00e8 lo stesso motivo per cui il magic-link fu abbandonato.
-   Quattro schermate, tutte dentro #gate: login | signup | reset | otp.        */
+   Tre schermate, tutte dentro #gate: login | signup | reset.                   */
 let gateEmailVal='';
-let gateMode='login';       // login | signup | reset | otp
+let gateMode='login';       // login | signup | reset
 let gateStage='form';       // form | code | newpw
 let _gateAwaitNewPw=false;  // recupero in corso: non entrare finch\u00e9 la password non \u00e8 salvata
+let _recoveryLink=false;    // siamo arrivati qui dal link di recupero dentro l'email
 
 const GATE_TXT={
   login :{eye:'Accedi',     h1:'Bentornato',            desc:'Entra con la tua email e la tua password.',                                   btn:'Entra \u2192',              ac:'current-password', ph:'La tua password'},
@@ -3311,6 +3336,27 @@ function gateShowCode(msg){
   gateLinks();
   setTimeout(()=>{ const c=document.getElementById('gateCode'); if(c){ try{c.focus();}catch(_){ } } },200);
 }
+/* Chi arriva dal LINK dell'email ha già una sessione aperta: senza questa funzione
+   si ritroverebbe dentro l'app, con la vecchia password ancora buona e nessuna
+   schermata per cambiarla. Qui lo dirotto sul passo «nuova password» e ripulisco
+   l'indirizzo, così un aggiornamento della pagina non rimette in moto tutto. */
+function gateEnterRecovery(email){
+  _recoveryLink=false; _gateAwaitNewPw=true;
+  try{ hideSplash(); }catch(_){ }
+  ['welcome','league','onboard','pwsetup'].forEach(id=>{ const e=document.getElementById(id); if(e) e.classList.add('hidden'); });
+  const g=document.getElementById('gate'); if(g){ g.classList.remove('hidden'); g.scrollTop=0; }
+  const ctx=document.getElementById('gateContext'); if(ctx){ ctx.className='ctx-box'; ctx.innerHTML=''; }
+  gateSet('reset');
+  if(email) gateEmailVal=email;
+  gateShowNewPw();
+  const st=document.getElementById('gateStatus');
+  if(st){ st.classList.remove('bad'); st.textContent=email?('Stai reimpostando la password di '+email):''; }
+  try{
+    const u=new URL(location.href); u.hash='';
+    ['code','type','token_hash','access_token','refresh_token','expires_in','token_type','error','error_description'].forEach(k=>u.searchParams.delete(k));
+    history.replaceState(null,'',u.pathname+(u.search||''));
+  }catch(_){ }
+}
 function gateShowNewPw(){
   gateStage='newpw'; _gateAwaitNewPw=true;
   document.getElementById('gateStepForm').style.display='none';
@@ -3325,18 +3371,18 @@ function gateShowNewPw(){
 async function gateSubmit(){
   const emEl=document.getElementById('gateEmail');
   const email=((emEl&&emEl.value)||'').trim().toLowerCase();
-  if(!email){ gateStatus('Inserisci la tua email.'); return; }
+  if(!email){ gateStatus('Inserisci la tua email.',true); return; }
   const pwEl=document.getElementById('gatePw');
   const pw=(pwEl&&pwEl.value)||'';
-  if((gateMode==='login'||gateMode==='signup') && !pw){ gateStatus('Inserisci la password.'); return; }
-  if(gateMode==='signup' && pw.length<8){ gateStatus('La password deve avere almeno 8 caratteri.'); return; }
+  if((gateMode==='login'||gateMode==='signup') && !pw){ gateStatus('Inserisci la password.',true); return; }
+  if(gateMode==='signup' && pw.length<8){ gateStatus('La password deve avere almeno 8 caratteri.',true); return; }
   gateEmailVal=email;
   const btn=document.getElementById('gateBtn'); if(btn) btn.disabled=true;
   try{
     if(gateMode==='login') await doLogin(email,pw);
     else if(gateMode==='signup') await doSignup(email,pw);
     else await doReset(email);
-  }catch(e){ gateStatus(authErrIt(e)); }
+  }catch(e){ gateStatus(authErrIt(e),true); }
   if(btn) btn.disabled=false;
 }
 
@@ -3351,7 +3397,7 @@ async function doLogin(email,pw){
       gateShowCode('Questa email non era ancora confermata: ti ho mandato un codice a '+email+'.');
       return;
     }
-    gateStatus(authErrIt(error)); return;
+    gateStatus(authErrIt(error),true); return;
   }
   if(data&&data.user){ user=data.user; gateStatus(''); afterLogin(); }
 }
@@ -3359,14 +3405,14 @@ async function doLogin(email,pw){
 async function doSignup(email,pw){
   gateStatus('Creo l\'account\u2026');
   const {data,error}=await sb.auth.signUp({email,password:pw,options:{data:{has_pw:true}}});
-  if(error){ gateStatus(authErrIt(error)); return; }
+  if(error){ gateStatus(authErrIt(error),true); return; }
   const u=data&&data.user;
   /* Con la conferma email attiva Supabase NON d\u00e0 errore se l'email esiste gi\u00e0:
      restituisce un utente finto con identities vuoto, per non far scoprire a un
      estraneo chi \u00e8 iscritto. Va intercettato a mano, altrimenti la persona
      resterebbe ad aspettare un codice che non arriver\u00e0 mai. */
   if(u&&Array.isArray(u.identities)&&u.identities.length===0){
-    gateStatus('Questa email ha gi\u00e0 un account. Entra con la tua password, oppure usa \u00abPassword dimenticata\u00bb.');
+    gateStatus('Questa email ha gi\u00e0 un account. Entra con la tua password, oppure usa \u00abPassword dimenticata\u00bb.',true);
     return;
   }
   if(data&&data.session&&u){ user=u; gateStatus(''); afterLogin(); return; }   // conferma email disattivata
@@ -3375,9 +3421,11 @@ async function doSignup(email,pw){
 
 async function doReset(email){
   gateStatus('Invio in corso\u2026');
-  // niente redirectTo: nessun link da cliccare, solo il codice dentro l'email
-  const {error}=await sb.auth.resetPasswordForEmail(email);
-  if(error){ gateStatus(authErrIt(error)); return; }
+  /* Si entra SOLO col codice ({{ .Token }}): il template dell'email non contiene link.
+     redirectTo resta per prudenza, così le vecchie email già spedite (che un link ce
+     l'hanno ancora finché non scadono) atterrano su gateEnterRecovery e non in home. */
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  if(error){ gateStatus(authErrIt(error),true); return; }
   _gateAwaitNewPw=true;   // da qui in avanti la sessione pu\u00f2 aprirsi: l'app resta fuori finch\u00e9 non salvo
   gateShowCode('Ti ho inviato un codice a '+email+'. Scrivilo qui sotto.');
 }
@@ -3392,34 +3440,34 @@ async function gateResendSignup(email){
 document.getElementById('gateBtn').onclick=gateSubmit;
 
 document.getElementById('gateResend').onclick=async function(){
-  if(!gateEmailVal){ gateStatus('Torna indietro e scrivi la tua email.'); return; }
+  if(!gateEmailVal){ gateStatus('Torna indietro e scrivi la tua email.',true); return; }
   gateStatus('Rinvio in corso\u2026');
   try{
     if(gateMode==='signup') await gateResendSignup(gateEmailVal);
-    else { const {error}=await sb.auth.resetPasswordForEmail(gateEmailVal); if(error) throw error; }
+    else { const {error}=await sb.auth.resetPasswordForEmail(gateEmailVal,{redirectTo:location.origin+location.pathname}); if(error) throw error; }
     gateStatus('Codice rinviato a '+gateEmailVal+'.');
-  }catch(e){ gateStatus(authErrIt(e)); }
+  }catch(e){ gateStatus(authErrIt(e),true); }
 };
 
 document.getElementById('gateVerify').onclick=async function(){
   const token=(document.getElementById('gateCode').value||'').trim();
-  if(!token){ gateStatus('Inserisci il codice.'); return; }
+  if(!token){ gateStatus('Inserisci il codice.',true); return; }
   this.disabled=true; gateStatus('Verifica in corso\u2026');
   const type = gateMode==='signup' ? 'signup' : 'recovery';
   const {data,error}=await sb.auth.verifyOtp({email:gateEmailVal,token,type});
   this.disabled=false;
-  if(error){ gateStatus(authErrIt(error)); return; }
+  if(error){ gateStatus(authErrIt(error),true); return; }
   if(gateMode==='reset'){ gateShowNewPw(); return; }   // sessione aperta, ma prima la password
   if(data&&data.user){ user=data.user; gateStatus(''); afterLogin(); }
 };
 
 document.getElementById('gateSaveNewPw').onclick=async function(){
   const pw=(document.getElementById('gateNewPw').value||'');
-  if(pw.length<8){ gateStatus('La password deve avere almeno 8 caratteri.'); return; }
+  if(pw.length<8){ gateStatus('La password deve avere almeno 8 caratteri.',true); return; }
   this.disabled=true; gateStatus('Salvo\u2026');
   const {data,error}=await sb.auth.updateUser({password:pw,data:{has_pw:true}});
   this.disabled=false;
-  if(error){ gateStatus(authErrIt(error)); return; }
+  if(error){ gateStatus(authErrIt(error),true); return; }
   _gateAwaitNewPw=false; gateStatus('');
   let u=(data&&data.user)||null;
   if(!u){ try{ const r=await sb.auth.getSession(); u=r&&r.data&&r.data.session?r.data.session.user:null; }catch(_){ } }
@@ -3469,13 +3517,13 @@ async function savePwSetup(){
   const i=document.getElementById('pwsInput'); if(!i) return;
   const pw=(i.value||'');
   const st=document.getElementById('pwsStatus');
-  const put=m=>{ if(st) st.textContent=m; };
-  if(pw.length<8){ put('La password deve avere almeno 8 caratteri.'); return; }
+  const put=(m,bad)=>{ if(st){ st.textContent=m||''; st.classList.toggle('bad', !!bad && !!m); } };
+  if(pw.length<8){ put('La password deve avere almeno 8 caratteri.',true); return; }
   const b=document.getElementById('pwsBtn'); if(b) b.disabled=true;
   put('Salvo\u2026');
   const {data,error}=await sb.auth.updateUser({password:pw,data:{has_pw:true}});
   if(b) b.disabled=false;
-  if(error){ put(authErrIt(error)); return; }
+  if(error){ put(authErrIt(error),true); return; }
   if(data&&data.user) user=data.user;
   put(''); closePwSetup();
   toast('Password salvata \u2705 Da adesso entri con email e password');

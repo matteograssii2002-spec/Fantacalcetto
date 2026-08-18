@@ -2252,3 +2252,634 @@ l'ultimo passo acceso e «Vedi il pagellone» come azione.
 - Split del sito: `/` landing pubblica + `/app/` gioco — vedi `PROSSIMI_PASSI.md`.
   Quando si farà, in `notify.ts` vanno cambiati **tutti** gli `url` delle push
   (`"/"` → `"/app/"`, `"/?srecap="` → `"/app/?srecap="`).
+
+---
+
+## 44. SESSIONE 44 — Card unificate in Home, schede giocatore/manager ridisegnate, frasi nello splash, fase di giornata unificata e doppioni admin rimossi
+
+Sessione mista: prima estetica (Home e schede), poi il primo dei tre interventi di
+riordino sulla logica admin. Un solo `index.html`, nessuna SQL, `notify.ts` non toccato.
+
+### 44.1 Riquadro «Stai creando una nuova lega» — via il rosso
+
+Il riquadro di contesto della schermata email (`.ctx-box.create`) era rosso: in una
+schermata di accesso il rosso si legge come **errore**, non come «hai scelto questa
+strada». Ora è **viola** (`rgba(139,124,255,…)`), colore non usato altrove nell'app,
+quindi non si confonde né col verde di `.ctx-box.join` né con l'azzurro del pulsante
+d'azione sotto.
+
+Il `+` era l'emoji **➕**, che iOS disegna quasi nera: sul fondo scuro spariva. Sostituita
+da un carattere vero con classe dedicata `.ctx-box .ci.plus` (Bricolage 800, bianco,
+`text-shadow` leggero). **Regola generale:** le emoji-simbolo monocromatiche (➕ ➖ ✖️)
+su fondo scuro in iOS sono da evitare — servono caratteri o SVG.
+
+### 44.2 «Rivivi»: da targhette vuote a locandine con i dati
+
+Prima: due `.rvtile` con emoji + due righe di testo, dentro un riquadro largo tutto lo
+schermo. Tanto vuoto, e nessun motivo per aprirle.
+
+Ora `.rvcard` anticipa il contenuto:
+
+- **Card giornata** (`rvMdCardHTML`) — occhiello «Ultima giornata», titolo = label,
+  sottotitolo con la data di gioco, e due riquadri-dato riempiti **in differita** da
+  `rvFillMd(mdId)`: *Re della giornata* (logo squadra + punti) e *La tua giornata*
+  (posizione + punti). Una sola RPC `get_standings_md`, con cache in `_rvMdCache`
+  (`{id, rows}`), righe ordinate per punti decrescenti.
+  Guardia: se `!rows.length || !(rows[0].pts>0)` non si inventa un vincitore (con nessuna
+  formazione schierata il primo sarebbe una squadra a caso a 0 punti) e si mostra un
+  riquadro neutro.
+  Guardia anti-race: `rvFillMd` rilegge `#rvMdFacts` e confronta col nodo di partenza; se
+  la Home si è ridisegnata nel frattempo, esce.
+- **Card stagione** (`rvSeasonCardHTML`) — *Campione* e *Giornate giocate*. Il campione si
+  ricava da `standings[0]` **senza query extra**, ma solo se
+  `Number(displaySeasonId)===Number(s.id)`: altrimenti `standings` è la classifica di
+  un'altra stagione e mostrerebbe il vincitore sbagliato. Le giornate arrivano da
+  `seasonById(s.id).mds_closed`.
+
+**Peek provato e scartato.** Le card erano state portate a `flex:0 0 88%` per far
+intravedere la successiva sul bordo; Teo ha preferito la larghezza piena («più
+professionale, i pallini bastano»). Rimosso `.bctrack.rvtrack`.
+**Tenuta invece la generalizzazione di `renderTrackDots`**: il passo ora è
+`cards[0].getBoundingClientRect().width + 10` invece di `tr.clientWidth + 10`. È corretto
+in entrambi i casi e serve se un domani si riprova il peek.
+
+### 44.3 Un solo componente per tutte le card della Home
+
+Le classi `.bcard`, `.bcard-top`, `.bc-ic`, `.bc-eyebrow`, `.bc-title`, `.bc-sub`,
+`.bc-arr`, `.bc-meta`, `.bc-pill`, `.bc-next`, `.bc-bar` sono state **eliminate**
+(entrambi i blocchi CSS, base e override). Statistiche e Rivivi usano lo stesso `.rvcard`.
+
+Nuovo builder unico:
+
+```js
+hcardHTML({wm, eye, ttl, sub, facts, factsId, prog, go})
+```
+
+- `wm` filigrana (emoji grande sfumata in alto a destra), `eye` occhiello maiuscolo,
+  `ttl` titolo, `sub` sottotitolo, `facts` array di `rvFactHTML(icon,val,key,cls)`,
+  `prog` barra opzionale, `go` riga d'apertura con la freccia.
+- Lo usano `rvMdCardHTML`, `rvSeasonCardHTML` e le due card di `renderHomeBcards`.
+
+Nel markup `#homeBcardPlayer` è `class="rvcard"` e `#homeBcardMgr` è `class="rvcard gold"`
+(gli **id restano invariati**: `updateStatsWrap` continua a leggere `style.display`).
+`nextBarHTML` ora emette `.rv-prog > .pt / .pb` invece di `.bc-next`.
+
+Le vecchie pillole sono diventate riquadri-dato allineati. Sulla card manager, se i record
+sono ancora a zero **non** si mostra «×0» (non è un traguardo): si ripiega sui punti
+stagione.
+
+### 44.4 Scheda giocatore — gerarchia invece di sei box uguali
+
+`playerStatsGridHTML(s)` sostituisce `.sg-core` / `.sg-vote` (rimosse):
+
+- **Anello del voto medio** (`pgRingHTML(val,label,pct,color)`): due `<circle>` in un
+  `viewBox 0 0 82 82` ruotato di −90°, arco via `stroke-dasharray`.
+  ⚠️ Il colore va nello **`style`**, non nell'attributo `stroke`: Safari non risolve le
+  variabili CSS negli attributi di presentazione SVG.
+  ⚠️ L'etichetta sta **fuori** dal cerchio (`.pg-rlab` sotto): dentro, in maiuscoletto
+  spaziato, finiva a cavallo del bordo — bug estetico segnalato da Teo.
+- **Presenze come tacche** (`.pg-ticks`): una per giornata se `maxP<=10`, altrimenti una
+  barra unica con due `flex` proporzionali (a 38 giornate sarebbero trattini da 3px).
+- **Gol e assist come barre rapportate al MIGLIORE della lega**, non a un massimo teorico:
+  i massimi si ricavano ciclando `playerStats` (già caricato per tutti). È l'unico
+  paragone che significhi qualcosa in un gruppo di 15 amici. Sotto, una riga di nota
+  spiega la scala una volta sola.
+- `#bestVoteBox` è stato mantenuto come **id**, con dentro un `.v`: `loadVoteTrend`
+  continua a riempirlo senza modifiche. Il valore ora usa la **virgola**.
+
+**Cambio di visibilità consapevole:** «Voto medio» e «Miglior voto» erano gated da
+`canOp()` (solo admin/vice). Ora li vedono tutti: l'anello è il perno della scheda, e il
+grafico `#statChart` subito sotto era già pubblico e mostrava la media nell'intestazione —
+il gate era rimasto per inerzia. Se si volesse tornare indietro, il punto è
+`playerStatsGridHTML`.
+
+### 44.5 Scheda manager — posizione grande e record allineati
+
+`teamStatsGridHTML(card)` riscritta; rimosse `.tg-hero`, `.tg-rank`, `.tg-rest`.
+
+- `.tm-hero`: **posizione** in 38px oro con «su N squadre» (N da `standings.length`),
+  punti a destra con la stagione, e `.tm-track` = barra `((tot-pos)/(tot-1))*100`, cioè
+  «quanto sei in alto» senza dover contare le squadre.
+- `.tm-chips` è una **griglia 2 colonne** di `.tm-rec` di uguale misura; l'ultimo elemento
+  si allarga su tutta la riga se sono dispari
+  (`.tm-chips>.tm-rec:last-child:nth-child(odd){grid-column:1/-1}`).
+  Prima erano chip a larghezza variabile che andavano a capo in modo casuale: sembravano
+  sbilenche (screenshot di Teo).
+- I record a zero restano visibili ma **spenti** (`.tm-rec.z`): sono obiettivi, non
+  risultati, e vederli grigi dà una ragione per rincorrerli.
+- «Miglior giornata» ha l'unità `pts` in `<small>` grigio, così si legge come unità e non
+  come parte del numero.
+
+> **Bug imparato (vale ovunque):** valore ed etichetta erano due `<span>` — elementi in
+> **linea**, quindi si affiancano invece di impilarsi, e si leggeva «×0Re della giornata».
+> Servono `display:block`. Il `margin-top` su uno `<span>` inline non ha effetto.
+
+### 44.6 Splash — frasi di caricamento
+
+`SPLASH_TIPS`: array di 15 frasi, una a caso a ogni avvio, scelta nello stesso blocco
+`try` che copia la `src` da `#wcHero`. Metà spiegano una regola («Il capitano vale
+doppio»), metà prendono in giro il calcetto vero («Nessuno vuole fare il portiere. Come
+sempre.»).
+
+Markup: `<div class="sp-tip" id="spTip">` fra `.sp-hero` e `.sp-load`.
+CSS: posizionata a `bottom: calc(80px + safe-area)`, fade a 1,72s (subito dopo i pallini,
+che sono scesi a 40px). Il padding inferiore di `.sp-hero` è passato da **78 a 116px** per
+fare spazio: l'illustrazione si ridimensiona invece di finirci sopra.
+Aggiunta a `.sp-tip` anche la regola `prefers-reduced-motion`.
+
+Per aggiungere frasi basta allungare l'array: nessun'altra modifica.
+
+### 44.7 Fase della giornata — una sola fonte di verità
+
+**Il problema.** Esistevano due funzioni che calcolavano la stessa cosa con due elenchi
+diversi di stati: `phaseLabel()` per l'intestazione del Centro giornata e `mdcPhaseIdx()`
+per la timeline. La prima conosceva «Voti chiusi», la seconda no (ritornava `4` sia con
+voti aperti sia con voti scaduti) → **a finestra voti scaduta la testata e i pallini
+raccontavano due storie diverse**.
+
+**La soluzione.** Un solo elenco e un solo indice:
+
+```js
+const MD_PHASES=[ {n,short,desc} × 7 ];   // n=timeline, short=sottotitolo menu, desc=riga sotto al titolo
+function mdPhaseIdx(){ … }                // -1 nessuna giornata
+function mdPhaseShort(){ … }
+function phaseLabel(){ … }                // short · desc
+```
+
+Indici: `-1` nessuna giornata · **0** Programmata · **1** Sondaggio presenze ·
+**2** Formazioni · **3** Partita · **4** Voti · **5 Voti chiusi (NUOVO)** · **6** Conclusa.
+
+⚠️ **Gli indici sono cambiati rispetto a §43.8**: «Conclusa» era `5`, ora è `6`.
+`mdcPhaseIdx()` e `mdcPhaseShort()` **non esistono più**.
+
+Nella timeline le tappe si generano da `MD_PHASES` invece che da un array parallelo. Due
+filtri: il passo «Sondaggio presenze» solo se `presenceSelf && t.presenceClose` (come
+prima), e il passo «Voti chiusi» **solo quando `i===5`** — altrimenti sarebbe una riga
+sempre presente che non dice niente.
+
+### 44.8 Doppioni admin rimossi
+
+**Il problema.** `renderMatchday` compilava a mano `#mdActions` (le «Azioni avanzate») e
+`renderMdCenter` compilava a mano `#mdcPrimary` (l'azione principale): gli **stessi**
+pulsanti, scritti due volte, con la stessa grafica. A voti aperti «🏁 Chiudi la giornata
+adesso» compariva **due volte nella stessa schermata**, una come primaria e una dentro la
+fisarmonica. L'idea di «una sola azione per volta» era vera solo a metà, e un'azione
+distruttiva era duplicata.
+
+**La soluzione.**
+
+```js
+const MD_ACTIONS={ open, kick, panel, close, recap };  // {cls, ic, lab, fn}
+function mdActionHTML(k, marginTop){ … }
+function mdcPrimaryKey(){ … }        // quale azione è LA azione, dalla fase
+function renderMdActions(primary){ … } // le avanzate = tutto TRANNE la primaria
+function openRecapCurrent(){ … }     // così MD_ACTIONS non interpola l'id in una stringa onclick
+```
+
+- Il blocco `#mdActions` dentro `renderMatchday` è stato **cancellato**: ora
+  `renderMdCenter()` chiama `renderMdActions(key)` in coda.
+- Le avanzate contengono `kick` e/o `close` **solo se non sono già la primaria**, più
+  «Annulla questa giornata» quando esiste una giornata.
+- Gli hint (`openNowHintText()`, `closeMdHintText()`) seguono il pulsante primario.
+  `#openNowHint` esiste solo quando la primaria è `open`; `refreshOpenNowHint` ha già la
+  guardia `if(h)`.
+
+**Regola da mantenere:** una nuova azione di giornata si aggiunge in `MD_ACTIONS` e si cita
+in `mdcPrimaryKey()` o in `renderMdActions()` — **mai** scrivendo un `<button>` a mano nei
+render. Stessa logica di `hcardHTML` per le card e di `MD_PHASES` per le fasi: un concetto,
+un posto.
+
+### 44.9 Revisione dell'organizzazione admin (analisi, non ancora implementata)
+
+Fatta una lettura completa del percorso admin. Sintesi: **fondamenta giuste, organizzazione
+no**.
+
+Quello che funziona e non va toccato: l'**automazione** (`open_due_matchdays` +
+`close_due_matchdays` + cron ogni 10 min) — una lega gira anche se l'admin non apre mai
+l'app, ed è la decisione di design che tiene in vita il progetto; e il **principio di una
+sola azione primaria**, che va esteso, non ridiscusso.
+
+Problemi rimasti (dettaglio e piano in `PROSSIMI_PASSI.md` §1-§2):
+
+1. `renderOpenMode()` (programmazione ricorrente: automatico on/off, giorno fisso, ora) sta
+   dentro le Azioni avanzate del **Centro giornata**, che è la schermata della giornata
+   *in corso*. È una regola permanente: va in **Regole della partita**.
+2. **«Modifica orario partita»** (una tantum) e **«Ora del fischio d'inizio»** (ricorrente)
+   sono due cose diverse con quasi lo stesso nome in due posti diversi.
+3. `page-lega` usa ancora **cinque fisarmoniche** mentre il resto delle Impostazioni usa le
+   drill-in page.
+4. I **nomi** delle sezioni non aiutano: «chi può votare» (una regola) sta in Gestione
+   lega, «chi segna le presenze» sta in Regole.
+5. La pagina **Stagione** fa cinque mestieri, inclusi ricalcolo recap e diagnostica SQL,
+   che sono manutenzione.
+6. **Nessuna scorciatoia dalla Home**: inserire i gol costa Home → ⚙️ → Centro giornata →
+   scroll → pannello. Quattro tap per l'azione più frequente. La hero dovrebbe usare
+   `mdcPrimaryKey()` per proporre l'azione admin del momento.
+7. **Metodo dei crediti: interruttore orfano.** La scelta Manuale/Sondaggio esiste solo nel
+   wizard di creazione lega (`#suStep3`), che promette «Potrai cambiare tutto dalle
+   Impostazioni» — ma `setCreditMode(mode)` **non è chiamata da nessun pulsante**. Il
+   riquadro `#creditCard` («💰 Sondaggio valori», in Gestione lega) si mostra solo con
+   `creditMode==='poll' && valuePollOpen`: chiuso il sondaggio sparisce e non si riapre.
+   Resta solo la modifica a mano per giocatore (`renderEditForm`, campo Crediti 1-100).
+   Da aggiungere una riga in *Regole della partita* con l'interruttore + «Riapri il
+   sondaggio». Prima verificare in SQL cosa fa `set_credit_mode('poll')` su una lega dove
+   il sondaggio è già stato chiuso: riapre `poll_open` o va aperto a parte?
+
+### 44.10 Ordine di esecuzione
+
+1. `index.html` (**nessuna SQL**)
+2. `sw.js` (solo `SW_VERSION`)
+
+Le chiavi Supabase sono **dentro** il file consegnato (la `sb_publishable_…` è pubblica per
+design): non serve più re-incollarle, va solo verificato che ci siano.
+⚠️ `APP_VERSION` è ancora `'v9'`: da bumpare al prossimo deploy.
+
+**Collaudo:** nel Centro giornata, in qualunque fase, dentro «Azioni avanzate» **non** deve
+comparire il gemello del pulsante grande sopra; il sottotitolo della riga «Centro giornata»
+nel menu deve coincidere con la fase accesa nella timeline. In Home, le due card
+Statistiche devono avere esattamente la stessa forma delle due di Rivivi. Nella scheda
+giocatore l'etichetta «Voto medio» deve stare sotto l'anello, non sopra il cerchio.
+
+### 44.11 Decisioni non tecniche prese in questa sessione
+
+- **Partita IVA**: non serve finché è tutto gratis; serve dal primo incasso, perché il
+  criterio è l'**abitualità** dell'attività, non la forma del pagamento — la transazione
+  singola per stagione **non** è una scappatoia fiscale (ma resta la scelta giusta per
+  altri motivi: niente obblighi sul rinnovo automatico, contabilità più semplice).
+  Non esiste alcuna soglia di 5.000 € come esenzione.
+- **Privacy policy**: obbligatoria a prescindere dalla PWA. Nessun banner cookie finché si
+  usa solo storage tecnico.
+- **Pubblicità**: scartata. Tecnicamente possibile (AdSense su PWA funziona, non serve
+  AdMob), ma a questa scala vale qualche euro al mese e imporrebbe un banner di consenso
+  con CMP certificata su un'app che oggi non ne ha bisogno — oltre a contraddire il piano
+  di far pagare l'admin. Alternative: sponsor locale statico, o pubblicità sulla sola
+  landing dopo lo split.
+
+Dettagli in `PROSSIMI_PASSI.md` §5-§6.
+
+### 44.12 In sospeso
+
+- Admin 2/3 e 3/3 (vedi sopra e `PROSSIMI_PASSI.md`), incluso l'interruttore orfano del
+  metodo crediti.
+- Sparkline della posizione nella scheda manager: serve una RPC che esponga
+  `_season_rank_history` (oggi è solo interna).
+- Multi-lega per `sondaggio.html` (aperto da tempo).
+- Split `/` landing + `/app/` gioco, con i relativi `url` da cambiare in `notify.ts`.
+- Privacy policy e termini, da scrivere insieme alla landing.
+
+---
+
+## 45. SESSIONE 45 — Admin 2/3 e 3/3: configurazione fuori dall'operatività, impostazioni a drill-in, hero della Home admin-aware
+
+Chiusi in una sola sessione i due interventi che restavano del riordino admin, più due
+interruttori orfani ritrovati per strada e l'ingrandimento delle frasi dello splash.
+Un solo `index.html`, nessuna SQL, `notify.ts` e `sw.js` non toccati. `APP_VERSION` → `v10`.
+
+Il criterio che ha guidato tutto: **in ogni momento c'è una sola cosa che l'admin deve
+fare; tutto il resto è configurazione, e la configurazione si tocca due volte l'anno.**
+
+### 45.1 Il nuovo criterio di collocazione (da rispettare d'ora in poi)
+
+Tre contenitori, tre domande:
+
+| Se una voce… | va in… |
+|---|---|
+| riguarda **la giornata in corso** | **Centro giornata** (`page-giornata`) |
+| è un **interruttore permanente** | **Regole della lega** (`page-regole`) |
+| chiede di scegliere delle **persone** | **Gestione lega** (`page-lega`) |
+| serve **una volta ogni tanto** (ricalcoli, diagnostica, offline) | **Aiuto e manutenzione** (`page-manutenzione`) |
+
+La regola pratica da ricordare è la terza: *se devi scegliere delle persone, è in Gestione
+lega*. Risolve la domanda che prima faceva pensare («dove cambio chi segna le presenze?»
+→ è un interruttore → Regole della lega).
+
+### 45.2 «Quando giocate di solito» (Admin 2/3, §1.1)
+
+`renderOpenMode()` viveva dentro **Azioni avanzate del Centro giornata**, cioè nella
+schermata della giornata *in corso*, pur essendo una regola permanente della lega. Ora sta
+in **Regole della lega → Quando giocate di solito** (`page-quando`).
+
+- Contenitore rinominato: `#mdOpenBox` → **`#schedBox`**. È l'unico punto dove `renderOpenMode`
+  scrive: se un domani sparisce di nuovo, è quello l'id da cercare.
+- `renderOpenMode()` è uscita dal blocco `if(mc){…}` di `renderMatchday`: non dipende più
+  dall'esistenza di `#mdCard`, che sta in un'altra pagina.
+- **Conflitto di nomi risolto:** «Modifica orario partita» (una tantum) è diventata
+  «**Modifica orario di questa giornata**» (`MD_ACTIONS.kick` + titolo del foglio), e «Ora
+  del fischio d'inizio» (ricorrente) è diventata «**Ora abituale** del fischio d'inizio»
+  (in due posti: `renderOpenMode` e lo step 0 del wizard `#suStep0`). Prima o poi qualcuno
+  avrebbe cambiato quella sbagliata.
+- Nel Centro giornata, quando non c'è nessuna giornata, sotto l'azione primaria compare una
+  scorciatoia `setNav('page-quando')`.
+- Il messaggio «⚠️ «X» è ancora aperta: puoi annullarla o chiuderla **qui sotto**» diceva
+  il falso dopo lo spostamento → ora rimanda al Centro giornata.
+
+Le «Azioni avanzate» contengono adesso solo cose davvero avanzate: modifica orario, chiudi
+(quella non primaria) e annulla giornata.
+
+### 45.3 Fisarmoniche → drill-in (Admin 2/3, §1.2)
+
+Le cinque `.acc gold` di `page-lega` e le due di `page-regole` sono diventate `.navrow` con
+pagina dedicata. Su iPhone la fisarmonica costava un tap per aprire, uno scroll, uno per
+richiudere; il drill-in è il pattern già usato dal resto delle Impostazioni.
+
+Nuove `.setpage`: `page-quando`, `page-presenze`, `page-portiere`, `page-crediti`,
+`page-invita`, `page-giocatori`, `page-vice`, `page-votanti`, `page-manutenzione`.
+Da 8 a **17** pagine di impostazioni.
+
+⚠️ **Vincolo rispettato:** gli id usati dal JS per show/hide (`gkCard`, `presModeCard`,
+`voterCard`, `inviteCard`, `manageCard`, `creditCard`, `seasonCard`) sono rimasti
+**sull'elemento esterno**, che ora è la riga `.navrow` e non più la fisarmonica.
+
+> **Bug conseguente, da ricordare:** `applyProfile` faceva `style.display='block'`. Una
+> `.navrow` è `display:flex`: forzarla a `block` la spezza (icona, etichetta e chevron si
+> impilano). Ora usa **`display=''`**, che rimette il valore del foglio di stile — `block`
+> per un `div`, `flex` per una `.navrow`. Stessa correzione in `loadInvite()`.
+> **Regola generale:** mai scrivere `display:'block'` per riaccendere un elemento di cui
+> non conosci il display nativo; `''` è sempre corretto.
+
+**Sottotitoli vivi.** Ogni riga dice già com'è impostata la regola («Ogni Mer alle 20:30 ·
+apertura automatica», «Le segnano i giocatori», «12 giocatori in rosa»), così non serve
+entrare per controllare. Li scrive **`renderRuleRows()`**, unico punto, chiamato da
+`renderOpenMode`, `renderGkMode`, `renderPresenceMode`, `loadCreditConfig`, `renderManage`
+e `applyProfile`. **Se aggiungi una regola, aggiungi la sua riga lì.**
+
+**Vice-admin.** Le righe che aprono pagine da solo-proprietario hanno ora la classe
+**`.ownerRow`** (gestita in `applyProfile` con `is_admin`), separata da `.adminRow`
+(gestita con `canOp()`). Prima il vice vedeva «Regole della partita» e ci trovava una
+pagina vuota, perché il contenuto era nascosto ma la riga no.
+
+### 45.4 Metodo dei crediti: interruttore orfano richiuso (Admin 2/3, §1.5)
+
+`setCreditMode(mode)` esisteva nel codice ma **nessun pulsante la chiamava più** dalla
+sessione 31.5: la scelta Manuale/Sondaggio viveva solo nel wizard di creazione lega, che
+compare una volta sola e prometteva «potrai cambiare tutto dalle Impostazioni». Per questa
+regola non era vero, e da Stagione 2 in poi non c'era modo di rifare i valori.
+
+Ora **Regole della lega → Crediti dei giocatori** (`page-crediti`):
+
+- interruttore `#creditModeSw` (Manuale / Sondaggio) → `askCreditManual()` / `askCreditPoll()`,
+  entrambe con conferma esplicita perché sovrascrivono uno stato di lega;
+- «🔁 **Riapri il sondaggio**» quando `credit_mode='poll'` e il sondaggio è chiuso;
+- `#creditCard` (avanzamento + «Chiudi e calcola i crediti») **si è spostata qui** da
+  `page-lega`: era una regola finita fra le persone.
+
+⚠️ **Il dubbio SQL della sessione 44 è risolto:** `set_credit_mode('poll')` imposta
+`value_poll_open=true`, quindi **è anche il «riapri»** — nessuna RPC nuova, nessuna
+migrazione. Verificato su `fantacalcetto_context.py` §RPC e coerente con la 31.5, dove un
+pulsante «Riapri il sondaggio» esisteva e funzionava. `askCreditPoll()` ricontrolla
+comunque `valuePollOpen` dopo la chiamata e avvisa se non risulta aperto: se un domani
+l'RPC cambia comportamento, l'app non racconta bugie.
+
+Nota onesta scritta nell'interfaccia: riaprendo, **i voti vecchi restano** (`submit_value_poll`
+fa upsert per `voter_id`), quindi chi non rivota tiene il voto della volta scorsa.
+
+### 45.5 Pagina Stagione snellita e «Aiuto e manutenzione» (Admin 2/3, §1.4)
+
+La pagina Stagione faceva cinque mestieri. Ricalcolo del recap e avviso diagnostico su
+`stagione_recap.sql` sono **manutenzione**, non gestione: spostati in `page-manutenzione`
+(`renderMaintBox()`). In Stagione restano stato, chiusura, apertura della prossima e
+«Apri il recap».
+
+**Interruttore orfano n° 2.** Il markup di `#maintCard` / `#maintBtn` era **sparito
+dall'HTML** in qualche sessione passata, mentre `applyProfile` e `renderMaintBtn()`
+continuavano a cercarlo e `setMaintenance()` non era più raggiungibile da nessun pulsante.
+Rimesso — ma con una correzione di rotta (vedi sotto).
+
+### 45.6 «App offline» riservato al super-admin + canale di segnalazione
+
+Rimettere «Metti in manutenzione» per tutti gli admin era sbagliato in prospettiva
+multi-lega. **Precisazione tecnica importante:** `setMaintenance()` fa
+`.eq('league_id', profile.league_id)`, quindi agisce **solo sulla propria lega** — un altro
+admin non avrebbe potuto spegnere l'app a tutti, solo ai suoi. La manutenzione **globale**
+sta su `app_global`, è riservata al super-admin e **non ha alcun pulsante** in tutta l'app.
+
+Resta però un pulsante che a un admin che non siamo noi può solo fare danno: serve a chi
+pubblica gli aggiornamenti. Quindi `#maintCard` è ora gated su **`isSuperAdmin()`**, non su
+`is_admin`. Stessa scelta per l'avviso diagnostico su `stagione_recap.sql`: dice di
+eseguire un file SQL che solo noi possiamo eseguire.
+
+Al suo posto, per tutti gli altri admin, la pagina «**Aiuto e manutenzione**» offre
+«**Qualcosa non va?**» → `helpMailto()` costruisce un `mailto:` a `accesso@fantacalcettoitalia.it`
+con oggetto e corpo precompilati: **lega, `APP_VERSION`, giornata in corso**. Sono le tre
+cose che servono sempre per capire un bug e che altrimenti bisogna chiedere. C'è anche
+«Copia l'indirizzo» come ripiego se il `mailto:` non parte (succede in certe webview).
+
+### 45.7 Hero della Home admin-aware (Admin 3/3)
+
+Il 90% del lavoro settimanale dell'admin è inserire gol/assist/esito e chiudere. Prima
+servivano **Home → ⚙️ → Centro giornata → scroll → «Apri pannello partita»**: quattro tap
+e uno scroll ogni settimana per l'azione più frequente che esista. Intanto la hero diceva
+all'admin «Schiera la formazione» come a chiunque altro. Ora è **un tap**.
+
+- **`mdcPrimaryKey()` è più sveglia.** A voti aperti (fase 4), se l'esito non è ancora
+  stato salvato l'azione primaria è **`panel`** (inserisci i risultati), non `close`.
+  Chiudere senza esiti manda in classifica una giornata a metà, ed è l'errore più facile da
+  fare in quella fase.
+- **`mdResultsSaved`** — nuovo flag calcolato in `loadMatchStats()` **dalle righe del
+  database**, non da `adminStats`: quest'ultimo viene mescolato con la bozza locale
+  (`loadLiveDraft`, `localStorage`) e direbbe «risultati inseriti» anche senza aver
+  salvato. Il segnale è l'`esito` V/S: gol e assist possono legittimamente essere zero,
+  «chi ha vinto» no.
+- **`HERO_TODO` + `heroTodoKey()` + `heroAdminTodo()`** — la hero legge `mdcPrimaryKey()`,
+  la *stessa* funzione che comanda il Centro giornata: le due schermate non possono
+  divergere. `kick` e `recap` non compaiono in Home (spostare un orario o rileggere il
+  pagellone non sono compiti).
+- **`solo`** decide se il compito admin prende il pulsante *principale* o resta un secondo
+  pulsante `.hero-2nd` sotto «Schiera la formazione»: prende il principale solo quando il
+  giocatore non ha niente da fare.
+
+| Fase | Primaria Centro giornata | Hero |
+|---|---|---|
+| nessuna giornata | `open` | **principale** → 📅 Programma la prossima |
+| sondaggio / formazioni | `kick` | — |
+| partita | `panel` | **principale** → 📊 Inserisci i risultati |
+| voti aperti, risultati mancanti | `panel` | secondario → 📊 Inserisci i risultati |
+| voti aperti, risultati inseriti | `close` | — (ci pensa la chiusura automatica) |
+| da archiviare | `close` | **principale** → 🏁 Chiudi la Giornata N |
+| conclusa | `recap` | — |
+
+Il ramo `seasonBreak()` di `renderHero` è intatto: nella pausa fra due stagioni resta
+«Rivivi la Stagione N».
+
+> **Attenzione al `tick`.** La hero si riadegua dentro `startCountdown()`, confrontando
+> `heroTodoKey()` con `lastHeroTodo`. Da lì si chiamano `renderHero()` e `renderMdCenter()`,
+> **mai `renderMatchday()`**: quella rifà partire `startCountdown()` → ricorsione.
+
+### 45.8 Frasi dello splash più leggibili
+
+`.sp-tip` da 13px `var(--muted)` a **15.5px, peso 600, colore `#dce8fb`**, con
+`text-shadow` leggero e `letter-spacing` negativo. Il padding-bottom di `.sp-hero` da 116 a
+**138px**, perché a quella dimensione la frase può andare a due righe.
+
+### 45.9 Cose imparate
+
+- **`display=''` invece di `'block'`** quando si riaccende un elemento (vedi 45.3).
+- **Gli interruttori orfani si accumulano in silenzio**: in questa sessione ne sono saltati
+  fuori **due** (`setCreditMode`, `setMaintenance`), entrambi con la funzione viva e il
+  pulsante sparito, entrambi senza errori a runtime perché le `getElementById` restituivano
+  `null` e il codice era difensivo. Vale la pena rifare ogni tanto il controllo «funzioni
+  definite e mai richiamate».
+- **Scrivere i patch script con scrittura atomica.** Uno script Python è morto su
+  `UnicodeEncodeError` (surrogati `\ud83d\udcc5` scritti come stringa Python invece che
+  come escape JS) *dopo* aver aperto il file in `'w'`: file troncato a 0 byte. Ricostruito
+  rilanciando le patch dall'originale. Da allora: `write` su `.tmp` + `os.replace`.
+- **Le emoji nei patch script** vanno scritte come escape JS (`\\ud83d\\udcca` in Python) o
+  come carattere vero, mai come surrogato Python isolato.
+- Il **validatore casereccio di parentesi** fallisce sui letterali regex: fallisce anche
+  sull'`index.html` originale, quindi **l'autorità è `node --check`**, non lo scanner.
+
+### 45.10 File toccati e collaudo
+
+1. `index.html` (**nessuna SQL**, `sw.js` non toccato)
+
+Verifiche fatte: `node --check` OK · 566 backtick pari · graffe e quadre bilanciate ·
+annidamento di `v-settings` pulito · 893 `div` e 151 `button` bilanciati · id duplicati solo
+i due preesistenti (`pagLb`, `pagShareWrap`) · chiavi Supabase al loro posto · 7040 → 7298
+righe · logica della hero provata fase per fase in jsdom.
+
+**Collaudo su iPhone:** le quattro righe di Regole della lega devono mostrare lo stato
+giusto senza entrare; cambiando giorno/ora e tornando indietro il sottotitolo si aggiorna
+da solo; «Riapri il sondaggio» deve far ricomparire la card del sondaggio in Home; nelle
+Azioni avanzate non deve più esserci la programmazione; in Aiuto e manutenzione solo il
+super-admin vede «App offline»; a partita giocata la Home dice «Partita in corso · Inserisci
+i risultati».
+
+### 45.11 In sospeso
+
+- **Revisione del login** (nuovo, vedi `PROSSIMI_PASSI.md` §1): email+password con OTP come
+  ripiego, valutazione di Google Sign-In.
+- **Cookie e analytics** (nuovo, `PROSSIMI_PASSI.md` §2): nessun banner finché lo storage è
+  solo tecnico; se si aggiungono statistiche, banner **solo sulla landing**.
+- Sparkline della posizione nella scheda manager: serve una RPC che esponga
+  `_season_rank_history`.
+- Split `/` landing + `/app/` gioco, con gli `url` delle push da cambiare in `notify.ts`.
+- Privacy policy e termini, da scrivere insieme alla landing.
+- Multi-lega per `sondaggio.html` (aperto da tempo).
+
+---
+
+## 46. SESSIONE 46 — LOGIN A PASSWORD: una sola strada per entrare, codice OTP solo per verificare l'email
+
+Il login passa da **Email OTP a ogni accesso** a **email + password**. Un solo `index.html`,
+**nessuna SQL**, `notify.ts` / `sw.js` / `admin.html` / `manifest.webmanifest` non toccati.
+`APP_VERSION` → `v11`.
+
+Il criterio: **una sola porta d'ingresso**. Due strade parallele significano due cose da
+spiegare, due che si rompono, e nessuno che impara bene la strada. Il codice via email non
+è più un modo per entrare: serve solo a dimostrare che l'email è tua, e succede due volte
+in tutta la vita di un account (registrazione e recupero).
+
+### 46.1 Come si entra adesso
+
+| Chi | Cosa fa |
+|---|---|
+| Utente nuovo | Registrati → email + password → codice a 6 cifre (conferma l'email) → dentro |
+| Chi c'era già, loggato | Apre l'app → schermata «Scegli la tua password» → dentro. **Nessuna email** |
+| Tutti, dalla volta dopo | Email + password |
+| Password dimenticata | Email → codice → nuova password → dentro |
+
+Restare loggati funzionava già e continua a funzionare: `supabase-js` tiene la sessione in
+`localStorage` e rinnova il token da solo. Chi viene buttato fuori è quasi sempre iOS, che
+cancella lo storage dopo 7 giorni di inattività **sui siti non installati** (la PWA aggiunta
+alla Home è esente): un motivo in più per spingere l'installazione.
+
+### 46.2 Niente link nelle email — solo codici
+
+Il magic-link era già stato abbandonato perché si rompe nella PWA in standalone su iOS. La
+stessa trappola si ripresenta identica col recupero password: `resetPasswordForEmail` +
+`redirectTo` è esattamente quel punto. Perciò **registrazione e recupero passano dal codice**
+(`{{ .Token }}`) e da `verifyOtp`, con `type:'signup'` e `type:'recovery'`.
+
+**Trappola trovata in collaudo (importante).** Il link di recupero non è solo "un'altra
+strada": porta un token che Supabase **consuma da solo aprendo la sessione**. L'app, vedendo
+un utente valido, mandava dritti in home — dentro l'account, con la vecchia password ancora
+buona e nessuna schermata per cambiarla. Ora è intercettato in **due punti**, perché uno
+solo non basta:
+
+1. **all'avvio**, leggendo `type=recovery` dall'indirizzo *prima* di creare il client (dopo
+   sarebbe tardi: il listener fa in tempo a portare dentro);
+2. **sull'evento `PASSWORD_RECOVERY`** del listener, che è la rete più affidabile perché con
+   certi tipi di link il token nell'indirizzo non si vede.
+
+In entrambi i casi si finisce su `gateEnterRecovery()` → schermata della nuova password, e
+l'indirizzo viene ripulito così un refresh non rimette in moto niente. Il template
+«Reset Password» **non contiene più link**: la rete resta accesa solo per le email vecchie,
+valide finché non scadono.
+
+### 46.3 Il ponte per chi c'era già (niente SQL)
+
+Chi usava l'app prima di questa versione non ha una password ma **è già dentro con una
+sessione valida**: `updateUser({password})` funziona senza email e senza codice. Alla prima
+apertura compare `#pwsetup` — 🔑 *Scegli la tua password*, email in vista, un campo, tre
+motivi, un pulsante.
+
+Per sapere chi l'ha già fatta si usano i **metadati dell'utente in Supabase Auth**
+(`user_metadata.has_pw`), scritti dallo stesso `updateUser` e letti dalla sessione: **nessuna
+colonna nuova, nessuna migrazione**. Chi si registra da oggi nasce con `has_pw:true` e quella
+schermata non la vede mai.
+
+`«Lo faccio dopo»` non salva niente: alla riapertura la schermata torna. Scelta voluta —
+insistere sì, chiudere un amico fuori dalla sua app no.
+
+### 46.4 Errori: rossi, e distinti fra loro
+
+`gateStatus(msg, bad)` separa avviso e informazione: gli errori sono `var(--red)`, grassetto,
+dentro un riquadro che compare solo se c'è testo (`:not(:empty)`); le informazioni restano
+azzurre. Il rosso sparisce da solo quando l'operazione riesce.
+
+`authErrIt()` traduce i messaggi di Supabase in italiano **distinguendo casi con rimedi
+diversi**: credenziali sbagliate ≠ email non confermata ≠ password già usata ≠ troppi
+tentativi. Due casi meritano attenzione:
+
+- **email già registrata:** con la conferma attiva Supabase **non dà errore**, restituisce un
+  utente finto con `identities: []` (per non far scoprire a un estraneo chi è iscritto). Se
+  non lo si intercetta a mano, la persona resta ad aspettare un codice che non arriverà mai.
+- **email mai confermata:** invece di lasciare su «credenziali sbagliate», l'app rimanda da
+  sola il codice (`auth.resend`, con ripiego su `signInWithOtp` se il metodo manca) e porta
+  al passo successivo.
+
+### 46.5 Cosa c'è nel file
+
+- `#gate` a tre schermate + tre passi: `gateMode` = login | signup | reset, `gateStage` =
+  form | code | newpw. `gateSet()` / `gateGo()` / `gateBack()` / `gateShowCode()` /
+  `gateShowNewPw()` / `gateEnterRecovery()`.
+- Campo password con **Mostra/Nascondi testuale**, non emoji: iOS le disegna quasi nere e sul
+  fondo blu sparirebbero (stessa ragione del «+» nella `ctx-box`).
+- Da «Crea la tua lega» / «Entra in una lega» il gate apre su **Registrati**; da «Accedi» su
+  **Accedi**. La `ctx-box` viola/verde è rimasta dov'era.
+- In Accedi c'è **«Non ne hai mai avuta una? Impostala qui»** → porta al recupero: è lo stesso
+  percorso, chiamato con le parole giuste.
+- Impostazioni → Profilo: card **Password** (cambio password, e ripiego per chi ha rimandato).
+- Codice OTP a **6 cifre** (impostato lato Supabase): campo `maxlength="6"`, placeholder
+  `123456`.
+
+### 46.6 Configurazione Supabase richiesta
+
+1. **Authentication → Emails → «Reset Password»**: template riscritto con `{{ .Token }}` e
+   **senza** `{{ .ConfirmationURL }}` → nessun link nell'email.
+2. **«Confirm signup»**: deve contenere `{{ .Token }}` (c'era già).
+3. **Sign In / Providers → Email**: *Minimum password length* = 8, *Confirm email* acceso.
+   Spegnerlo permetterebbe di registrarsi con l'email di un altro e prendersi il recupero.
+4. Lunghezza OTP portata a **6 cifre**.
+
+### 46.7 Verifiche fatte
+
+`node --check` OK su entrambi gli script inline, 566 backtick pari, 912 div e 158 button
+bilanciati, id duplicati solo i due preesistenti (`pagLb`, `pagShareWrap`), 7298 → 7697 righe.
+Le tre schermate sono state fatte girare in **jsdom con un finto Supabase**: 86 prove su 17
+gruppi (registrazione, accesso, recupero col codice, recupero col link, `#pwsetup`,
+navigazione, errori in rosso, traduzioni). Il collaudo ha trovato **un errore vero**:
+`«New password should be different»` finiva nel controllo della lunghezza (contiene «Password
+should be») e avrebbe detto «password troppo corta» a chi riusava la vecchia password —
+corretto invertendo l'ordine dei controlli.
+
+### 46.8 In sospeso
+
+- Cookie e analytics (`PROSSIMI_PASSI.md` §1): banner **solo sulla landing**.
+- Sparkline della posizione nella scheda manager: serve una RPC che esponga
+  `_season_rank_history`.
+- Split `/` landing + `/app/` gioco, con gli `url` delle push da cambiare in `notify.ts`.
+- Privacy policy e termini, da scrivere insieme alla landing.
+- Multi-lega per `sondaggio.html` (aperto da tempo).
+- Google Sign-In: rimandato, non urgente ora che la password rende l'accesso immediato.
+  «Sign in with Apple» richiede l'Apple Developer Program (99 $/anno).

@@ -215,12 +215,45 @@ RPC = {
 # AUTH & EMAIL
 # ---------------------------------------------------------------------------
 AUTH = {
-    "metodo": "Email OTP: signInWithOtp -> verifyOtp({type:'email'}) con codice 6 cifre.",
-    "perche": "il magic-link si rompeva nella PWA iOS (storage separato in standalone).",
-    "template": "'Magic Link' e 'Confirm signup' mostrano entrambi {{ .Token }}.",
+    "metodo": (
+        "EMAIL + PASSWORD (da sessione 46). signInWithPassword per entrare; signUp({email,password}) "
+        "per registrarsi, confermato con verifyOtp({type:'signup'}); resetPasswordForEmail + "
+        "verifyOtp({type:'recovery'}) + updateUser({password}) per il recupero. UNA SOLA PORTA: "
+        "il codice NON e' piu' un modo per entrare, serve solo a verificare l'email (2 volte in "
+        "tutta la vita di un account)."
+    ),
+    "codice_otp": "6 cifre (impostato lato Supabase). Campo #gateCode: maxlength=6, placeholder 123456.",
+    "perche": (
+        "il magic-link si rompeva nella PWA iOS (storage separato in standalone). Per la stessa "
+        "ragione NESSUNA email contiene link: registrazione e recupero passano dal codice."
+    ),
+    "template": "'Confirm signup' e 'Reset Password' mostrano {{ .Token }}. 'Reset Password' NON ha {{ .ConfirmationURL }}: niente link.",
     "smtp": "Resend (smtp.resend.com:587, user 'resend', pass = API key re_...).",
     "mittente": "accesso@fantacalcettoitalia.it (dominio verificato su Resend, DKIM/SPF/MX su Aruba).",
     "admin": "update profiles set is_admin=true where id='<UID>';",
+    "has_pw": (
+        "user_metadata.has_pw (metadati di Supabase Auth, NON una colonna del DB) dice se uno ha "
+        "gia' una password. Scritto da signUp/updateUser, letto dalla sessione: zero migrazioni. "
+        "Se manca, dopo il login parte #pwsetup (Scegli la tua password)."
+    ),
+    "link_recupero": (
+        "TRAPPOLA: il link di recupero porta un token che Supabase consuma DA SOLO aprendo la "
+        "sessione -> senza difese si finisce dentro l'app invece che sul cambio password. "
+        "Intercettato in 2 punti: (a) type=recovery nell'indirizzo, letto PRIMA di createClient; "
+        "(b) evento 'PASSWORD_RECOVERY' nel listener. Entrambi -> gateEnterRecovery(). "
+        "Rete lasciata accesa per le email vecchie, anche se i template nuovi non hanno link."
+    ),
+    "errori": (
+        "authErrIt() traduce Supabase in italiano distinguendo casi con rimedi diversi. "
+        "gateStatus(msg,bad): errori in rosso e riquadrati, informazioni azzurre. "
+        "ATTENZIONE all'ordine dei controlli: 'New password should be different' contiene "
+        "'Password should be' e finirebbe nel controllo della lunghezza."
+    ),
+    "email_gia_usata": (
+        "Con Confirm email attivo, signUp NON da' errore se l'email esiste: torna un utente finto "
+        "con identities:[] (anti-enumerazione). Va intercettato a mano, altrimenti l'utente "
+        "aspetta un codice che non arrivera' mai."
+    ),
 }
 
 # ---------------------------------------------------------------------------
@@ -1356,6 +1389,8 @@ SESSIONE_43 = {
         "archiviate apre l'elenco nel foglio e riapre il recap di QUALSIASI annata. "
         "Piede del menu = .setfoot (logout + versione) con margin-top:auto E padding-top:26px: senza il "
         "padding, a menu pieno margin-top:auto collassa a zero e 'Esci' si incolla alla riga sopra. "
+        "[AGGIORNATO IN SESSIONE 45: vedi SESSIONE_45_DRILL_IN — page-regole e page-lega sono ora "
+        "elenchi di .navrow con 9 sottopagine, e 'Regole della partita' si chiama 'Regole della lega'.] "
         "NUOVE .setpage: page-giornata, page-stagione, page-regole. page-lega invariata nel contenuto "
         "(cambia subback -> setMenu e titolo 'Gestione lega')."
     ),
@@ -1402,4 +1437,452 @@ IN_SOSPESO_43 = (
     "Multi-lega per sondaggio.html (aperto da tempo). "
     "Split del sito: '/' landing pubblica + '/app/' gioco (vedi PROSSIMI_PASSI.md); quando si fara', in "
     "notify.ts vanno cambiati TUTTI gli url delle push ('/' -> '/app/', '/?srecap=' -> '/app/?srecap=')."
+)
+
+# ---------------------------------------------------------------------------
+# SESSIONE 44 — Card unificate in Home, schede giocatore/manager ridisegnate,
+# frasi nello splash, FASE DI GIORNATA UNIFICATA e DOPPIONI ADMIN RIMOSSI.
+# (Un solo index.html, nessuna SQL, notify.ts non toccato.)
+# ---------------------------------------------------------------------------
+SESSIONE_44 = {
+    "ctx_box_create": (
+        "Il riquadro 'Stai creando una nuova lega' (.ctx-box.create) era ROSSO: in una schermata "
+        "di accesso il rosso si legge come ERRORE, non come 'hai scelto questa strada'. Ora e' VIOLA "
+        "(rgba(139,124,255,..)), colore non usato altrove: non si confonde col verde di .ctx-box.join "
+        "ne' con l'azzurro del pulsante d'azione. Il '+' era l'emoji CROCE PESANTE, che iOS disegna "
+        "quasi nera e spariva sul fondo scuro -> sostituita da un carattere vero con classe .ci.plus. "
+        "REGOLA: le emoji-simbolo monocromatiche su fondo scuro in iOS sono da evitare, servono "
+        "caratteri o SVG."
+    ),
+    "rivivi_card": (
+        "Le .rvtile (emoji + due righe) sono diventate .rvcard che ANTICIPANO il contenuto. "
+        "rvMdCardHTML: 'Re della giornata' (logo + punti) e 'La tua giornata' (posizione + punti), "
+        "riempiti in differita da rvFillMd(mdId) con UNA sola RPC get_standings_md e cache "
+        "_rvMdCache={id,rows}. Guardia: se non ci sono righe o rows[0].pts<=0 NON si inventa un "
+        "vincitore (senza formazioni il primo sarebbe una squadra a caso a 0). Guardia anti-race: "
+        "rvFillMd rilegge #rvMdFacts e confronta col nodo di partenza. "
+        "rvSeasonCardHTML: 'Campione' da standings[0] SENZA query extra, ma SOLO se "
+        "Number(displaySeasonId)===Number(s.id) (altrimenti standings e' di un'altra stagione e "
+        "mostrerebbe il vincitore sbagliato); giornate da seasonById(s.id).mds_closed."
+    ),
+    "peek_scartato": (
+        "Le card erano state portate a flex:0 0 88% per far intravedere la successiva: SCARTATO da "
+        "Teo (a schermo pieno e' piu' professionale, bastano i pallini). Rimossa .bctrack.rvtrack. "
+        "TENUTA invece la generalizzazione di renderTrackDots: il passo ora e' "
+        "cards[0].getBoundingClientRect().width+10 invece di tr.clientWidth+10 (corretto in entrambi "
+        "i casi, serve se un domani si riprova il peek)."
+    ),
+    "hcard_componente_unico": (
+        "Le classi .bcard/.bcard-top/.bc-ic/.bc-eyebrow/.bc-title/.bc-sub/.bc-arr/.bc-meta/.bc-pill/"
+        ".bc-next/.bc-bar sono ELIMINATE (entrambi i blocchi CSS, base e override). Statistiche e "
+        "Rivivi usano lo stesso .rvcard e lo stesso builder "
+        "hcardHTML({wm,eye,ttl,sub,facts,factsId,prog,go}). Nel markup #homeBcardPlayer e' "
+        "class='rvcard' e #homeBcardMgr e' class='rvcard gold' (ID INVARIATI: updateStatsWrap legge "
+        "style.display). nextBarHTML emette .rv-prog>.pt/.pb invece di .bc-next. Sulla card manager, "
+        "se i record sono a zero NON si mostra 'x0' (non e' un traguardo): si ripiega sui punti "
+        "stagione. REGOLA: una card della Home = hcardHTML, mai markup a mano."
+    ),
+    "scheda_giocatore": (
+        "playerStatsGridHTML(s) sostituisce .sg-core/.sg-vote (rimosse). Anello del voto medio via "
+        "pgRingHTML(val,label,pct,color): due <circle> in viewBox 0 0 82 82 ruotato -90 gradi, arco "
+        "con stroke-dasharray. ATTENZIONE 1: il colore va nello STYLE, non nell'attributo stroke — "
+        "Safari non risolve le variabili CSS negli attributi di presentazione SVG. ATTENZIONE 2: "
+        "l'etichetta sta FUORI dal cerchio (.pg-rlab sotto); dentro, in maiuscoletto spaziato, "
+        "finiva a cavallo del bordo. Presenze come tacche (.pg-ticks): una per giornata se maxP<=10, "
+        "altrimenti barra unica con due flex proporzionali (a 38 giornate sarebbero trattini da 3px). "
+        "Gol e assist come barre RAPPORTATE AL MIGLIORE DELLA LEGA (massimi ciclando playerStats): "
+        "e' l'unico paragone che significhi qualcosa in un gruppo di 15 amici. #bestVoteBox mantenuto "
+        "come ID con dentro un .v, cosi' loadVoteTrend continua a riempirlo; valore con la VIRGOLA."
+    ),
+    "visibilita_voto_medio": (
+        "CAMBIO CONSAPEVOLE: 'Voto medio' e 'Miglior voto' erano gated da canOp() (solo admin/vice). "
+        "Ora li vedono TUTTI: l'anello e' il perno della scheda e il grafico #statChart subito sotto "
+        "era gia' pubblico e mostrava la media nell'intestazione — il gate era rimasto per inerzia. "
+        "Per tornare indietro: playerStatsGridHTML."
+    ),
+    "scheda_manager": (
+        "teamStatsGridHTML riscritta; rimosse .tg-hero/.tg-rank/.tg-rest. .tm-hero: posizione in 38px "
+        "oro con 'su N squadre' (N da standings.length), punti a destra con la stagione, .tm-track = "
+        "barra ((tot-pos)/(tot-1))*100 = 'quanto sei in alto' senza contare le squadre. .tm-chips e' "
+        "una GRIGLIA 2 colonne di .tm-rec di uguale misura; l'ultimo si allarga se dispari "
+        "(.tm-chips>.tm-rec:last-child:nth-child(odd){grid-column:1/-1}). Prima erano chip a larghezza "
+        "variabile che andavano a capo a caso: sembravano sbilenche. I record a zero restano visibili "
+        "ma SPENTI (.tm-rec.z): sono obiettivi, non risultati. 'Miglior giornata' ha l'unita' 'pts' in "
+        "<small> grigio."
+    ),
+    "bug_span_inline": (
+        "BUG IMPARATO (vale ovunque): valore ed etichetta erano due <span>, elementi IN LINEA, quindi "
+        "si affiancano invece di impilarsi -> si leggeva 'x0Re della giornata'. Servono display:block. "
+        "Il margin-top su uno <span> inline non ha effetto."
+    ),
+    "splash_frasi": (
+        "SPLASH_TIPS: 15 frasi, una a caso a ogni avvio, scelta nello stesso blocco try che copia la "
+        "src da #wcHero. Meta' spiegano una regola ('Il capitano vale doppio'), meta' prendono in giro "
+        "il calcetto vero ('Nessuno vuole fare il portiere. Come sempre.'). Markup: "
+        "<div class='sp-tip' id='spTip'> fra .sp-hero e .sp-load. CSS: bottom calc(80px + safe-area), "
+        "fade a 1.72s; i pallini scesi a 40px. Il padding inferiore di .sp-hero e' passato da 78 a "
+        "116px per fare spazio (l'illustrazione si ridimensiona invece di finirci sopra). Aggiunta "
+        ".sp-tip anche alla regola prefers-reduced-motion. Per aggiungere frasi basta allungare "
+        "l'array."
+    ),
+    "fase_unificata": (
+        "PROBLEMA: due funzioni calcolavano la stessa cosa con due elenchi diversi — phaseLabel() per "
+        "l'intestazione e mdcPhaseIdx() per la timeline. La prima conosceva 'Voti chiusi', la seconda "
+        "no (tornava 4 sia con voti aperti sia scaduti): a finestra voti scaduta testata e pallini "
+        "raccontavano due storie diverse. SOLUZIONE: MD_PHASES (7 stati, ognuno con n=timeline, "
+        "short=sottotitolo menu, desc=riga sotto al titolo) + mdPhaseIdx() + mdPhaseShort() + "
+        "phaseLabel(). INDICI: -1 nessuna giornata, 0 Programmata, 1 Sondaggio presenze, 2 Formazioni, "
+        "3 Partita, 4 Voti, 5 VOTI CHIUSI (NUOVO), 6 Conclusa. ATTENZIONE: gli indici sono CAMBIATI "
+        "rispetto alla sessione 43 — 'Conclusa' era 5, ora e' 6. mdcPhaseIdx() e mdcPhaseShort() NON "
+        "ESISTONO PIU'. Nella timeline le tappe si generano da MD_PHASES; due filtri: 'Sondaggio "
+        "presenze' solo se presenceSelf && t.presenceClose, 'Voti chiusi' solo quando i===5."
+    ),
+    "doppioni_admin": (
+        "PROBLEMA: renderMatchday compilava a mano #mdActions (Azioni avanzate) e renderMdCenter "
+        "compilava a mano #mdcPrimary: STESSI pulsanti scritti due volte. A voti aperti 'Chiudi la "
+        "giornata adesso' compariva DUE VOLTE nella stessa schermata, una come primaria e una nella "
+        "fisarmonica (azione distruttiva duplicata). SOLUZIONE: MD_ACTIONS = dizionario {open, kick, "
+        "panel, close, recap} con {cls, ic, lab, fn}; mdActionHTML(k,marginTop); mdcPrimaryKey() "
+        "decide l'azione del momento dalla fase; renderMdActions(primary) costruisce le avanzate "
+        "ESCLUDENDO la primaria; openRecapCurrent() evita di interpolare l'id in una stringa onclick. "
+        "Il blocco #mdActions dentro renderMatchday e' CANCELLATO: ora renderMdCenter chiama "
+        "renderMdActions(key) in coda. Gli hint (openNowHintText/closeMdHintText) seguono il pulsante "
+        "primario; #openNowHint esiste solo quando la primaria e' 'open' (refreshOpenNowHint ha gia' "
+        "la guardia if(h)). REGOLA: una nuova azione di giornata si aggiunge in MD_ACTIONS e si cita "
+        "in mdcPrimaryKey()/renderMdActions() — MAI un <button> a mano nei render."
+    ),
+    "crediti_interruttore_orfano": (
+        "BUCO TROVATO: la scelta Manuale/Sondaggio per i crediti dei giocatori esiste SOLO nel wizard "
+        "di creazione lega (#suStep3), che pero' promette 'Potrai cambiare tutto dalle Impostazioni'. "
+        "setCreditMode(mode) esiste nel codice ma NESSUN pulsante la chiama piu': funzione orfana. Le "
+        "altre tre regole dello stesso wizard (apertura automatica, portiere, presenze) hanno tutte il "
+        "loro interruttore nelle Impostazioni. Il riquadro #creditCard ('Sondaggio valori', in Gestione "
+        "lega) si mostra solo se creditMode==='poll' && valuePollOpen: chiuso il sondaggio SPARISCE e "
+        "dall'app non si puo' piu' riaprire. Resta sempre la modifica a mano per giocatore "
+        "(renderEditForm, campo Crediti 1-100). Stato reale Fossa di Lissone: modalita' 'poll' nel DB, "
+        "sondaggio chiuso, riquadro invisibile. DA FARE (stessa passata dello spostamento della "
+        "programmazione): riga 'Crediti dei giocatori' in Regole della partita con interruttore + "
+        "'Riapri il sondaggio'. VERIFICARE PRIMA IN SQL cosa fa set_credit_mode('poll') su una lega "
+        "dove il sondaggio e' gia' stato chiuso: riapre poll_open o va aperto a parte? Il toast del "
+        "client ('Sondaggio aperto') lo suggerisce ma non e' confermato."
+    ),
+    "revisione_admin": (
+        "Analisi completa del percorso admin (NON ancora implementata, piano in PROSSIMI_PASSI.md). "
+        "FUNZIONA E NON SI TOCCA: l'automazione (open_due_matchdays + close_due_matchdays + cron ogni "
+        "10 min) — una lega gira anche se l'admin non apre mai l'app, ed e' la decisione di design che "
+        "tiene in vita il progetto; e il principio di UNA sola azione primaria, da estendere. "
+        "PROBLEMI RIMASTI: (1) renderOpenMode() (automatico on/off, giorno fisso, ora) sta nelle Azioni "
+        "avanzate del Centro giornata, che e' la schermata della giornata IN CORSO: e' una regola "
+        "permanente, va in 'Regole della partita'. (2) 'Modifica orario partita' (una tantum) e 'Ora "
+        "del fischio d'inizio' (ricorrente) sono due cose diverse con quasi lo stesso nome in due "
+        "posti. (3) page-lega usa ancora CINQUE fisarmoniche mentre il resto usa drill-in. (4) I nomi "
+        "delle sezioni non aiutano: 'chi puo' votare' (regola) sta in Gestione lega, 'chi segna le "
+        "presenze' sta in Regole. (5) La pagina Stagione fa cinque mestieri, inclusi ricalcolo recap e "
+        "diagnostica SQL, che sono manutenzione. (6) Nessuna scorciatoia dalla Home: inserire i gol "
+        "costa Home -> ingranaggio -> Centro giornata -> scroll -> pannello, quattro tap per l'azione "
+        "piu' frequente. La hero dovrebbe usare mdcPrimaryKey() per proporre l'azione admin del "
+        "momento (cosi' le due schermate non potranno divergere)."
+    ),
+}
+
+FILE_TOCCATI_SESSIONE_44 = [
+    "index.html",
+    "sw.js (solo SW_VERSION)",
+    "NESSUNA SQL",
+    "notify.ts NON toccato",
+    "admin.html NON toccato",
+    "manifest.webmanifest NON toccato",
+]
+DEPLOY_SESSIONE_44 = (
+    "ORDINE: 1) index.html  2) sw.js (SW_VERSION). Nessuna SQL. Le chiavi Supabase sono DENTRO il "
+    "file consegnato (sb_publishable_... e' pubblica per design): non serve piu' re-incollarle, va "
+    "solo verificato che ci siano. ATTENZIONE: APP_VERSION e' ancora 'v9', da bumpare. "
+    "COLLAUDO: nel Centro giornata, in qualunque fase, dentro 'Azioni avanzate' NON deve comparire il "
+    "gemello del pulsante grande sopra; il sottotitolo della riga 'Centro giornata' nel menu deve "
+    "coincidere con la fase accesa nella timeline. In Home le due card Statistiche devono avere "
+    "esattamente la stessa forma delle due di Rivivi. Nella scheda giocatore l'etichetta 'Voto medio' "
+    "deve stare SOTTO l'anello."
+)
+DECISIONI_NON_TECNICHE_44 = (
+    "PARTITA IVA: non serve finche' e' tutto gratis; serve dal primo incasso perche' il criterio "
+    "italiano e' l'ABITUALITA' dell'attivita', non la forma del pagamento — la transazione singola per "
+    "stagione NON e' una scappatoia fiscale (resta pero' la scelta giusta: niente obblighi sul rinnovo "
+    "automatico, contabilita' piu' semplice). NON esiste alcuna soglia di 5.000 euro come esenzione "
+    "(quella riguarda i contributi INPS sul lavoro autonomo occasionale). Inquadramento probabile: "
+    "forfettario, tetto 85.000, imposta sostitutiva 5% per i primi 5 anni se non hai esercitato "
+    "attivita' d'impresa nei 3 anni precedenti, Gestione Separata INPS ~26% senza minimi fissi. "
+    "Da verificare con un commercialista. "
+    "PRIVACY POLICY: obbligatoria a prescindere dalla PWA (il GDPR guarda al trattamento, non al "
+    "canale). Responsabili esterni da nominare: Supabase, Vercel, Resend. NESSUN banner cookie finche' "
+    "si usa solo storage tecnico. "
+    "PUBBLICITA': SCARTATA. Tecnicamente possibile (AdSense su PWA funziona, non serve AdMob) ma a "
+    "questa scala vale qualche euro al mese e imporrebbe un banner di consenso con CMP certificata su "
+    "un'app che oggi non ne ha bisogno, oltre a contraddire il piano di far pagare l'admin. "
+    "Alternative: sponsor locale statico, o pubblicita' sulla sola landing dopo lo split."
+)
+IN_SOSPESO_44 = (
+    "Admin 2/3 (programmazione fuori dal Centro giornata + fisarmoniche di page-lega in drill-in + "
+    "nomi delle sezioni + pagina Stagione snellita + interruttore orfano del metodo crediti) e "
+    "Admin 3/3 (hero della Home admin-aware). "
+    "Sparkline della posizione nella scheda manager: serve una RPC che esponga _season_rank_history "
+    "(oggi e' solo interna). Multi-lega per sondaggio.html (aperto da tempo). Split '/' landing + "
+    "'/app/' gioco, con tutti gli url delle push da cambiare in notify.ts. Privacy policy e termini, "
+    "da scrivere insieme alla landing. Bump di APP_VERSION."
+)
+
+# ---------------------------------------------------------------------------
+# SESSIONE 45 — ADMIN 2/3 + 3/3: configurazione fuori dall'operativita',
+# impostazioni a drill-in, hero della Home admin-aware
+# ---------------------------------------------------------------------------
+SESSIONE_45_CRITERIO = (
+    "REGOLA DI COLLOCAZIONE, da rispettare d'ora in poi. Quattro contenitori: "
+    "(1) CENTRO GIORNATA (page-giornata) = tutto cio' che riguarda la giornata IN CORSO. "
+    "(2) REGOLE DELLA LEGA (page-regole, ex 'Regole della partita') = gli INTERRUTTORI "
+    "permanenti, che si toccano due volte l'anno. "
+    "(3) GESTIONE LEGA (page-lega) = le PERSONE. Regola pratica: se devi scegliere delle "
+    "persone, e' in Gestione lega. "
+    "(4) AIUTO E MANUTENZIONE (page-manutenzione) = quello che serve una volta ogni tanto "
+    "(ricalcoli, diagnostica, app offline) piu' il canale di segnalazione."
+)
+
+SESSIONE_45_QUANDO_GIOCATE = {
+    "cosa": (
+        "renderOpenMode() (apertura automatica on/off, giorno fisso, ora) spostata dalle "
+        "'Azioni avanzate' del Centro giornata a Regole della lega -> 'Quando giocate di "
+        "solito' (page-quando). Era una regola permanente dentro la schermata della "
+        "giornata in corso."
+    ),
+    "id": "contenitore rinominato #mdOpenBox -> #schedBox (unico punto dove renderOpenMode scrive).",
+    "chiamata": (
+        "renderOpenMode() e' uscita dal blocco if(mc){...} di renderMatchday: non dipende "
+        "piu' dall'esistenza di #mdCard, che sta in un'altra pagina."
+    ),
+    "naming": (
+        "RISOLTO il conflitto: 'Modifica orario partita' (una tantum) -> 'Modifica orario di "
+        "QUESTA GIORNATA' (MD_ACTIONS.kick + titolo del foglio openEditKickoffSheet); 'Ora del "
+        "fischio d'inizio' (ricorrente) -> 'Ora ABITUALE del fischio d'inizio' in DUE posti "
+        "(renderOpenMode e lo step 0 del wizard #suStep0)."
+    ),
+    "extra": (
+        "Nel Centro giornata, quando non c'e' nessuna giornata, sotto l'azione primaria c'e' "
+        "una scorciatoia setNav('page-quando'). Il messaggio 'X e' ancora aperta: puoi "
+        "annullarla o chiuderla QUI SOTTO' ora rimanda al Centro giornata (diceva il falso)."
+    ),
+}
+
+SESSIONE_45_DRILL_IN = {
+    "cosa": (
+        "Le CINQUE .acc gold di page-lega e le DUE di page-regole sono diventate .navrow con "
+        "pagina dedicata. Da 8 a 17 .setpage. NUOVE: page-quando, page-presenze, page-portiere, "
+        "page-crediti, page-invita, page-giocatori, page-vice, page-votanti, page-manutenzione."
+    ),
+    "vincolo_id": (
+        "RISPETTATO: gli id usati dal JS per show/hide (gkCard, presModeCard, voterCard, "
+        "inviteCard, manageCard, creditCard, seasonCard) restano sull'elemento ESTERNO, che "
+        "ora e' la riga .navrow e non piu' la fisarmonica."
+    ),
+    "bug_display": (
+        "IMPORTANTE. applyProfile faceva style.display='block'. Una .navrow e' display:flex: "
+        "forzarla a 'block' la spezza (icona/etichetta/chevron si impilano). Ora usa "
+        "display='' , che rimette il valore del foglio di stile (block per un div, flex per "
+        "una .navrow). Stessa correzione in loadInvite(). REGOLA GENERALE: mai display:'block' "
+        "per riaccendere un elemento di cui non conosci il display nativo; '' e' sempre giusto."
+    ),
+    "sottotitoli": (
+        "renderRuleRows() e' l'UNICO punto che scrive i sottotitoli delle righe ('Ogni Mer alle "
+        "20:30 - apertura automatica', 'Le segnano i giocatori', '12 giocatori in rosa'): cosi' "
+        "non serve entrare per sapere com'e' impostata una regola. Chiamata da renderOpenMode, "
+        "renderGkMode, renderPresenceMode, loadCreditConfig, renderManage, applyProfile. "
+        "SE AGGIUNGI UNA REGOLA, AGGIUNGI LA SUA RIGA LI'."
+    ),
+    "vice": (
+        "Nuova classe .ownerRow (applyProfile, gate su is_admin) separata da .adminRow (gate su "
+        "canOp()): le pagine da solo-proprietario (Stagione, Regole, Manutenzione) non compaiono "
+        "piu' al vice. Prima il vice vedeva la riga e ci trovava una pagina vuota."
+    ),
+}
+
+SESSIONE_45_CREDITI = {
+    "cosa": (
+        "Richiuso l'interruttore ORFANO del metodo crediti. setCreditMode(mode) esisteva ma "
+        "nessun pulsante la chiamava dalla sessione 31.5: la scelta Manuale/Sondaggio viveva "
+        "solo nel wizard di creazione lega, che compare una volta sola. Da Stagione 2 in poi "
+        "non c'era modo di rifare i valori."
+    ),
+    "dove": (
+        "Regole della lega -> Crediti dei giocatori (page-crediti): interruttore #creditModeSw "
+        "-> askCreditManual()/askCreditPoll() (entrambe con conferma), pulsante 'Riapri il "
+        "sondaggio' quando credit_mode='poll' e sondaggio chiuso, hint #creditModeHint scritto "
+        "da renderCreditRule(). #creditCard (avanzamento + 'Chiudi e calcola') SI E' SPOSTATA "
+        "qui da page-lega: era una regola finita fra le persone."
+    ),
+    "sql_risolto": (
+        "IL DUBBIO DELLA SESSIONE 44 E' RISOLTO: set_credit_mode('poll') imposta "
+        "value_poll_open=true, quindi E' ANCHE il 'riapri'. Nessuna RPC nuova, nessuna "
+        "migrazione. askCreditPoll() ricontrolla comunque valuePollOpen dopo la chiamata e "
+        "avvisa se non risulta aperto."
+    ),
+    "nota_onesta": (
+        "Riaprendo, i voti vecchi RESTANO (submit_value_poll fa upsert per voter_id): chi non "
+        "rivota tiene il voto della volta scorsa. Scritto nell'interfaccia."
+    ),
+}
+
+SESSIONE_45_MANUTENZIONE = {
+    "cosa": (
+        "Pagina Stagione snellita: ricalcolo del recap e avviso diagnostico su stagione_recap.sql "
+        "erano MANUTENZIONE, non gestione -> spostati in page-manutenzione (renderMaintBox()). In "
+        "Stagione restano stato, chiusura, apertura della prossima e 'Apri il recap'."
+    ),
+    "orfano_2": (
+        "SECONDO interruttore orfano trovato: il markup di #maintCard/#maintBtn era SPARITO "
+        "dall'HTML in qualche sessione passata, mentre applyProfile e renderMaintBtn() "
+        "continuavano a cercarlo e setMaintenance() non era piu' raggiungibile. Rimesso."
+    ),
+    "gate_superadmin": (
+        "PRECISAZIONE: setMaintenance() fa .eq('league_id', profile.league_id), quindi agisce "
+        "SOLO sulla propria lega - un altro admin non poteva spegnere l'app a tutti, solo ai "
+        "suoi. La manutenzione GLOBALE sta su app_global, e' riservata al super-admin e NON HA "
+        "ALCUN PULSANTE in tutta l'app. Resta pero' un pulsante che a un admin che non siamo noi "
+        "puo' solo fare danno: #maintCard e' ora gated su isSuperAdmin(), non su is_admin. Stessa "
+        "scelta per l'avviso diagnostico su stagione_recap.sql (dice di eseguire un file SQL che "
+        "solo noi possiamo eseguire)."
+    ),
+    "canale_aiuto": (
+        "Al suo posto, per tutti gli altri admin: 'Qualcosa non va?' -> helpMailto() costruisce un "
+        "mailto: a accesso@fantacalcettoitalia.it con oggetto e corpo precompilati (LEGA, "
+        "APP_VERSION, GIORNATA in corso: le tre cose che servono sempre per capire un bug). "
+        "openHelpMail() + copyHelpMail() come ripiego se il mailto: non parte (certe webview). "
+        "Costante HELP_EMAIL."
+    ),
+}
+
+SESSIONE_45_HERO_ADMIN = {
+    "cosa": (
+        "ADMIN 3/3. Inserire i gol costava Home -> ingranaggio -> Centro giornata -> scroll -> "
+        "'Apri pannello partita': quattro tap e uno scroll ogni settimana per l'azione piu' "
+        "frequente. Ora e' UN TAP dalla hero."
+    ),
+    "primaria_piu_sveglia": (
+        "mdcPrimaryKey(): a voti aperti (fase 4), se l'esito non e' ancora stato SALVATO l'azione "
+        "primaria e' 'panel' (inserisci i risultati), non 'close'. Chiudere senza esiti manda in "
+        "classifica una giornata a meta', ed e' l'errore piu' facile da fare in quella fase."
+    ),
+    "mdResultsSaved": (
+        "NUOVO flag, calcolato in loadMatchStats() DALLE RIGHE DEL DATABASE, non da adminStats: "
+        "quest'ultimo viene mescolato con la bozza locale (loadLiveDraft/localStorage) e direbbe "
+        "'risultati inseriti' anche senza aver salvato. Il segnale e' l'esito V/S: gol e assist "
+        "possono legittimamente essere zero, 'chi ha vinto' no."
+    ),
+    "funzioni": (
+        "HERO_TODO (dizionario open/panel/close con ttl, cta, note) + heroTodoKey() + "
+        "heroAdminTodo(). La hero legge mdcPrimaryKey(), LA STESSA funzione che comanda il Centro "
+        "giornata: le due schermate non possono divergere. 'kick' e 'recap' non compaiono in Home "
+        "(spostare un orario o rileggere il pagellone non sono compiti). Il flag `solo` decide se "
+        "il compito admin prende il pulsante PRINCIPALE o resta un secondo pulsante .hero-2nd "
+        "sotto 'Schiera la formazione': prende il principale solo quando il giocatore non ha "
+        "niente da fare."
+    ),
+    "tabella": (
+        "nessuna giornata -> open, hero PRINCIPALE 'Programma la prossima'. sondaggio/formazioni "
+        "-> kick, hero niente. partita -> panel, hero PRINCIPALE 'Inserisci i risultati'. voti "
+        "aperti senza risultati -> panel, hero SECONDARIO. voti aperti con risultati -> close, "
+        "hero niente (ci pensa la chiusura automatica). da archiviare -> close, hero PRINCIPALE "
+        "'Chiudi la Giornata N'. conclusa -> recap, hero niente. Il ramo seasonBreak() di "
+        "renderHero e' intatto."
+    ),
+    "attenzione_tick": (
+        "La hero si riadegua dentro startCountdown(), confrontando heroTodoKey() con lastHeroTodo. "
+        "Da li' si chiamano renderHero() e renderMdCenter(), MAI renderMatchday(): quella rifa' "
+        "partire startCountdown() -> ricorsione."
+    ),
+}
+
+SESSIONE_45_SPLASH = {
+    "cosa": (
+        ".sp-tip da 13px var(--muted) a 15.5px peso 600 colore #dce8fb, con text-shadow leggero e "
+        "letter-spacing negativo. Padding-bottom di .sp-hero da 116 a 138px, perche' a quella "
+        "dimensione la frase puo' andare a due righe."
+    ),
+}
+
+SESSIONE_45_IMPARATO = [
+    "display='' invece di 'block' quando si riaccende un elemento di cui non conosci il display nativo.",
+    "GLI INTERRUTTORI ORFANI SI ACCUMULANO IN SILENZIO: in questa sessione ne sono saltati fuori DUE "
+    "(setCreditMode, setMaintenance), entrambi con la funzione viva e il pulsante sparito, entrambi "
+    "senza errori a runtime perche' le getElementById restituivano null e il codice era difensivo. "
+    "Rifare ogni tanto il controllo 'funzioni definite e mai richiamate'.",
+    "Patch script con SCRITTURA ATOMICA: uno script Python e' morto su UnicodeEncodeError (surrogati "
+    "\\ud83d\\udcc5 scritti come stringa Python invece che come escape JS) DOPO aver aperto il file in "
+    "'w' -> file troncato a 0 byte. Da allora: write su .tmp + os.replace.",
+    "Le emoji nei patch script vanno scritte come escape JS o come carattere vero, mai come surrogato "
+    "Python isolato.",
+    "Il validatore casereccio di parentesi fallisce sui letterali regex - fallisce anche sull'index.html "
+    "ORIGINALE. L'autorita' e' node --check, non lo scanner.",
+]
+
+FILE_TOCCATI_SESSIONE_45 = [
+    "index.html",
+    "NESSUNA SQL",
+    "sw.js NON toccato",
+    "notify.ts NON toccato",
+    "admin.html NON toccato",
+    "manifest.webmanifest NON toccato",
+]
+
+DEPLOY_SESSIONE_46 = (
+    "ORDINE: PRIMA i template email su Supabase, POI index.html - se si carica il file col "
+    "template vecchio, chi preme 'Password dimenticata' riceve un link e nessun codice. "
+    "Solo index.html. Nessuna SQL. APP_VERSION 'v11'. Chiavi Supabase DENTRO il file. "
+    "VERIFICHE: node --check OK sui 2 script inline, 566 backtick pari, 912 div / 158 button "
+    "bilanciati, 7298 -> 7697 righe, 86 prove in jsdom con finto Supabase (17 gruppi). "
+    "Il collaudo ha trovato 1 bug vero: ordine dei controlli in authErrIt."
+)
+
+DEPLOY_SESSIONE_45 = (
+    "ORDINE: solo index.html. Nessuna SQL. APP_VERSION bumpato a 'v10'. sw.js non toccato (fa gia' "
+    "network-first sulle navigazioni). Le chiavi Supabase sono DENTRO il file. "
+    "VERIFICHE FATTE: node --check OK, 566 backtick pari, graffe/quadre bilanciate, annidamento di "
+    "v-settings pulito, 893 div e 151 button bilanciati, id duplicati solo i due preesistenti "
+    "(pagLb, pagShareWrap), 7040 -> 7298 righe, logica della hero provata fase per fase in jsdom. "
+    "COLLAUDO: le quattro righe di Regole della lega mostrano lo stato senza entrare; cambiando "
+    "giorno/ora il sottotitolo si aggiorna da solo; 'Riapri il sondaggio' fa ricomparire la card in "
+    "Home; nelle Azioni avanzate non c'e' piu' la programmazione; solo il super-admin vede 'App "
+    "offline'; a partita giocata la Home dice 'Partita in corso - Inserisci i risultati'."
+)
+
+# ---------------------------------------------------------------------------
+# PROSSIMI PASSI (aggiornati a fine sessione 45)
+# ---------------------------------------------------------------------------
+LOGIN_FATTO_46 = (
+    "FATTO in sessione 46. Login = email+password; il codice a 6 cifre resta solo per confermare "
+    "l'email alla registrazione e per il recupero. Tre schermate dentro #gate (login|signup|reset) "
+    "con tre passi (form|code|newpw). Chi c'era prima se la imposta da dentro l'app con #pwsetup, "
+    "senza nessuna email, perche' e' gia' autenticato. Nessuna SQL: il segnalibro e' "
+    "user_metadata.has_pw. Restare loggati funzionava gia' (sessione in localStorage, token "
+    "rinnovato da solo): chi viene buttato fuori e' iOS che cancella lo storage dopo 7 giorni di "
+    "inattivita' sui siti NON installati. Google Sign-In rimandato (meno urgente ora che "
+    "l'accesso e' immediato); Sign in with Apple costa 99 dollari/anno. Dettagli in "
+    "FANTACALCETTO.md sez. 46."
+)
+
+PROSSIMO_COOKIE = (
+    "NUOVO, deciso a fine sessione 45. OGGI NESSUN BANNER SERVE: l'app usa solo storage tecnico "
+    "(token di sessione, preferenze, service worker), che e' esente da consenso e va solo "
+    "dichiarato nell'informativa. IL BANNER SERVIREBBE SOLO aggiungendo statistiche o terze parti. "
+    "PIANO: se si vogliono le statistiche, metterle SOLO SULLA LANDING pubblica e lasciare /app/ "
+    "pulita - e' un altro motivo per cui lo split ha senso. Il consenso va raccolto PRIMA di "
+    "caricare lo script di analytics, non dopo. Uno strumento in modalita' cookieless (persistenza "
+    "in memoria) rafforza l'esenzione ma non la garantisce: il Garante italiano e' prudente. "
+    "ATTENZIONE AI DARK PATTERN: 'Accetta tutti' e 'Solo essenziali' devono avere la STESSA "
+    "evidenza grafica - il Garante ha sanzionato banner col rifiuto meno visibile."
+)
+IN_SOSPESO_46 = (
+    "1) Cookie e analytics (vedi PROSSIMO_COOKIE). 2) Sparkline della posizione nella scheda "
+    "manager: serve una RPC che esponga _season_rank_history (oggi e' solo interna), tipo "
+    "get_team_rank_history(p_manager,p_season) -> (giornata,pos). 3) Split '/' landing + '/app/' "
+    "gioco, con tutti gli url delle push da cambiare in notify.ts (runAutoOpen, runLineupOpen, "
+    "runReminder, runAutoClose, runPresenceReminder, runLineupReminder, runSeasonRecap). "
+    "4) Screenshot e contenuti della landing. 5) Privacy policy e termini. 6) Multi-lega per "
+    "sondaggio.html (aperto da tempo)."
 )
