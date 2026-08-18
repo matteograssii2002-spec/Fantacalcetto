@@ -212,6 +212,35 @@
   .ob-input{width:100%;background:var(--surface);border:1.5px solid var(--line-strong);border-radius:15px;padding:16px 18px;color:var(--text);font-family:'Hanken Grotesk';font-size:17px;font-weight:600;outline:none;transition:border-color .2s}
   .ob-input:focus{border-color:var(--accent)}
   .ob-input::placeholder{color:#5d76a0}
+  /* ---- campo password con "Mostra/Nascondi" (testo, non emoji: iOS disegna
+     le emoji quasi nere e sul fondo scuro sparirebbero) ---- */
+  .pw-wrap{position:relative;margin-top:12px}
+  .pw-wrap .ob-input{padding-right:104px}
+  .pw-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);height:38px;padding:0 12px;border:none;border-radius:11px;background:transparent;color:var(--accent-soft);font-family:'Hanken Grotesk';font-size:13px;font-weight:700;cursor:pointer}
+  .pw-eye:active{background:rgba(63,151,255,.14)}
+  /* i tre passaggi laterali dell'accesso: registrati / password dimenticata / codice */
+  .gate-links{margin-top:20px;display:flex;flex-direction:column;gap:13px;align-items:center;text-align:center}
+  .gate-links a{color:var(--accent-soft);font-size:14px;font-weight:600;cursor:pointer;line-height:1.3}
+  .gate-links a b{color:var(--text)}
+  .gate-links a.small{font-size:13px;color:var(--muted)}
+  .gate-links a.small b{color:var(--accent-soft)}
+  /* ---- passaggio alla password per chi c'era già ----
+     Stessa impalcatura del gate (azione in fondo, nella zona del pollice),
+     ma con un riquadro che spiega il perché: nessuno deve chiedersi
+     "perché l'app mi sta chiedendo una password adesso?". */
+  #pwsetup{display:flex;flex-direction:column}
+  .pws-badge{width:64px;height:64px;border-radius:20px;display:grid;place-items:center;font-size:30px;margin:0 0 16px;
+    background:linear-gradient(135deg,rgba(63,151,255,.30),rgba(63,151,255,.12));border:1.5px solid rgba(127,176,255,.5);
+    box-shadow:0 12px 28px -12px rgba(63,151,255,.7), inset 0 1px 0 rgba(255,255,255,.22)}
+  .pws-why{margin:16px 0 0;padding:16px;border-radius:16px;background:var(--surface);border:1px solid var(--line-strong)}
+  .pws-why li{list-style:none;display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.45;color:var(--muted);margin:0 0 10px}
+  .pws-why li:last-child{margin-bottom:0}
+  .pws-why li b{color:var(--text);font-weight:700}
+  .pws-why .tick{color:var(--accent-soft);font-weight:800;flex:none}
+  .pws-who{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:8px 13px;border-radius:999px;
+    background:rgba(63,139,255,.16);border:1px solid rgba(127,176,255,.4);font-size:12.5px;color:#dbe8ff;font-weight:600;max-width:100%}
+  .pws-who span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pws-later{display:block;text-align:center;color:var(--muted);font-size:13.5px;font-weight:600;margin-top:16px;padding:12px;cursor:pointer}
   .ob-input:disabled{opacity:.55}
   /* fix iOS: il campo data/ora rispetta la larghezza del contenitore e non sfora più lo schermo */
   input[type="datetime-local"],input[type="date"],input[type="time"]{-webkit-appearance:none;appearance:none;max-width:100%;min-width:0;box-sizing:border-box;display:block;text-align:left}
@@ -1570,23 +1599,67 @@
   <div class="gate-top">
     <div class="ob-brand"><div class="dot"><img src="icon-512.png?v=3" alt=""></div><b>Fanta<span>Calcetto</span></b></div>
     <div class="gate-bar">
-      <a class="wc-back" onclick="showWelcome()">‹ Indietro</a>
+      <a class="wc-back" onclick="gateBack()">‹ Indietro</a>
     </div>
-    <div class="ob-eye">Accedi</div>
-    <h1>Entra con la tua email</h1>
-    <p class="gate-desc">Inserisci la tua email per accedere.<br>Nessuna password richiesta.</p>
+    <div class="ob-eye" id="gateEyebrow">Accedi</div>
+    <h1 id="gateTitle">Bentornato</h1>
+    <p class="gate-desc" id="gateDesc">Entra con la tua email e la tua password.</p>
     <div class="ctx-box" id="gateContext"></div>
   </div>
   <div class="gate-bottom">
-    <input class="ob-input" id="gateEmail" type="email" placeholder="latua@email.it" autocomplete="email">
-    <button class="ob-btn" id="gateBtn">Inviami il codice →</button>
-    <div id="gateStep2" style="display:none">
+    <!-- PASSO 1 · email (+ password, se serve) -->
+    <div id="gateStepForm">
+      <input class="ob-input" id="gateEmail" type="email" inputmode="email" placeholder="latua@email.it" autocomplete="email">
+      <div class="pw-wrap" id="gatePwWrap">
+        <input class="ob-input" id="gatePw" type="password" placeholder="La tua password" autocomplete="current-password">
+        <button type="button" class="pw-eye" id="gatePwEye" onclick="togglePw('gatePw','gatePwEye')">Mostra</button>
+      </div>
+      <button class="ob-btn" id="gateBtn">Entra →</button>
+    </div>
+    <!-- PASSO 2 · codice via email (registrazione, recupero, porta di servizio) -->
+    <div id="gateStepCode" style="display:none">
       <div class="field-lab" style="margin-top:18px">Codice ricevuto via email</div>
       <input class="ob-input" id="gateCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="12345678" maxlength="8" style="letter-spacing:6px;text-align:center;font-size:22px">
       <button class="ob-btn" id="gateVerify">Entra →</button>
       <div style="text-align:center;margin-top:12px"><a id="gateResend" style="color:var(--accent-soft);font-size:13px;cursor:pointer">Rinvia il codice</a></div>
     </div>
+    <!-- PASSO 3 · nuova password (solo dopo il recupero) -->
+    <div id="gateStepNewPw" style="display:none">
+      <div class="field-lab" style="margin-top:18px">Nuova password</div>
+      <div class="pw-wrap">
+        <input class="ob-input" id="gateNewPw" type="password" placeholder="Almeno 8 caratteri" autocomplete="new-password">
+        <button type="button" class="pw-eye" id="gateNewPwEye" onclick="togglePw('gateNewPw','gateNewPwEye')">Mostra</button>
+      </div>
+      <button class="ob-btn" id="gateSaveNewPw">Salva ed entra →</button>
+    </div>
     <div class="gate-status" id="gateStatus"></div>
+    <div class="gate-links" id="gateLinks"></div>
+  </div>
+</div></div>
+
+<!-- SCEGLI LA TUA PASSWORD (una volta sola, per chi era entrato col codice) -->
+<div class="overlay hidden" id="pwsetup"><div class="ob-inner gate-center">
+  <div class="gate-top">
+    <div class="ob-brand"><div class="dot"><img src="icon-512.png?v=3" alt=""></div><b>Fanta<span>Calcetto</span></b></div>
+    <div class="pws-badge" style="margin-top:22px">🔑</div>
+    <div class="ob-eye">Un ultimo passo</div>
+    <h1>Scegli la tua password</h1>
+    <p class="gate-desc">Da oggi si entra con email e password. Te la chiedo una volta sola: sei già dentro, non serve nessun codice.</p>
+    <div class="pws-who" id="pwsWho"></div>
+    <ul class="pws-why">
+      <li><span class="tick">✓</span><span>Niente più <b>attesa dell'email</b> a ogni accesso da un telefono nuovo.</span></li>
+      <li><span class="tick">✓</span><span>Se un giorno esci dall'app, <b>rientri in due secondi</b>.</span></li>
+      <li><span class="tick">✓</span><span>Puoi cambiarla quando vuoi da <b>Impostazioni › Profilo</b>.</span></li>
+    </ul>
+  </div>
+  <div class="gate-bottom">
+    <div class="pw-wrap" style="margin-top:0">
+      <input class="ob-input" id="pwsInput" type="password" placeholder="Almeno 8 caratteri" autocomplete="new-password">
+      <button type="button" class="pw-eye" id="pwsEye" onclick="togglePw('pwsInput','pwsEye')">Mostra</button>
+    </div>
+    <button class="ob-btn" id="pwsBtn">Salva e continua →</button>
+    <div class="gate-status" id="pwsStatus"></div>
+    <a class="pws-later" onclick="pwSetupLater()">Lo faccio dopo</a>
   </div>
 </div></div>
 
@@ -1921,6 +1994,14 @@
           <span class="disc-act">Cambia <span class="disc-chev">▾</span></span>
         </button>
         <div class="lggrid disc-body" id="setLogoGrid" style="display:none"></div></div>
+      <div class="set-card" id="setPwCard"><h3>Password</h3>
+        <p class="vs" style="color:var(--muted);font-size:12.5px;line-height:1.5;margin:0 0 10px">È quella con cui entri nell'app. Puoi cambiarla quando vuoi: vale dal prossimo accesso.</p>
+        <div class="pw-wrap" style="margin-top:0">
+          <input class="ob-input" id="setPwInput" type="password" placeholder="Almeno 8 caratteri" autocomplete="new-password">
+          <button type="button" class="pw-eye" id="setPwEye" onclick="togglePw('setPwInput','setPwEye')">Mostra</button>
+        </div>
+        <button class="set-btn" style="margin-top:10px" onclick="saveMyPassword()">Salva la password</button>
+      </div>
       <button class="save" id="setSaveBtn">Salva modifiche</button>
     </div>
 
@@ -2284,7 +2365,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v10';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v11';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -2470,6 +2551,9 @@ function showWelcome(){
 function showGate(intent){
   const w=document.getElementById('welcome'); if(w)w.classList.add('hidden');
   const g=document.getElementById('gate'); g.classList.remove('hidden'); g.scrollTop=0;
+  // chi crea una lega o entra in una lega è quasi sempre nuovo: gli apro «Registrati».
+  // Chi arriva da «Accedi» vede l'accesso. In ogni caso si passa da una all'altra con un tap.
+  gateSet(intent==='create'||intent==='join' ? 'signup' : 'login');
   const ctx=document.getElementById('gateContext');
   if(ctx){
     if(intent==='create'){ ctx.className='ctx-box show create'; ctx.innerHTML='<span class="ci plus">+</span><span>Stai creando una <b>nuova lega</b></span>'; }
@@ -2571,7 +2655,9 @@ async function boot(){
     // controlla subito se c'è una versione più recente
     try{ const reg=await navigator.serviceWorker.getRegistration(); if(reg) reg.update(); }catch(_){}
   }catch(_){} }
-  sb.auth.onAuthStateChange((_e,session)=>{ if(session&&(!user||user.id!==session.user.id)){ user=session.user; afterLogin(); } });
+  // durante il recupero password la verifica del codice apre già una sessione: se lasciassi
+  // passare questo listener l'app entrerebbe PRIMA che la nuova password sia stata salvata.
+  sb.auth.onAuthStateChange((_e,session)=>{ if(_gateAwaitNewPw) return; if(session&&(!user||user.id!==session.user.id)){ user=session.user; afterLogin(); } });
   // se parto senza rete non ha senso proseguire: mostro subito la schermata offline
   if(navigator.onLine===false){ showOffline(); return; }
   let session=null;
@@ -2615,6 +2701,7 @@ async function afterLogin(){
     ensurePush();            // riaggancia le notifiche se la subscription era scaduta
     maybeShowLogoNotice();   // AVVISO TEMPORANEO (vedi blocco in fondo) — rimuovibile in un deploy futuro
     maybeShowLogoIntro();    // novità loghi: chiede di scegliere il logo a chi non ce l'ha ancora
+    maybeAskPassword();      // chi c'era prima del login a password: gliela chiedo una volta sola
     const _qs=new URLSearchParams(location.search);
     const _rp=_qs.get('recap'), _sp=_qs.get('srecap');             // deep-link dalle push
     if(_sp && !isNaN(parseInt(_sp))){ openSeasonRecap(parseInt(_sp), false); }
@@ -3119,31 +3206,295 @@ function toggleMaintenance(){
   if(!maintOn && !confirm('Mettere l\'app in manutenzione?\n\nGli altri membri della lega vedranno la schermata \u00abManutenzione in corso\u00bb finch\u00e9 non torni live. Tu continui a vedere tutto.')) return;
   setMaintenance(!maintOn);
 }
+/* ================= ACCESSO =================================================
+   Email + PASSWORD come strada principale, CODICE via email come porta di
+   servizio (chi non ha ancora una password entra come sempre).
+   REGOLA DI FONDO: nessun LINK in nessuna email. Registrazione e recupero
+   passano dal codice ({{ .Token }}), perch\u00e9 i link si rompono nella PWA in
+   standalone su iOS \u2014 \u00e8 lo stesso motivo per cui il magic-link fu abbandonato.
+   Quattro schermate, tutte dentro #gate: login | signup | reset | otp.        */
 let gateEmailVal='';
-async function sendCode(){
-  const email=document.getElementById('gateEmail').value.trim();
-  if(!email){gateStatus('Inserisci la tua email.');return;}
-  gateEmailVal=email;
-  const btn=document.getElementById('gateBtn'); btn.disabled=true; gateStatus('Invio in corso…');
-  const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:location.origin+location.pathname}});
-  btn.disabled=false;
-  if(error){gateStatus('Errore: '+error.message);return;}
-  document.getElementById('gateStep2').style.display='block';
-  document.getElementById('gateEmail').disabled=true; btn.style.display='none';
-  gateStatus('✅ Ti ho inviato un codice a '+email+'. Scrivilo qui sotto per entrare.');
-  setTimeout(()=>document.getElementById('gateCode').focus(),200);
-}
-document.getElementById('gateBtn').onclick=sendCode;
-document.getElementById('gateResend').onclick=sendCode;
-document.getElementById('gateVerify').onclick=async function(){
-  const token=document.getElementById('gateCode').value.trim();
-  if(!token){gateStatus('Inserisci il codice.');return;}
-  this.disabled=true; gateStatus('Verifica in corso…');
-  const {data,error}=await sb.auth.verifyOtp({email:gateEmailVal,token,type:'email'});
-  this.disabled=false;
-  if(error){gateStatus('Codice errato o scaduto: '+error.message);return;}
-  if(data&&data.user){ user=data.user; afterLogin(); }
+let gateMode='login';       // login | signup | reset | otp
+let gateStage='form';       // form | code | newpw
+let _gateAwaitNewPw=false;  // recupero in corso: non entrare finch\u00e9 la password non \u00e8 salvata
+
+const GATE_TXT={
+  login :{eye:'Accedi',     h1:'Bentornato',            desc:'Entra con la tua email e la tua password.',                                   btn:'Entra \u2192',              ac:'current-password', ph:'La tua password'},
+  signup:{eye:'Registrati', h1:'Crea il tuo account',   desc:'Scegli una password: da qui in avanti entri senza aspettare nessuna email.',  btn:"Crea l'account \u2192",    ac:'new-password',     ph:'Almeno 8 caratteri'},
+  reset :{eye:'Recupero',   h1:'Password dimenticata',  desc:'Scrivi la tua email: ti mando un codice per impostarne una nuova.',           btn:'Inviami il codice \u2192'}
 };
+
+function togglePw(inputId,btnId){
+  const i=document.getElementById(inputId), b=document.getElementById(btnId); if(!i) return;
+  const show=(i.type==='password');
+  i.type=show?'text':'password';
+  if(b) b.textContent=show?'Nascondi':'Mostra';
+}
+
+/* Messaggi d'errore in italiano e DISTINTI: credenziali sbagliate ed email non
+   confermata sono due problemi diversi, con due rimedi diversi. */
+function authErrIt(e){
+  const m=String((e&&e.message)||e||'');
+  if(/Invalid login credentials/i.test(m)) return 'Email o password non corretti.';
+  if(/Email not confirmed/i.test(m)) return 'Questa email non \u00e8 ancora confermata.';
+  if(/already registered/i.test(m)) return 'Questa email ha gi\u00e0 un account: entra con la password, oppure usa \u00abPassword dimenticata\u00bb.';
+  // «should be different» PRIMA della lunghezza: il messaggio di Supabase per la
+  // password ripetuta contiene «Password should be», e finirebbe nel controllo sbagliato
+  if(/should be different/i.test(m)) return 'La nuova password deve essere diversa da quella di prima.';
+  if(/at least \d+ characters|Password should be at least/i.test(m)) return 'Password troppo corta: almeno 8 caratteri.';
+  if(/pwned|compromised|breach/i.test(m)) return 'Questa password compare in fughe di dati note: scegline un\'altra.';
+  if(/rate limit|too many|for security purposes|after \d+ seconds/i.test(m)) return 'Troppi tentativi: aspetta un minuto e riprova.';
+  if(/expired|invalid|not found/i.test(m)) return 'Codice errato o scaduto. Premi \u00abRinvia il codice\u00bb.';
+  if(/valid email|Unable to validate/i.test(m)) return 'Controlla l\'email: non sembra scritta bene.';
+  if(/Failed to fetch|NetworkError|network/i.test(m)) return 'Nessuna connessione: riprova tra poco.';
+  return 'Errore: '+m;
+}
+
+function gateSet(mode){
+  gateMode=(GATE_TXT[mode]?mode:'login'); gateStage='form';
+  const t=GATE_TXT[gateMode];
+  const put=(id,txt)=>{ const e=document.getElementById(id); if(e) e.textContent=txt; };
+  put('gateEyebrow',t.eye); put('gateTitle',t.h1); put('gateDesc',t.desc);
+  const btn=document.getElementById('gateBtn');
+  if(btn){ btn.textContent=t.btn; btn.disabled=false; }
+  const needPw=(gateMode==='login'||gateMode==='signup');
+  const wrap=document.getElementById('gatePwWrap'); if(wrap) wrap.style.display=needPw?'':'none';
+  const pw=document.getElementById('gatePw');
+  if(pw){ pw.value=''; pw.type='password'; pw.setAttribute('autocomplete',t.ac||'current-password'); pw.placeholder=t.ph||''; }
+  const eye=document.getElementById('gatePwEye'); if(eye) eye.textContent='Mostra';
+  const np=document.getElementById('gateNewPw'); if(np){ np.value=''; np.type='password'; }
+  const nye=document.getElementById('gateNewPwEye'); if(nye) nye.textContent='Mostra';
+  const sf=document.getElementById('gateStepForm');  if(sf) sf.style.display='';
+  const sc=document.getElementById('gateStepCode');  if(sc) sc.style.display='none';
+  const sn=document.getElementById('gateStepNewPw'); if(sn) sn.style.display='none';
+  const em=document.getElementById('gateEmail'); if(em) em.disabled=false;
+  const cd=document.getElementById('gateCode'); if(cd) cd.value='';
+  gateStatus('');
+  gateLinks();
+}
+/* i passaggi laterali: si cambia strada senza perdere l'email gi\u00e0 scritta */
+function gateLinks(){
+  const box=document.getElementById('gateLinks'); if(!box) return;
+  if(gateStage!=='form'){ box.innerHTML=''; return; }
+  let h='';
+  if(gateMode==='login'){
+    h='<a onclick="gateGo(\'signup\')">Non hai un account? <b>Registrati</b></a>'
+     +'<a onclick="gateGo(\'reset\')">Password dimenticata?</a>'
+     +'<a class="small" onclick="gateGo(\'reset\')">Non ne hai mai avuta una? <b>Impostala qui</b></a>';
+  } else if(gateMode==='signup'){
+    h='<a onclick="gateGo(\'login\')">Hai gi\u00e0 un account? <b>Accedi</b></a>';
+  } else {
+    h='<a onclick="gateGo(\'login\')">\u2039 Torna all\'accesso</a>';
+  }
+  box.innerHTML=h;
+}
+function gateGo(mode){
+  const em=document.getElementById('gateEmail');
+  const keep=em?em.value:'';
+  gateSet(mode);
+  if(em){ em.value=keep; if(!keep) setTimeout(()=>{ try{em.focus();}catch(_){ } },120); }
+}
+function gateBack(){
+  if(gateStage==='newpw'){ _gateAwaitNewPw=false; try{ sb.auth.signOut(); }catch(_){ } gateSet('login'); return; }
+  if(gateStage==='code'){ gateSet(gateMode); return; }
+  if(gateMode==='reset'){ gateSet('login'); return; }
+  showWelcome();
+}
+function gateShowCode(msg){
+  gateStage='code';
+  document.getElementById('gateStepForm').style.display='none';
+  document.getElementById('gateStepNewPw').style.display='none';
+  document.getElementById('gateStepCode').style.display='block';
+  const v=document.getElementById('gateVerify');
+  if(v){ v.disabled=false; v.textContent = gateMode==='reset' ? 'Avanti \u2192' : (gateMode==='signup' ? 'Conferma ed entra \u2192' : 'Entra \u2192'); }
+  gateStatus(msg||'');
+  gateLinks();
+  setTimeout(()=>{ const c=document.getElementById('gateCode'); if(c){ try{c.focus();}catch(_){ } } },200);
+}
+function gateShowNewPw(){
+  gateStage='newpw'; _gateAwaitNewPw=true;
+  document.getElementById('gateStepForm').style.display='none';
+  document.getElementById('gateStepCode').style.display='none';
+  document.getElementById('gateStepNewPw').style.display='block';
+  const t=document.getElementById('gateTitle'); if(t) t.textContent='Scegli la nuova password';
+  const d=document.getElementById('gateDesc'); if(d) d.textContent='Da adesso entri con questa.';
+  gateStatus(''); gateLinks();
+  setTimeout(()=>{ const c=document.getElementById('gateNewPw'); if(c){ try{c.focus();}catch(_){ } } },200);
+}
+
+async function gateSubmit(){
+  const emEl=document.getElementById('gateEmail');
+  const email=((emEl&&emEl.value)||'').trim().toLowerCase();
+  if(!email){ gateStatus('Inserisci la tua email.'); return; }
+  const pwEl=document.getElementById('gatePw');
+  const pw=(pwEl&&pwEl.value)||'';
+  if((gateMode==='login'||gateMode==='signup') && !pw){ gateStatus('Inserisci la password.'); return; }
+  if(gateMode==='signup' && pw.length<8){ gateStatus('La password deve avere almeno 8 caratteri.'); return; }
+  gateEmailVal=email;
+  const btn=document.getElementById('gateBtn'); if(btn) btn.disabled=true;
+  try{
+    if(gateMode==='login') await doLogin(email,pw);
+    else if(gateMode==='signup') await doSignup(email,pw);
+    else await doReset(email);
+  }catch(e){ gateStatus(authErrIt(e)); }
+  if(btn) btn.disabled=false;
+}
+
+async function doLogin(email,pw){
+  gateStatus('Accesso in corso\u2026');
+  const {data,error}=await sb.auth.signInWithPassword({email,password:pw});
+  if(error){
+    // account creato ma mai confermato: non lo lascio in un vicolo cieco, gli rimando il codice
+    if(/Email not confirmed/i.test(String(error.message||''))){
+      gateMode='signup';
+      try{ await gateResendSignup(email); }catch(_){ }
+      gateShowCode('Questa email non era ancora confermata: ti ho mandato un codice a '+email+'.');
+      return;
+    }
+    gateStatus(authErrIt(error)); return;
+  }
+  if(data&&data.user){ user=data.user; gateStatus(''); afterLogin(); }
+}
+
+async function doSignup(email,pw){
+  gateStatus('Creo l\'account\u2026');
+  const {data,error}=await sb.auth.signUp({email,password:pw,options:{data:{has_pw:true}}});
+  if(error){ gateStatus(authErrIt(error)); return; }
+  const u=data&&data.user;
+  /* Con la conferma email attiva Supabase NON d\u00e0 errore se l'email esiste gi\u00e0:
+     restituisce un utente finto con identities vuoto, per non far scoprire a un
+     estraneo chi \u00e8 iscritto. Va intercettato a mano, altrimenti la persona
+     resterebbe ad aspettare un codice che non arriver\u00e0 mai. */
+  if(u&&Array.isArray(u.identities)&&u.identities.length===0){
+    gateStatus('Questa email ha gi\u00e0 un account. Entra con la tua password, oppure usa \u00abPassword dimenticata\u00bb.');
+    return;
+  }
+  if(data&&data.session&&u){ user=u; gateStatus(''); afterLogin(); return; }   // conferma email disattivata
+  gateShowCode('\u2705 Ti ho inviato un codice a '+email+'. Scrivilo qui sotto per confermare.');
+}
+
+async function doReset(email){
+  gateStatus('Invio in corso\u2026');
+  // niente redirectTo: nessun link da cliccare, solo il codice dentro l'email
+  const {error}=await sb.auth.resetPasswordForEmail(email);
+  if(error){ gateStatus(authErrIt(error)); return; }
+  _gateAwaitNewPw=true;   // da qui in avanti la sessione pu\u00f2 aprirsi: l'app resta fuori finch\u00e9 non salvo
+  gateShowCode('Ti ho inviato un codice a '+email+'. Scrivilo qui sotto.');
+}
+
+// rinvio del codice di conferma: sb.auth.resend esiste dalle versioni recenti di
+// supabase-js; se mancasse, ripiego su signInWithOtp che manda comunque un codice.
+async function gateResendSignup(email){
+  if(sb.auth.resend){ const {error}=await sb.auth.resend({type:'signup',email}); if(error) throw error; return; }
+  const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:false}}); if(error) throw error;
+}
+
+document.getElementById('gateBtn').onclick=gateSubmit;
+
+document.getElementById('gateResend').onclick=async function(){
+  if(!gateEmailVal){ gateStatus('Torna indietro e scrivi la tua email.'); return; }
+  gateStatus('Rinvio in corso\u2026');
+  try{
+    if(gateMode==='signup') await gateResendSignup(gateEmailVal);
+    else { const {error}=await sb.auth.resetPasswordForEmail(gateEmailVal); if(error) throw error; }
+    gateStatus('Codice rinviato a '+gateEmailVal+'.');
+  }catch(e){ gateStatus(authErrIt(e)); }
+};
+
+document.getElementById('gateVerify').onclick=async function(){
+  const token=(document.getElementById('gateCode').value||'').trim();
+  if(!token){ gateStatus('Inserisci il codice.'); return; }
+  this.disabled=true; gateStatus('Verifica in corso\u2026');
+  const type = gateMode==='signup' ? 'signup' : 'recovery';
+  const {data,error}=await sb.auth.verifyOtp({email:gateEmailVal,token,type});
+  this.disabled=false;
+  if(error){ gateStatus(authErrIt(error)); return; }
+  if(gateMode==='reset'){ gateShowNewPw(); return; }   // sessione aperta, ma prima la password
+  if(data&&data.user){ user=data.user; gateStatus(''); afterLogin(); }
+};
+
+document.getElementById('gateSaveNewPw').onclick=async function(){
+  const pw=(document.getElementById('gateNewPw').value||'');
+  if(pw.length<8){ gateStatus('La password deve avere almeno 8 caratteri.'); return; }
+  this.disabled=true; gateStatus('Salvo\u2026');
+  const {data,error}=await sb.auth.updateUser({password:pw,data:{has_pw:true}});
+  this.disabled=false;
+  if(error){ gateStatus(authErrIt(error)); return; }
+  _gateAwaitNewPw=false; gateStatus('');
+  let u=(data&&data.user)||null;
+  if(!u){ try{ const r=await sb.auth.getSession(); u=r&&r.data&&r.data.session?r.data.session.user:null; }catch(_){ } }
+  if(u){ user=u; afterLogin(); } else { gateSet('login'); gateStatus('Password salvata: ora entra con la tua email.'); }
+};
+
+// Invio da tastiera (utile da computer; sul telefono \u00e8 il tasto \u00abvai\u00bb)
+(function gateKeys(){
+  const on=(id,fn)=>{ const e=document.getElementById(id); if(e) e.addEventListener('keydown',ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); fn(); } }); };
+  on('gateEmail',()=>{
+    const pw=document.getElementById('gatePw'), wrap=document.getElementById('gatePwWrap');
+    if(pw&&wrap&&wrap.style.display!=='none'&&!pw.value){ try{pw.focus();}catch(_){ } return; }
+    gateSubmit();
+  });
+  on('gatePw',gateSubmit);
+  on('gateCode',()=>document.getElementById('gateVerify').click());
+  on('gateNewPw',()=>document.getElementById('gateSaveNewPw').click());
+})();
+
+/* ---- \u00abScegli la tua password\u00bb: il ponte per chi c'era prima ----------------
+   Chi usa l'app da prima di questa versione non ha una password, ma \u00e8 GI\u00c0 DENTRO
+   con una sessione valida: posso quindi impostargliela senza nessuna email e
+   senza nessun codice, in un passo solo. Per sapere chi l'ha gi\u00e0 fatto uso i
+   metadati dell'utente in Supabase Auth (user_metadata.has_pw): si scrivono con
+   updateUser e si leggono dalla sessione, quindi niente colonne nuove e nessuna
+   migrazione del database. Chi si registra da oggi nasce gi\u00e0 con has_pw=true e
+   questa schermata non la vede mai. */
+let _pwsSnoozed=false;
+function hasPassword(){
+  try{ return !!(user&&user.user_metadata&&user.user_metadata.has_pw); }catch(_){ return false; }
+}
+function maybeAskPassword(){
+  if(hasPassword()||_pwsSnoozed) return;
+  const el=document.getElementById('pwsetup'); if(!el) return;
+  const who=document.getElementById('pwsWho');
+  if(who) who.innerHTML='\u2709\ufe0f <span>'+esc((user&&user.email)||'')+'</span>';
+  const i=document.getElementById('pwsInput'); if(i){ i.value=''; i.type='password'; }
+  const e=document.getElementById('pwsEye'); if(e) e.textContent='Mostra';
+  const st=document.getElementById('pwsStatus'); if(st) st.textContent='';
+  el.classList.remove('hidden'); el.scrollTop=0;
+}
+function closePwSetup(){ const el=document.getElementById('pwsetup'); if(el) el.classList.add('hidden'); }
+// \u00abLo faccio dopo\u00bb non salva niente: alla prossima apertura la schermata torna.
+// Non chiudo fuori nessuno, ma insisto finch\u00e9 la password non c'\u00e8.
+function pwSetupLater(){ _pwsSnoozed=true; closePwSetup(); toast('Te la richieder\u00f2 alla prossima apertura'); }
+async function savePwSetup(){
+  const i=document.getElementById('pwsInput'); if(!i) return;
+  const pw=(i.value||'');
+  const st=document.getElementById('pwsStatus');
+  const put=m=>{ if(st) st.textContent=m; };
+  if(pw.length<8){ put('La password deve avere almeno 8 caratteri.'); return; }
+  const b=document.getElementById('pwsBtn'); if(b) b.disabled=true;
+  put('Salvo\u2026');
+  const {data,error}=await sb.auth.updateUser({password:pw,data:{has_pw:true}});
+  if(b) b.disabled=false;
+  if(error){ put(authErrIt(error)); return; }
+  if(data&&data.user) user=data.user;
+  put(''); closePwSetup();
+  toast('Password salvata \u2705 Da adesso entri con email e password');
+}
+document.getElementById('pwsBtn').onclick=savePwSetup;
+document.getElementById('pwsInput').addEventListener('keydown',ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); savePwSetup(); } });
+
+/* Impostazioni \u2192 Profilo: cambio password (e ripiego se qui sopra ha rimandato). */
+async function saveMyPassword(){
+  const i=document.getElementById('setPwInput'); if(!i) return;
+  const pw=(i.value||'');
+  if(pw.length<8){ toast('La password deve avere almeno 8 caratteri'); return; }
+  const {data,error}=await sb.auth.updateUser({password:pw,data:{has_pw:true}});
+  if(error){ toast(authErrIt(error)); return; }
+  if(data&&data.user) user=data.user;
+  i.value=''; i.type='password';
+  const e=document.getElementById('setPwEye'); if(e) e.textContent='Mostra';
+  toast('Password salvata \u2705');
+}
 
 async function loadAvatars(){
   try{
