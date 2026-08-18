@@ -1896,7 +1896,7 @@
       <button class="navrow gold ownerRow" onclick="setNav('page-stagione')" style="display:none"><span class="ic">📅</span><span class="lab">Stagione<small id="admSeaSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold ownerRow" onclick="setNav('page-regole')" style="display:none"><span class="ic">⚙️</span><span class="lab">Regole della lega<small>Quando giocate, presenze, portiere, crediti</small></span><span class="go">›</span></button>
       <button class="navrow gold adminRow" onclick="setNav('page-lega')" style="display:none"><span class="ic">🏆</span><span class="lab">Gestione lega<small>Inviti, giocatori, permessi</small></span><span class="go">›</span></button>
-      <button class="navrow gold ownerRow" onclick="setNav('page-manutenzione')" style="display:none"><span class="ic">🛠️</span><span class="lab">Manutenzione<small>Ricalcoli e app offline</small></span><span class="go">›</span></button>
+      <button class="navrow gold ownerRow" onclick="setNav('page-manutenzione')" style="display:none"><span class="ic">🛟</span><span class="lab">Aiuto e manutenzione<small>Segnala un problema, ricalcola il recap</small></span><span class="go">›</span></button>
       <div class="setfoot">
         <button class="logout" id="logoutBtn">Esci dall'account</button>
         <p style="text-align:center;color:var(--muted);font-size:11px;margin:14px 0 0;letter-spacing:.03em">FantaCalcetto · <span id="appVersion">—</span></p>
@@ -2122,23 +2122,31 @@
       <div class="set-card"><div id="voterList" class="preschips"></div></div>
     </div>
 
-    <!-- ===== MANUTENZIONE =====
+    <!-- ===== AIUTO E MANUTENZIONE =====
          Ricalcoli e diagnostica non sono gestione: si usano una volta ogni tanto
          e stavano appesi in fondo alla pagina Stagione, che già faceva troppi
-         mestieri. Qui dentro torna anche l'interruttore «app offline», rimasto
-         senza pulsante (setMaintenance esisteva ma non la chiamava nessuno). -->
+         mestieri.
+         «App offline» agisce solo sulla PROPRIA lega (app_state è filtrata per
+         league_id), ma resta un pulsante che può solo far danno all'admin di
+         un'altra lega: serve a chi pubblica gli aggiornamenti, cioè a noi. Per
+         questo è riservato al super-admin (#maintCard, vedi applyProfile).
+         Al suo posto, per tutti gli altri admin, c'è il canale per segnalare. -->
     <div class="setpage" id="page-manutenzione">
       <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
-      <div class="section-h"><h2>Manutenzione</h2></div>
+      <div class="section-h"><h2>Aiuto e manutenzione</h2></div>
       <p class="setintro">Roba che serve di rado. In condizioni normali qui non devi entrare.</p>
-      <div class="set-card" id="maintCard">
-        <h3>App offline</h3>
-        <p class="vs" style="color:var(--muted);font-size:12px;line-height:1.5;margin:6px 0 10px">Chiude l'app a tutti tranne che a te: utile mentre carichi una versione nuova o sistemi i dati.</p>
-        <button class="set-btn" id="maintBtn" onclick="toggleMaintenance()">🛠️ Metti in manutenzione</button>
+      <div class="set-card">
+        <h3>Qualcosa non va?</h3>
+        <div id="helpBox"></div>
       </div>
       <div class="set-card" style="margin-top:12px">
         <h3>Recap di stagione</h3>
         <div id="maintRecapBox"></div>
+      </div>
+      <div class="set-card" id="maintCard" style="margin-top:12px;display:none">
+        <h3>App offline <span class="lockpill" style="color:var(--accent-soft)">super-admin</span></h3>
+        <p class="vs" style="color:var(--muted);font-size:12px;line-height:1.5;margin:6px 0 10px">Chiude l'app a tutti i membri di <b>questa lega</b> tranne che a te: utile mentre carichi una versione nuova o sistemi i dati.</p>
+        <button class="set-btn" id="maintBtn" onclick="toggleMaintenance()">🛠️ Metti in manutenzione</button>
       </div>
     </div>
 
@@ -2724,8 +2732,10 @@ function renderMaintBox(){
     box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12.5px;margin:6px 0 10px">Ultima archiviata: <b style="color:var(--gold-soft)">Stagione ${lastClosedSeason.number}</b></p>
       <button class="logout" style="margin-top:0" onclick="rebuildSeasonRecap()">🔄 Ricalcola il recap della Stagione ${lastClosedSeason.number}</button>
       <p class="vs" style="color:var(--muted);font-size:12px;margin-top:9px;line-height:1.5">Il recap si congela alla chiusura. Se correggi voti o bonus a stagione finita, ricalcolalo da qui.</p>`;
-  } else if(seasonBreak()){
+  } else if(seasonBreak() && isSuperAdmin()){
     box.innerHTML=`<p class="vs" style="color:var(--red);font-size:12px;margin-top:6px;line-height:1.5">⚠️ La stagione risulta chiusa ma nessuna stagione archiviata viene rilevata: il recap non può comparire. Verifica che <b>stagione_recap.sql</b> sia stato eseguito.</p>`;
+  } else if(seasonBreak()){
+    box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12.5px;margin-top:6px">Il recap di questa stagione non risulta disponibile. Se dovrebbe esserci, segnalacelo qui sopra.</p>`;
   } else {
     box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12.5px;margin-top:6px">Nessuna stagione archiviata: non c'è ancora niente da ricalcolare.</p>`;
   }
@@ -2796,10 +2806,20 @@ function renderHero(){
       x.innerHTML=h;
     }
   } else {
-    t.innerHTML='Pronto a <span class="hot">schierare?</span>';
-    c.textContent='Schiera la formazione →';
-    c.setAttribute('onclick',"go('formazione')");
-    if(x) x.innerHTML='';
+    const todo=heroAdminTodo();
+    if(todo && todo.solo){
+      t.innerHTML=todo.ttl;
+      c.textContent=todo.cta;
+      c.setAttribute('onclick',todo.fn);
+      if(x) x.innerHTML=`<p class="hero-note">${todo.note}</p>`;
+    } else {
+      t.innerHTML='Pronto a <span class="hot">schierare?</span>';
+      c.textContent='Schiera la formazione →';
+      c.setAttribute('onclick',"go('formazione')");
+      if(x) x.innerHTML = todo
+        ? `<button class="hero-2nd" onclick="${todo.fn}">${todo.cta}</button><p class="hero-note">${todo.note}</p>`
+        : '';
+    }
   }
 }
 
@@ -3070,6 +3090,30 @@ function renderMaintBtn(){
   const b=document.getElementById('maintBtn'); if(!b) return;
   b.textContent=maintOn?'🟢 Torna live':'🛠️ Metti in manutenzione';
   b.className='set-btn'+(maintOn?' danger':'');
+}
+/* Canale di segnalazione: prende il posto di «app offline» per gli admin che non
+   siamo noi. L'email parte già con lega, versione e giornata in fondo, così non
+   serve chiederli dopo — sono le tre cose che servono sempre per capire un bug. */
+const HELP_EMAIL='accesso@fantacalcettoitalia.it';
+function helpMailto(){
+  const lega=myLeague&&myLeague.name?myLeague.name:'—';
+  const md=currentMd?currentMd.label:'nessuna giornata aperta';
+  const sub='Fantacalcetto — segnalazione ('+lega+')';
+  const body='Racconta qui cosa è successo, e cosa ti aspettavi che succedesse.\n\n\n'
+    +'--- non cancellare, servono per capire ---\n'
+    +'Lega: '+lega+'\nVersione app: '+APP_VERSION+'\nGiornata: '+md+'\n';
+  return 'mailto:'+HELP_EMAIL+'?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body);
+}
+function renderHelpBox(){
+  const box=document.getElementById('helpBox'); if(!box) return;
+  box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12px;line-height:1.5;margin:6px 0 10px">Scrivici: rispondiamo noi. Nel messaggio finiscono gi\u00e0 lega, versione e giornata, cos\u00ec non dobbiamo chiederteli.</p>
+    <button class="set-btn" onclick="openHelpMail()">\u2709\ufe0f Segnala un problema</button>
+    <button class="set-btn" style="margin-top:9px" onclick="copyHelpMail()">Copia l'indirizzo</button>`;
+}
+function openHelpMail(){ try{ location.href=helpMailto(); }catch(_){ copyHelpMail(); } }
+function copyHelpMail(){
+  try{ navigator.clipboard.writeText(HELP_EMAIL); toast('Indirizzo copiato ✅'); }
+  catch(_){ toast(HELP_EMAIL); }
 }
 function toggleMaintenance(){
   if(!maintOn && !confirm('Mettere l\'app in manutenzione?\n\nGli altri membri della lega vedranno la schermata \u00abManutenzione in corso\u00bb finch\u00e9 non torni live. Tu continui a vedere tutto.')) return;
@@ -3353,11 +3397,15 @@ async function loadAverages(){
   const {data,error}=await sb.rpc('get_averages',{md:currentMd.id});
   if(!error&&data) data.forEach(r=>averages[r.player_id]={v:Number(r.v),n:r.n});
 }
+let mdResultsSaved=false;   // c'e' almeno un esito V/S SALVATO per la giornata corrente
 async function loadMatchStats(){
-  adminStats={};
+  adminStats={}; mdResultsSaved=false;
   if(!currentMd)return;
   const {data}=await sb.from('match_stats').select('*').eq('matchday_id',currentMd.id);
   (data||[]).forEach(r=>{adminStats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,esito:r.esito||''};});
+  // l'esito è il segnale giusto: gol e assist possono essere legittimamente zero,
+  // «chi ha vinto» no. Se non c'è, la partita non è ancora stata registrata.
+  mdResultsSaved=(data||[]).some(r=>r.esito==='V'||r.esito==='S');
 }
 async function loadMyNom(){
   myNom={mvp:'',sega:''};
@@ -4029,6 +4077,7 @@ function phaseLabel(){
   const i=mdPhaseIdx();
   return i<0 ? 'Nessuna giornata aperta' : (MD_PHASES[i].short+' \u00b7 '+MD_PHASES[i].desc);
 }
+let lastHeroTodo=null;   // ultima azione admin mostrata in Home: cambia -> ridisegno
 function startCountdown(){
   if(cdTimer)clearInterval(cdTimer);
   function tick(){
@@ -4060,7 +4109,11 @@ function startCountdown(){
         else {vl.textContent=lab+' · voti chiusi';vt.textContent='🔒';}
       }
     }
-    if(canOp())renderLiveOpenBtn();
+    if(canOp()){
+      renderLiveOpenBtn();
+      const _hk=heroTodoKey();
+      if(_hk!==lastHeroTodo){ lastHeroTodo=_hk; renderHero(); renderMdCenter(); }
+    }
     if(lastVotesLocked!==null&&votesLocked!==lastVotesLocked)renderVoti();
     if(lastLineupLocked!==null&&lineupLocked!==lastLineupLocked){renderPitch();renderHomePresence();}
     lastVotesLocked=votesLocked; lastLineupLocked=lineupLocked;
@@ -4109,8 +4162,49 @@ function mdcPrimaryKey(){
   if(i<0) return 'open';
   if(i===1||i===2) return 'kick';
   if(i===3) return 'panel';
-  if(i===4||i===5) return 'close';
+  // a voti aperti: se i risultati non sono ancora stati salvati l'azione è
+  // inserirli, non chiudere. Chiudere senza esiti manda in classifica una
+  // giornata a metà, ed è l'errore più facile da fare in questa fase.
+  if(i===4) return mdResultsSaved ? 'close' : 'panel';
+  if(i===5) return 'close';
   return 'recap';
+}
+/* ---------- LA HOME SA COSA DEVE FARE L'ADMIN ----------
+   Il 90% del lavoro settimanale è inserire i risultati e chiudere. Prima servivano
+   Home → ⚙️ → Centro giornata → scroll → «Apri pannello partita», mentre la hero
+   diceva «Schiera la formazione» come a chiunque altro.
+   La chiave arriva da mdcPrimaryKey(), la STESSA che comanda il Centro giornata:
+   le due schermate non possono raccontare cose diverse. `kick` e `recap` non
+   compaiono in Home: spostare un orario o rileggere il pagellone non sono compiti.
+   `solo` = in questa fase il giocatore non ha niente da fare, quindi il compito
+   dell'admin può prendersi il pulsante principale; altrimenti resta un secondo
+   pulsante sotto «Schiera la formazione». */
+const HERO_TODO={
+  open:  {ttl:'Nessuna giornata <span class="hot">in programma</span>',
+          cta:'\ud83d\udcc5 Programma la prossima →',
+          note:"Aprila adesso scegliendo data e ora, oppure imposta il giorno fisso in Regole della lega."},
+  panel: {ttl:'Partita <span class="hot">in corso</span>',
+          cta:'\ud83d\udcca Inserisci i risultati →',
+          note:'Gol, assist ed esito: puoi segnarli dal vivo o tutti insieme a fine partita.'},
+  close: {ttl:'Giornata da <span class="hot">archiviare</span>',
+          cta:'\ud83c\udfc1 Chiudi la {LAB} →',
+          note:'Votazioni finite: chiudendo aggiorni classifica e crediti.'}
+};
+function heroTodoKey(){
+  if(!canOp() || seasonBreak()) return '';
+  const k=mdcPrimaryKey();
+  if(!HERO_TODO[k]) return '';                       // kick / recap: non sono compiti
+  if(k==='close' && mdPhaseIdx()!==5) return '';     // a voti ancora aperti ci pensa la chiusura automatica
+  return k;
+}
+function heroAdminTodo(){
+  const k=heroTodoKey(); if(!k) return null;
+  const spec=HERO_TODO[k], act=MD_ACTIONS[k];
+  return {
+    key:k, ttl:spec.ttl, note:spec.note, fn:act.fn,
+    cta:spec.cta.replace('{LAB}', currentMd?currentMd.label:'giornata'),
+    solo: (k!=='panel') || mdPhaseIdx()===3          // a voti aperti il giocatore vota: il compito admin resta secondario
+  };
 }
 function openRecapCurrent(){ if(currentMd) openRecap(currentMd.id,false); }
 function renderMdCenter(){
@@ -4290,7 +4384,7 @@ function applyProfile(){
   const mgc=document.getElementById('manageCard'); if(mgc)mgc.style.display=profile.is_admin?'':'none';       // listone (solo proprietario)
   const pc=document.getElementById('presCard'); if(pc)pc.style.display=(canOp()&&!presenceSelf)?'block':'none';
   const vtc=document.getElementById('voterCard'); if(vtc)vtc.style.display=canOp()?'':'none';
-  const mtc=document.getElementById('maintCard'); if(mtc)mtc.style.display=profile.is_admin?'':'none';   // manutenzione (solo proprietario)
+  const mtc=document.getElementById('maintCard'); if(mtc)mtc.style.display=isSuperAdmin()?'':'none';   // app offline: solo super-admin, non gli admin delle altre leghe
   const vcc=document.getElementById('viceCard'); if(vcc)vcc.style.display=profile.is_admin?'':'none';     // gestione vice (solo proprietario)
   const _adm=canOp();
   document.querySelectorAll('.navrow.adminRow').forEach(r=>{ r.style.display=_adm?'flex':'none'; });
@@ -5537,7 +5631,7 @@ function openSettings(){
   renderAvCur(); collapseDisc('av'); collapseDisc('logo');
   if(canOp()){ renderVoters(); loadInvite(); }
   if(profile.is_admin){ renderManage(); loadSchedule(); loadCreditConfig(); renderVices(); }
-  renderNotifBtn(); renderMaintBtn(); renderMaintBox(); renderRuleRows();
+  renderNotifBtn(); renderMaintBtn(); renderMaintBox(); renderHelpBox(); renderRuleRows();
 }
 function renderSetLogo(){
   const grid=document.getElementById('setLogoGrid');
