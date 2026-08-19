@@ -162,7 +162,7 @@ section{padding:clamp(64px,9vw,116px) 0;position:relative}
 
 /* ---------- il campo disegnato (elemento firma) ---------- */
 .pitch{
-  position:absolute;inset:0;z-index:2;padding:46px 12px 16px;
+  position:absolute;inset:0;z-index:2;padding:52px 12px 16px;
   display:flex;flex-direction:column;
 }
 .pitch-top{display:flex;align-items:center;justify-content:space-between;padding:0 8px 12px;font-size:11.5px;color:var(--muted);font-weight:700}
@@ -403,3 +403,78 @@ td:last-child,th:last-child{text-align:right;white-space:nowrap}
 }
 .crumb{font-size:14px;color:var(--muted);font-weight:600;margin-bottom:20px;display:inline-block}
 .crumb:hover{color:var(--text)}
+
+/* ============================================================
+   PEZZI INTERATTIVI
+   Due soli, per non trasformare la pagina in un luna park:
+   il campo che cambia modulo (apertura) e il calcolatore dei
+   punti (sezione punteggi). Entrambi funzionano senza rete e
+   senza librerie: se il JS non parte restano leggibili fermi.
+   ============================================================ */
+
+/* --- selettore del modulo, sopra il campo --- */
+.modpick{display:flex;gap:5px;background:rgba(6,14,26,.6);border:1px solid var(--line);
+  border-radius:11px;padding:4px;margin:0 8px 10px}
+.modpick button{
+  flex:1;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11.5px;
+  color:var(--muted);background:transparent;border:0;padding:7px 0;border-radius:8px;cursor:pointer;
+  transition:background .18s,color .18s;
+}
+.modpick button[aria-pressed="true"]{background:var(--surface2);color:var(--text)}
+.modbonus{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700}
+.modbonus.up{color:var(--green)}.modbonus.down{color:var(--red)}.modbonus.flat{color:var(--muted)}
+.pawn{transition:left .45s cubic-bezier(.34,1.3,.5,1), top .45s cubic-bezier(.34,1.3,.5,1)}
+@media (prefers-reduced-motion:reduce){.pawn{transition:none}}
+.pitch-bot b{transition:color .2s}
+
+/* --- calcolatore dei punti --- */
+.calc{display:grid;grid-template-columns:1fr 260px;gap:clamp(22px,3.4vw,40px);align-items:start;margin-top:28px}
+@media (max-width:760px){.calc{grid-template-columns:1fr;gap:24px}}
+.ctrl{border-bottom:1px solid var(--line);padding:15px 0;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ctrl:first-child{padding-top:0}
+.ctrl>.lb{font-weight:700;font-size:15.5px;min-width:104px}
+.ctrl>.hint{font-size:13px;color:var(--muted);width:100%;margin-top:-4px}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;flex:1;min-width:130px;height:6px;border-radius:99px;
+  background:linear-gradient(90deg,var(--accent) var(--fill,50%),rgba(150,185,240,.16) var(--fill,50%));
+  outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:24px;height:24px;border-radius:50%;cursor:pointer;
+  background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.6);border:3px solid var(--accent);
+}
+input[type=range]::-moz-range-thumb{
+  width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--accent);cursor:pointer;
+}
+.big{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:21px;color:var(--gold);min-width:52px;text-align:right}
+.step2{display:flex;align-items:center;gap:9px;margin-left:auto}
+.step2 button{
+  width:34px;height:34px;border-radius:10px;border:1px solid var(--line-strong);
+  background:rgba(150,185,240,.07);color:var(--text);font-size:19px;line-height:1;cursor:pointer;
+  font-family:'JetBrains Mono',monospace;transition:background .18s;
+}
+.step2 button:hover{background:rgba(150,185,240,.16)}
+.step2 button:disabled{opacity:.32;cursor:default}
+.step2 .v{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:17px;min-width:22px;text-align:center}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.chip{
+  font-family:'Hanken Grotesk';font-weight:700;font-size:14px;color:var(--muted);cursor:pointer;
+  border:1px solid var(--line-strong);background:rgba(150,185,240,.05);
+  padding:8px 14px;border-radius:10px;transition:all .18s;
+}
+.chip[aria-pressed="true"]{background:rgba(255,194,61,.16);border-color:rgba(255,194,61,.45);color:var(--gold-soft)}
+.chip.blue[aria-pressed="true"]{background:rgba(63,151,255,.18);border-color:rgba(126,194,255,.45);color:var(--accent-soft)}
+.chip.green[aria-pressed="true"]{background:rgba(47,217,138,.16);border-color:rgba(47,217,138,.45);color:var(--green)}
+.chip.red[aria-pressed="true"]{background:rgba(255,93,107,.16);border-color:rgba(255,93,107,.45);color:var(--red)}
+
+.result{
+  background:linear-gradient(165deg,rgba(31,58,108,.75),rgba(10,22,38,.6));
+  border:1px solid var(--line-strong);border-radius:18px;padding:24px 22px;text-align:center;
+  position:sticky;top:86px;
+}
+@media (max-width:760px){.result{position:static}}
+.result .k{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.result .tot{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:clamp(42px,8vw,58px);color:var(--accent-soft);
+  line-height:1;margin:10px 0 4px;letter-spacing:-.02em}
+.result .brk{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);line-height:1.7;word-break:break-word}
+.result .brk b{color:var(--gold)}

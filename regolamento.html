@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="sito.css?v=1">
+<link rel="stylesheet" href="sito.css?v=2">
 </head>
 <body>
 
@@ -51,11 +51,12 @@
     <a class="crumb" href="sito.html">‹ Torna alla pagina principale</a>
     <span class="eyebrow">Regolamento</span>
     <h1 style="font-size:clamp(33px,5.6vw,52px);margin:18px 0 20px">Come si fanno i punti</h1>
-    <p class="lead">Questo è il regolamento di FantaCalcetto: il fantacalcio applicato alla partita di calcetto a 5 tra amici. È pensato per un campo piccolo, dove tutti attaccano e tutti difendono, e per un gruppo che si vota da solo. Puoi usarlo così com'è oppure prenderlo come base per il tuo.</p>
+    <p class="lead">Il fantacalcio applicato alla partita di calcetto a 5 tra amici: campo piccolo, tutti attaccano e tutti difendono, e i voti se li danno i giocatori. Usalo così com'è o prendilo come base per il tuo.</p>
+    <p><a href="sito.html#punteggi">Prova il calcolatore dei punti</a> se preferisci vedere i conti che si muovono.</p>
 
     <h2>Il punto di partenza è il voto</h2>
-    <p>A fine partita ogni giocatore vota tutti gli altri. La media dei voti ricevuti è il <b>voto di giornata</b>. Si può votare a mezzi punti, quindi il 6,5 esiste, e chi non è sceso in campo non prende nessun voto perché non è schierabile da nessuno.</p>
-    <p>Sul voto si innestano i bonus e i malus, che invece nascono da fatti oggettivi: chi ha segnato, chi ha servito l'assist, com'è finita la partita. Quelli li registra chi organizza, negli spogliatoi, in mezzo minuto.</p>
+    <p>A fine partita ogni giocatore vota tutti gli altri: la media è il <b>voto di giornata</b>. Si vota a mezzi punti, quindi il 6,5 esiste. Chi non è sceso in campo non prende voto, perché non è schierabile da nessuno.</p>
+    <p>Sul voto si innestano bonus e malus, che nascono da fatti oggettivi e li registra chi organizza.</p>
 
     <div class="formula">
       punteggio = <b>voto</b> × moltiplicatori + bonus − malus
@@ -80,16 +81,16 @@
     </table>
 
     <div class="note">
-      <b>Il pareggio non vale niente.</b> Vincere dà +2 a tutti e cinque i giocatori di quella squadra, perdere ne toglie 1, il pareggio lascia le cose come stanno. Il malus è volutamente più leggero del bonus: perdere una partita di calcetto capita, non deve rovinare la giornata a chi ti aveva schierato.
+      <b>Il pareggio non vale niente.</b> Vincere dà +2 a tutti e cinque i giocatori di quella squadra, perdere ne toglie 1. Il malus è più leggero apposta: perdere a calcetto capita, non deve rovinare la giornata a chi ti aveva schierato.
     </div>
 
     <h2>Capitano e MVP</h2>
-    <p>Quando schieri la formazione devi nominare un <b>capitano</b>: il suo voto vale il doppio. Attenzione a cosa raddoppia — il voto, non i bonus. Un capitano da 7 che segna fa 7×2+3 = 17, non (7+3)×2.</p>
-    <p>L'<b>MVP</b> funziona allo stesso modo, ma non lo scegli tu: lo vota il gruppo insieme ai voti. Chi prende più preferenze raddoppia il voto per tutti quelli che l'avevano schierato. E se l'MVP era anche il tuo capitano, i due moltiplicatori si sommano: il voto vale quattro volte.</p>
+    <p>Il <b>capitano</b> lo nomini tu e vale il doppio. Attenzione a cosa raddoppia: il voto, non i bonus. Un capitano da 7 che segna fa 7×2+3 = 17, non (7+3)×2.</p>
+    <p>L'<b>MVP</b> lo vota il gruppo e raddoppia il voto per tutti quelli che l'avevano schierato. Se l'MVP era anche il tuo capitano, il voto vale quattro volte.</p>
 
     <h2>Il portiere</h2>
-    <p>A calcetto il portiere è un ruolo ingrato e il regolamento cerca di compensarlo. La casella del portiere è obbligatoria in tutti i moduli, e chi la occupa ha due voci solo sue: <b>+3</b> se la sua squadra non subisce gol, altrimenti <b>−1 per ogni gol incassato</b>.</p>
-    <p>Ogni lega decide se in porta può andare chiunque o solo chi ha il ruolo di portiere. Nei gruppi dove ci si alterna tra i pali, la prima impostazione è quella giusta.</p>
+    <p>La casella del portiere è obbligatoria in tutti i moduli, e chi la occupa ha due voci solo sue: <b>+3</b> se la squadra non subisce gol, <b>−1 per ogni gol incassato</b> altrimenti.</p>
+    <p>Ogni lega decide se in porta può andare chiunque o solo chi ha quel ruolo. Nei gruppi dove ci si alterna tra i pali serve la prima.</p>
 
     <h2>I moduli</h2>
     <p>Cinque caselle: un portiere e quattro giocatori di movimento da distribuire. Il modulo non è solo estetica, sposta il punteggio della squadra:</p>
@@ -101,16 +102,16 @@
         <tr><td><b>1-1-3</b> — tutti avanti</td><td><span class="pt neg">−5</span></td></tr>
       </tbody>
     </table>
-    <p>Il bonus si somma una volta sola al totale della squadra, non a ogni giocatore. È il compromesso del gioco: gli attaccanti fanno più bonus ma costano di più e ti tolgono cinque punti in partenza; una squadra coperta parte avanti ma deve sperare in voti alti. Se tra i presenti di quella settimana non ci sono abbastanza difensori o attaccanti, i moduli che non stanno in piedi si disattivano da soli.</p>
+    <p>Il bonus si somma una volta sola al totale della squadra, non a ogni giocatore. È il compromesso del gioco: gli attaccanti fanno più bonus ma costano di più e partono cinque punti sotto; una squadra coperta parte avanti ma deve sperare in voti alti. Se tra i presenti non ci sono abbastanza difensori o attaccanti, i moduli che non stanno in piedi si disattivano da soli.</p>
 
     <h2>Crediti e valore dei giocatori</h2>
-    <p>Ogni giocatore ha un valore da <b>1 a 100 crediti</b> e ogni allenatore ha <b>100 crediti</b> per riempire le cinque caselle. Il conto non torna mai per caso: la squadra dei migliori sfora sempre, e trovare l'occasione sottovalutata è metà del divertimento.</p>
-    <p>I valori non sono fissi. A ogni giornata chiusa l'app confronta quanto costa un giocatore con quanto ha reso: <b>chi rende più di quanto vale sale</b> fino a due crediti, chi rende meno scende. Nel giro di qualche settimana i prezzi si sistemano da soli e nessuno resta caro per inerzia.</p>
-    <p>Il valore di partenza lo può decidere l'organizzatore giocatore per giocatore, oppure lo si può far votare a tutto il gruppo: ognuno dà la sua stima e si fa la media. La seconda strada è più lunga ma toglie ogni discussione.</p>
+    <p>Ogni giocatore vale da <b>1 a 100 crediti</b> e ogni allenatore ne ha <b>100</b> per riempire cinque caselle. Il conto non torna mai per caso: la squadra dei migliori sfora sempre.</p>
+    <p>I valori non sono fissi. A ogni giornata chiusa l'app confronta quanto costa un giocatore con quanto ha reso: <b>chi rende più di quanto vale sale</b> fino a due crediti, chi rende meno scende.</p>
+    <p>Il valore di partenza lo decide l'organizzatore, oppure lo vota tutto il gruppo e si fa la media. La seconda strada è più lunga ma toglie le discussioni.</p>
 
     <h2>La classifica</h2>
-    <p>Il punteggio di una giornata è la somma dei cinque giocatori schierati più il bonus del modulo. Le giornate si sommano e formano la classifica di stagione, che dura fino a un massimo di <b>38 giornate</b>. Poi la stagione si archivia, resta consultabile, e si riparte da zero con i valori dove li ha lasciati l'annata precedente.</p>
-    <p>Chi entra a stagione in corso non recupera le giornate perse, ma i titoli di fine anno tengono conto delle presenze: per vincere qualcosa bisogna esserci stati.</p>
+    <p>Il punteggio di giornata è la somma dei cinque schierati più il bonus del modulo. Le giornate si sommano nella classifica di stagione, che dura al massimo <b>38 giornate</b>. Poi si archivia, resta consultabile, e si riparte da zero con i valori dove li ha lasciati l'annata prima.</p>
+    <p>Chi entra a stagione in corso non recupera le giornate perse, ma i titoli di fine anno tengono conto delle presenze: per vincere bisogna esserci stati.</p>
 
     <h2>I tempi della settimana</h2>
     <p>Il calendario è quello che tiene in piedi tutto il resto, e va avanti da solo:</p>
@@ -129,10 +130,10 @@
     </div>
 
     <h2>Trofei e riconoscimenti</h2>
-    <p>Oltre alla classifica ci sono i premi, divisi in due famiglie. I <b>traguardi</b> valgono per sempre e non si perdono più una volta presi: la prima vittoria di giornata, i cento gol, le cinquanta presenze. I <b>titoli</b> invece sono di stagione e cambiano padrone ogni anno: capocannoniere, uomo assist, più presente, MVP più votato, chi ha guidato la classifica più a lungo, chi ha scalato più posizioni.</p>
+    <p>I premi sono di due famiglie. I <b>traguardi</b> valgono per sempre e non si perdono più: la prima vittoria di giornata, i cento gol, le cinquanta presenze. I <b>titoli</b> sono di stagione e cambiano padrone ogni anno: capocannoniere, uomo assist, più presente, MVP più votato, chi ha guidato la classifica più a lungo, chi ha scalato di più.</p>
 
     <h2>Si può cambiare?</h2>
-    <p>Le regole di squadra — portiere fisso o a rotazione, chi segna le presenze, come si assegnano i valori, quando si gioca — le imposta l'organizzatore dalla sua lega e valgono per tutte le giornate. I punteggi della tabella qui sopra sono invece uguali per tutti: sono il cuore del gioco, e averli identici ovunque significa che due leghe diverse possono confrontarsi.</p>
+    <p>Le regole di squadra — portiere, presenze, valori, giorno della partita — le imposta l'organizzatore e valgono per tutte le giornate. I punteggi della tabella sono invece uguali per tutti: sono il cuore del gioco, e averli identici ovunque permette a due leghe di confrontarsi.</p>
 
     <div class="final" style="margin-top:clamp(44px,6vw,72px)">
       <h2 style="margin:0 0 14px">Provalo sul tuo gruppo</h2>
