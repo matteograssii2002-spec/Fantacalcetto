@@ -81,7 +81,10 @@ section{padding:clamp(46px,6.4vw,86px) 0;position:relative}
 .topnav{display:flex;gap:26px;margin-left:auto;font-size:15px;font-weight:600;color:var(--muted)}
 .topnav a{transition:color .2s}
 .topnav a:hover{color:var(--text)}
-@media (max-width:860px){.topnav{display:none}}
+.topnav a{position:relative;padding:5px 0}
+.topnav a.on{color:var(--text)}
+.topnav a.on::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:2px;background:var(--accent);border-radius:2px}
+@media (max-width:1120px){.topnav{display:none}}
 
 /* ---------- pulsanti ---------- */
 .btn{
@@ -101,7 +104,8 @@ section{padding:clamp(46px,6.4vw,86px) 0;position:relative}
 .btn-sm{padding:10px 17px;font-size:14.5px;border-radius:12px}
 .btn-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
 .topbar .btn{margin-left:0}
-@media (max-width:860px){.topbar .btn{margin-left:auto}}
+@media (max-width:1120px){.topbar .btn{margin-left:auto}}
+@media (max-width:420px){.topbar .btn{padding:9px 12px;font-size:13.5px}}
 
 /* ---------- pastiglie dei punti (il vocabolario dell'app) ---------- */
 .pt{
@@ -127,7 +131,7 @@ section{padding:clamp(46px,6.4vw,86px) 0;position:relative}
    così l'immagine ci entra intera: niente lati o piedi tagliati.
    Le schermate dell'app sono 640x1306, quelle dell'installazione 640x1387. */
 .phone{
-  width:100%;max-width:302px;margin:0 auto;aspect-ratio:var(--ar, 640/1306);
+  width:100%;max-width:302px;margin:0 auto;
   border-radius:40px;padding:8px;position:relative;
   background:linear-gradient(160deg,#2b3f61,#131f36 40%,#0b1424);
   box-shadow:var(--shadow), 0 0 0 1px rgba(150,185,240,.14), inset 0 1px 0 rgba(255,255,255,.16);
@@ -135,8 +139,11 @@ section{padding:clamp(46px,6.4vw,86px) 0;position:relative}
 /* scocca Android: angoli più squadrati, cornice più sottile */
 .phone.and{border-radius:22px;padding:6px;background:linear-gradient(160deg,#3a4256,#1b2130 45%,#0f131c)}
 .phone.and .phone-screen{border-radius:17px}
+/* Le proporzioni stanno sullo SCHERMO (non sulla scocca, altrimenti la
+   cornice le falsa di qualche pixel e l'immagine esce). Combaciano con
+   lo screenshot: app 640x1306, installazione 640x1387. */
 .phone-screen{
-  width:100%;height:100%;border-radius:33px;overflow:hidden;position:relative;
+  width:100%;aspect-ratio:var(--ar, 640/1306);border-radius:33px;overflow:hidden;position:relative;
   background:radial-gradient(120% 60% at 50% 0%, rgba(63,151,255,.20), transparent 60%), var(--bg);
 }
 .phone-screen>img{width:100%;height:100%;object-fit:cover;object-position:top center;position:relative;z-index:2}
@@ -178,14 +185,25 @@ section{padding:clamp(46px,6.4vw,86px) 0;position:relative}
 @media (max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:560px){.grid{grid-template-columns:1fr}}
 .card{
-  background:linear-gradient(165deg,rgba(31,58,108,.5),rgba(21,41,75,.42));
-  border:1px solid var(--line);border-radius:var(--radius);
-  padding:19px 18px 21px;transition:border-color .25s, transform .25s;
+  position:relative;overflow:hidden;
+  background:linear-gradient(165deg,rgba(31,58,108,.52),rgba(13,26,47,.5));
+  border:1px solid var(--line);border-radius:18px;
+  padding:20px 18px 22px;transition:border-color .25s, transform .25s, box-shadow .25s;
 }
-.card:hover{border-color:var(--line-strong);transform:translateY(-3px)}
-.card .ic{font-size:22px;margin-bottom:10px;display:block}
-.card h3{font-size:18px;margin-bottom:5px}
-.card p{font-size:14.5px;color:var(--muted);line-height:1.5}
+.card::before{                       /* alone di colore, uno diverso per scheda */
+  content:"";position:absolute;left:-34px;top:-46px;width:150px;height:130px;border-radius:50%;
+  background:var(--glow,rgba(63,151,255,.55));filter:blur(44px);opacity:.55;pointer-events:none;
+}
+.card:hover{border-color:var(--line-strong);transform:translateY(-4px);box-shadow:0 24px 44px -30px rgba(0,6,20,1)}
+.card .ic{
+  position:relative;width:44px;height:44px;border-radius:13px;display:grid;place-items:center;
+  font-size:21px;margin-bottom:13px;
+  background:var(--chip,rgba(63,151,255,.16));border:1px solid var(--line-strong);
+}
+.card h3{position:relative;font-size:17.5px;margin-bottom:5px}
+.card p{position:relative;font-size:14.5px;color:var(--muted);line-height:1.5}
+.card.wide{grid-column:span 2}
+@media (max-width:560px){.card.wide{grid-column:span 1}}
 
 /* ============================================================
    CAROSELLO — un solo componente, usato in tre punti: le
@@ -326,47 +344,6 @@ td:last-child,th:last-child{text-align:right;white-space:nowrap}
 
 
 /* ============================================================
-   INDICE DELLE SEZIONI
-   Sul telefono è una barra di pastiglie che scorre, appiccicata
-   sotto la barra del titolo. Da 1420px in su diventa la colonnina
-   fissa a sinistra, che è lo spazio bianco che avanza.
-   La classe .on la mette lo script, seguendo lo scroll.
-   ============================================================ */
-.toc{
-  position:sticky;top:66px;z-index:40;display:flex;gap:8px;overflow-x:auto;
-  padding:10px 22px;scrollbar-width:none;
-  background:rgba(10,22,38,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--line);
-}
-.toc::-webkit-scrollbar{display:none}
-.toc a{
-  flex:0 0 auto;font-size:13.5px;font-weight:700;color:var(--muted);
-  border:1px solid var(--line);background:rgba(21,41,75,.55);
-  padding:7px 13px;border-radius:999px;transition:color .2s,border-color .2s,background .2s;
-}
-.toc a.on{color:var(--text);border-color:rgba(63,151,255,.5);background:rgba(63,151,255,.16)}
-@media (min-width:1420px){
-  .toc{
-    position:fixed;left:max(20px,calc(50vw - 686px));top:50%;transform:translateY(-50%);
-    flex-direction:column;align-items:flex-start;gap:1px;width:160px;
-    background:none;border:0;padding:0;backdrop-filter:none;-webkit-backdrop-filter:none;overflow:visible;
-  }
-  .toc a{
-    border:0;background:none;border-radius:0;padding:7px 0 7px 18px;position:relative;
-    font-size:13.5px;width:100%;
-  }
-  .toc a::before{
-    content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);
-    width:7px;height:7px;border-radius:50%;background:var(--line-strong);transition:background .2s,box-shadow .2s;
-  }
-  .toc a.on{background:none}
-  .toc a.on::before{background:var(--accent);box-shadow:0 0 0 4px rgba(63,151,255,.18)}
-}
-/* le ancore non devono finire sotto le barre appiccicate */
-section[id], div[id]{scroll-margin-top:126px}
-@media (min-width:1420px){section[id], div[id]{scroll-margin-top:84px}}
-
-/* ============================================================
    IL CERCHIO ROSSO SULLE ISTRUZIONI
    Sta sopra lo screenshot e indica cosa toccare. Posizione e
    misura arrivano dall'HTML in percentuale (--x, --y, --w, --h),
@@ -406,3 +383,54 @@ section[id], div[id]{scroll-margin-top:126px}
   background:rgba(10,22,38,.5);border:1px solid var(--line);border-radius:12px;
   padding:11px 13px;font-size:14.5px;font-weight:600;
 }
+
+/* ============================================================
+   MENU — le tre righe e la tendina laterale
+   Sotto i 1120px le voci in alto sparirebbero comunque per
+   mancanza di spazio: al loro posto il pulsante apre un
+   pannello da destra con le stesse sezioni. La classe .on la
+   mette lo script, seguendo lo scroll, su entrambi i menu.
+   ============================================================ */
+.burger{
+  display:none;width:42px;height:42px;flex-direction:column;gap:4px;
+  align-items:center;justify-content:center;cursor:pointer;
+  border:1px solid var(--line-strong);border-radius:12px;background:rgba(150,185,240,.07);
+}
+.burger i{width:18px;height:2px;background:var(--text);border-radius:2px}
+@media (max-width:1120px){.burger{display:flex}}
+
+.scrim{
+  position:fixed;inset:0;z-index:60;background:rgba(4,10,20,.62);
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;z-index:61;width:min(310px,84vw);
+  background:#0d1c31;border-left:1px solid var(--line-strong);
+  box-shadow:-30px 0 60px -30px rgba(0,0,0,.9);
+  transform:translateX(101%);transition:transform .28s cubic-bezier(.2,.8,.2,1);
+  display:flex;flex-direction:column;overflow-y:auto;
+  padding:16px 16px calc(20px + env(safe-area-inset-bottom));
+}
+.drawer.open{transform:none}
+.drawer .dh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.drawer .dh span{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted)}
+.drawer .x{
+  width:36px;height:36px;border-radius:10px;cursor:pointer;color:var(--text);font-size:17px;
+  border:1px solid var(--line-strong);background:rgba(150,185,240,.07);
+}
+.drawer a{
+  display:block;padding:13px 13px;border-radius:12px;font-weight:700;font-size:16px;
+  color:var(--muted);border:1px solid transparent;
+}
+.drawer a.on{color:var(--text);background:rgba(63,151,255,.14);border-color:rgba(63,151,255,.4)}
+.drawer .btn{margin-top:16px;justify-content:center}
+@media (prefers-reduced-motion:reduce){.drawer{transition:none}}
+
+/* intestazione con il suggerimento a destra */
+.head-row{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;max-width:none}
+
+/* le ancore non devono finire sotto la barra in alto */
+section[id], div[id]{scroll-margin-top:88px}

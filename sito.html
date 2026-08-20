@@ -9,7 +9,7 @@
      correggere il canonical e cambiare APP_URL in fondo. -->
 <meta name="robots" content="noindex,nofollow">
 
-<title>FantaCalcetto — il fantacalcio della vostra partita di calcetto</title>
+<title>FantaCalcetto — il fantacalcio della partita di calcetto</title>
 <meta name="description" content="Trasforma il calcetto tra amici in un campionato: presenze, formazione a 5 con crediti e capitano, voti tra giocatori, pagellone e classifica di stagione. Gratis, senza scaricare niente.">
 <link rel="canonical" href="https://fantacalcettoitalia.it/sito.html">
 
@@ -17,7 +17,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="FantaCalcetto">
 <meta property="og:locale" content="it_IT">
-<meta property="og:title" content="FantaCalcetto — il fantacalcio della vostra partita di calcetto">
+<meta property="og:title" content="FantaCalcetto — il fantacalcio della partita di calcetto">
 <meta property="og:description" content="Formazioni, crediti, voti, pagellone e classifica per il calcetto tra amici. Gratis, dal telefono.">
 <meta property="og:url" content="https://fantacalcettoitalia.it/">
 <meta property="og:image" content="https://fantacalcettoitalia.it/sito/anteprima.png">
@@ -31,7 +31,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="sito.css?v=4">
+<link rel="stylesheet" href="sito.css?v=5">
 
 <script type="application/ld+json">
 {
@@ -69,20 +69,36 @@
       <img src="icon-512.png?v=4" alt="" width="34" height="34">
       <span>Fanta<span class="b2">Calcetto</span></span>
     </a>
+    <nav class="topnav" data-nav aria-label="Sezioni">
+      <a href="#anteprima">Anteprima</a>
+      <a href="#come-funziona">Come funziona</a>
+      <a href="#funzioni">Funzioni</a>
+      <a href="#installa">Installazione</a>
+      <a href="#punteggi">Punteggi</a>
+      <a href="#domande">Domande</a>
+    </nav>
     <a class="btn btn-primary btn-sm" data-app-link href="#">Entra e gioca</a>
+    <button class="burger" id="burger" type="button" aria-label="Apri il menu" aria-expanded="false" aria-controls="drawer" onclick="menu(true)">
+      <i></i><i></i><i></i>
+    </button>
   </div>
 </header>
 
-<!-- Indice: pastiglie che scorrono sul telefono, colonnina fissa a
-     sinistra sugli schermi larghi. Si evidenzia da sola scorrendo. -->
-<nav class="toc" id="toc" aria-label="Sezioni della pagina">
-  <a href="#schermate">Schermate</a>
+<!-- Tendina laterale: stesse sezioni del menu in alto -->
+<div class="scrim" id="scrim" onclick="menu(false)"></div>
+<aside class="drawer" id="drawer" data-nav aria-label="Sezioni">
+  <div class="dh">
+    <span>Sezioni</span>
+    <button class="x" type="button" aria-label="Chiudi il menu" onclick="menu(false)">✕</button>
+  </div>
+  <a href="#anteprima">Anteprima</a>
   <a href="#come-funziona">Come funziona</a>
-  <a href="#punteggi">Punteggi</a>
-  <a href="#dentro">Cosa c'è dentro</a>
+  <a href="#funzioni">Funzioni</a>
   <a href="#installa">Installazione</a>
+  <a href="#punteggi">Punteggi</a>
   <a href="#domande">Domande</a>
-</nav>
+  <a class="btn btn-primary" data-app-link href="#">Entra e gioca</a>
+</aside>
 
 <main id="top">
 
@@ -92,8 +108,8 @@
 <section class="hero">
   <div class="wrap hero-head">
     <span class="eyebrow">Il fantacalcio del calcetto</span>
-    <h1>Giocate a calcetto.<br>Adesso c'è <em>la classifica</em>.</h1>
-    <p class="lead">Schieri cinque amici, scendi in campo con loro, vi votate a fine partita. Punti, crediti e classifica li tiene l'app.</p>
+    <h1>Per chi gioca a calcetto.<br>Ora c'è <em>il fanta</em>.</h1>
+    <p class="lead">Schiera cinque amici, scendi in campo con loro, vota a fine partita. A punti, crediti e classifica pensa l'app.</p>
     <div class="btn-row">
       <a class="btn btn-primary" data-app-link href="#">Entra e gioca &nbsp;→</a>
       <a class="btn btn-ghost" href="#come-funziona">Come funziona</a>
@@ -101,8 +117,17 @@
   </div>
 </section>
 
-<div class="wrap hero-shots" id="schermate">
-  <p class="swipe" style="margin-bottom:14px">Scorri le schermate →</p>
+<!-- ============================================================
+     ANTEPRIMA — le schermate, scorrono col dito
+     ============================================================ -->
+<div class="wrap hero-shots" id="anteprima">
+  <div class="sec-head head-row rise">
+    <div>
+      <span class="eyebrow">Anteprima</span>
+      <h2 style="margin:12px 0 0">Uno sguardo all'app</h2>
+    </div>
+    <p class="swipe">Scorri le schermate →</p>
+  </div>
   <div class="crsl" data-crsl>
     <div class="crsl-track">
 
@@ -159,14 +184,14 @@
 <hr class="hr">
 
 <!-- ============================================================
-     COME FUNZIONA — quattro schede che scorrono di lato
+     COME FUNZIONA — sei passaggi, uno per scheda
      ============================================================ -->
 <section id="come-funziona">
   <div class="wrap">
     <div class="sec-head rise">
-      <span class="eyebrow">Come funziona</span>
-      <h2>Una giornata, quattro momenti</h2>
-      <p class="lead">I giocatori sono i tuoi amici e valgono crediti che salgono e scendono. Si ripete ogni settimana e va avanti da sola.</p>
+      <span class="eyebrow">Il funzionamento</span>
+      <h2>Come funziona una giornata</h2>
+      <p class="lead">Sei passaggi che si ripetono ogni settimana. L'unico che chiede una mano è il quarto.</p>
     </div>
 
     <div class="crsl rise" data-crsl>
@@ -174,13 +199,24 @@
 
         <div class="crsl-item stepcard">
           <div class="phone"><div class="phone-screen">
+            <img src="sito/08-giornata.webp" alt="Il centro giornata appena aperto" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
+            <div class="slot-ph"><span class="ic">📅</span><span class="nm">sito/08-giornata.webp</span><span class="ds">Apertura della giornata</span></div>
+          </div></div>
+          <div class="n">1</div>
+          <h3>Apertura della giornata</h3>
+          <p>La giornata si apre da sola tre giorni prima della partita e la notifica arriva a tutti.</p>
+          <div class="tags"><span class="tag">Automatico</span></div>
+        </div>
+
+        <div class="crsl-item stepcard">
+          <div class="phone"><div class="phone-screen">
             <img src="sito/07-presenze.webp" alt="Il sondaggio delle presenze" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
             <div class="slot-ph"><span class="ic">🙋</span><span class="nm">sito/07-presenze.webp</span><span class="ds">Sondaggio presenze</span></div>
           </div></div>
-          <div class="n">1</div>
-          <h3>Chi c'è giovedì?</h3>
-          <p>Parte il sondaggio presenze e chiude 36 ore prima del fischio d'inizio. Chi manca non è schierabile, ma la sua squadra gioca lo stesso.</p>
-          <div class="tags"><span class="tag">Promemoria automatico</span></div>
+          <div class="n">2</div>
+          <h3>Vota la presenza</h3>
+          <p>Segna se ci sei. Il sondaggio chiude 36 ore prima del fischio d'inizio.</p>
+          <div class="tags"><span class="tag">Promemoria a chi manca</span></div>
         </div>
 
         <div class="crsl-item stepcard">
@@ -188,21 +224,32 @@
             <img src="sito/02-campo.webp" alt="La formazione schierata sul campo di calcetto a 5" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
             <div class="slot-ph"><span class="ic">🥅</span><span class="nm">sito/02-campo.webp</span><span class="ds">Campo con la formazione</span></div>
           </div></div>
-          <div class="n">2</div>
-          <h3>Schiera i tuoi cinque</h3>
-          <p>Cento crediti, cinque caselle, un capitano che raddoppia. La squadra dei migliori non ci sta nel budget.</p>
-          <div class="tags"><span class="tag">Tre moduli</span><span class="tag">Capitano ×2</span></div>
+          <div class="n">3</div>
+          <h3>Schiera la formazione</h3>
+          <p>Cinque caselle e cento crediti. Scegli il modulo e nomina il capitano.</p>
+          <div class="tags"><span class="tag">100 crediti</span><span class="tag">Capitano ×2</span></div>
         </div>
 
         <div class="crsl-item stepcard">
           <div class="phone"><div class="phone-screen">
-            <img src="sito/08-giornata.webp" alt="Il centro giornata con le fasi della partita" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
-            <div class="slot-ph"><span class="ic">📋</span><span class="nm">sito/08-giornata.webp</span><span class="ds">Centro giornata</span></div>
+            <img src="sito/12-bonus.webp" alt="L'inserimento di gol, assist e risultato" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
+            <div class="slot-ph"><span class="ic">⚽</span><span class="nm">sito/12-bonus.webp</span><span class="ds">Bonus e malus</span></div>
           </div></div>
-          <div class="n">3</div>
-          <h3>Si gioca</h3>
-          <p>Formazioni bloccate cinque minuti prima. A fine partita si segnano gol, assist e risultato: trenta secondi negli spogliatoi.</p>
-          <div class="tags"><span class="tag">Gol +3</span><span class="tag">Assist +2</span></div>
+          <div class="n">4</div>
+          <h3>Inserisci bonus e malus</h3>
+          <p>A fine partita l'organizzatore segna gol, assist, rigori e risultato. Trenta secondi.</p>
+          <div class="tags"><span class="tag">L'unico passaggio a mano</span></div>
+        </div>
+
+        <div class="crsl-item stepcard">
+          <div class="phone"><div class="phone-screen">
+            <img src="sito/06-voti.webp" alt="La schermata dei voti e dell'MVP" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
+            <div class="slot-ph"><span class="ic">⭐</span><span class="nm">sito/06-voti.webp</span><span class="ds">Voti e MVP</span></div>
+          </div></div>
+          <div class="n">5</div>
+          <h3>Vota i compagni</h3>
+          <p>Dai un voto a tutti gli altri e scegli il migliore in campo.</p>
+          <div class="tags"><span class="tag">MVP ×2</span></div>
         </div>
 
         <div class="crsl-item stepcard">
@@ -210,10 +257,10 @@
             <img src="sito/04-pagellone.webp" alt="Il pagellone di fine giornata" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
             <div class="slot-ph"><span class="ic">📊</span><span class="nm">sito/04-pagellone.webp</span><span class="ds">Pagellone di fine giornata</span></div>
           </div></div>
-          <div class="n">4</div>
-          <h3>Voti, MVP, pagellone</h3>
-          <p>Vi votate a vicenda e uscite il migliore in campo. Poi la giornata si chiude da sola e parte il pagellone animato.</p>
-          <div class="tags"><span class="tag">MVP ×2</span><span class="tag">Crediti aggiornati</span></div>
+          <div class="n">6</div>
+          <h3>Guarda risultati e classifica</h3>
+          <p>Arrivati i voti la giornata si chiude: pagellone, crediti aggiornati, classifica nuova.</p>
+          <div class="tags"><span class="tag">Automatico</span></div>
         </div>
 
       </div>
@@ -222,47 +269,39 @@
 </section>
 
 <!-- ============================================================
-     PUNTEGGI — la tabellina, tutto il resto sta nel regolamento
+     FUNZIONI
      ============================================================ -->
-<section id="punteggi">
+<section id="funzioni">
   <div class="wrap">
     <div class="sec-head rise">
-      <span class="eyebrow">Punteggi</span>
-      <h2>Come si fanno i punti</h2>
-      <p class="lead">Si parte dal voto medio che ti danno gli altri. Poi si somma quello che hai combinato.</p>
-    </div>
-    <div class="ptgrid rise">
-      <div class="prow"><span>⚽ Gol</span><span class="pt pos">+3</span></div>
-      <div class="prow"><span>🅰️ Assist</span><span class="pt pos">+2</span></div>
-      <div class="prow"><span>🧤 Porta inviolata</span><span class="pt pos">+3</span></div>
-      <div class="prow"><span>✅ Vittoria</span><span class="pt pos">+2</span></div>
-      <div class="prow"><span>😵 Autogol</span><span class="pt neg">−3</span></div>
-      <div class="prow"><span>🔴 Gol subito</span><span class="pt neg">−1</span></div>
-      <div class="prow"><span>❌ Sconfitta</span><span class="pt neg">−1</span></div>
-      <div class="prow"><span>© Capitano · 🏆 MVP</span><span class="pt x2">voto ×2</span></div>
-    </div>
-    <div class="btn-row">
-      <a class="btn btn-ghost" href="regolamento.html">Regolamento completo &nbsp;→</a>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
-     COSA C'È DENTRO — sei voci, una riga ciascuna
-     ============================================================ -->
-<section id="dentro">
-  <div class="wrap">
-    <div class="sec-head rise">
-      <span class="eyebrow">Cosa c'è dentro</span>
-      <h2>Quello che una lega vera si porta dietro</h2>
+      <span class="eyebrow">Funzioni</span>
+      <h2>Cosa contiene l'app</h2>
     </div>
     <div class="grid rise">
-      <div class="card"><span class="ic">💰</span><h3>Crediti che si muovono</h3><p>Chi rende più di quanto costa sale, chi delude scende.</p></div>
-      <div class="card"><span class="ic">🃏</span><h3>Card dei giocatori</h3><p>Ruolo, valore, voto medio. Si toccano e si aprono.</p></div>
-      <div class="card"><span class="ic">🏆</span><h3>Bacheca dei trofei</h3><p>Traguardi per sempre e titoli che cambiano padrone ogni anno.</p></div>
-      <div class="card"><span class="ic">🔔</span><h3>Promemoria automatici</h3><p>Presenze, formazione, ultima ora, giornata chiusa.</p></div>
-      <div class="card"><span class="ic">📆</span><h3>Stagioni e recap</h3><p>Fino a 38 giornate, poi l'archivio con premi e record.</p></div>
-      <div class="card"><span class="ic">🧤</span><h3>Regole su misura</h3><p>Portiere, presenze e valori: li imposta l'organizzatore.</p></div>
+      <div class="card wide" style="--glow:rgba(255,194,61,.5);--chip:rgba(255,194,61,.16)">
+        <span class="ic">💰</span><h3>Crediti che si muovono</h3>
+        <p>Ogni amico vale da 1 a 100 crediti. A ogni giornata chiusa chi rende più di quanto costa sale, chi delude scende: nessuno resta caro per sempre.</p>
+      </div>
+      <div class="card" style="--glow:rgba(63,151,255,.55);--chip:rgba(63,151,255,.18)">
+        <span class="ic">🃏</span><h3>Card dei giocatori</h3>
+        <p>Ruolo, valore e voto medio. Si toccano e si aprono.</p>
+      </div>
+      <div class="card" style="--glow:rgba(255,194,61,.45);--chip:rgba(255,194,61,.16)">
+        <span class="ic">🏆</span><h3>Bacheca dei trofei</h3>
+        <p>Traguardi che restano e titoli che cambiano padrone ogni anno.</p>
+      </div>
+      <div class="card" style="--glow:rgba(47,217,138,.45);--chip:rgba(47,217,138,.16)">
+        <span class="ic">🔔</span><h3>Promemoria automatici</h3>
+        <p>Presenze, formazione, ultima ora, giornata chiusa.</p>
+      </div>
+      <div class="card" style="--glow:rgba(126,194,255,.45);--chip:rgba(126,194,255,.16)">
+        <span class="ic">📆</span><h3>Stagioni e recap</h3>
+        <p>Fino a 38 giornate, poi l'archivio con premi e record.</p>
+      </div>
+      <div class="card" style="--glow:rgba(255,93,107,.4);--chip:rgba(255,93,107,.14)">
+        <span class="ic">🧤</span><h3>Regole su misura</h3>
+        <p>Portiere, presenze e valori: li imposta l'organizzatore.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -277,7 +316,7 @@
     <div class="sec-head rise">
       <span class="eyebrow">Installazione</span>
       <h2>Come installarla sulla Home</h2>
-      <p class="lead">Icona sua, schermo intero, niente barra del browser. Su iPhone è anche l'unico modo per ricevere le notifiche.</p>
+      <p class="lead">Installata si comporta come un'app: icona sua, schermo intero, niente barra del browser. Su iPhone è anche l'unico modo per ricevere le notifiche.</p>
     </div>
 
     <div class="warn rise">
@@ -365,7 +404,7 @@
           <div class="crsl-item istep">
             <div class="phone and" style="--ar:640/1387"><div class="phone-screen">
               <img src="sito/and-2.webp" alt="Il menu di Chrome con la voce per installare l'app" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
-              <span class="hot" style="--x:56%;--y:56%;--w:54%;--h:3.6%"></span>
+              <span class="hot" style="--x:56.5%;--y:56.8%;--w:54%;--h:4%"></span>
             </div></div>
             <div class="n">2</div>
             <h3>Installa app</h3>
@@ -375,7 +414,7 @@
           <div class="crsl-item istep">
             <div class="phone and" style="--ar:640/1387"><div class="phone-screen">
               <img src="sito/and-3.webp" alt="La finestra di conferma Installa app" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
-              <span class="hot" style="--x:80.5%;--y:59.2%;--w:18%;--h:3.4%"></span>
+              <span class="hot" style="--x:82%;--y:59.7%;--w:18%;--h:3.6%"></span>
             </div></div>
             <div class="n">3</div>
             <h3>Conferma</h3>
@@ -399,6 +438,32 @@
 </section>
 
 <!-- ============================================================
+     PUNTEGGI — la tabellina, il resto sta nel regolamento
+     ============================================================ -->
+<section id="punteggi">
+  <div class="wrap">
+    <div class="sec-head rise">
+      <span class="eyebrow">Regolamento</span>
+      <h2>Bonus, malus e moltiplicatori</h2>
+      <p class="lead">Il punto di partenza è il voto medio degli altri. Poi si somma quello che è successo in campo.</p>
+    </div>
+    <div class="ptgrid rise">
+      <div class="prow"><span>⚽ Gol</span><span class="pt pos">+3</span></div>
+      <div class="prow"><span>🅰️ Assist</span><span class="pt pos">+2</span></div>
+      <div class="prow"><span>🧤 Porta inviolata</span><span class="pt pos">+3</span></div>
+      <div class="prow"><span>✅ Vittoria</span><span class="pt pos">+2</span></div>
+      <div class="prow"><span>😵 Autogol</span><span class="pt neg">−3</span></div>
+      <div class="prow"><span>🔴 Gol subito</span><span class="pt neg">−1</span></div>
+      <div class="prow"><span>❌ Sconfitta</span><span class="pt neg">−1</span></div>
+      <div class="prow"><span>© Capitano · 🏆 MVP</span><span class="pt x2">voto ×2</span></div>
+    </div>
+    <div class="btn-row">
+      <a class="btn btn-ghost" href="regolamento.html">Regolamento completo &nbsp;→</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
      DOMANDE FREQUENTI
      ============================================================ -->
 <section id="domande">
@@ -411,8 +476,8 @@
       <details><summary>Quanto costa?</summary><div class="a"><p>Niente. Nessuna versione a pagamento, nessuna pubblicità, tutte le funzioni aperte a tutte le leghe.</p></div></details>
       <details><summary>Quanti bisogna essere?</summary><div class="a"><p>Da dieci in su, così le formazioni possono essere diverse tra loro. Con quindici o venti è perfetto, e non c'è un massimo.</p></div></details>
       <details><summary>Serve scaricarla dagli store?</summary><div class="a"><p>No. È un sito che si aggiunge alla schermata Home e da lì funziona come un'app: icona, schermo intero, notifiche. Gli aggiornamenti arrivano da soli.</p></div></details>
-      <details><summary>Chi assegna i voti?</summary><div class="a"><p>Voi. A fine partita ognuno vota gli altri e la media è il voto di giornata. L'organizzatore inserisce solo i fatti: gol, assist, rigori, risultato.</p></div></details>
-      <details><summary>Devo mandare avanti tutto io?</summary><div class="a"><p>No, ed è la cosa a cui teniamo di più. La giornata si apre da sola, i promemoria partono da soli, la giornata si chiude quando arrivano i voti. All'organizzatore resta solo da segnare com'è finita la partita.</p></div></details>
+      <details><summary>Chi assegna i voti?</summary><div class="a"><p>I giocatori. A fine partita ognuno vota gli altri e la media è il voto di giornata. L'organizzatore inserisce solo i fatti: gol, assist, rigori, risultato.</p></div></details>
+      <details><summary>Deve fare tutto l'organizzatore?</summary><div class="a"><p>No, ed è la cosa a cui teniamo di più. La giornata si apre da sola, i promemoria partono da soli, la giornata si chiude quando arrivano i voti. All'organizzatore resta solo da segnare com'è finita la partita.</p></div></details>
       <details><summary>Che dati raccogliete?</summary><div class="a"><p>Il minimo per far funzionare il gioco: email, nome, soprannome, foto se la carichi, nome squadra e presenze. Le password le custodisce il servizio di accesso, non le vediamo mai. Niente pubblicità, nessuna rivendita di dati.</p></div></details>
     </div>
   </div>
@@ -424,7 +489,7 @@
 <section>
   <div class="wrap">
     <div class="final rise">
-      <h2>La prossima partita può già valere qualcosa</h2>
+      <h2>Inizia dalla prossima partita</h2>
       <p class="lead">Crea la lega, manda il link agli amici, apri la prima giornata.</p>
       <div class="btn-row">
         <a class="btn btn-primary" data-app-link href="#">Entra e gioca &nbsp;→</a>
@@ -463,11 +528,30 @@ function onScroll(){ tb.classList.toggle('stuck', window.scrollY > 8); }
 addEventListener('scroll', onScroll, {passive:true}); onScroll();
 
 /* ------------------------------------------------------------
-   3) CAROSELLI
-   Un solo pezzo di codice per tutti e quattro: le schermate
-   dell'apertura, i quattro passi, l'installazione iPhone e
-   quella Android. Puntini e frecce li crea lo script, così
-   l'HTML resta pulito; senza JS resta una fila che si scorre.
+   3) MENU LATERALE
+   Sotto i 1120px le voci in alto non ci stanno: le stesse
+   sezioni si aprono da destra. Si chiude toccando una voce,
+   lo sfondo o Esc.
+   ------------------------------------------------------------ */
+var drawer = document.getElementById('drawer');
+var scrim  = document.getElementById('scrim');
+function menu(open){
+  drawer.classList.toggle('open', open);
+  scrim.classList.toggle('open', open);
+  document.getElementById('burger').setAttribute('aria-expanded', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+drawer.querySelectorAll('a').forEach(function(a){
+  a.addEventListener('click', function(){ menu(false); });
+});
+addEventListener('keydown', function(e){ if (e.key === 'Escape') menu(false); });
+
+/* ------------------------------------------------------------
+   4) CAROSELLI
+   Un solo pezzo di codice per tutti: le schermate dell'anteprima,
+   i sei passaggi, l'installazione iPhone e quella Android.
+   Puntini e frecce li crea lo script, così l'HTML resta pulito;
+   senza JS resta una fila che si scorre col dito.
    ------------------------------------------------------------ */
 function initCrsl(root){
   var track = root.querySelector('.crsl-track');
@@ -520,33 +604,31 @@ function initCrsl(root){
 document.querySelectorAll('[data-crsl]').forEach(initCrsl);
 
 /* ------------------------------------------------------------
-   4) INDICE — evidenzia la sezione in cui ci si trova e, sul
-   telefono, porta la pastiglia giusta in vista.
+   5) SEZIONE IN CORSO — evidenziata in tutti e due i menu
    ------------------------------------------------------------ */
 (function(){
-  var toc = document.getElementById('toc');
-  var links = Array.prototype.slice.call(toc.querySelectorAll('a'));
-  var targets = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+  var navs = Array.prototype.slice.call(document.querySelectorAll('[data-nav]'));
+  var ids  = ['anteprima','come-funziona','funzioni','installa','punteggi','domande'];
+  var secs = ids.map(function(id){ return document.getElementById(id); });
   var cur = -1;
-
   function spy(){
     var best = 0;
-    for (var i = 0; i < targets.length; i++){
-      if (targets[i] && targets[i].getBoundingClientRect().top <= 160) best = i;
+    for (var i = 0; i < secs.length; i++){
+      if (secs[i] && secs[i].getBoundingClientRect().top <= 140) best = i;
     }
     if (best === cur) return;
     cur = best;
-    links.forEach(function(a, k){ a.classList.toggle('on', k === cur); });
-    if (toc.scrollWidth > toc.clientWidth + 4){
-      var a = links[cur];
-      toc.scrollTo({ left: Math.max(0, a.offsetLeft - (toc.clientWidth - a.offsetWidth) / 2), behavior: 'smooth' });
-    }
+    navs.forEach(function(n){
+      n.querySelectorAll('a[href^="#"]').forEach(function(a){
+        a.classList.toggle('on', a.getAttribute('href') === '#' + ids[cur]);
+      });
+    });
   }
   addEventListener('scroll', spy, {passive:true}); spy();
 })();
 
 /* ------------------------------------------------------------
-   5) LINGUETTE iPhone / Android
+   6) LINGUETTE iPhone / Android
    Il pannello nascosto ha larghezza zero: quando torna visibile
    il suo carosello va ricalcolato, altrimenti i puntini restano
    fermi sul primo.
@@ -562,7 +644,7 @@ function setTab(k){
 }
 if (/Android/i.test(navigator.userAgent)) setTab('and');
 
-/* 6) COMPARSA ALLO SCROLL */
+/* 7) COMPARSA ALLO SCROLL */
 (function(){
   var els = document.querySelectorAll('.rise');
   if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)){
