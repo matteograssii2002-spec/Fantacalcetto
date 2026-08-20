@@ -373,21 +373,20 @@ td:last-child,th:last-child{text-align:right;white-space:nowrap}
 /* ============================================================
    PUNTEGGI — la tabellina, senza fronzoli
    ============================================================ */
-.ptgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(198px,1fr));gap:9px}
-@media (max-width:520px){.ptgrid{grid-template-columns:1fr 1fr;gap:8px}}
+/* una riga per riquadro: emoji, etichetta e valore sempre sulla stessa
+   linea. Sotto i 560px si passa a colonna unica, perché in due colonne
+   «Porta inviolata» non ci sta e andrebbe a capo. */
+.ptgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(216px,1fr));gap:9px}
+@media (max-width:560px){.ptgrid{grid-template-columns:1fr}}
 .prow{
-  display:flex;align-items:center;gap:10px;min-height:56px;
+  display:flex;align-items:center;gap:10px;flex-wrap:nowrap;min-height:54px;
   background:rgba(10,22,38,.5);border:1px solid var(--line);border-radius:13px;padding:9px 12px;
 }
 .prow .e{flex:0 0 auto;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
   font-size:15px;background:rgba(150,185,240,.07)}
-.prow .l{flex:1;min-width:0;font-size:14px;font-weight:600;line-height:1.25}
+.prow .l{flex:1;min-width:0;font-size:14.5px;font-weight:600;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
 .prow .pt{flex:0 0 auto}
-@media (max-width:520px){
-  .prow{flex-wrap:wrap;gap:7px;padding:10px}
-  .prow .l{flex:1 0 100%;order:2}
-  .prow .pt{order:1;margin-left:auto}
-}
 
 /* ============================================================
    MENU — le tre righe e la tendina laterale

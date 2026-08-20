@@ -1886,3 +1886,102 @@ IN_SOSPESO_46 = (
     "4) Screenshot e contenuti della landing. 5) Privacy policy e termini. 6) Multi-lega per "
     "sondaggio.html (aperto da tempo)."
 )
+
+# ---------------------------------------------------------------------------
+# VETRINA PUBBLICA (sessioni 47-48) — sito, NON app
+# ---------------------------------------------------------------------------
+VETRINA = {
+    "cos_e": (
+        "Sito pubblico in prova su /sito.html (noindex). Allo spostamento diventera' "
+        "/index.html con il gioco in /app/. File: sito.html, regolamento.html, sito.css e la "
+        "cartella sito/ con gli screenshot. NON tocca l'app: index.html, sw.js, "
+        "manifest.webmanifest e le icone sono identici."
+    ),
+    "sezioni": (
+        "barra in alto -> apertura -> #anteprima -> #come-funziona -> #funzioni -> #installa "
+        "-> #punteggi -> #domande -> chiusura."
+    ),
+    "carosello": (
+        ".crsl > .crsl-track > .crsl-item, usato in 4 punti (anteprima, 8 passaggi, "
+        "installazione iPhone, installazione Android). Puntini e frecce li crea initCrsl(). "
+        "Il pannello nascosto ha larghezza zero: setTab() deve richiamare sync()."
+    ),
+    "scocca_telefono": (
+        "REGOLA: aspect-ratio va su .phone-screen, MAI su .phone (la cornice da 8px falsa il "
+        "rapporto e lo screenshot esce dai bordi). --ar = proporzioni vere dell'immagine: "
+        "640/1306 per le schermate dell'app, 640/1387 per quelle dell'installazione. "
+        "Variante .phone.and per Android (angoli 22px, cornice grigia). Notch rimosso."
+    ),
+    "cerchi_rossi": (
+        "<span class='hot' style='--x --y --w --h'> dentro .phone-screen: anello rosso "
+        "pulsante + puntatore del mouse, indica cosa toccare nei tutorial. Percentuali "
+        "relative all'immagine, valide solo perche' lo schermo ha lo stesso rapporto. "
+        "Tabella dei valori in FANTACALCETTO.md 47.5. Rifatto uno screenshot, vanno rimisurati "
+        "(disegnarli con PIL e guardarli, non stimare a occhio)."
+    ),
+    "immagini": (
+        "Larghezza 640, WebP q82, cartella sito/. Schermate app: primi 150px tagliati -> "
+        "640x1306. Schermate installazione: NIENTE ritaglio -> 640x1387 (tagliando la barra di "
+        "stato il menu di Chrome finiva troppo vicino al bordo e il cerchio usciva). "
+        "Sfocature privacy con GaussianBlur(15): contatti in ios-3, app tranne FantaCalcetto "
+        "in ios-5 e and-4."
+    ),
+    "mancano": (
+        "02-campo, 06-voti, 07-presenze, 12-bonus, 13-lega, 14-profilo e anteprima.png "
+        "(1200x630). Finche' mancano si vede un segnaposto tratteggiato. Le due dell'anteprima "
+        "sono commentate dentro sito.html."
+    ),
+    "menu": (
+        "Sopra 1120px le sei voci in fila nella barra; sotto, tre righe + tendina da destra "
+        "(.drawer + .scrim). Scroll-spy su [data-nav] evidenzia la sezione corrente."
+    ),
+    "scrittura": (
+        "Testi asciutti. IMPERATIVO, non seconda persona indicativa: 'Schiera' non 'Schieri', "
+        "'Vota' non 'Vi votate'. Un solo pulsante ovunque: 'Gioca ora'. 'Come funziona' copre "
+        "tutto il percorso (crea lega -> crea squadra/giocatore -> apertura -> presenze -> "
+        "formazione -> bonus/malus -> voti -> classifica), non solo la giornata. I soli manager "
+        "sono citati nel passaggio 2 e nelle domande frequenti."
+    ),
+    "invarianti": (
+        "1) MAI <link rel='manifest'> ne' service worker nella vetrina, altrimenti sulla Home "
+        "finisce lei invece del gioco. 2) APP_URL in fondo alle due pagine e' l'unico punto da "
+        "cambiare allo spostamento. 3) sito.css?v=N va alzato in TUTTE E DUE le pagine insieme. "
+        "4) gli id delle sezioni sono citati da regolamento.html. 5) il calcolatore dei punti "
+        "e' stato TOLTO: la formula ora vive solo in scoreOf() e get_standings_md."
+    ),
+}
+
+# ---------------------------------------------------------------------------
+# APERTURA GIORNATA — i casi limite (messo per iscritto in sessione 48)
+# ---------------------------------------------------------------------------
+APERTURA_GIORNATA = (
+    "DUE STRADE NON EQUIVALENTI. Automatica: giorno+ora in Regole della lega, il cron chiama "
+    "open_due_matchdays() che apre quando adesso cade nella finestra [K-72h, K); ciclo intero "
+    "col sondaggio presenze fino a K-36h. 'Apri subito': mette SEMPRE skip_poll=true, quindi "
+    "niente sondaggio, formazioni aperte all'istante, presenti a mano dall'admin. NON ESISTE, "
+    "nell'interfaccia, un modo di aprire a mano CON il sondaggio.\n"
+    "PRESENZE A MANO: due casi che finiscono uguali - lega in modalita' admin "
+    "(presence_self=false, sondaggio mai esistito, si puo' usare la rosa prevista prima "
+    "dell'apertura) oppure skip_poll=true su quella giornata. In entrambi mdTimes() mette "
+    "presenceClose=0.\n"
+    "APERTURA IN RITARDO: open_due_matchdays non aspetta, apre al primo giro di cron utile col "
+    "ciclo compresso. Se si e' gia' dentro le 36h il sondaggio nasce chiuso -> ATTENZIONE: in "
+    "modalita' giocatori nessuno ha votato la presenza, matchday_players e' vuoto e non c'e' "
+    "nessuno da schierare; la via d'uscita e' la card admin 'Chi gioca questa giornata'. Se il "
+    "kickoff e' gia' passato non apre niente e aspetta la settimana dopo (non e' un guasto).\n"
+    "CHI PUO' COSA: operazioni di giornata = proprietario E vice (is_operator() / canOp()); "
+    "regole, stagione, giocatori, sondaggio valori, manutenzione, vice-admin = SOLO "
+    "proprietario (is_admin() / profile.is_admin).\n"
+    "FRAGILITA' NOTA: il client si fida della colonna profiles.is_admin, il database di "
+    "leagues.admin_id. Se divergono il sintomo e' pannello admin aperto ma scrittura rifiutata "
+    "con 'new row violates row-level security policy for table matchdays'. Diagnosi in "
+    "FANTACALCETTO.md 48.4."
+)
+
+IN_SOSPESO_48 = (
+    "1) Screenshot mancanti della vetrina + anteprima.png (e' il prossimo passo, "
+    "PROSSIMI_PASSI.md par.6). 2) Split '/' landing + '/app/' gioco (par.3). 3) Cookie e "
+    "analytics solo sulla landing (par.1). 4) Privacy policy e termini (par.4). 5) RLS: 'Apri "
+    "subito' rifiutato in una lega nuova (par.7). 6) Sparkline della posizione nella scheda "
+    "manager, serve una RPC (par.2). 7) Multi-lega per sondaggio.html (aperto da tempo)."
+)

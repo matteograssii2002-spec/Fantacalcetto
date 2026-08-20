@@ -31,7 +31,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="sito.css?v=6">
+<link rel="stylesheet" href="sito.css?v=7">
 
 <script type="application/ld+json">
 {
@@ -53,6 +53,7 @@
   "mainEntity":[
     {"@type":"Question","name":"Quanto costa FantaCalcetto?","acceptedAnswer":{"@type":"Answer","text":"Niente. Nessuna versione a pagamento e nessuna pubblicità: tutte le funzioni sono aperte a tutte le leghe."}},
     {"@type":"Question","name":"Quante persone servono per giocare?","acceptedAnswer":{"@type":"Answer","text":"Da dieci in su, così le formazioni possono essere diverse tra loro. Con quindici o venti è perfetto e non c'è un massimo."}},
+    {"@type":"Question","name":"Si può giocare senza scendere in campo?","acceptedAnswer":{"@type":"Answer","text":"Sì. Chi non gioca a calcetto entra come solo manager: ha la sua squadra, schiera la formazione e sta in classifica. Non prende voti e non compare nel sondaggio delle presenze."}},
     {"@type":"Question","name":"Bisogna scaricare l'app da App Store o Play Store?","acceptedAnswer":{"@type":"Answer","text":"No. FantaCalcetto si aggiunge alla schermata Home e da lì funziona come un'app: icona, schermo intero e notifiche. Gli aggiornamenti arrivano da soli."}},
     {"@type":"Question","name":"Chi assegna i voti ai giocatori?","acceptedAnswer":{"@type":"Answer","text":"I giocatori stessi: a fine partita ognuno vota gli altri e la media è il voto di giornata. L'organizzatore inserisce solo gol, assist, rigori e risultato."}},
     {"@type":"Question","name":"L'organizzatore deve mandare avanti tutto a mano?","acceptedAnswer":{"@type":"Answer","text":"No. La giornata si apre da sola, i promemoria partono da soli e la giornata si chiude quando arrivano i voti. Resta solo da segnare com'è finita la partita."}},
@@ -109,7 +110,7 @@
   <div class="wrap hero-head">
     <span class="eyebrow">Il fantacalcio del calcetto</span>
     <h1>Per chi gioca a calcetto.<br>Ora c'è <em>il fanta</em>.</h1>
-    <p class="lead">Schiera cinque amici, scendi in campo con loro, vota a fine partita. A punti, crediti e classifica pensa l'app.</p>
+    <p class="lead">Crea una lega, schiera cinque amici, scendi in campo con loro, vota a fine partita. A punti, crediti e classifica pensa l'app.</p>
     <div class="btn-row">
       <a class="btn btn-primary" data-app-link href="#">Gioca ora &nbsp;→</a>
       <a class="btn btn-ghost" href="#come-funziona">Come funziona</a>
@@ -190,8 +191,8 @@
   <div class="wrap">
     <div class="sec-head rise">
       <span class="eyebrow">Il funzionamento</span>
-      <h2>Come funziona una giornata</h2>
-      <p class="lead">Sei passaggi che si ripetono ogni settimana. L'unico che chiede una mano è il quarto.</p>
+      <h2>Come funziona</h2>
+      <p class="lead">Dalla creazione della lega alla classifica. I primi due passaggi si fanno una volta sola, gli altri sei tornano ogni settimana.</p>
     </div>
 
     <div class="crsl rise" data-crsl>
@@ -199,21 +200,43 @@
 
         <div class="crsl-item stepcard">
           <div class="phone"><div class="phone-screen">
+            <img src="sito/13-lega.webp" alt="La schermata di creazione della lega" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
+            <div class="slot-ph"><span class="ic">🏆</span><span class="nm">sito/13-lega.webp</span><span class="ds">Crea la lega</span></div>
+          </div></div>
+          <div class="n">1</div>
+          <h3>Crea la lega</h3>
+          <p>Nome, password e sei dentro. Manda il link agli amici e ti raggiungono in un minuto.</p>
+          <div class="tags"><span class="tag">Gratis</span><span class="tag">Una lega per gruppo</span></div>
+        </div>
+
+        <div class="crsl-item stepcard">
+          <div class="phone"><div class="phone-screen">
+            <img src="sito/14-profilo.webp" alt="La creazione di squadra e giocatore" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
+            <div class="slot-ph"><span class="ic">🪪</span><span class="nm">sito/14-profilo.webp</span><span class="ds">Crea squadra e giocatore</span></div>
+          </div></div>
+          <div class="n">2</div>
+          <h3>Crea squadra e giocatore</h3>
+          <p>Nome squadra, soprannome e foto. Chi non scende in campo entra come <b>solo manager</b>: ha la squadra, non prende voti.</p>
+          <div class="tags"><span class="tag">Anche solo manager</span></div>
+        </div>
+
+        <div class="crsl-item stepcard">
+          <div class="phone"><div class="phone-screen">
             <img src="sito/08-giornata.webp" alt="Il centro giornata appena aperto" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
             <div class="slot-ph"><span class="ic">📅</span><span class="nm">sito/08-giornata.webp</span><span class="ds">Apertura della giornata</span></div>
           </div></div>
-          <div class="n">1</div>
+          <div class="n">3</div>
           <h3>Apertura della giornata</h3>
-          <p>La giornata si apre da sola tre giorni prima della partita e la notifica arriva a tutti.</p>
+          <p>Si apre da sola tre giorni prima della partita e la notifica arriva a tutti.</p>
           <div class="tags"><span class="tag">Automatico</span></div>
         </div>
 
         <div class="crsl-item stepcard">
           <div class="phone"><div class="phone-screen">
             <img src="sito/07-presenze.webp" alt="Il sondaggio delle presenze" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
-            <div class="slot-ph"><span class="ic">🙋</span><span class="nm">sito/07-presenze.webp</span><span class="ds">Sondaggio presenze</span></div>
+            <div class="slot-ph"><span class="ic">🙋</span><span class="nm">sito/07-presenze.webp</span><span class="ds">Vota la presenza</span></div>
           </div></div>
-          <div class="n">2</div>
+          <div class="n">4</div>
           <h3>Vota la presenza</h3>
           <p>Segna se ci sei. Il sondaggio chiude 36 ore prima del fischio d'inizio.</p>
           <div class="tags"><span class="tag">Promemoria a chi manca</span></div>
@@ -222,9 +245,9 @@
         <div class="crsl-item stepcard">
           <div class="phone"><div class="phone-screen">
             <img src="sito/02-campo.webp" alt="La formazione schierata sul campo di calcetto a 5" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
-            <div class="slot-ph"><span class="ic">🥅</span><span class="nm">sito/02-campo.webp</span><span class="ds">Campo con la formazione</span></div>
+            <div class="slot-ph"><span class="ic">🥅</span><span class="nm">sito/02-campo.webp</span><span class="ds">Schiera la formazione</span></div>
           </div></div>
-          <div class="n">3</div>
+          <div class="n">5</div>
           <h3>Schiera la formazione</h3>
           <p>Cinque caselle e cento crediti. Scegli il modulo e nomina il capitano.</p>
           <div class="tags"><span class="tag">100 crediti</span><span class="tag">Capitano ×2</span></div>
@@ -233,9 +256,9 @@
         <div class="crsl-item stepcard">
           <div class="phone"><div class="phone-screen">
             <img src="sito/12-bonus.webp" alt="L'inserimento di gol, assist e risultato" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
-            <div class="slot-ph"><span class="ic">⚽</span><span class="nm">sito/12-bonus.webp</span><span class="ds">Bonus e malus</span></div>
+            <div class="slot-ph"><span class="ic">⚽</span><span class="nm">sito/12-bonus.webp</span><span class="ds">Inserisci bonus e malus</span></div>
           </div></div>
-          <div class="n">4</div>
+          <div class="n">6</div>
           <h3>Inserisci bonus e malus</h3>
           <p>A fine partita l'organizzatore segna gol, assist, rigori e risultato. Trenta secondi.</p>
           <div class="tags"><span class="tag">L'unico passaggio a mano</span></div>
@@ -244,9 +267,9 @@
         <div class="crsl-item stepcard">
           <div class="phone"><div class="phone-screen">
             <img src="sito/06-voti.webp" alt="La schermata dei voti e dell'MVP" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
-            <div class="slot-ph"><span class="ic">⭐</span><span class="nm">sito/06-voti.webp</span><span class="ds">Voti e MVP</span></div>
+            <div class="slot-ph"><span class="ic">⭐</span><span class="nm">sito/06-voti.webp</span><span class="ds">Vota i compagni</span></div>
           </div></div>
-          <div class="n">5</div>
+          <div class="n">7</div>
           <h3>Vota i compagni</h3>
           <p>Dai un voto a tutti gli altri e scegli il migliore in campo.</p>
           <div class="tags"><span class="tag">MVP ×2</span></div>
@@ -255,9 +278,9 @@
         <div class="crsl-item stepcard">
           <div class="phone"><div class="phone-screen">
             <img src="sito/04-pagellone.webp" alt="Il pagellone di fine giornata" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
-            <div class="slot-ph"><span class="ic">📊</span><span class="nm">sito/04-pagellone.webp</span><span class="ds">Pagellone di fine giornata</span></div>
+            <div class="slot-ph"><span class="ic">📊</span><span class="nm">sito/04-pagellone.webp</span><span class="ds">Guarda risultati e classifica</span></div>
           </div></div>
-          <div class="n">6</div>
+          <div class="n">8</div>
           <h3>Guarda risultati e classifica</h3>
           <p>Arrivati i voti la giornata si chiude: pagellone, crediti aggiornati, classifica nuova.</p>
           <div class="tags"><span class="tag">Automatico</span></div>
@@ -396,7 +419,7 @@
           <div class="crsl-item istep">
             <div class="phone and" style="--ar:640/1387"><div class="phone-screen">
               <img src="sito/and-3.webp" alt="La finestra di conferma Installa app" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
-              <span class="hot" style="--x:82%;--y:59.7%;--w:18%;--h:3.6%"></span>
+              <span class="hot" style="--x:81.9%;--y:60.3%;--w:17%;--h:3.4%"></span>
             </div></div>
             <div class="n">3</div>
             <h3>Conferma</h3>
@@ -406,7 +429,7 @@
           <div class="crsl-item istep">
             <div class="phone and" style="--ar:640/1387"><div class="phone-screen">
               <img src="sito/and-4.webp" alt="L'icona di FantaCalcetto sulla schermata Home di Android" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
-              <span class="hot" style="--x:15%;--y:72%;--w:20%;--h:7.5%"></span>
+              <span class="hot" style="--x:15.2%;--y:73.4%;--w:19%;--h:9%"></span>
             </div></div>
             <div class="n">4</div>
             <h3>Apri dall'icona</h3>
@@ -459,6 +482,7 @@
     <div class="faq rise">
       <details><summary>Quanto costa?</summary><div class="a"><p>Niente. Nessuna versione a pagamento, nessuna pubblicità, tutte le funzioni aperte a tutte le leghe.</p></div></details>
       <details><summary>Quanti bisogna essere?</summary><div class="a"><p>Da dieci in su, così le formazioni possono essere diverse tra loro. Con quindici o venti è perfetto, e non c'è un massimo.</p></div></details>
+      <details><summary>Si può giocare senza scendere in campo?</summary><div class="a"><p>Sì. Chi non gioca a calcetto — un amico, la fidanzata, chi è infortunato a lungo — entra come <b>solo manager</b>: ha la sua squadra, schiera la formazione e sta in classifica come tutti. Non prende voti, perché non gioca, e non compare nel sondaggio delle presenze. Se possa votare i giocatori lo decide l'organizzatore.</p></div></details>
       <details><summary>Serve scaricarla dagli store?</summary><div class="a"><p>No. È un sito che si aggiunge alla schermata Home e da lì funziona come un'app: icona, schermo intero, notifiche. Gli aggiornamenti arrivano da soli.</p></div></details>
       <details><summary>Chi assegna i voti?</summary><div class="a"><p>I giocatori. A fine partita ognuno vota gli altri e la media è il voto di giornata. L'organizzatore inserisce solo i fatti: gol, assist, rigori, risultato.</p></div></details>
       <details><summary>Deve fare tutto l'organizzatore?</summary><div class="a"><p>No, ed è la cosa a cui teniamo di più. La giornata si apre da sola, i promemoria partono da soli, la giornata si chiude quando arrivano i voti. All'organizzatore resta solo da segnare com'è finita la partita.</p></div></details>

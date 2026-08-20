@@ -2883,3 +2883,212 @@ corretto invertendo l'ordine dei controlli.
 - Multi-lega per `sondaggio.html` (aperto da tempo).
 - Google Sign-In: rimandato, non urgente ora che la password rende l'accesso immediato.
   «Sign in with Apple» richiede l'Apple Developer Program (99 $/anno).
+
+## 47. SESSIONI 47-48 — VETRINA PUBBLICA: prima stesura e restyle
+
+> File: `sito.html`, `sito.css`, `regolamento.html`, cartella `sito/`. **L'app non è toccata**:
+> `index.html`, `sw.js`, `manifest.webmanifest` e le icone sono rimasti identici.
+> Dove in conflitto con la §6 di `PROSSIMI_PASSI.md`, **vale questa**.
+
+### 47.1 Cos'è
+
+Vetrina pubblica in prova su `/sito.html` (ancora `noindex`), che allo spostamento della §3
+diventerà `/index.html` con il gioco in `/app/`. Stessi colori e caratteri dell'app, ma con
+regole da sito: testo selezionabile, scroll normale, niente `position:fixed`.
+`regolamento.html` è la pagina di dettaglio dei punteggi e condivide `sito.css`.
+
+### 47.2 Struttura (dopo il restyle)
+
+Barra in alto (marchio · voci · «Gioca ora» · tre righe) → apertura → **Anteprima**
+(`#anteprima`) → **Come funziona** (`#come-funziona`) → **Funzioni** (`#funzioni`) →
+**Installazione** (`#installa`) → **Punteggi** (`#punteggi`) → **Domande** (`#domande`) →
+chiusura. Sei sezioni, circa metà dello scroll della prima stesura.
+
+Sparite nel restyle: il campo interattivo che cambiava modulo in apertura, il blocco «Cos'è»
+a due colonne, la galleria in fondo (diventata l'apertura), i riquadri statistici
+(5 in campo / 100 crediti / 38 giornate / 0 €) e **il calcolatore dei punti**. Quest'ultimo
+è una buona notizia per l'invariante del punteggio: la formula non vive più in tre posti,
+solo in `scoreOf()` e `get_standings_md`. Al suo posto una griglia statica di dieci riquadri.
+
+### 47.3 Il carosello — un solo componente
+
+`.crsl` > `.crsl-track` > `.crsl-item`, usato in **quattro** punti: schermate dell'anteprima,
+gli otto passaggi, installazione iPhone, installazione Android. Scorrimento a scatti
+(`scroll-snap`), **puntini e frecce li crea lo script** (`initCrsl`) così l'HTML resta pulito;
+senza JS resta comunque una fila che si scorre col dito. `paint()` nasconde tutta la
+navigazione quando le schede ci stanno già in larghezza.
+
+⚠️ **Il pannello nascosto ha larghezza zero.** `setTab()` deve richiamare `sync()` sul
+carosello che torna visibile, altrimenti i puntini restano fermi sul primo.
+
+### 47.4 La scocca del telefono — la lezione
+
+Le proporzioni vanno su **`.phone-screen`**, non su `.phone`:
+
+```css
+.phone{padding:8px}                                   /* niente aspect-ratio qui */
+.phone-screen{width:100%;aspect-ratio:var(--ar, 640/1306)}
+```
+
+Mettendole sulla scocca, la cornice da 8 px falsa il rapporto di un paio di punti percentuali
+e `object-fit:cover` mangia i lati dello screenshot. Con `--ar` sullo schermo il ritaglio è
+esatto: nessun bordo vuoto, niente tagliato. Le schermate dell'app sono **640×1306**, quelle
+dell'installazione **640×1387**, e `--ar` si passa in linea (`style="--ar:640/1387"`).
+
+Il notch nero (`.phone::after`) è stato **rimosso**: copriva la prima riga degli screenshot
+dell'installazione. Variante **`.phone.and`** per Android: angoli a 22 px invece di 40,
+cornice più sottile e grigia invece che blu.
+
+### 47.5 Il cerchio rosso delle istruzioni
+
+`<span class="hot" style="--x:..%;--y:..%;--w:..%;--h:..%">` dentro `.phone-screen`: anello
+rosso pulsante con il puntatore del mouse (SVG in `background`, data-URI) in basso a destra.
+Non è un cerchio fisso ma un rettangolo arrotondato: sulle voci di menu diventa una pillola
+che avvolge la riga intera. Le percentuali sono relative allo screenshot, e valgono **solo**
+perché `.phone-screen` ha lo stesso rapporto dell'immagine (§47.4).
+
+Valori attuali — se si rifà uno screenshot vanno rimisurati:
+
+| file | --x | --y | --w | --h | cosa indica |
+|---|---|---|---|---|---|
+| ios-1 | 85% | 93.2% | 13% | 6% | il `•••` di Safari |
+| ios-2 | 49% | 61% | 26% | 3.6% | voce «Share / Condividi» |
+| ios-3 | 35.5% | 95% | 56% | 3.4% | «Add to Home Screen» |
+| ios-4 | 87.8% | 12.5% | 18% | 4.2% | pulsante «Add» |
+| ios-5 | 15.3% | 48.5% | 19% | 8.5% | icona sulla Home |
+| and-1 | 90% | 7.4% | 10% | 4.4% | menu `⋮` di Chrome |
+| and-2 | 56.5% | 56.8% | 54% | 4% | «Installa e crea scorciatoia» |
+| and-3 | 81.9% | 60.3% | 17% | 3.4% | pulsante «Installa» |
+| and-4 | 15.2% | 73.4% | 19% | 9% | icona sulla Home |
+
+**Metodo:** disegnare il rettangolo sull'immagine con PIL e guardarlo, non stimare a occhio.
+Per gli ultimi due sono state trovate le coordinate esatte per colore (il blu del testo
+«Installa», il blu scuro dell'icona sul verde acqua dello sfondo).
+
+### 47.6 Le immagini
+
+Convenzione: **larghezza 640, WebP qualità 82**, nella cartella `sito/`.
+
+- **Schermate dell'app** (`01`…`14`): barra di stato tagliata (primi 150 px), risultato 640×1306.
+- **Schermate dell'installazione** (`ios-*`, `and-*`): **niente ritaglio**, 640×1387. Sembrava
+  più pulito tagliare la barra di stato, ma il `⋮` di Chrome finiva così vicino al bordo che
+  il cerchio rosso usciva dallo schermo.
+- **Sfocature** (privacy): contatti WhatsApp in `ios-3`, tutte le app tranne FantaCalcetto in
+  `ios-5` (dock compreso) e in `and-4`. Fatte con `ImageFilter.GaussianBlur(15)` su rettangoli
+  espliciti: se si rifanno gli screenshot vanno rifatte.
+
+**Mancano ancora:** `02-campo`, `06-voti`, `07-presenze`, `12-bonus` (inserimento gol/assist/
+risultato), `13-lega` (creazione lega), `14-profilo` (creazione squadra e giocatore) e
+`sito/anteprima.png` 1200×630 per i link su WhatsApp. Finché mancano si vede un segnaposto
+tratteggiato col nome del file: la pagina non si rompe. Nel carosello dell'anteprima i due
+mancanti sono **commentati** apposta, perché in cima alla pagina un riquadro tratteggiato
+sarebbe la prima cosa che si vede.
+
+### 47.7 Menu e navigazione
+
+Sopra i **1120 px** le sei sezioni stanno in fila nella barra in alto, con la sottolineatura
+blu su quella corrente. Sotto, compaiono le tre righe (`.burger`) e le stesse voci si aprono
+in una tendina da destra (`.drawer` + `.scrim`), che si chiude toccando una voce, lo sfondo o
+Esc. Lo scroll-spy evidenzia la sezione in tutti e due i menu (`[data-nav]`).
+
+Prima del restyle c'era una barra di pastiglie appiccicata sotto il titolo: si vedeva poco ed
+è stata buttata.
+
+### 47.8 Regole di scrittura decise in sessione
+
+- Testi asciutti, non romanzati. La prima stesura è stata accorciata di circa un terzo, il
+  restyle di un altro terzo.
+- **Imperativo, non seconda persona indicativa**: «Schiera», non «Schieri»; «Vota», non
+  «Vi votate».
+- Un solo pulsante d'azione, ovunque: **«Gioca ora»**.
+- Titoli seri e descrittivi: *Uno sguardo all'app*, *Come funziona*, *Cosa contiene l'app*,
+  *Come installarla sulla Home*, *Bonus, malus e moltiplicatori*, *Domande frequenti*,
+  *Inizia dalla prossima partita*.
+- «Come funziona» copre **tutto il percorso**, non solo la giornata: crea la lega → crea
+  squadra e giocatore → apertura → presenze → formazione → bonus e malus → voti → classifica.
+- I **soli manager** (`profiles.is_player=false`) sono detti sia nel secondo passaggio sia
+  nelle domande frequenti: chi non gioca a calcetto ha la squadra, non prende voti, non
+  compare nel sondaggio presenze, e vota solo se l'organizzatore glielo concede.
+
+### 47.9 Invarianti nuove
+
+- **La vetrina non deve essere installabile**: mai `<link rel="manifest">` né service worker
+  in `sito.html`, altrimenti sulla Home finisce la vetrina invece del gioco.
+- `APP_URL` in fondo a `sito.html` e `regolamento.html` è **l'unico punto** da cambiare allo
+  spostamento (`'/'` → `'/app/'`).
+- La versione di `sito.css` (`?v=N`) va alzata **in tutte e due le pagine** a ogni modifica
+  del foglio, altrimenti `regolamento.html` carica dalla cache un CSS che non esiste più.
+- Gli `id` delle sezioni sono citati da `regolamento.html`: cambiandoli si rompono i link
+  della sua barra in alto (è già successo con `#dentro` → `#funzioni`).
+
+## 48. NOTA — apertura della giornata: i casi limite
+
+Chiarimento nato da una domanda in sessione 48. Nessun codice cambiato, solo messo per
+iscritto come si comporta l'app oggi.
+
+### 48.1 Le due strade non sono equivalenti
+
+- **Automatica.** Giorno e ora salvati in Regole della lega; il cron (ogni 10 min) chiama
+  `open_due_matchdays()`, che apre quando *adesso* cade nella finestra **[K−72h, K)**.
+  Ciclo intero: sondaggio presenze fino a K−36h, promemoria, chiusura automatica.
+- **«Apri subito».** Mette **sempre** `skip_poll=true`: niente sondaggio, formazioni aperte
+  all'istante, presenti segnati a mano dall'admin. Non esiste, nell'interfaccia, un modo di
+  aprire a mano una giornata **con** il sondaggio: la vecchia modalità Manuale è stata tolta
+  in §27.5 e il pulsante è tornato in §40 solo in questa forma.
+
+### 48.2 Presenze a mano
+
+Due casi diversi che finiscono uguali. Lega in **modalità admin** (`presence_self=false`): il
+sondaggio non esiste mai, le presenze si segnano in «Chi gioca questa giornata», e con la
+**rosa prevista** (`planned_presences` + trigger `seed_presences`) si possono impostare
+*prima* dell'apertura. Giornata con **`skip_poll=true`**: il sondaggio è spento solo per
+quella giornata. In entrambi i casi `mdTimes()` mette `presenceClose=0`, quindi le formazioni
+risultano aperte da subito e le due push del ciclo presenze non partono.
+
+### 48.3 Apertura in ritardo
+
+`open_due_matchdays()` **non aspetta**: se la programmazione viene salvata quando si è già
+dentro le 72h, la giornata si apre al primo giro di cron utile, con il ciclo compresso.
+
+- Fra K−72h e K−36h: normale, il sondaggio resta aperto per il tempo che avanza.
+- **Già dentro le 36h**: il sondaggio nasce chiuso (`presenceClose` nel passato) → formazioni
+  subito aperte. Il promemoria presenze (K−38h) non parte più, la push «presenze chiuse,
+  schiera» parte al primo giro. ⚠️ **Rischio vero:** in modalità giocatori nessuno ha votato
+  la presenza, quindi `matchday_players` è vuoto e **non c'è nessuno da schierare**. La via
+  d'uscita è la card admin «Chi gioca questa giornata», che a giornata aperta compare anche
+  in modalità giocatori. Vale la pena ricordarselo prima di aprire tardi.
+- **Kickoff già passato**: la finestra è chiusa, non apre niente e aspetta la settimana dopo.
+  Non è un guasto — è quello che è successo nella lega di prova. Per giocare oggi serve
+  «Apri subito».
+
+I promemoria a scadenza (formazioni −8h, ultima ora −1h) partono comunque al primo giro utile
+se il loro momento è già passato ma il blocco non è ancora scattato.
+
+### 48.4 Chi può fare cosa
+
+- **Operazioni di giornata** (Centro giornata, pannello partita, «Chi gioca», annulla
+  giornata): proprietario **e vice** — `is_operator()` nel database, `canOp()` nel client.
+- **Regole della lega, Stagione, Gestione giocatori, Sondaggio valori, Manutenzione,
+  Vice-admin**: **solo il proprietario** — `is_admin()` / `profile.is_admin`.
+- Un giocatore normale non vede né l'una né l'altra cosa.
+
+⚠️ **Fragilità nota.** Il client controlla `canOp() = opRole.can_operate || profile.is_admin`,
+cioè gli basta la **colonna** `profiles.is_admin`; il database controlla `is_operator()`, che
+guarda **`leagues.admin_id`**. Sono allineate da un trigger, ma se per qualsiasi motivo
+divergono il sintomo è: pannello admin aperto, scrittura rifiutata con
+`new row violates row-level security policy for table "matchdays"`. Diagnosi:
+
+```sql
+select l.id as lega, l.name, l.admin_id,
+       p.id as profilo, p.team_name, p.player_name, p.is_admin
+from leagues l left join profiles p on p.league_id = l.id
+order by l.id, p.team_name;
+
+select proname, prosecdef from pg_proc
+where proname in ('is_operator','is_admin','my_league');
+```
+
+Se per una lega `admin_id` non è l'`id` del profilo che dovrebbe comandarla, il colpevole è
+quello. Se `prosecdef` di `is_operator` è `false` il problema è più grosso: `leagues` ha RLS
+senza policy, quindi una funzione non-definer non riesce a leggerla e `is_operator()` torna
+falso per tutti.
