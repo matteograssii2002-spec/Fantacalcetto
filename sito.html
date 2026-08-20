@@ -31,7 +31,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="sito.css?v=3">
+<link rel="stylesheet" href="sito.css?v=4">
 
 <script type="application/ld+json">
 {
@@ -69,21 +69,25 @@
       <img src="icon-512.png?v=4" alt="" width="34" height="34">
       <span>Fanta<span class="b2">Calcetto</span></span>
     </a>
-    <nav class="topnav">
-      <a href="#come-funziona">Come funziona</a>
-      <a href="#dentro">Cosa c'è dentro</a>
-      <a href="#punteggi">Punteggi</a>
-      <a href="#installa">Installa</a>
-    </nav>
     <a class="btn btn-primary btn-sm" data-app-link href="#">Entra e gioca</a>
   </div>
 </header>
 
+<!-- Indice: pastiglie che scorrono sul telefono, colonnina fissa a
+     sinistra sugli schermi larghi. Si evidenzia da sola scorrendo. -->
+<nav class="toc" id="toc" aria-label="Sezioni della pagina">
+  <a href="#schermate">Schermate</a>
+  <a href="#come-funziona">Come funziona</a>
+  <a href="#punteggi">Punteggi</a>
+  <a href="#dentro">Cosa c'è dentro</a>
+  <a href="#installa">Installazione</a>
+  <a href="#domande">Domande</a>
+</nav>
+
 <main id="top">
 
 <!-- ============================================================
-     APERTURA — titolo corto, due bottoni, e subito sotto le
-     schermate vere che si scorrono col dito.
+     APERTURA
      ============================================================ -->
 <section class="hero">
   <div class="wrap hero-head">
@@ -94,16 +98,10 @@
       <a class="btn btn-primary" data-app-link href="#">Entra e gioca &nbsp;→</a>
       <a class="btn btn-ghost" href="#come-funziona">Come funziona</a>
     </div>
-    <div class="hero-stats">
-      <div class="stat"><b>5</b><span>in campo</span></div>
-      <div class="stat"><b>100</b><span>crediti</span></div>
-      <div class="stat"><b>38</b><span>giornate</span></div>
-      <div class="stat"><b>0&nbsp;€</b><span>sempre</span></div>
-    </div>
   </div>
 </section>
 
-<div class="wrap hero-shots">
+<div class="wrap hero-shots" id="schermate">
   <p class="swipe" style="margin-bottom:14px">Scorri le schermate →</p>
   <div class="crsl" data-crsl>
     <div class="crsl-track">
@@ -143,7 +141,7 @@
       <!-- ⬇️ DA SCOPRIRE QUANDO ARRIVANO I DUE SCREENSHOT MANCANTI.
            Qui non ci sono segnaposto apposta: in cima alla pagina un
            riquadro tratteggiato si vedrebbe per primo. Basta togliere
-           le due righe di commento qui sopra e qui sotto.
+           la riga di commento qui sopra e quella in fondo al blocco.
 
       <div class="crsl-item shot"><div class="phone"><div class="phone-screen">
         <img src="sito/02-campo.webp" alt="La formazione schierata sul campo di calcetto a 5" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
@@ -176,7 +174,7 @@
 
         <div class="crsl-item stepcard">
           <div class="phone"><div class="phone-screen">
-            <img src="sito/07-presenze.webp" alt="Il sondaggio delle presenze" loading="lazy" onerror="this.classList.add('missing')">
+            <img src="sito/07-presenze.webp" alt="Il sondaggio delle presenze" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
             <div class="slot-ph"><span class="ic">🙋</span><span class="nm">sito/07-presenze.webp</span><span class="ds">Sondaggio presenze</span></div>
           </div></div>
           <div class="n">1</div>
@@ -187,7 +185,7 @@
 
         <div class="crsl-item stepcard">
           <div class="phone"><div class="phone-screen">
-            <img src="sito/02-campo.webp" alt="La formazione schierata sul campo di calcetto a 5" loading="lazy" onerror="this.classList.add('missing')">
+            <img src="sito/02-campo.webp" alt="La formazione schierata sul campo di calcetto a 5" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
             <div class="slot-ph"><span class="ic">🥅</span><span class="nm">sito/02-campo.webp</span><span class="ds">Campo con la formazione</span></div>
           </div></div>
           <div class="n">2</div>
@@ -224,69 +222,27 @@
 </section>
 
 <!-- ============================================================
-     PUNTEGGI — il calcolatore. Si tocca, e il regolamento si
-     capisce senza leggerlo.
+     PUNTEGGI — la tabellina, tutto il resto sta nel regolamento
      ============================================================ -->
 <section id="punteggi">
   <div class="wrap">
-    <div class="rulebox rise">
+    <div class="sec-head rise">
       <span class="eyebrow">Punteggi</span>
-      <h2 style="margin:14px 0 8px">Quanto vale una partita?</h2>
-      <p class="lead">Si parte dal voto degli altri, poi si aggiunge quello che hai combinato.</p>
-
-      <div class="calc">
-        <div>
-          <div class="ctrl">
-            <span class="lb">Voto medio</span>
-            <input type="range" id="cVoto" min="4" max="10" step="0.5" value="6.5" aria-label="Voto medio">
-            <span class="big" id="cVotoV">6,5</span>
-          </div>
-          <div class="ctrl">
-            <span class="lb">Gol</span>
-            <span class="pt pos">+3 l'uno</span>
-            <span class="step2">
-              <button type="button" onclick="bump('gol',-1)" aria-label="Un gol in meno">−</button>
-              <span class="v" id="cGol">1</span>
-              <button type="button" onclick="bump('gol',1)" aria-label="Un gol in più">+</button>
-            </span>
-          </div>
-          <div class="ctrl">
-            <span class="lb">Assist</span>
-            <span class="pt pos">+2 l'uno</span>
-            <span class="step2">
-              <button type="button" onclick="bump('ass',-1)" aria-label="Un assist in meno">−</button>
-              <span class="v" id="cAss">0</span>
-              <button type="button" onclick="bump('ass',1)" aria-label="Un assist in più">+</button>
-            </span>
-          </div>
-          <div class="ctrl">
-            <span class="lb">Moltiplicatori</span>
-            <span class="chips">
-              <button type="button" class="chip" id="cCap" aria-pressed="false" onclick="tog('cap')">© Capitano</button>
-              <button type="button" class="chip" id="cMvp" aria-pressed="false" onclick="tog('mvp')">🏆 MVP</button>
-            </span>
-            <span class="hint">Raddoppiano il voto, non i bonus. Insieme lo quadruplicano.</span>
-          </div>
-          <div class="ctrl">
-            <span class="lb">La tua squadra</span>
-            <span class="chips">
-              <button type="button" class="chip green" id="cWin" aria-pressed="true"  onclick="esito('V')">Vince +2</button>
-              <button type="button" class="chip blue"  id="cDraw" aria-pressed="false" onclick="esito('P')">Pareggia 0</button>
-              <button type="button" class="chip red"   id="cLose" aria-pressed="false" onclick="esito('S')">Perde −1</button>
-            </span>
-          </div>
-        </div>
-
-        <div class="result" aria-live="polite">
-          <div class="k">Punti di giornata</div>
-          <div class="tot" id="cTot">11,5</div>
-          <div class="brk" id="cBrk"></div>
-        </div>
-      </div>
-
-      <div class="btn-row">
-        <a class="btn btn-ghost" href="regolamento.html">Regolamento completo &nbsp;→</a>
-      </div>
+      <h2>Come si fanno i punti</h2>
+      <p class="lead">Si parte dal voto medio che ti danno gli altri. Poi si somma quello che hai combinato.</p>
+    </div>
+    <div class="ptgrid rise">
+      <div class="prow"><span>⚽ Gol</span><span class="pt pos">+3</span></div>
+      <div class="prow"><span>🅰️ Assist</span><span class="pt pos">+2</span></div>
+      <div class="prow"><span>🧤 Porta inviolata</span><span class="pt pos">+3</span></div>
+      <div class="prow"><span>✅ Vittoria</span><span class="pt pos">+2</span></div>
+      <div class="prow"><span>😵 Autogol</span><span class="pt neg">−3</span></div>
+      <div class="prow"><span>🔴 Gol subito</span><span class="pt neg">−1</span></div>
+      <div class="prow"><span>❌ Sconfitta</span><span class="pt neg">−1</span></div>
+      <div class="prow"><span>© Capitano · 🏆 MVP</span><span class="pt x2">voto ×2</span></div>
+    </div>
+    <div class="btn-row">
+      <a class="btn btn-ghost" href="regolamento.html">Regolamento completo &nbsp;→</a>
     </div>
   </div>
 </section>
@@ -312,13 +268,15 @@
 </section>
 
 <!-- ============================================================
-     INSTALLAZIONE — linguette iPhone/Android, passi in carosello
+     INSTALLAZIONE — linguette iPhone/Android, passi in carosello.
+     Il cerchio rosso (.hot) indica cosa toccare: posizione e
+     misura in percentuale sullo screenshot, vedi sito.css.
      ============================================================ -->
 <section id="installa">
   <div class="wrap">
     <div class="sec-head rise">
-      <span class="eyebrow">Sul telefono</span>
-      <h2>Mettila sulla schermata Home</h2>
+      <span class="eyebrow">Installazione</span>
+      <h2>Come installarla sulla Home</h2>
       <p class="lead">Icona sua, schermo intero, niente barra del browser. Su iPhone è anche l'unico modo per ricevere le notifiche.</p>
     </div>
 
@@ -337,33 +295,53 @@
         <div class="crsl-track">
 
           <div class="crsl-item istep">
-            <div class="phone"><div class="phone-screen">
-              <img src="sito/ios-1.webp" alt="Il gioco aperto in Safari con il pulsante Condividi" loading="lazy" onerror="this.classList.add('missing')">
-              <div class="slot-ph"><span class="ic">🧭</span><span class="nm">sito/ios-1.webp</span><span class="ds">Safari, pulsante Condividi</span></div>
+            <div class="phone" style="--ar:640/1387"><div class="phone-screen">
+              <img src="sito/ios-1.webp" alt="Il gioco aperto in Safari, con il pulsante del menu in basso a destra" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
+              <span class="hot" style="--x:85%;--y:93.2%;--w:13%;--h:6%"></span>
             </div></div>
             <div class="n">1</div>
             <h3>Apri il gioco in Safari</h3>
-            <p>Tocca «Entra e gioca», poi <b>Condividi</b> in fondo allo schermo.</p>
+            <p>Tocca «Entra e gioca», poi il pulsante <code>•••</code> in basso a destra.</p>
           </div>
 
           <div class="crsl-item istep">
-            <div class="phone"><div class="phone-screen">
-              <img src="sito/ios-2.webp" alt="Il menu Condividi di iOS con la voce Aggiungi a Home" loading="lazy" onerror="this.classList.add('missing')">
-              <div class="slot-ph"><span class="ic">⬆️</span><span class="nm">sito/ios-2.webp</span><span class="ds">Menu Condividi</span></div>
+            <div class="phone" style="--ar:640/1387"><div class="phone-screen">
+              <img src="sito/ios-2.webp" alt="Il menu di Safari con la voce Condividi" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
+              <span class="hot" style="--x:49%;--y:61%;--w:26%;--h:3.6%"></span>
             </div></div>
             <div class="n">2</div>
-            <h3>Aggiungi a Home</h3>
-            <p>Scorri l'elenco e scegli <code>Aggiungi a Home</code>. È più giù di quanto sembri.</p>
+            <h3>Scegli Condividi</h3>
+            <p>La prima voce del menu: <code>Condividi</code>, in inglese <code>Share</code>.</p>
           </div>
 
           <div class="crsl-item istep">
-            <div class="phone"><div class="phone-screen">
-              <img src="sito/ios-3.webp" alt="L'icona di FantaCalcetto sulla schermata Home dell'iPhone" loading="lazy" onerror="this.classList.add('missing')">
-              <div class="slot-ph"><span class="ic">✅</span><span class="nm">sito/ios-3.webp</span><span class="ds">Icona sulla Home</span></div>
+            <div class="phone" style="--ar:640/1387"><div class="phone-screen">
+              <img src="sito/ios-3.webp" alt="Il pannello Condividi di iOS con la voce Aggiungi a Home" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
+              <span class="hot" style="--x:35.5%;--y:95%;--w:56%;--h:3.4%"></span>
             </div></div>
             <div class="n">3</div>
+            <h3>Aggiungi a Home</h3>
+            <p>Scorri l'elenco fino in fondo: <code>Aggiungi a Home</code>, in inglese <code>Add to Home Screen</code>.</p>
+          </div>
+
+          <div class="crsl-item istep">
+            <div class="phone" style="--ar:640/1387"><div class="phone-screen">
+              <img src="sito/ios-4.webp" alt="La conferma con il nome dell'app e il pulsante Aggiungi" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
+              <span class="hot" style="--x:87.8%;--y:12.5%;--w:18%;--h:4.2%"></span>
+            </div></div>
+            <div class="n">4</div>
+            <h3>Conferma</h3>
+            <p>Tocca <code>Aggiungi</code> in alto a destra. Il nome lascialo com'è.</p>
+          </div>
+
+          <div class="crsl-item istep">
+            <div class="phone" style="--ar:640/1387"><div class="phone-screen">
+              <img src="sito/ios-5.webp" alt="L'icona di FantaCalcetto sulla schermata Home dell'iPhone" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
+              <span class="hot" style="--x:15.3%;--y:48.5%;--w:19%;--h:8.5%"></span>
+            </div></div>
+            <div class="n">5</div>
             <h3>Apri dall'icona</h3>
-            <p>Conferma con <code>Aggiungi</code>. Da adesso usa sempre l'icona, e accetta le notifiche.</p>
+            <p>Da adesso entra sempre da qui, e la prima volta accetta le notifiche.</p>
           </div>
 
         </div>
@@ -375,29 +353,29 @@
         <div class="crsl-track">
 
           <div class="crsl-item istep">
-            <div class="phone"><div class="phone-screen">
-              <img src="sito/and-1.webp" alt="Il gioco aperto in Chrome su Android" loading="lazy" width="640" height="1326" onerror="this.classList.add('missing')">
-              <div class="slot-ph"><span class="ic">🧭</span><span class="nm">sito/and-1.webp</span><span class="ds">Il gioco in Chrome</span></div>
+            <div class="phone and" style="--ar:640/1387"><div class="phone-screen">
+              <img src="sito/and-1.webp" alt="Il gioco aperto in Chrome, con il menu in alto a destra" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
+              <span class="hot" style="--x:90%;--y:7.4%;--w:10%;--h:4.4%"></span>
             </div></div>
             <div class="n">1</div>
             <h3>Apri il gioco in Chrome</h3>
-            <p>Tocca «Entra e gioca» e aspetta che si apra la schermata di accesso.</p>
+            <p>Tocca «Entra e gioca», poi il menu <code>⋮</code> in alto a destra.</p>
           </div>
 
           <div class="crsl-item istep">
-            <div class="phone"><div class="phone-screen">
-              <img src="sito/and-2.webp" alt="Il menu di Chrome con la voce per installare l'app" loading="lazy" width="640" height="1326" onerror="this.classList.add('missing')">
-              <div class="slot-ph"><span class="ic">📥</span><span class="nm">sito/and-2.webp</span><span class="ds">Menu di Chrome</span></div>
+            <div class="phone and" style="--ar:640/1387"><div class="phone-screen">
+              <img src="sito/and-2.webp" alt="Il menu di Chrome con la voce per installare l'app" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
+              <span class="hot" style="--x:56%;--y:56%;--w:54%;--h:3.6%"></span>
             </div></div>
             <div class="n">2</div>
-            <h3>Apri il menu in alto a destra</h3>
-            <p>Cerca <code>Installa app</code>, su alcuni telefoni <code>Installa e crea scorciatoia</code>.</p>
+            <h3>Installa app</h3>
+            <p>Su alcuni telefoni la voce si chiama <code>Installa e crea scorciatoia</code>.</p>
           </div>
 
           <div class="crsl-item istep">
-            <div class="phone"><div class="phone-screen">
-              <img src="sito/and-3.webp" alt="La finestra di conferma Installa app" loading="lazy" width="640" height="1326" onerror="this.classList.add('missing')">
-              <div class="slot-ph"><span class="ic">⬇️</span><span class="nm">sito/and-3.webp</span><span class="ds">Conferma installazione</span></div>
+            <div class="phone and" style="--ar:640/1387"><div class="phone-screen">
+              <img src="sito/and-3.webp" alt="La finestra di conferma Installa app" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
+              <span class="hot" style="--x:80.5%;--y:59.2%;--w:18%;--h:3.4%"></span>
             </div></div>
             <div class="n">3</div>
             <h3>Conferma</h3>
@@ -405,9 +383,9 @@
           </div>
 
           <div class="crsl-item istep">
-            <div class="phone"><div class="phone-screen">
-              <img src="sito/and-4.webp" alt="L'icona di FantaCalcetto sulla schermata Home di Android" loading="lazy" width="640" height="1326" onerror="this.classList.add('missing')">
-              <div class="slot-ph"><span class="ic">✅</span><span class="nm">sito/and-4.webp</span><span class="ds">Icona sulla Home</span></div>
+            <div class="phone and" style="--ar:640/1387"><div class="phone-screen">
+              <img src="sito/and-4.webp" alt="L'icona di FantaCalcetto sulla schermata Home di Android" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
+              <span class="hot" style="--x:15%;--y:72%;--w:20%;--h:7.5%"></span>
             </div></div>
             <div class="n">4</div>
             <h3>Apri dall'icona</h3>
@@ -423,7 +401,7 @@
 <!-- ============================================================
      DOMANDE FREQUENTI
      ============================================================ -->
-<section>
+<section id="domande">
   <div class="wrap">
     <div class="sec-head rise">
       <span class="eyebrow">Dubbi</span>
@@ -542,64 +520,30 @@ function initCrsl(root){
 document.querySelectorAll('[data-crsl]').forEach(initCrsl);
 
 /* ------------------------------------------------------------
-   4) CALCOLATORE DEI PUNTI
-   Stessa formula di scoreOf() nell'app:
-   voto × capitano × mvp + gol×3 + assist×2 + esito
-   ⚠️ Se un giorno cambiano i punteggi, va aggiornato anche qui.
+   4) INDICE — evidenzia la sezione in cui ci si trova e, sul
+   telefono, porta la pastiglia giusta in vista.
    ------------------------------------------------------------ */
-var C = {voto:6.5, gol:1, ass:0, cap:false, mvp:false, es:'V'};
-var ES = {V:2, P:0, S:-1};
+(function(){
+  var toc = document.getElementById('toc');
+  var links = Array.prototype.slice.call(toc.querySelectorAll('a'));
+  var targets = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+  var cur = -1;
 
-function num(n){ return (Math.round(n*10)/10).toFixed(1).replace('.', ','); }
-
-function calc(){
-  var mult = (C.cap ? 2 : 1) * (C.mvp ? 2 : 1);
-  var base = C.voto * mult;
-  var tot  = base + C.gol*3 + C.ass*2 + ES[C.es];
-
-  document.getElementById('cTot').textContent = num(tot);
-
-  var r = [];
-  r.push('voto ' + num(C.voto) + (mult > 1 ? ' ×' + mult : '') + ' = <b>' + num(base) + '</b>');
-  if (C.gol) r.push((C.gol > 1 ? C.gol + ' gol' : 'gol') + ' <b>+' + (C.gol*3) + '</b>');
-  if (C.ass) r.push((C.ass > 1 ? C.ass + ' assist' : 'assist') + ' <b>+' + (C.ass*2) + '</b>');
-  if (C.es === 'V') r.push('vittoria <b>+2</b>');
-  if (C.es === 'S') r.push('sconfitta <b>−1</b>');
-  document.getElementById('cBrk').innerHTML = r.join('<br>');
-}
-
-var sl = document.getElementById('cVoto');
-function slFill(){ sl.style.setProperty('--fill', ((sl.value - 4) / 6 * 100) + '%'); }
-sl.addEventListener('input', function(){
-  C.voto = parseFloat(sl.value);
-  document.getElementById('cVotoV').textContent = num(C.voto);
-  slFill(); calc();
-});
-slFill();
-
-function bump(k, d){
-  C[k] = Math.max(0, Math.min(5, C[k] + d));
-  document.getElementById(k === 'gol' ? 'cGol' : 'cAss').textContent = C[k];
-  document.querySelectorAll('.step2 button').forEach(function(b){
-    var v = b.getAttribute('onclick');
-    if (v.indexOf("'" + k + "',-1") > -1) b.disabled = (C[k] === 0);
-    if (v.indexOf("'" + k + "',1")  > -1) b.disabled = (C[k] === 5);
-  });
-  calc();
-}
-function tog(k){
-  C[k] = !C[k];
-  document.getElementById(k === 'cap' ? 'cCap' : 'cMvp').setAttribute('aria-pressed', C[k]);
-  calc();
-}
-function esito(k){
-  C.es = k;
-  document.getElementById('cWin').setAttribute('aria-pressed',  k === 'V');
-  document.getElementById('cDraw').setAttribute('aria-pressed', k === 'P');
-  document.getElementById('cLose').setAttribute('aria-pressed', k === 'S');
-  calc();
-}
-bump('gol', 0); bump('ass', 0); calc();
+  function spy(){
+    var best = 0;
+    for (var i = 0; i < targets.length; i++){
+      if (targets[i] && targets[i].getBoundingClientRect().top <= 160) best = i;
+    }
+    if (best === cur) return;
+    cur = best;
+    links.forEach(function(a, k){ a.classList.toggle('on', k === cur); });
+    if (toc.scrollWidth > toc.clientWidth + 4){
+      var a = links[cur];
+      toc.scrollTo({ left: Math.max(0, a.offsetLeft - (toc.clientWidth - a.offsetWidth) / 2), behavior: 'smooth' });
+    }
+  }
+  addEventListener('scroll', spy, {passive:true}); spy();
+})();
 
 /* ------------------------------------------------------------
    5) LINGUETTE iPhone / Android
