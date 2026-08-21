@@ -2,7 +2,7 @@
 
 > File di passaggio di consegne. Allegalo a una nuova chat insieme a `index.html`,
 > `FANTACALCETTO.md` e `fantacalcetto_context.py` per ripartire senza rispiegare niente.
-> Aggiornato: **agosto 2026 — sessione 48 (vetrina pubblica, restyle)**.
+> Aggiornato: **agosto 2026 — sessione 49 (multi-lega: il gioco funziona in ogni lega)**.
 >
 > Questo file guarda **avanti**. Lo storico di ogni sessione sta in `FANTACALCETTO.md`:
 > quando un intervento è fatto, qui sparisce e resta solo lì.
@@ -16,19 +16,24 @@
 | — | Riordino admin 1/3, 2/3, 3/3 | ✅ chiuso (sessioni 44-45) |
 | — | **Revisione del login** — email+password | ✅ chiuso (sessione 46) — `FANTACALCETTO.md` §46 |
 | — | **Vetrina: struttura, testi, grafica, tutorial installazione** | ✅ chiuso (sessioni 47-48) — `FANTACALCETTO.md` §47 |
-| 1 | **Screenshot mancanti + immagine social** | 🟡 **è il prossimo passo** — §6 |
+| — | **Multi-lega: il `league_id` finiva sempre a 1** | ✅ chiuso (sessione 49) — `FANTACALCETTO.md` §49 |
+| — | Multi-lega per `sondaggio.html` | ✅ chiuso (sessione 49): file cancellato, `value_poll` è già per-lega |
+| 1 | **Screenshot: restano `07-presenze`, `14-profilo`, `anteprima.png`** | 🟡 **è il prossimo passo** — §6 |
 | 2 | Split `/app/` + landing pubblica | ⬜ da fare — §3 |
 | 3 | Cookie e statistiche — solo sulla landing | ⬜ da fare — §1 |
 | 4 | Privacy policy + termini di servizio | ⬜ da fare — §4 |
-| 5 | RLS: «Apri subito» rifiutato in una lega nuova | ⬜ da capire — §7 |
-| 6 | Sparkline posizione nella scheda manager (serve SQL) | ⬜ da fare — §2 |
-| 7 | Multi-lega per `sondaggio.html` | ⬜ aperto da tempo |
+| 5 | Sparkline posizione nella scheda manager (serve SQL) | ⬜ da fare — §2 |
 
-**Dove siamo:** la vetrina è finita come struttura, testi e grafica; mancano **sei screenshot
-e l'immagine social** (§6), che sono l'unica cosa che la tiene ferma. Poi lo spostamento
-`/sito.html` → `/`, app in `/app/` (§3, checklist già corretta con quello che si è scoperto
-strada facendo). Poi §1 e §4, che sono altre pagine dello stesso sito. La §5 e la §2 sono
-corte e indipendenti.
+**Dove siamo:** la sessione 49 ha tolto di mezzo il guasto che rendeva il gioco utilizzabile
+**solo nella lega 1** — era la vecchia §7, e si è rivelata molto più grossa di come era stata
+archiviata (`FANTACALCETTO.md` §49). Da adesso una lega creata da uno sconosciuto funziona
+come la nostra: verificato con la query di controllo, nessun `1` scritto a mano rimasto in
+nessuna funzione e in nessuna policy.
+
+La vetrina è finita come struttura, testi e grafica; mancano **tre screenshot e l'immagine
+social** (§6), che sono l'unica cosa che la tiene ferma. Poi lo spostamento `/sito.html` → `/`,
+app in `/app/` (§3, checklist già corretta con quello che si è scoperto strada facendo). Poi §1
+e §4, che sono altre pagine dello stesso sito. La §2 è corta e indipendente.
 
 Regola di sempre: **una sessione = un intervento**, e **un solo upload di `index.html`**
 per sessione.
@@ -199,6 +204,13 @@ oppure pubblicità **solo sulla landing** se farà traffico da SEO.
 ## Invarianti da non rompere (promemoria)
 
 - `esito`: **+2 vittoria / −1 sconfitta**, identico in `scoreOf()` (client) e `get_standings_md` (SQL).
+- **Il `league_id` lo mette il DEFAULT della colonna**, non un trigger. Una tabella dati nuova
+  va creata con `league_id bigint default league_default() references leagues(id)`. Non esiste
+  più nessun `default 1`: se ricompare, è un guasto silenzioso che colpirà la prima lega
+  diversa dalla 1. `stamp_league` è **morta** (resta in DB con un commento che lo dice).
+- I default dipendono da `my_league()` / `league_default()`: un `drop function my_league()`
+  fallirà con un errore di dipendenza. È **voluto**; `create or replace` funziona.
+- **Prima di dire che un trigger esiste, guardare `pg_trigger`.** Vedi §7.
 - `notify.ts` **non entra mai** in GitHub: contiene i segreti.
 - `league_id` è **BIGINT**, non UUID.
 - SQL sempre idempotente e in ordine di dipendenza (Supabase fa rollback totale sull'errore).
@@ -255,13 +267,11 @@ il ridimensionamento e la conversione si fanno in sessione.
 
 | file | cosa | dove serve |
 |---|---|---|
-| `02-campo.webp` | formazione schierata sul campo | passaggio 5 + anteprima (commentata) |
-| `06-voti.webp` | votazioni + MVP | passaggio 7 + anteprima (commentata) |
 | `07-presenze.webp` | sondaggio presenze | passaggio 4 |
-| `12-bonus.webp` | inserimento gol, assist, risultato | passaggio 6 |
-| `13-lega.webp` | schermata di creazione della lega | passaggio 1 |
 | `14-profilo.webp` | creazione squadra e giocatore | passaggio 2 |
 | `anteprima.png` | 1200×630 per WhatsApp e social | meta `og:image` |
+
+Fatti in sessione 49: `02-campo`, `06-voti`, `12-bonus`, `13-lega`.
 
 ⚠️ Per fotografare il **sondaggio presenze** serve una giornata aperta col ciclo normale, e
 «Apri subito» non va bene perché salta sempre il sondaggio (vedi `FANTACALCETTO.md` §48).
@@ -280,9 +290,9 @@ trigger `stamp_season`.
 
 ### Quando arrivano
 
-Le due schermate dell'anteprima (`02-campo`, `06-voti`) sono **commentate** dentro
-`sito.html`, nel carosello in cima: basta togliere le due righe di commento. Le altre hanno
-già il loro segnaposto tratteggiato al posto giusto.
+Le due schermate dell'anteprima (`02-campo`, `06-voti`) erano commentate nel carosello in cima
+a `sito.html`: **il commento è già stato tolto in sessione 49**, le immagini ci sono. Le due
+che restano hanno già il loro segnaposto tratteggiato al posto giusto.
 
 ### Poi
 
@@ -291,17 +301,25 @@ FC» resta**, non si rinominano gli screenshot.
 
 ---
 
-## 7. RLS — «Apri subito» rifiutato in una lega nuova
+## 7. ✅ CHIUSA — RLS, «Apri subito» in una lega nuova
 
-In una lega di prova appena creata il pulsante fallisce con
-`new row violates row-level security policy for table "matchdays"`, pur essendo visibile
-tutto il pannello admin. Il perché e le due query di diagnosi stanno in `FANTACALCETTO.md`
-§48.4. In breve: il client si fida della colonna `profiles.is_admin`, il database di
-`leagues.admin_id`, e nella lega di prova le due cose non coincidono.
+Risolta in sessione 49, ma **non era quello che c'era scritto qui**. Il racconto completo sta
+in `FANTACALCETTO.md` §49; in breve, per non ripetere l'errore:
 
-Da fare in una sessione dedicata, partendo dal risultato delle query. Probabile fix: un
-`update` di una riga su `leagues.admin_id`. Se invece `is_operator()` non è `security
-definer`, va rifatta la funzione.
+- La diagnosi archiviata (disallineamento `profiles.is_admin` vs `leagues.admin_id`) era
+  **sbagliata**: i due valori coincidevano.
+- La causa vera: **il trigger `stamp_league` non è mai esistito**. C'era la funzione, la
+  documentazione la dava per attiva, ma nessuna tabella la richiamava — e il `league_id`
+  arrivava dal `default 1` della colonna. Nella lega 1 il default sbagliato coincideva con la
+  risposta giusta, quindi per due anni non si è visto niente.
+- Non era un fastidio della lega di prova: **nessuna lega diversa dalla 1 poteva funzionare**.
+- Cura: `multilega.sql` (default → `league_default()` su 17 tabelle + riparazione delle righe
+  storte), `verifica_multilega.sql`, `profili_default.sql`.
+
+**La lezione da portarsi dietro:** prima di dare per buono un pezzo di infrastruttura descritto
+nella documentazione, guardarlo nel catalogo (`pg_trigger`, `pg_policies`, `pg_proc`). E quando
+un guasto si vede solo in un caso nuovo, sospettare che il caso vecchio funzionasse **per
+coincidenza**.
 
 ---
 
@@ -310,4 +328,11 @@ definer`, va rifatta la funzione.
 Allegare a una nuova chat: **`PROSSIMI_PASSI.md`** (questo file), **`FANTACALCETTO.md`**,
 **`fantacalcetto_context.py`**, **`index.html`** e i tre file della vetrina (**`sito.html`**,
 **`sito.css`**, **`regolamento.html`**). Le immagini già fatte non servono: basta sapere che
-ci sono. Poi, in ordine: finire la §6 (screenshot), poi la §3 (spostamento).
+ci sono. Poi, in ordine: finire la §6 (mancano `07-presenze`, `14-profilo`, `anteprima.png`),
+poi la §3 (spostamento).
+
+Per gli screenshot che restano serve una **giornata aperta col ciclo normale** (`07-presenze`):
+«Apri subito» non va bene perché salta sempre il sondaggio. La scorciatoia dall'SQL Editor è
+sempre quella in §6 — e ora che i default sono a posto il `league_id` esplicito **non è più
+obbligatorio**, ma conviene metterlo lo stesso: nell'SQL Editor `auth.uid()` è NULL, quindi
+`league_default()` ripiega comunque sulla lega 1.

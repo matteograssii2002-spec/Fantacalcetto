@@ -1985,3 +1985,153 @@ IN_SOSPESO_48 = (
     "subito' rifiutato in una lega nuova (par.7). 6) Sparkline della posizione nella scheda "
     "manager, serve una RPC (par.2). 7) Multi-lega per sondaggio.html (aperto da tempo)."
 )
+
+# ---------------------------------------------------------------------------
+# SESSIONE 49 — LA LEGA SBAGLIATA: il gioco funzionava solo nella lega 1
+# (chiude PROSSIMI_PASSI par.7; vedi FANTACALCETTO.md par.49)
+# ---------------------------------------------------------------------------
+MULTILEGA_FIX = {
+    "sintomo": (
+        "Nella lega di prova #2 'SuperLega': 'Apri subito' -> new row violates RLS for table "
+        "\"matchdays\" (ma dopo ~10 min la giornata si apriva da sola, perche' la apre il cron "
+        "con la service_role che salta RLS); 'Conferma formazione' -> stesso errore su "
+        "\"lineups\". Nella lega 1 tutto normale da sempre."
+    ),
+    "pista_sbagliata": (
+        "La 48.4 dava la colpa al disallineamento profiles.is_admin vs leagues.admin_id. NON "
+        "era quello: coincide=true per entrambi gli admin, e is_admin/is_operator/my_league "
+        "tutte security definer."
+    ),
+    "causa_vera": (
+        "stamp_league NON e' MAI stata attaccata a nessuna tabella. Esisteva come funzione, la "
+        "documentazione (par.29) la dava per attiva, ma pg_trigger mostrava solo stamp_season "
+        "su matchdays. Quindi ogni riga scritta dal client prendeva league_id dal DEFAULT della "
+        "colonna, che era 1. Le policy chiedono '... AND league_id = my_league()' -> nella lega "
+        "2 il confronto 1=2 e' falso -> insert rifiutato. Le policy erano scritte bene: era il "
+        "DATO IN ARRIVO a essere sbagliato."
+    ),
+    "perche_mai_visto": (
+        "Nella lega 1 il default sbagliato coincideva con la risposta giusta. Il guasto si "
+        "manifesta solo alla PRIMA lega diversa dalla 1, cioe' la prima volta che un estraneo "
+        "prova l'app. Bomba a orologeria, non un fastidio della lega di prova."
+    ),
+    "cura": (
+        "multilega.sql. Nuova funzione league_default() = coalesce(my_league(),1), stable "
+        "security definer, grant anon+authenticated. 12 tabelle che avevano 'default 1' -> "
+        "league_default(): lineups, lineup_modules, matchdays, matchday_players, match_stats, "
+        "votes, nominations, extra_voters, push_subscriptions, players, credit_poll, app_state. "
+        "5 tabelle che avevano 'default null' -> my_league() SENZA coalesce (metterlo le "
+        "manderebbe nella lega 1 invece di lasciarle NULL): seasons, season_recaps, value_poll, "
+        "vice_admins, planned_presences."
+    ),
+    "perche_non_rompe": (
+        "Il DEFAULT scatta SOLO se il valore non e' indicato: open_due_matchdays, onboard_join, "
+        "onboard_create_player, il trigger stamp_season e l'insert giocatori da Gestione "
+        "giocatori passano league_id esplicito e restano identici. Dove non c'e' utente (cron, "
+        "service_role, SQL Editor) my_league() e' NULL e il coalesce restituisce 1, esattamente "
+        "come prima. NESSUNA POLICY TOCCATA: un client che scrivesse league_id:999 verrebbe "
+        "comunque respinto dal with_check."
+    ),
+    "perche_non_il_trigger": (
+        "Non si e' attaccato stamp_league: non conoscendone il corpo, se dentro facesse "
+        "new.league_id := coalesce(my_league(),1) SENZA rispettare un valore gia' presente, "
+        "attaccarlo a matchdays avrebbe rotto il cron (auth.uid() NULL -> sovrascrive con 1 -> "
+        "aperture automatiche di TUTTE le leghe nella Fossa)."
+    ),
+    "riparazione": (
+        "Solo righe la cui lega e' deducibile con certezza e solo se diverse (is distinct "
+        "from), cosi' la lega 1 non e' toccata. Da matchdays.league_id via matchday_id: "
+        "lineups, lineup_modules, matchday_players, match_stats, votes, nominations. Da "
+        "profiles.league_id: push_subscriptions (user_id), extra_voters (profile_id), players "
+        "(owner_id). I giocatori creati dall'admin hanno owner_id null e league_id gia' "
+        "esplicito: lasciati stare. CASO PIU' URGENTE: le notifiche, i 5 della SuperLega "
+        "risultavano iscritti alle push della Fossa."
+    ),
+    "verifica": (
+        "verifica_multilega.sql. L'SQL Editor di Supabase mostra SOLO il risultato dell'ultima "
+        "istruzione: le 4 verifiche sono impacchettate in UN unico SELECT con colonna esito "
+        "(OK / DA SISTEMARE). Controlla i 18 default, 9 tabelle per righe orfane, e la caccia a "
+        "un 'league_id = 1' letterale in pg_get_functiondef e pg_policies. Esito reale: tutto "
+        "OK, nessun 1 scritto a mano."
+    ),
+    "profiles": (
+        "profili_default.sql: alter table profiles alter column league_id drop default. Era "
+        "l'ultimo 'default 1' rimasto. In pratica mai usato (onboard_join passa sempre la "
+        "lega), ma se un domani un pezzo di codice creasse un profilo senza indicarla, quella "
+        "persona finirebbe ZITTA ZITTA nella lega 1 vedendo dati di sconosciuti. Senza default "
+        "l'errore diventa rumoroso."
+    ),
+    "falso_allarme": (
+        "I bucket avatars e loghi sono condivisi e pubblici in lettura, ma NON e' un problema "
+        "multi-lega: sono due cataloghi fissi caricati dall'admin (personaggi disegnati e "
+        "crest), uguali per tutti per definizione. Non esistono caricamenti di immagini da "
+        "parte degli utenti."
+    ),
+    "invarianti": (
+        "1) Il league_id lo mette il DEFAULT della colonna, NON un trigger: una tabella dati "
+        "nuova va creata con 'league_id bigint default league_default() references leagues(id)'. "
+        "2) stamp_league e' MORTA (resta in DB con un comment on function che lo dice): non "
+        "riattivarla senza leggerne il corpo e ragionare sul cron. 3) NON esiste piu' nessun "
+        "'default 1': se ricompare e' un guasto silenzioso che colpira' la prima lega diversa "
+        "dalla 1. 4) I default dipendono da my_league()/league_default(): drop function "
+        "my_league() fallira' per dipendenza, e' VOLUTO; create or replace funziona. "
+        "5) Prima di dire che un trigger esiste, GUARDARE pg_trigger."
+    ),
+}
+
+# ---------------------------------------------------------------------------
+# SESSIONE 49 — ritocchi app + vetrina (FANTACALCETTO.md par.50)
+# ---------------------------------------------------------------------------
+RITOCCHI_49 = {
+    "app_version": "v12",
+    "chi_ha_vinto": (
+        "Sottotitolo da 'Tocca chi ha vinto - gli altri = sconfitta - nessuno = pareggio' a "
+        "'Seleziona chi era nella squadra vincente'. Il paragrafo sotto diventa una riga sola e "
+        "SENZA ramo condizionale: 'Chi vince prende +2, chi perde -1.' Il caso pareggio lo "
+        "dicono gia' le pillole su ogni riga."
+    ),
+    "splash_alone": (
+        ".sp-hero ha padding:8px 22px 138px, quindi il centro del riquadro sta 65px SOTTO il "
+        "centro dell'immagine ((8+138)/2). L'alone ::before era a top:47% del riquadro = troppo "
+        "in basso. Ora top:calc(50% - 65px) e height da 82% a 62%."
+    ),
+    "avvisi_onboarding": (
+        "Al posto dei toast, il riquadro .gate-status.bad (lo stesso dell'accesso) sotto il "
+        "campo mancante + bordo rosso sull'input (.ob-input.bad) + focus. Tre box: "
+        "#obStatusMode, #obStatusChar, #obStatusTeam. Helper obErr(boxId,msg,fieldId) e "
+        "obClearErr(). Coperti: modo non scelto, avatar mancante, nome personaggio vuoto, nome "
+        "squadra vuoto, e gli errori server team_taken/player_taken (ora accanto al campo "
+        "giusto). Si pulisce su oninput, sui pulsanti del modo e su pickOb(). ATTENZIONE: "
+        "obGo() NON chiama obClearErr() di proposito, perche' alcune validazioni fanno obErr() "
+        "e POI obGo(1) e il messaggio verrebbe cancellato subito."
+    ),
+    "vetrina": (
+        "sito.css?v=8 (alzato in sito.html E regolamento.html). Linguette iPhone/Android "
+        "riscritte perche' passavano inosservate: riga sopra 'Scegli il tuo telefono: le "
+        "istruzioni cambiano' (.tabs-lab con freccia in ::after), icone, quella NON selezionata "
+        "mantiene bordo e colore acceso, quella selezionata e' blu piena, sotto i 420px a tutta "
+        "larghezza. Passaggio 1 da 'Crea la lega' a 'Crea o entra in una lega'. Footer: tolto "
+        "'- fatto per la partita del giovedi' in entrambe le pagine. Riquadro giallo: 'Prima "
+        "clicca Gioca ora, poi installa sulla Home.'"
+    ),
+    "screenshot": (
+        "Fatti: 02-campo, 06-voti, 12-bonus, 13-lega (640x1306, WebP q82, primi 150px "
+        "tagliati). I due del carosello in cima (02-campo, 06-voti) NON sono piu' commentati. "
+        "Restano: 07-presenze, 14-profilo, anteprima.png."
+    ),
+    "rimosso": (
+        "sondaggio.html: verificato che non e' linkato da index.html, sito.html, "
+        "regolamento.html, admin.html, sw.js ne' dal manifest. Cancellato dal repo. Chiude la "
+        "voce 'multi-lega per sondaggio.html': il sostituto interno (value_poll) e' gia' "
+        "per-lega."
+    ),
+}
+
+IN_SOSPESO_49 = (
+    "1) Screenshot vetrina rimasti: 07-presenze, 14-profilo, anteprima.png (PROSSIMI_PASSI "
+    "par.6). 2) Split '/' landing + '/app/' gioco (par.3). 3) Cookie e analytics solo sulla "
+    "landing (par.1). 4) Privacy policy e termini (par.4). 5) Sparkline della posizione nella "
+    "scheda manager, serve una RPC (par.2). "
+    "CHIUSI in sessione 49: RLS 'Apri subito' in una lega nuova (era molto piu' grosso, vedi "
+    "MULTILEGA_FIX) e multi-lega per sondaggio.html (file cancellato)."
+)

@@ -802,7 +802,7 @@ L'app è diffondibile: **ogni gruppo = una lega privata**. Chi si registra **cre
 **Isolamento (sicurezza):**
 
 - Colonna `league_id` su tutte le tabelle dati; tabella **`leagues`** (`id, name, slug, password, admin_id`) con RLS **senza policy dirette** (accesso solo via funzioni `security definer`, così la password non è mai esposta).
-- **Letture** filtrate da RLS con `league_id = my_league()`; **scritture** timbrate dal trigger `stamp_league` (`coalesce(my_league(),1)`).
+- **Letture** filtrate da RLS con `league_id = my_league()`; **scritture** timbrate dal **default della colonna** `league_default()`. ⚠️ **CORREZIONE (sessione 49):** questa riga diceva "timbrate dal trigger `stamp_league`". Era **falso**: `stamp_league` esiste come funzione ma non è mai stata attaccata a nessuna tabella, e il `league_id` arrivava dal `default 1` della colonna. Vedi §49.
 - `is_admin` **derivato** dal trigger `profiles_guard`: sei admin solo se sei l'`admin_id` della tua lega; la lega non si cambia via update (anti-elevazione).
 - Funzioni aggregate (`get_standings`, `get_standings_md`, `get_player_stats`, `list_solo_managers`, `get_poll_results`) filtrate per `my_league()`; `reset_matchday` con guardia admin+lega.
 
@@ -3092,3 +3092,195 @@ Se per una lega `admin_id` non è l'`id` del profilo che dovrebbe comandarla, il
 quello. Se `prosecdef` di `is_operator` è `false` il problema è più grosso: `leagues` ha RLS
 senza policy, quindi una funzione non-definer non riesce a leggerla e `is_operator()` torna
 falso per tutti.
+
+---
+
+## 49. La lega sbagliata — perché il gioco funzionava solo nella lega 1
+
+Sessione 49. È la voce §7 di `PROSSIMI_PASSI.md`, aperta da due sessioni come «RLS:
+"Apri subito" rifiutato in una lega nuova», che si è rivelata molto più grossa di così.
+
+### 49.1 Il sintomo
+
+Nella lega di prova **#2 «SuperLega»** (5 profili, creata apposta per gli screenshot):
+
+- «Apri subito» → `new row violates row-level security policy for table "matchdays"`,
+  ma **dopo ~10 minuti la giornata si apriva da sola**;
+- «Conferma formazione» → `new row violates row-level security policy for table "lineups"`.
+
+Nella lega #1 tutto normale, da sempre.
+
+### 49.2 La diagnosi (e la pista sbagliata)
+
+La §48.4 attribuiva il primo errore a un disallineamento fra `profiles.is_admin` (di cui si
+fida il client) e `leagues.admin_id` (di cui si fida `is_operator()`). **Non era quello:** la
+query di controllo ha mostrato `coincide = true` per entrambi gli admin, e `is_admin`,
+`is_operator`, `my_league` tutte `security definer`.
+
+Il colpevole è emerso dalla query sui trigger:
+
+```sql
+select c.relname, t.tgname from pg_trigger t join pg_class c on c.oid=t.tgrelid
+where not t.tgisinternal and t.tgname like 'stamp%';
+--  matchdays | stamp_season      <-- e basta
+```
+
+**`stamp_league` non è mai stata attaccata a niente.** Esisteva come funzione, la
+documentazione la dava per attiva (§29), ma nessun trigger la richiamava. Quindi ogni riga
+scritta dal client prendeva il `league_id` dal **default della colonna, che era `1`**.
+Incrociato con le policy:
+
+| tabella | `with_check` | esito nella lega 2 |
+|---|---|---|
+| `matchdays` | `is_operator() AND league_id = my_league()` | `1 = 2` → rifiutata |
+| `lineups` | `manager_id = auth.uid() AND league_id = my_league()` | `1 = 2` → rifiutata |
+
+Le policy erano scritte bene: era **il dato in arrivo** a essere sbagliato.
+
+**Perché non si era mai visto in due anni:** nella lega 1 il default sbagliato coincideva con
+la risposta giusta. Il guasto si manifesta solo alla **prima lega diversa dalla 1** — cioè la
+prima volta che un estraneo prova l'app. Era una bomba a orologeria, non un fastidio della
+lega di prova.
+
+Prova indiretta pulita: la giornata si apriva lo stesso dopo 10 minuti perché la apre il cron
+via `open_due_matchdays()` con la **service_role**, che salta RLS del tutto e passa il
+`league_id` esplicito.
+
+### 49.3 La cura — `multilega.sql`
+
+Non si è attaccato `stamp_league`: non conoscendone il corpo, se dentro facesse
+`new.league_id := coalesce(my_league(),1)` **senza** rispettare un valore già presente,
+attaccarlo a `matchdays` avrebbe rotto il cron (che gira con `auth.uid()` NULL e passa il
+`league_id` esplicito: il trigger glielo avrebbe sovrascritto con 1, mandando le aperture
+automatiche di **tutte** le leghe nella Fossa).
+
+Si è invece cambiato il **default della colonna**:
+
+```sql
+create or replace function public.league_default() returns bigint
+language sql stable security definer set search_path = public
+as $$ select coalesce(public.my_league(), 1); $$;
+```
+
+- **12 tabelle** che avevano `default 1` → `league_default()`:
+  `lineups`, `lineup_modules`, `matchdays`, `matchday_players`, `match_stats`, `votes`,
+  `nominations`, `extra_voters`, `push_subscriptions`, `players`, `credit_poll`, `app_state`.
+- **5 tabelle** che avevano `default null` → `my_league()` (senza coalesce: metterlo sarebbe
+  stato un peggioramento, le manderebbe nella lega 1 invece di lasciarle NULL):
+  `seasons`, `season_recaps`, `value_poll`, `vice_admins`, `planned_presences`.
+- `profiles` escluso e poi trattato a parte (§49.6).
+
+**Perché non può rompere niente.** Il DEFAULT scatta **solo** se il valore non è indicato:
+tutto ciò che passa `league_id` esplicito (`open_due_matchdays`, `onboard_join`,
+`onboard_create_player`, il trigger `stamp_season`, l'insert dei giocatori da Gestione
+giocatori) resta identico. E dove non c'è utente (cron, service_role, SQL Editor)
+`my_league()` è NULL e il `coalesce(...,1)` restituisce **1, esattamente come prima**.
+Nessuna policy toccata: la sicurezza non cambia, un client che scrivesse `league_id:999`
+verrebbe comunque respinto dal `with_check`.
+
+### 49.4 Riparazione delle righe già storte
+
+Corrette **solo** quelle la cui lega vera è deducibile con certezza, e solo se diverse
+(`is distinct from`), così la lega 1 non è stata toccata:
+
+- da `matchdays.league_id` via `matchday_id`: `lineups`, `lineup_modules`,
+  `matchday_players`, `match_stats`, `votes`, `nominations`;
+- da `profiles.league_id`: `push_subscriptions` (via `user_id`), `extra_voters` (via
+  `profile_id`), `players` (via `owner_id`).
+
+I giocatori creati dall'admin hanno `owner_id` null e sono già scritti con il `league_id`
+esplicito dal client: lasciati stare.
+
+⚠️ Il caso più urgente erano le **notifiche**: i 5 della SuperLega risultavano iscritti alle
+push della Fossa di Lissone.
+
+### 49.5 Verifica — `verifica_multilega.sql`
+
+L'SQL Editor di Supabase mostra **solo il risultato dell'ultima istruzione**: le quattro
+verifiche di `multilega.sql` sono quindi state reimpacchettate in **un unico SELECT** con una
+colonna `esito` (OK / DA SISTEMARE). Controlla: i 18 default, le 9 tabelle per righe orfane,
+e la caccia a un `league_id = 1` letterale dentro funzioni (`pg_get_functiondef`) e policy
+(`pg_policies`). Esito reale: **tutto OK, nessun «1» scritto a mano da nessuna parte**.
+
+### 49.6 `profiles` — via l'ultimo guasto silenzioso — `profili_default.sql`
+
+```sql
+alter table public.profiles alter column league_id drop default;
+```
+
+In pratica non veniva mai usato (`onboard_join` passa sempre la lega scelta), ma se un domani
+un pezzo di codice creasse un profilo senza indicarla, quella persona finirebbe **zitta zitta
+nella lega 1**, vedendo dati di sconosciuti. Senza default lo stesso errore diventa rumoroso:
+o l'insert fallisce, o `my_league()` torna NULL e l'app non mostra niente. Meglio accorgersene
+subito che fra sei mesi.
+
+### 49.7 Falso allarme rientrato
+
+In sessione era stato segnalato come rischio multi-lega il fatto che i bucket `avatars` e
+`loghi` siano condivisi e pubblici in lettura. **Non è un problema:** sono due cataloghi fissi
+caricati dall'admin (i personaggi disegnati e i crest), uguali per tutti per definizione. Non
+esiste alcun caricamento di immagini da parte degli utenti, quindi non c'è nessun dato di una
+lega visibile a un'altra.
+
+### 49.8 Invarianti nuove
+
+- **Il `league_id` lo mette il DEFAULT della colonna, non un trigger.** Chi aggiunge una
+  tabella dati deve darle `league_id bigint default league_default() references leagues(id)`.
+- **`stamp_league` è morta.** Resta in database con un `comment on function` che lo dice.
+  Non riattivarla senza prima leggerne il corpo e ragionare sul cron.
+- **Non esiste più nessun `default 1`.** Se ricompare, è un guasto silenzioso che colpirà
+  la prima lega diversa dalla 1.
+- I default dipendono da `my_league()` e `league_default()`: un `drop function my_league()`
+  fallirà con un errore di dipendenza. È **voluto**. `create or replace` funziona.
+- Prima di dire che un trigger esiste, **guardare `pg_trigger`**. Questa voce nasce da una
+  riga di documentazione data per vera per mesi.
+
+---
+
+## 50. Ritocchi app + vetrina (sessione 49)
+
+### 50.1 `index.html` → `APP_VERSION = 'v12'`
+
+- **«Chi ha vinto?»** — sottotitolo da «Tocca chi ha vinto · gli altri = sconfitta · nessuno =
+  pareggio» a **«Seleziona chi era nella squadra vincente»**; il paragrafo sotto diventa una
+  riga sola e **senza ramo condizionale**: «Chi vince prende **+2**, chi perde **−1**.»
+  (il caso pareggio lo dicono già le pillole su ogni riga).
+- **Splash — alone centrato.** `.sp-hero` ha `padding:8px 22px 138px`, quindi il centro del
+  riquadro sta **65px sotto** il centro dell'immagine (`(8+138)/2`). L'alone `::before` era
+  ancorato a `top:47%` del riquadro, cioè troppo in basso. Ora `top:calc(50% - 65px)` e
+  `height` da `82%` a `62%` (era anche troppo esteso in verticale).
+- **Avvisi rossi nell'onboarding.** Al posto dei `toast()` che sparivano, il riquadro
+  `.gate-status.bad` (lo stesso dell'accesso) sotto il campo mancante + bordo rosso
+  sull'input (`.ob-input.bad`) + focus. Tre box: `#obStatusMode`, `#obStatusChar`,
+  `#obStatusTeam`. Helper `obErr(boxId,msg,fieldId)` e `obClearErr()`.
+  Coperti: modo non scelto, avatar mancante, nome personaggio vuoto, nome squadra vuoto, e
+  anche gli errori del server `team_taken` / `player_taken`, che ora compaiono accanto al
+  campo giusto. Si pulisce da solo su `oninput`, sui pulsanti del modo e su `pickOb()`.
+  ⚠️ `obGo()` **non** chiama `obClearErr()` di proposito: alcune validazioni fanno
+  `obErr(...)` **e poi** `obGo(1)`, e il messaggio verrebbe cancellato subito.
+
+### 50.2 Vetrina → `sito.css?v=8` (alzato in `sito.html` **e** `regolamento.html`)
+
+- **Linguette iPhone/Android** riscritte perché passavano inosservate e metà delle persone
+  non trovava il tutorial Android: riga sopra «Scegli il tuo telefono: le istruzioni cambiano»
+  (`.tabs-lab`, con freccia ↓ in `::after`), icone 🍎/🤖, quella **non** selezionata mantiene
+  bordo e colore acceso (prima era testo spento), quella selezionata è blu piena. Sotto i
+  420px diventano a tutta larghezza, metà per una.
+- **Passaggio 1** da «Crea la lega» a **«Crea o entra in una lega»** (titolo, didascalia del
+  segnaposto, `alt` e testo).
+- **Footer**: tolto «— fatto per la partita del giovedì», in entrambe le pagine.
+- **Riquadro giallo installazione**: «**Prima clicca «Gioca ora», poi installa sulla Home.**»
+  (prima diceva «Prima entra nel gioco, poi installa», che non nominava il pulsante).
+
+### 50.3 Screenshot fatti
+
+`02-campo.webp`, `06-voti.webp`, `12-bonus.webp`, `13-lega.webp` — 640×1306, WebP q82, primi
+150px tagliati. I due del carosello in cima (`02-campo`, `06-voti`) **non sono più
+commentati**. Restano da fare: `07-presenze`, `14-profilo`, `anteprima.png`.
+
+### 50.4 Rimosso
+
+`sondaggio.html` — verificato che non è linkato da `index.html`, `sito.html`,
+`regolamento.html`, `admin.html`, `sw.js` né dal manifest. Cancellabile dal repo. Chiude la
+voce «multi-lega per `sondaggio.html`», aperta da tempo: il sostituto interno (`value_poll`)
+è già per-lega.
