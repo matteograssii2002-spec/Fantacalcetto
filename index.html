@@ -92,7 +92,10 @@
   .sp-hero{flex:1 1 auto;min-height:0;width:100%;position:relative;display:flex;align-items:center;justify-content:center;
     padding:8px 22px 138px;opacity:0;
     animation:spHero .95s cubic-bezier(.2,.8,.2,1) 1.5s both}
-  .sp-hero::before{content:"";position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);width:100%;height:82%;
+  /* La luce dietro l'immagine: il riquadro .sp-hero ha 138px di padding in basso,
+     quindi il suo centro NON è il centro dell'immagine — sta 65px più in giù
+     ((8 + 138) / 2). Il calc() riporta l'alone esattamente sui giocatori. */
+  .sp-hero::before{content:"";position:absolute;left:50%;top:calc(50% - 65px);transform:translate(-50%,-50%);width:96%;height:62%;
     background:radial-gradient(56% 60% at 50% 50%, rgba(63,151,255,.30), rgba(63,151,255,.10) 55%, transparent 72%);
     filter:blur(4px);z-index:0;pointer-events:none}
   .sp-hero img{position:relative;z-index:1;width:100%;max-width:430px;max-height:100%;height:auto;object-fit:contain;display:block;
@@ -215,6 +218,9 @@
   .field-lab{font-size:12px;color:var(--muted);font-weight:600;margin:4px 2px 7px;text-transform:uppercase;letter-spacing:.06em}
   .ob-input{width:100%;background:var(--surface);border:1.5px solid var(--line-strong);border-radius:15px;padding:16px 18px;color:var(--text);font-family:'Hanken Grotesk';font-size:17px;font-weight:600;outline:none;transition:border-color .2s}
   .ob-input:focus{border-color:var(--accent)}
+  /* campo obbligatorio lasciato vuoto: bordo rosso, come il riquadro .gate-status.bad */
+  .ob-input.bad{border-color:var(--red);background:rgba(255,93,107,.07)}
+  .ob-input.bad:focus{border-color:var(--red)}
   .ob-input::placeholder{color:#5d76a0}
   /* ---- campo password con "Mostra/Nascondi" (testo, non emoji: iOS disegna
      le emoji quasi nere e sul fondo scuro sparirebbero) ---- */
@@ -1681,6 +1687,7 @@
       <button class="styb" data-m="manager" style="flex:1;padding:14px">👔 Solo manager</button>
     </div>
     <p class="vs" id="obModeHint" style="color:var(--muted);margin:0 2px 14px;font-size:12.5px">Scegli un'opzione, poi premi Avanti.</p>
+    <div class="gate-status" id="obStatusMode"></div>
     <button class="ob-btn" type="button" onclick="obNextFromMode()">Avanti →</button>
   </div>
 
@@ -1698,7 +1705,8 @@
     <div style="margin-top:16px" id="obRoleRow"><div class="field-lab">Ruolo</div><div class="ed-sw" id="obRole">
       <button class="styb on" data-r="ATT">Attaccante</button><button class="styb" data-r="DIF">Difensore</button></div></div>
     <div style="margin-top:16px" id="obPlayerWrap"><div class="field-lab" id="obPlayerLab">Nome del personaggio</div>
-      <input class="ob-input" id="playerInput" placeholder="Es. Bomber Cris" maxlength="16" autocomplete="off"></div>
+      <input class="ob-input" id="playerInput" placeholder="Es. Bomber Cris" maxlength="16" autocomplete="off" oninput="obClearErr()"></div>
+    <div class="gate-status" id="obStatusChar"></div>
     <div class="ob-navrow">
       <button class="ob-back" type="button" onclick="obGo(0)">‹ Indietro</button>
       <button class="ob-btn" type="button" id="obNextChar" onclick="obNextFromChar()">Avanti →</button>
@@ -1709,12 +1717,13 @@
   <div class="obstep" id="obStepTeam">
     <h1>La tua squadra</h1>
     <div><div class="field-lab">Nome della squadra</div>
-      <input class="ob-input" id="teamInput" placeholder="Es. Real Madruga" maxlength="24" autocomplete="off"></div>
+      <input class="ob-input" id="teamInput" placeholder="Es. Real Madruga" maxlength="24" autocomplete="off" oninput="obClearErr()"></div>
     <div id="obLogoWrap" style="margin-top:16px">
       <div class="ob-preview" id="obLogoPreview"></div>
       <div class="field-lab">Logo della squadra</div>
       <div class="lggrid" id="obLogoGrid"></div>
     </div>
+    <div class="gate-status" id="obStatusTeam"></div>
     <div class="ob-navrow">
       <button class="ob-back" type="button" onclick="obGo(1)">‹ Indietro</button>
       <button class="ob-btn" type="button" id="obBtn">Entra →</button>
@@ -2369,7 +2378,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v11';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v12';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -4673,7 +4682,7 @@ function renderOb(){
   g.innerHTML=avatars.map(a=>`<div class="avopt ${a.name===obAvatar?'on':''}" onclick="pickOb('${a.name}')"><img src="${a.url}"></div>`).join('');
   if(cur) cur.innerHTML=obAvatar?avatarImg(obAvatar,44):'<span class="none">Nessun avatar</span>';
 }
-function pickOb(name){obAvatar=name;renderOb();}
+function pickOb(name){obAvatar=name;obClearErr();renderOb();}
 function toggleObAv(){
   const head=document.getElementById('obAvDiscHead'), body=document.getElementById('obGrid');
   if(!head||!body)return;
@@ -4689,11 +4698,25 @@ function renderObLogo(){
   pv.innerHTML=logoImg(obLogo,110);
 }
 function pickObLogo(name){ obLogo=name; renderObLogo(); }
+/* Avvisi dell'onboarding: rossi e sotto il campo che manca, non un toast che
+   sparisce dopo due secondi. Stesso riquadro .gate-status.bad usato dall'accesso. */
+const OB_STATUS_IDS=['obStatusMode','obStatusChar','obStatusTeam'];
+function obClearErr(){
+  OB_STATUS_IDS.forEach(id=>{ const e=document.getElementById(id); if(e){ e.textContent=''; e.classList.remove('bad'); } });
+  document.querySelectorAll('#onboard .ob-input.bad').forEach(x=>x.classList.remove('bad'));
+}
+function obErr(boxId,msg,fieldId){
+  obClearErr();
+  const e=document.getElementById(boxId);
+  if(e){ e.textContent=msg||''; e.classList.toggle('bad', !!msg); }
+  if(fieldId){ const f=document.getElementById(fieldId); if(f){ f.classList.add('bad'); try{f.focus();}catch(_){} } }
+}
 function obNextFromChar(){
   const isCampo=playMode==='campo';
   const pname=document.getElementById('playerInput').value.trim();
-  if(isCampo&&!obAvatar){toast('Scegli un avatar');return;}
-  if(!pname){toast(isCampo?'Inserisci il nome del personaggio':'Inserisci il tuo nome');return;}
+  if(isCampo&&!obAvatar){obErr('obStatusChar','Scegli un avatar per il tuo personaggio.');return;}
+  if(!pname){obErr('obStatusChar',isCampo?'Inserisci il nome del personaggio.':'Inserisci il tuo nome.','playerInput');return;}
+  obClearErr();
   obGo(2);
 }
 document.querySelectorAll('#obRole button').forEach(b=>b.onclick=()=>{myRole=b.dataset.r;document.querySelectorAll('#obRole button').forEach(x=>x.classList.toggle('on',x===b));});
@@ -4708,22 +4731,25 @@ document.querySelectorAll('#obMode button').forEach(b=>b.onclick=()=>{
   document.getElementById('obPlayerLab').textContent=isCampo?'Nome del personaggio':'Il tuo nome';
   document.getElementById('playerInput').placeholder=isCampo?'Es. Bomber Cris':'Es. Giulio';
   document.getElementById('obModeHint').textContent=isCampo?'Sarai nel listone e gli altri potranno schierarti.':'Avrai una squadra da fanta-manager, senza essere schierabile in campo.';
+  obClearErr();
   // NON avanza in automatico: l'utente sceglie con calma e poi preme "Avanti"
 });
 function obNextFromMode(){
-  if(!playMode){ toast('Scegli come vuoi giocare'); return; }
+  if(!playMode){ obErr('obStatusMode','Scegli come vuoi giocare: in campo oppure solo manager.'); return; }
+  obClearErr();
   obGo(1);
 }
 document.getElementById('obBtn').onclick=async function(){
   const btn=this;
-  if(!playMode){toast('Scegli prima come vuoi giocare'); obGo(0); return;}
+  if(!playMode){obErr('obStatusMode','Scegli prima come vuoi giocare.'); obGo(0); return;}
   if(!pendingLeague){ toast('Scegli prima una lega'); showLeague(); return; }
   const isCampo=playMode==='campo';
   const team=document.getElementById('teamInput').value.trim();
   const pname=document.getElementById('playerInput').value.trim();
-  if(isCampo&&!obAvatar){toast('Scegli un avatar'); obGo(1); return;}
-  if(!pname){toast(isCampo?'Inserisci il nome del personaggio':'Inserisci il tuo nome'); obGo(1); return;}
-  if(!team){toast('Inserisci il nome della squadra');return;}
+  if(isCampo&&!obAvatar){obErr('obStatusChar','Scegli un avatar per il tuo personaggio.'); obGo(1); return;}
+  if(!pname){obErr('obStatusChar',isCampo?'Inserisci il nome del personaggio.':'Inserisci il tuo nome.','playerInput'); obGo(1); return;}
+  if(!team){obErr('obStatusTeam','Inserisci il nome della squadra.','teamInput');return;}
+  obClearErr();
   const _label=btn.textContent;
   btn.disabled=true; btn.textContent='Creazione…';
   try{
@@ -4737,10 +4763,10 @@ document.getElementById('obBtn').onclick=async function(){
       }), 15000, 'onboard_join');
       if(e1){
         const m=e1.message||'';
-        if(m.includes('team_taken')) toast('Nome squadra già in uso in questa lega');
-        else if(m.includes('player_taken')){ toast('Nome giocatore già in uso in questa lega'); obGo(1); }
+        if(m.includes('team_taken')) obErr('obStatusTeam','Questo nome squadra è già in uso in questa lega.','teamInput');
+        else if(m.includes('player_taken')){ obErr('obStatusChar','Questo nome giocatore è già in uso in questa lega.','playerInput'); obGo(1); }
         else if(m.includes('password')){ toast('Password della lega errata'); showLeague(); }
-        else toast('Errore profilo: '+m);
+        else obErr('obStatusTeam','Errore profilo: '+m);
         return;   // il finally riabilita il pulsante
       }
       prof = await loadProfile();
@@ -5708,10 +5734,10 @@ function renderLive(){
 
   } else { // result: seleziona chi ha vinto
     back.textContent='←'; back.onclick=()=>liveGo('home');
-    ttlM.textContent='🏟️ Chi ha vinto?'; ttlS.textContent='Tocca chi ha vinto · gli altri = sconfitta · nessuno = pareggio';
+    ttlM.textContent='🏟️ Chi ha vinto?'; ttlS.textContent='Seleziona chi era nella squadra vincente';
     const anyWin=pres.some(p=> st[p.id] && st[p.id].esito==='V');
     body.innerHTML = (pres.length ? (
-      `<p class="vs" style="color:var(--muted);font-size:12.5px;margin:4px 2px 12px">${anyWin?'Chi vince prende <b style="color:var(--green)">+2</b>, i non selezionati contano come sconfitta (<b style="color:#ffb3b3">−1</b>).':'Tocca i giocatori della squadra che ha vinto. Se non selezioni nessuno è <b>pareggio</b> (niente bonus o malus).'}</p>`
+      `<p class="vs" style="color:var(--muted);font-size:12.5px;margin:4px 2px 12px">Chi vince prende <b style="color:var(--green)">+2</b>, chi perde <b style="color:#ffb3b3">−1</b>.</p>`
       + pres.map(p=>{ const w=st[p.id]&&st[p.id].esito==='V';
           const state=!anyWin?'draw':(w?'win':'lose');
           const pill=state==='win'?'✓ Vince +2':(state==='lose'?'Perde −1':'Pareggio');

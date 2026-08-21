@@ -31,7 +31,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="sito.css?v=7">
+<link rel="stylesheet" href="sito.css?v=8">
 
 <script type="application/ld+json">
 {
@@ -164,14 +164,14 @@
         <img src="sito/04-pagellone.webp" alt="Il pagellone di fine giornata con i punti dei cinque giocatori" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
       </div></div><p class="crsl-cap">Il pagellone</p></div>
 
-      <!-- ⬇️ DA SCOPRIRE QUANDO ARRIVANO I DUE SCREENSHOT MANCANTI.
-           Qui non ci sono segnaposto apposta: in cima alla pagina un
-           riquadro tratteggiato si vedrebbe per primo. Basta togliere
-           la riga di commento qui sopra e quella in fondo al blocco.
-
       <div class="crsl-item shot"><div class="phone"><div class="phone-screen">
         <img src="sito/02-campo.webp" alt="La formazione schierata sul campo di calcetto a 5" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
       </div></div><p class="crsl-cap">Il campo</p></div>
+
+      <!-- ⬇️ DA SCOPRIRE QUANDO ARRIVA sito/06-voti.webp.
+           Qui non c'è segnaposto apposta: in cima alla pagina un
+           riquadro tratteggiato si vedrebbe per primo. Basta togliere
+           questa riga di commento e quella in fondo al blocco.
 
       <div class="crsl-item shot"><div class="phone"><div class="phone-screen">
         <img src="sito/06-voti.webp" alt="La schermata dei voti e dell'MVP" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
@@ -200,12 +200,12 @@
 
         <div class="crsl-item stepcard">
           <div class="phone"><div class="phone-screen">
-            <img src="sito/13-lega.webp" alt="La schermata di creazione della lega" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
-            <div class="slot-ph"><span class="ic">🏆</span><span class="nm">sito/13-lega.webp</span><span class="ds">Crea la lega</span></div>
+            <img src="sito/13-lega.webp" alt="La schermata iniziale: crea la tua lega o entra in una lega esistente" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
+            <div class="slot-ph"><span class="ic">🏆</span><span class="nm">sito/13-lega.webp</span><span class="ds">Crea o entra in una lega</span></div>
           </div></div>
           <div class="n">1</div>
-          <h3>Crea la lega</h3>
-          <p>Nome, password e sei dentro. Manda il link agli amici e ti raggiungono in un minuto.</p>
+          <h3>Crea o entra in una lega</h3>
+          <p>Se il gruppo non ce l'ha ancora, crei tu la lega: nome, password e sei dentro. Se ce l'ha già, ti basta il link dell'organizzatore.</p>
           <div class="tags"><span class="tag">Gratis</span><span class="tag">Una lega per gruppo</span></div>
         </div>
 
@@ -329,9 +329,10 @@
       <p><b>Prima entra nel gioco, poi installa.</b> Se aggiungi alla Home da questa pagina, sulla Home finisce questa pagina.</p>
     </div>
 
+    <p class="tabs-lab rise">Scegli il tuo telefono: le istruzioni cambiano</p>
     <div class="tabs rise" role="tablist">
-      <button role="tab" id="tab-ios" aria-controls="p-ios" aria-selected="true" onclick="setTab('ios')">iPhone</button>
-      <button role="tab" id="tab-and" aria-controls="p-and" aria-selected="false" onclick="setTab('and')">Android</button>
+      <button role="tab" id="tab-ios" aria-controls="p-ios" aria-selected="true" onclick="setTab('ios')"><span class="ic">🍎</span>iPhone</button>
+      <button role="tab" id="tab-and" aria-controls="p-and" aria-selected="false" onclick="setTab('and')"><span class="ic">🤖</span>Android</button>
     </div>
 
     <div class="panel" id="p-ios" role="tabpanel" aria-labelledby="tab-ios">

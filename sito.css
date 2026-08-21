@@ -239,12 +239,31 @@ section{padding:clamp(46px,6.4vw,86px) 0;position:relative}
 /* ============================================================
    INSTALLAZIONE — linguette + carosello
    ============================================================ */
-.tabs{display:inline-flex;gap:5px;background:rgba(10,22,38,.6);border:1px solid var(--line);border-radius:14px;padding:5px;margin-bottom:24px}
-.tabs button{
-  font-family:'Hanken Grotesk';font-weight:700;font-size:15px;color:var(--muted);
-  background:transparent;border:0;padding:10px 20px;border-radius:10px;cursor:pointer;transition:all .2s;
+/* Le linguette sono l'unico modo per scoprire che esiste anche il tutorial
+   Android: se passano inosservate, meta' delle persone non lo trova. Quindi
+   grandi, con l'icona del sistema, e quella NON scelta resta visibilmente
+   un pulsante (bordo + colore acceso), non testo spento. */
+.tabs-lab{
+  font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--accent-soft);
+  margin-bottom:10px;display:flex;align-items:center;gap:8px;
 }
-.tabs button[aria-selected="true"]{background:var(--surface2);color:var(--text);box-shadow:0 6px 16px -10px rgba(0,0,0,.9)}
+.tabs-lab::after{content:"↓";font-size:15px;opacity:.75}
+.tabs{display:inline-flex;gap:6px;background:rgba(10,22,38,.6);border:1px solid var(--line-strong);border-radius:17px;padding:6px;margin-bottom:24px}
+.tabs button{
+  font-family:'Hanken Grotesk';font-weight:700;font-size:16.5px;color:var(--accent-soft);
+  background:transparent;border:1.5px solid var(--line-strong);padding:13px 26px;border-radius:12px;cursor:pointer;transition:all .2s;
+  display:inline-flex;align-items:center;gap:9px;
+}
+.tabs button:hover{border-color:var(--accent);color:var(--text)}
+.tabs button[aria-selected="true"]{
+  background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#fff;border-color:transparent;
+  box-shadow:0 12px 26px -12px rgba(63,151,255,.85);
+}
+.tabs .ic{font-size:18px;line-height:1}
+@media (max-width:420px){
+  .tabs{display:flex;width:100%}
+  .tabs button{flex:1;justify-content:center;padding:13px 10px;font-size:15.5px}
+}
 .panel[hidden]{display:none}
 .warn{
   display:flex;gap:13px;align-items:flex-start;
