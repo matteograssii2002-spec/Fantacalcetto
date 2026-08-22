@@ -2559,13 +2559,21 @@ function hideSplash(){
   setTimeout(()=>{ s.style.display='none'; }, 600);
 }
 let authIntent=null;
+/* true = in QUESTA apertura dell'app la persona è passata dalla schermata di
+   accesso (login, registrazione, recupero). Se invece è entrata da sola con la
+   sessione salvata sul telefono resta false: serve a distinguere «sono nuovo e
+   devo scegliere la lega» da «la mia lega non c'è più». */
+let _interactiveAuth=false;
 function showWelcome(){
   authIntent=null;
   hideSplash();
+  const _wsub=document.querySelector('#welcome .wc-sub');
+  if(_wsub) _wsub.textContent='Crea o entra in una lega. Inizia in un minuto.';
   ['gate','league','onboard'].forEach(id=>{const e=document.getElementById(id); if(e)e.classList.add('hidden');});
   const w=document.getElementById('welcome'); if(w){ w.classList.remove('hidden'); w.scrollTop=0; }
 }
 function showGate(intent){
+  _interactiveAuth=true;
   const w=document.getElementById('welcome'); if(w)w.classList.add('hidden');
   const g=document.getElementById('gate'); g.classList.remove('hidden'); g.scrollTop=0;
   // chi crea una lega o entra in una lega è quasi sempre nuovo: gli apro «Registrati».
@@ -2714,7 +2722,29 @@ async function afterLogin(){
   profile=await loadProfile();
   document.getElementById('gate').classList.add('hidden');
   document.getElementById('welcome').classList.add('hidden');
-  if(!profile){ routeNewUser(); }
+  if(!profile){
+    /* Profilo assente: due casi diversi, non uno solo.
+       a) Mi sono appena registrato o ho appena fatto l'accesso (_interactiveAuth):
+          è il flusso normale, vado a scegliere/creare la lega.
+       b) Ho riaperto l'app dall'icona con la sessione salvata e il profilo non
+          c'è più, perché la lega è stata eliminata: ritrovarsi sul bivio
+          «crea o entra» senza una parola di spiegazione non ha senso. Chiudo la
+          sessione e torno alla schermata iniziale, come se fosse la prima volta.
+          (Prima l'unico modo per uscirne era togliere e rimettere l'app dalla
+          Home, perché così iOS cancellava la sessione salvata.) */
+    if(!_interactiveAuth){
+      try{ await sb.auth.signOut(); }catch(_){ }
+      user=null; profile=null; myLeague=null; currentMd=null;
+      try{ Object.keys(localStorage).filter(k=>/^fc_(pendingRules|recap|srecap|live)/.test(k))
+             .forEach(k=>localStorage.removeItem(k)); }catch(_){ }
+      showWelcome();
+      const _sub=document.querySelector('#welcome .wc-sub');
+      if(_sub) _sub.textContent='La lega di cui facevi parte non esiste pi\u00f9. Puoi entrare in un\u2019altra lega o crearne una nuova.';
+      hideSplash();
+      return;
+    }
+    routeNewUser();
+  }
   else {
     document.getElementById('onboard').classList.add('hidden');
     document.getElementById('league').classList.add('hidden');
@@ -3269,6 +3299,13 @@ function togglePw(inputId,btnId){
    confermata sono due problemi diversi, con due rimedi diversi. */
 function authErrIt(e){
   const m=String((e&&e.message)||e||'');
+  /* EMAIL SCRITTA MALE — va PRIMA di ogni altro controllo.
+     Supabase risponde «Unable to validate email address: invalid format» oppure
+     «Email address ... is invalid»: contengono la parola «invalid», e senza questo
+     controllo in cima finivano nel messaggio del codice OTP («Codice errato o
+     scaduto»), che parla di tutt'altro e manda la persona fuori strada. */
+  if(/unable to validate email|valid email|email address .*is invalid|invalid email|email_address_invalid/i.test(m))
+    return 'L\u2019email non \u00e8 scritta bene: controlla che ci siano la chiocciola e il dominio (per esempio nome@gmail.com).';
   if(/Invalid login credentials/i.test(m)) return 'Email o password non corretti.';
   if(/Email not confirmed/i.test(m)) return 'Questa email non \u00e8 ancora confermata.';
   if(/already registered/i.test(m)) return 'Questa email ha gi\u00e0 un account: entra con la password, oppure usa \u00abPassword dimenticata\u00bb.';
@@ -3278,8 +3315,11 @@ function authErrIt(e){
   if(/at least \d+ characters|Password should be at least/i.test(m)) return 'Password troppo corta: almeno 8 caratteri.';
   if(/pwned|compromised|breach/i.test(m)) return 'Questa password compare in fughe di dati note: scegline un\'altra.';
   if(/rate limit|too many|for security purposes|after \d+ seconds/i.test(m)) return 'Troppi tentativi: aspetta un minuto e riprova.';
-  if(/expired|invalid|not found/i.test(m)) return 'Codice errato o scaduto. Premi \u00abRinvia il codice\u00bb.';
-  if(/valid email|Unable to validate/i.test(m)) return 'Controlla l\'email: non sembra scritta bene.';
+  // il messaggio del codice esce SOLO se l'errore parla davvero di token/otp/codice
+  if(/(token|otp|code|magic ?link|email link|one[- ]time)/i.test(m) && /expired|invalid|not found/i.test(m))
+    return 'Codice errato o scaduto. Premi \u00abRinvia il codice\u00bb.';
+  if(gateStage==='code' && /expired|invalid|not found/i.test(m))
+    return 'Codice errato o scaduto. Premi \u00abRinvia il codice\u00bb.';
   if(/Failed to fetch|NetworkError|network/i.test(m)) return 'Nessuna connessione: riprova tra poco.';
   return 'Errore: '+m;
 }
@@ -3381,6 +3421,14 @@ async function gateSubmit(){
   const emEl=document.getElementById('gateEmail');
   const email=((emEl&&emEl.value)||'').trim().toLowerCase();
   if(!email){ gateStatus('Inserisci la tua email.',true); return; }
+  /* controllo del formato QUI: meglio dirlo subito e con parole giuste, invece di
+     far tornare a Supabase un errore generico che poi va indovinato */
+  if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)){
+    gateStatus(email.indexOf('@')<0
+      ? 'Manca la chiocciola nell\u2019email: scrivila per intero (per esempio nome@gmail.com).'
+      : 'L\u2019email non \u00e8 scritta bene: controlla la parte dopo la chiocciola (per esempio @gmail.com).', true);
+    return;
+  }
   const pwEl=document.getElementById('gatePw');
   const pw=(pwEl&&pwEl.value)||'';
   if((gateMode==='login'||gateMode==='signup') && !pw){ gateStatus('Inserisci la password.',true); return; }
