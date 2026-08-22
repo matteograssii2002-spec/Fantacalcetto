@@ -305,6 +305,9 @@ section{padding:clamp(46px,6.4vw,86px) 0;position:relative}
 .faq details[open] summary::after{content:"−"}
 .faq .a{padding:0 0 20px;color:var(--muted);font-size:16px;max-width:760px}
 .faq .a p+p{margin-top:12px}
+/* il grassetto è la risposta vera e propria: va sul colore pieno, altrimenti
+   sparisce nel grigio del resto del paragrafo */
+.faq .a b{color:var(--text);font-weight:700}
 
 /* ============================================================
    CHIUSURA + PIÈ DI PAGINA
@@ -450,6 +453,15 @@ td:last-child,th:last-child{text-align:right;white-space:nowrap}
 }
 .drawer a.on{color:var(--text);background:rgba(63,151,255,.14);border-color:rgba(63,151,255,.4)}
 .drawer .btn{margin-top:16px;justify-content:center}
+/* «Gioca ora» nella tendina: .drawer a (0,1,1) batte .btn-primary (0,1,0),
+   quindi senza queste righe la scritta restava grigio-muted sul fondo blu e
+   da telefono spariva. Colore pieno + un po' di alone per staccarlo. */
+.drawer a.btn-primary{
+  color:#fff;font-size:17px;padding:15px 24px;
+  border-color:rgba(126,194,255,.5);
+  box-shadow:0 16px 34px -14px rgba(63,151,255,1), inset 0 1px 0 rgba(255,255,255,.28);
+}
+.drawer a.btn-primary:hover,.drawer a.btn-primary:focus-visible{color:#fff}
 @media (prefers-reduced-motion:reduce){.drawer{transition:none}}
 
 /* intestazione con il suggerimento a destra */

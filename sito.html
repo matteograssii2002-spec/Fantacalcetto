@@ -31,7 +31,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="sito.css?v=8">
+<link rel="stylesheet" href="sito.css?v=9">
 
 <script type="application/ld+json">
 {
@@ -54,10 +54,10 @@
     {"@type":"Question","name":"Quanto costa FantaCalcetto?","acceptedAnswer":{"@type":"Answer","text":"Niente. Nessuna versione a pagamento e nessuna pubblicità: tutte le funzioni sono aperte a tutte le leghe."}},
     {"@type":"Question","name":"Quante persone servono per giocare?","acceptedAnswer":{"@type":"Answer","text":"Da dieci in su, così le formazioni possono essere diverse tra loro. Con quindici o venti è perfetto e non c'è un massimo."}},
     {"@type":"Question","name":"Si può giocare senza scendere in campo?","acceptedAnswer":{"@type":"Answer","text":"Sì. Chi non gioca a calcetto entra come solo manager: ha la sua squadra, schiera la formazione e sta in classifica. Non prende voti e non compare nel sondaggio delle presenze."}},
-    {"@type":"Question","name":"Bisogna scaricare l'app da App Store o Play Store?","acceptedAnswer":{"@type":"Answer","text":"No. FantaCalcetto si aggiunge alla schermata Home e da lì funziona come un'app: icona, schermo intero e notifiche. Gli aggiornamenti arrivano da soli."}},
+    {"@type":"Question","name":"Bisogna scaricare l'app da App Store o Play Store?","acceptedAnswer":{"@type":"Answer","text":"No, è una PWA. È un sito che si aggiunge alla schermata Home e da lì funziona come un'app: icona sua, schermo intero e notifiche. Gli aggiornamenti arrivano da soli, senza passare dagli store."}},
     {"@type":"Question","name":"Chi assegna i voti ai giocatori?","acceptedAnswer":{"@type":"Answer","text":"I giocatori stessi: a fine partita ognuno vota gli altri e la media è il voto di giornata. L'organizzatore inserisce solo gol, assist, rigori e risultato."}},
     {"@type":"Question","name":"L'organizzatore deve mandare avanti tutto a mano?","acceptedAnswer":{"@type":"Answer","text":"No. La giornata si apre da sola, i promemoria partono da soli e la giornata si chiude quando arrivano i voti. Resta solo da segnare com'è finita la partita."}},
-    {"@type":"Question","name":"Che dati raccoglie FantaCalcetto?","acceptedAnswer":{"@type":"Answer","text":"Il minimo per far funzionare il gioco: email, nome, soprannome, foto se la carichi, nome squadra e presenze. Niente pubblicità e nessuna rivendita di dati."}}
+    {"@type":"Question","name":"Che dati raccoglie FantaCalcetto?","acceptedAnswer":{"@type":"Answer","text":"Il minimo per far funzionare il gioco: email, nome, soprannome, nome squadra e presenze. Niente pubblicità e nessuna rivendita di dati."}}
   ]
 }
 </script>
@@ -216,13 +216,13 @@
 
         <div class="crsl-item stepcard">
           <div class="phone"><div class="phone-screen">
-            <img src="sito/08-giornata.webp" alt="Il centro giornata appena aperto" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
-            <div class="slot-ph"><span class="ic">📅</span><span class="nm">sito/08-giornata.webp</span><span class="ds">Apertura della giornata</span></div>
+            <img src="sito/15-apertura.webp" alt="Le impostazioni: giorno e ora abituali del match con l'apertura automatica" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
+            <div class="slot-ph"><span class="ic">📅</span><span class="nm">sito/15-apertura.webp</span><span class="ds">Apertura della giornata</span></div>
           </div></div>
           <div class="n">3</div>
           <h3>Apertura della giornata</h3>
-          <p>Si apre da sola tre giorni prima della partita e la notifica arriva a tutti.</p>
-          <div class="tags"><span class="tag">Automatico</span></div>
+          <p>Imposti una volta sola giorno e ora in cui giocate: da lì in poi la giornata si apre da sola tre giorni prima della partita e la notifica arriva a tutti.</p>
+          <div class="tags"><span class="tag">Automatico</span><span class="tag">Si imposta una volta</span></div>
         </div>
 
         <div class="crsl-item stepcard">
@@ -475,13 +475,13 @@
       <h2>Domande frequenti</h2>
     </div>
     <div class="faq rise">
-      <details><summary>Quanto costa?</summary><div class="a"><p>Niente. Nessuna versione a pagamento, nessuna pubblicità, tutte le funzioni aperte a tutte le leghe.</p></div></details>
-      <details><summary>Quanti bisogna essere?</summary><div class="a"><p>Da dieci in su, così le formazioni possono essere diverse tra loro. Con quindici o venti è perfetto, e non c'è un massimo.</p></div></details>
-      <details><summary>Si può giocare senza scendere in campo?</summary><div class="a"><p>Sì. Chi non gioca a calcetto — un amico, la fidanzata, chi è infortunato a lungo — entra come <b>solo manager</b>: ha la sua squadra, schiera la formazione e sta in classifica come tutti. Non prende voti, perché non gioca, e non compare nel sondaggio delle presenze. Se possa votare i giocatori lo decide l'organizzatore.</p></div></details>
-      <details><summary>Serve scaricarla dagli store?</summary><div class="a"><p>No. È un sito che si aggiunge alla schermata Home e da lì funziona come un'app: icona, schermo intero, notifiche. Gli aggiornamenti arrivano da soli.</p></div></details>
-      <details><summary>Chi assegna i voti?</summary><div class="a"><p>I giocatori. A fine partita ognuno vota gli altri e la media è il voto di giornata. L'organizzatore inserisce solo i fatti: gol, assist, rigori, risultato.</p></div></details>
-      <details><summary>Deve fare tutto l'organizzatore?</summary><div class="a"><p>No, ed è la cosa a cui teniamo di più. La giornata si apre da sola, i promemoria partono da soli, la giornata si chiude quando arrivano i voti. All'organizzatore resta solo da segnare com'è finita la partita.</p></div></details>
-      <details><summary>Che dati raccogliete?</summary><div class="a"><p>Il minimo per far funzionare il gioco: email, nome, soprannome, foto se la carichi, nome squadra e presenze. Le password le custodisce il servizio di accesso, non le vediamo mai. Niente pubblicità, nessuna rivendita di dati.</p></div></details>
+      <details><summary>Quanto costa?</summary><div class="a"><p><b>Niente.</b> Nessuna versione a pagamento, nessuna pubblicità, tutte le funzioni aperte a tutte le leghe.</p></div></details>
+      <details><summary>Quanti bisogna essere?</summary><div class="a"><p><b>Da dieci in su</b>, così le formazioni possono essere diverse tra loro. Con quindici o venti è perfetto, e <b>non c'è un massimo</b>.</p></div></details>
+      <details><summary>Si può giocare senza scendere in campo?</summary><div class="a"><p><b>Sì.</b> Chi non gioca a calcetto — un amico, la fidanzata, chi è infortunato a lungo — entra come <b>solo manager</b>: ha la sua squadra, schiera la formazione e sta in classifica come tutti. Non prende voti, perché non gioca, e non compare nel sondaggio delle presenze. Se possa votare i giocatori lo decide l'organizzatore.</p></div></details>
+      <details><summary>Serve scaricarla dagli store?</summary><div class="a"><p><b>No, è una PWA.</b> È un sito che si aggiunge alla schermata Home e da lì funziona come un'app: <b>icona sua, schermo intero, notifiche</b>. Gli aggiornamenti arrivano da soli, senza passare da App Store o Play Store.</p></div></details>
+      <details><summary>Chi assegna i voti?</summary><div class="a"><p><b>I giocatori.</b> A fine partita ognuno vota gli altri e <b>la media è il voto di giornata</b>. L'organizzatore inserisce solo i fatti: gol, assist, rigori, risultato.</p></div></details>
+      <details><summary>Deve fare tutto l'organizzatore?</summary><div class="a"><p><b>No</b>, ed è la cosa a cui teniamo di più. La giornata <b>si apre da sola</b>, i promemoria partono da soli, la giornata <b>si chiude quando arrivano i voti</b>. All'organizzatore resta solo da segnare com'è finita la partita.</p></div></details>
+      <details><summary>Che dati raccogliete?</summary><div class="a"><p><b>Il minimo per far funzionare il gioco</b>: email, nome, soprannome, nome squadra e presenze. Le password le custodisce il servizio di accesso, <b>non le vediamo mai</b>. <b>Niente pubblicità, nessuna rivendita di dati.</b></p></div></details>
     </div>
   </div>
 </section>
