@@ -4,10 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-<!-- ⚠️ Finché la vetrina è in prova questa pagina resta NOINDEX.
-     Alla sessione dello spostamento: togliere la riga qui sotto. -->
-<meta name="robots" content="noindex,nofollow">
-
 <title>Regolamento e punteggi — FantaCalcetto (fantacalcio a 5)</title>
 <meta name="description" content="Il regolamento completo del fantacalcio applicato al calcetto a 5: bonus e malus, voti tra giocatori, capitano, MVP, moduli, crediti e classifica. Pronto da usare nel tuo gruppo.">
 <link rel="canonical" href="https://fantacalcettoitalia.it/regolamento.html">
@@ -32,14 +28,14 @@
 
 <header class="topbar" id="topbar">
   <div class="wrap">
-    <a class="brand" href="sito.html">
+    <a class="brand" href="/">
       <img src="icon-512.png?v=4" alt="" width="34" height="34">
       <span>Fanta<span class="b2">Calcetto</span></span>
     </a>
     <nav class="topnav">
-      <a href="sito.html#come-funziona">Come funziona</a>
-      <a href="sito.html#funzioni">Funzioni</a>
-      <a href="sito.html#installa">Installazione</a>
+      <a href="/#come-funziona">Come funziona</a>
+      <a href="/#funzioni">Funzioni</a>
+      <a href="/#installa">Installazione</a>
     </nav>
     <a class="btn btn-primary btn-sm" data-app-link href="#">Entra e gioca</a>
   </div>
@@ -48,7 +44,7 @@
 <main>
 <section style="padding-bottom:0">
   <div class="wrap doc">
-    <a class="crumb" href="sito.html">‹ Torna alla pagina principale</a>
+    <a class="crumb" href="/">‹ Torna alla pagina principale</a>
     <span class="eyebrow">Regolamento</span>
     <h1 style="font-size:clamp(33px,5.6vw,52px);margin:18px 0 20px">Come si fanno i punti</h1>
     <p class="lead">Il fantacalcio applicato alla partita di calcetto a 5 tra amici: campo piccolo, tutti attaccano e tutti difendono, e i voti se li danno i giocatori. Usalo così com'è o prendilo come base per il tuo.</p>
@@ -147,17 +143,16 @@
   <div class="wrap foot">
     <small>© <span id="yy">2026</span> FantaCalcetto</small>
     <nav>
-      <a href="sito.html">Home</a>
-      <a href="sito.html#installa">Installazione</a>
+      <a href="/">Home</a>
+      <a href="/#installa">Installazione</a>
       <a data-app-link href="#">Entra</a>
     </nav>
   </div>
 </footer>
 
 <script>
-/* Dove sta il gioco — stesso valore che c'è in sito.html.
-   Adesso l'app è alla radice; dopo lo spostamento diventa '/app/'. */
-var APP_URL = '/';
+/* Dove sta il gioco — stesso valore che c'è in index.html. */
+var APP_URL = '/app/';
 document.querySelectorAll('[data-app-link]').forEach(function(a){ a.href = APP_URL; });
 document.getElementById('yy').textContent = new Date().getFullYear();
 
