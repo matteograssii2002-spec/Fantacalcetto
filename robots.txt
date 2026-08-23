@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://fantacalcettoitalia.it/sitemap.xml
+Sitemap: https://www.fantacalcettoitalia.it/sitemap.xml
