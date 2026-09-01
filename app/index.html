@@ -2402,7 +2402,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v15';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v16';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -2952,7 +2952,7 @@ async function rebuildSeasonRecap(){
   if(!lastClosedSeason) return;
   if(!confirm('Ricalcolare il recap della Stagione '+lastClosedSeason.number+' con i dati attuali?')) return;
   const {error}=await sb.rpc('rebuild_season_recap',{p_season:lastClosedSeason.id});
-  if(error){ toast('Errore: '+error.message); return; }
+  if(error){ toast(errText(error)); return; }
   toast('Recap ricalcolato ✅');
 }
 async function closeSeasonNow(){
@@ -2968,7 +2968,7 @@ async function closeSeasonNow(){
   const _n=currentSeason?currentSeason.number:'';
   if(!confirm('Chiudere la Stagione '+_n+'?\n\nLa classifica viene congelata e la stagione archiviata.\nLa lega resta in pausa: l\'app continua a mostrare la Stagione '+_n+' finché non inizi tu la prossima.')) return;
   const {error}=await sb.rpc('close_season');
-  if(error){ toast('Errore: '+error.message); return; }
+  if(error){ toast(errText(error)); return; }
   await loadSeason(); await loadStandings(); await loadMatchdaysList();
   renderAll(); renderHomeBcards(true);
   toast('Stagione chiusa 🏁');
@@ -2977,7 +2977,7 @@ async function openSeasonNow(){
   const _n=nextSeasonNumber();
   if(!confirm('Iniziare la Stagione '+_n+'?\n\nClassifica e statistiche di stagione ripartono da zero con la prima giornata.\nTraguardi, gol in carriera e albo d\'oro restano.')) return;
   const {error}=await sb.rpc('ensure_open_season');
-  if(error){ toast('Errore: '+error.message); return; }
+  if(error){ toast(errText(error)); return; }
   await loadSeason(); await loadStandings(); await loadMatchdaysList();
   renderAll(); renderHomeBcards(true);
   toast('Stagione '+_n+' aperta · programma la prima giornata');
@@ -2988,7 +2988,7 @@ async function cancelEmptySeason(){
   if(!seasonIsEmptyOpen(currentSeason)) return;
   if(!confirm('Annullare l\'apertura della Stagione '+currentSeason.number+'?\n\nNon ha ancora nessuna giornata, quindi non si perde niente.')) return;
   const {data,error}=await sb.rpc('cancel_empty_season');
-  if(error){ toast(/does not exist|PGRST202/i.test(String(error.message)) ? 'Serve stagioni_stato.sql' : ('Errore: '+error.message)); return; }
+  if(error){ toast(/does not exist|PGRST202/i.test(String(error.message)) ? 'Serve stagioni_stato.sql' : (errText(error))); return; }
   if(data===false){ toast('La stagione ha già delle giornate: non si può annullare'); return; }
   await loadSeason(); await loadStandings(); await loadMatchdaysList();
   renderAll(); renderHomeBcards(true);
@@ -3291,7 +3291,7 @@ function subscribeMaintenance(){
 }
 async function setMaintenance(on){
   const {error}=await sb.from('app_state').update({maintenance:on}).eq('league_id',profile.league_id);
-  if(error){toast('Errore: '+error.message);return;}
+  if(error){toast(errText(error));return;}
   maintOn=on; applyMaintenance(); toast(on?'App in manutenzione per gli altri':'App di nuovo live ✅');
 }
 function renderMaintBtn(){
@@ -4198,7 +4198,7 @@ function pickSchedDay(d){schedDraft.weekday=d; renderOpenMode(); refreshOpenNowH
 async function applyAutoOpen(on){
   const wd=schedDraft.weekday, tm=schedDraft.time||'20:00';
   const {error}=await sb.rpc('set_league_schedule',{p_auto:on, p_weekday:wd, p_time:tm});
-  if(error){ toast('Errore: '+error.message); return false; }
+  if(error){ toast(errText(error)); return false; }
   schedDraft.auto_open=on; leagueSched={...schedDraft};
   return true;
 }
@@ -4224,7 +4224,7 @@ async function setAutoOpen(on){
   if(hasOpen){
     if(confirm('Apertura automatica in pausa: non partirà nessuna nuova giornata.\n\nMa «'+currentMd.label+'» è già aperta. Vuoi annullarla adesso?')){
       const {error}=await sb.rpc('reset_matchday',{md:currentMd.id});
-      if(error){ toast('Errore: '+error.message); return; }
+      if(error){ toast(errText(error)); return; }
       await loadMatchdayData(); await loadSeason(); await loadStandings(); renderAll(); openSettings();
       toast('In pausa e giornata annullata ✅');
     } else { toast('Apertura automatica in pausa ⏸️'); }
@@ -4310,7 +4310,7 @@ function renderGkMode(){
 }
 async function setGkMode(fixed){
   const {error}=await sb.rpc('set_gk_mode',{p_fixed:!!fixed});
-  if(error){ toast('Errore: '+error.message); return; }
+  if(error){ toast(errText(error)); return; }
   gkFixed=!!fixed; renderGkMode();
   toast(fixed?'Portiere fisso attivo 🧤':'Rotazione portiere attiva');
 }
@@ -4336,7 +4336,7 @@ function renderPresenceMode(){
 }
 async function setPresenceMode(self){
   const {error}=await sb.rpc('set_presence_mode',{p_self:!!self});
-  if(error){ toast('Errore: '+error.message); return; }
+  if(error){ toast(errText(error)); return; }
   presenceSelf=!!self; renderPresenceMode();
   toast(self?'Presenze ai giocatori ✅':'Presenze gestite dall\'admin');
 }
@@ -4527,7 +4527,7 @@ async function doCloseMatchday(auto){
   const lbl=currentMd.label||'Giornata';
   const nowIso=new Date().toISOString();
   const {error}=await sb.from('matchdays').update({status:'closed',closed_at:nowIso}).eq('id',currentMd.id);
-  if(error){ if(!auto)toast('Errore: '+error.message); return; }
+  if(error){ if(!auto)toast(errText(error)); return; }
   currentMd.status='closed'; currentMd.closed_at=nowIso;
   await sb.rpc('apply_credit_changes',{md:currentMd.id});   // crediti dinamici (+/-1)
   await loadPlayers(); await loadPlayerStats();
@@ -4602,7 +4602,7 @@ async function confirmEditKickoff(){
   const voteClose=new Date(new Date(kickoffISO).getTime()+VOTING_OPEN_AFTER+VOTING_WINDOW).toISOString();
   // riarmo i flag così le 2 push (sblocco formazioni / ultima ora) ripartono ai nuovi orari
   const {error}=await sb.from('matchdays').update({kickoff:kickoffISO,vote_deadline:voteClose,reminder_sent:false,lineup_open_sent:false,presence_remind_sent:false,lineup_remind_sent:false}).eq('id',currentMd.id);
-  if(error){toast('Errore: '+error.message);return;}
+  if(error){toast(errText(error));return;}
   currentMd.kickoff=kickoffISO; currentMd.vote_deadline=voteClose;
   await loadMatchdaysList(); renderAll();
   toast('Orario aggiornato 🕑');
@@ -4818,14 +4818,78 @@ function openPresCard(){
    e' indistinguibile da «l'app e' rotta»: e' esattamente quello che e' successo
    nella lega di prova, dove l'orario della settimana era gia' passato e il cron
    — correttamente — aspettava la settimana dopo, in silenzio. */
+/* ---------- L'AUTOMAZIONE STA GIRANDO? ----------
+   Se il cron si ferma — ed e' gia' successo — l'app continua a mostrare una
+   schermata normale mentre le giornate non si aprono e i promemoria non
+   partono. Il segnale c'e' gia' nei dati caricati: `loadMatchday` fa `select *`,
+   quindi `currentMd` porta dentro i quattro flag delle notifiche, e il momento
+   in cui ognuna sarebbe dovuta partire si calcola dal fischio d'inizio con gli
+   stessi numeri di notify.ts. Se un flag e' ancora falso ben dopo la sua ora,
+   quella notifica non e' partita.
+   Nessuna SQL, nessuna RPC nuova: e' deduzione da quello che c'e' gia'. */
+const AUTO_TOL=20*MIN;   // il cron gira ogni 10 min: sotto i 20 non e' un ritardo
+function autoSteps(){
+  const md=currentMd;
+  if(!md || md.status==='closed') return [];
+  const t=mdTimes(md);
+  if(!t || !t.kickoff || t.lineupLock===Infinity) return [];
+  const k=t.kickoff, out=[];
+  // il ciclo presenze esiste solo in modalita' giocatori e senza skip_poll:
+  // con «Apri subito» i due flag sono messi a true alla creazione, non provano niente
+  if(presenceSelf && !md.skip_poll){
+    out.push({due:k-38*HOUR, ok:!!md.presence_remind_sent, n:'il promemoria del sondaggio presenze'});
+    out.push({due:k-36*HOUR, ok:!!md.lineup_open_sent,     n:'l\'avviso \u00abformazioni aperte\u00bb'});
+  }
+  out.push({due:t.lineupLock-8*HOUR, ok:!!md.lineup_remind_sent, n:'il promemoria \u00abschiera la formazione\u00bb'});
+  out.push({due:t.lineupLock-1*HOUR, ok:!!md.reminder_sent,      n:'l\'ultima chiamata prima del blocco'});
+  return out;
+}
+function autoHealthHTML(){
+  const steps=autoSteps(); if(!steps.length) return '';
+  const now=Date.now();
+  const late=steps.filter(x=>!x.ok && now>x.due+AUTO_TOL);
+  if(late.length){
+    const nn=late.map(x=>x.n);
+    const lista = nn.length===1 ? nn[0] : (nn.slice(0,-1).join(', ')+' e '+nn[nn.length-1]);
+    return `<div class="mdc-note warn" style="margin-top:14px">\u26a0\ufe0f <b>Una notifica automatica non \u00e8 partita:</b> ${lista}. La giornata funziona lo stesso, ma nessuno \u00e8 stato avvisato: conviene dirglielo tu nel gruppo. Se si ripete, segnalacelo da Aiuto e manutenzione.</div>`;
+  }
+  if(steps.some(x=>x.ok))
+    return `<p class="vs" style="color:var(--muted);font-size:11.5px;margin:14px 2px 0;line-height:1.5">\ud83e\udd16 Automazione attiva: i promemoria di questa giornata sono partiti regolarmente.</p>`;
+  return '';
+}
+/* Apertura automatica in ritardo: la finestra [K\u221272h, K) e' aperta da un pezzo
+   e nessuna giornata e' nata. Prima di gridare al guasto va escluso tutto quello
+   che rende l'attesa legittima: stagione in pausa, stagione al completo, una
+   giornata gia' viva, oppure la giornata di QUESTA finestra gi\u00e0 giocata e chiusa. */
+function autoOpenOverdueMs(){
+  if(!schedDraft.auto_open || schedDraft.weekday==null || !schedDraft.time) return 0;
+  if(seasonBreak()) return 0;
+  if(currentSeason && currentSeason.status==='open' && Number(currentSeason.mds_total||0)>=38) return 0;
+  if(currentMd && currentMd.status!=='closed') return 0;
+  const k=nextWeeklyKickoffLocal(schedDraft.weekday,schedDraft.time).getTime();
+  const openAt=k-72*HOUR, now=Date.now();
+  if(now<=openAt) return 0;
+  if(currentMd && currentMd.kickoff && new Date(currentMd.kickoff).getTime()>openAt) return 0;
+  return now-openAt;
+}
 function autoOpenStatusHTML(){
   const box=(cls,tx)=>`<div class="mdc-note ${cls}">${tx}</div>`;
+  /* Prima dell'apertura automatica vengono due condizioni che la fermano comunque:
+     senza queste due righe l'app prometterebbe una giornata «entro pochi minuti»
+     che non puo' nascere, ed e' peggio del silenzio di prima. */
+  if(seasonBreak())
+    return box('warn',"\u23f8\ufe0f <b>La stagione \u00e8 archiviata</b>: finch\u00e9 non ne inizi una nuova non parte nessuna giornata, n\u00e9 da sola n\u00e9 a mano. Vai in Impostazioni \u203a Stagione.");
+  if(currentSeason && currentSeason.status==='open' && Number(currentSeason.mds_total||0)>=38)
+    return box('warn',"\u26a0\ufe0f <b>Stagione al completo (38/38)</b>: non ci stanno altre giornate. Chiudi la stagione per iniziarne una nuova.");
   if(!schedDraft.auto_open)
     return box('warn',"\u23f8\ufe0f <b>Apertura automatica in pausa</b>: nessuna giornata partir\u00e0 da sola. Riattivala in \u00abQuando giocate di solito\u00bb, oppure aprine una adesso qui sotto.");
   if(schedDraft.weekday==null || !schedDraft.time)
     return box('warn',"\u26a0\ufe0f <b>Manca il giorno o l'ora della partita</b>: senza quelli l'apertura automatica non pu\u00f2 funzionare. Impostali in \u00abQuando giocate di solito\u00bb.");
   const k=nextWeeklyKickoffLocal(schedDraft.weekday,schedDraft.time);
   const op=new Date(k.getTime()-72*HOUR);
+  const late=autoOpenOverdueMs();
+  if(late>25*MIN)
+    return box('warn',"\u26a0\ufe0f <b>L'apertura automatica \u00e8 in ritardo.</b> "+fmtDayTime(k)+" era gi\u00e0 dentro le 72h da "+durLabel(late)+", quindi la giornata sarebbe dovuta partire da sola e non \u00e8 successo. Aprila tu qui sotto, e se si ripete segnalacelo da Aiuto e manutenzione.");
   if(op.getTime()<=Date.now())
     return box('ok',"\ud83e\udd16 <b>Apertura automatica attiva.</b> La prossima giornata \u00e8 "+fmtDayTime(k)+" e siamo gi\u00e0 dentro le 72h: si apre da sola entro pochi minuti. Se ti serve prima, aprila adesso.");
   return box('ok',"\ud83e\udd16 <b>Apertura automatica attiva.</b> La prossima giornata \u00e8 "+fmtDayTime(k)+": si apre da sola "+fmtDayTime(op)+", 72h prima del fischio d'inizio. Fino ad allora \u00e8 normale che non ci sia niente.");
@@ -4857,6 +4921,7 @@ function renderMdCenter(){
   if(key==='open')  h+=`<p class="vs" id="openNowHint" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${openNowHintText()}</p>`
     +`<button class="set-btn" style="margin-top:10px" onclick="setNav('page-quando')">\ud83d\uddd3\ufe0f Quando giocate di solito</button>`;
   if(key==='close') h+=`<p class="vs" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${closeMdHintText()}</p>`;
+  h+=autoHealthHTML();   // in coda: e' contesto, non un'azione
   pr.innerHTML=h;
   renderMdActions(key);
 }
@@ -5461,7 +5526,7 @@ async function renderVoters(){
   const box=document.getElementById('voterList'); if(!box)return;
   box.innerHTML='<div class="vs" style="color:var(--muted)">Carico…</div>';
   const {data,error}=await sb.rpc('list_solo_managers');
-  if(error){box.innerHTML='<div class="vs" style="color:var(--muted)">'+(String(error.message).includes('forbidden')?'Solo admin.':('Errore: '+error.message))+'</div>';return;}
+  if(error){box.innerHTML='<div class="vs" style="color:var(--muted)">'+(String(error.message).includes('forbidden')?'Solo admin.':(errText(error)))+'</div>';return;}
   if(!data||!data.length){box.innerHTML='<div class="vs" style="color:var(--muted)">Nessun manager-solo registrato.</div>';return;}
   box.innerHTML=data.map(m=>`<div class="preschip ${m.can_vote?'on':''}" onclick="toggleVoter('${m.id}',${m.can_vote?1:0})">${m.can_vote?'✓':'○'} ${m.team_name||m.player_name||'Manager'}</div>`).join('');
 }
@@ -5469,7 +5534,7 @@ async function toggleVoter(id,now){
   let error;
   if(now){ ({error}=await sb.from('extra_voters').delete().eq('profile_id',id)); }
   else { ({error}=await sb.from('extra_voters').insert({profile_id:id})); }
-  if(error){toast('Errore: '+error.message);return;}
+  if(error){toast(errText(error));return;}
   if(id===user.id) iAmExtraVoter=!now;
   renderVoters(); renderVoti();
 }
@@ -5531,7 +5596,7 @@ async function togglePresence(id){
   }else{
     const want=!plannedPresent.has(id);
     const {error}=await sb.rpc('set_planned_presence',{p_player:id,p_present:want});
-    if(error){ toast('Errore: '+error.message); return; }
+    if(error){ toast(errText(error)); return; }
     if(want) plannedPresent.add(id); else plannedPresent.delete(id);
     renderPresence();
   }
@@ -5811,7 +5876,7 @@ document.getElementById('saveBtn').onclick=async function(){
   const {error}=await sb.from('lineups').insert(rows);
   if(!error){ await sb.from('lineup_modules').upsert({matchday_id:currentMd.id,manager_id:user.id,module:formModule},{onConflict:'matchday_id,manager_id'}); }
   this.disabled=false;
-  if(error){toast('Errore: '+error.message);updateBudget();return;}
+  if(error){toast(errText(error));updateBudget();return;}
   toast('Formazione salvata ✓');
 };
 
@@ -6011,7 +6076,7 @@ async function liveConfirmSave(){
     return {matchday_id:currentMd.id,player_id:p.id,gol:a.gol||0,assist:a.assist||0,autogol:a.og||0,gol_subiti:a.gs||0,rigore_sbagliato:a.rs||0,rigore_parato:a.rp||0,esito:a.esito||null}; });
   const btn=document.getElementById('lsSaveBtn'); if(btn){btn.disabled=true;btn.textContent='Salvataggio…';}
   const {error}=await sb.from('match_stats').upsert(rows,{onConflict:'matchday_id,player_id'});
-  if(error){ toast('Errore: '+error.message); if(btn){btn.disabled=false;btn.textContent='✓ Conferma e salva tutto';} return; }
+  if(error){ toast(errText(error)); if(btn){btn.disabled=false;btn.textContent='✓ Conferma e salva tutto';} return; }
   clearLiveDraft();
   await loadMatchStats(); await loadAverages(); updateScores();
   closeLiveStats(); toast('Dati partita salvati ✅');
@@ -6090,7 +6155,7 @@ async function submitVotes(){
   const rows=pres.map(p=>({matchday_id:currentMd.id,voter_id:user.id,player_id:p.id,score:myVotes[p.id]}));
   if(b){b.disabled=true;b.textContent='Invio…';b.classList.remove('dirty');}
   const {error}=await sb.from('votes').upsert(rows,{onConflict:'matchday_id,voter_id,player_id'});
-  if(error){toast('Errore: '+error.message); if(b){b.disabled=false;b.textContent='Invia voti';} updateSubmitBtn(); return;}
+  if(error){toast(errText(error)); if(b){b.disabled=false;b.textContent='Invia voti';} updateSubmitBtn(); return;}
   // MVP salvato INSIEME ai voti (non più separatamente)
   const {error:eNom}=await sb.from('nominations').upsert({matchday_id:currentMd.id,voter_id:user.id,mvp_player_id:parseInt(myNom.mvp)||null,sega_player_id:null},{onConflict:'matchday_id,voter_id'});
   if(eNom){toast('Voti salvati, ma MVP non salvato: '+eNom.message);}
@@ -6306,7 +6371,7 @@ document.getElementById('setSaveBtn').onclick=async function(){
   const team=document.getElementById('setNameInput').value.trim()||profile.team_name;
   const pname=document.getElementById('setPlayerInput').value.trim()||profile.player_name;
   const {error}=await sb.from('profiles').update({team_name:team,player_name:pname,avatar:setAvatarDraft,logo:setLogoDraft}).eq('id',user.id);
-  if(error){toast('Errore: '+error.message);return;}
+  if(error){toast(errText(error));return;}
   if(profile.is_player!==false && profile.player_name){
     await sb.from('players').update({name:pname,avatar:setAvatarDraft}).eq('owner_id',user.id).eq('name',profile.player_name);
   }
@@ -6333,7 +6398,7 @@ async function toggleInjured(id){
   const p=players.find(x=>x.id===id); if(!p)return;
   const nv=!p.injured;
   const {error}=await sb.from('players').update({injured:nv}).eq('id',id);
-  if(error){toast('Errore: '+error.message);return;}
+  if(error){toast(errText(error));return;}
   p.injured=nv; renderManage(); renderMarket();
   toast(nv?'🚑 '+p.name+' infortunato':p.name+' recuperato');
 }
@@ -6373,19 +6438,42 @@ async function saveEditPlayer(){
   }else{
     ({error}=await sb.from('players').insert({name:nm,role:editDraft.role,present:editDraft.present,avatar:editDraft.avatar,cost,valore,owner_id:null,league_id:profile.league_id}));
   }
-  if(error){toast('Errore: '+error.message);return;}
+  if(error){toast(errText(error));return;}
   closeSheet(); await loadPlayers(); renderAll(); openSettings(); toast('Giocatore salvato');
 }
 async function deletePlayer(id){
   const p=players.find(x=>x.id===id);
   if(!confirm('Eliminare "'+(p?p.name:'giocatore')+'"? Verrà tolto dal listone e dalle formazioni.'))return;
   const {error}=await sb.from('players').delete().eq('id',id);
-  if(error){toast('Errore: '+error.message);return;}
+  if(error){toast(errText(error));return;}
   for(const k in lineup)if(lineup[k]===id){delete lineup[k];if(captain===k)captain=null;}
   delete myVotes[id]; delete adminStats[id];
   await loadPlayers(); renderAll(); openSettings(); toast('Giocatore eliminato');
 }
 
+/* ---------- ERRORI DEL DATABASE, IN ITALIANO ----------
+   Il caso che conta e' il primo. Il client decide cosa mostrare guardando la
+   COLONNA `profiles.is_admin`; il database decide cosa lasciar scrivere
+   guardando `leagues.admin_id`. Sono tenute allineate da un trigger, ma se per
+   qualsiasi motivo divergono il sintomo e': pannello admin che si apre
+   regolarmente, scrittura rifiutata, e in faccia all'admin
+   «new row violates row-level security policy for table "matchdays"».
+   Una stringa cosi' non dice a nessuno cosa fare — e soprattutto non dice che
+   il problema si risolve solo segnalandolo. */
+function errText(e){
+  const m=String((e&&e.message)||e||'');
+  if(/row-level security|violates row level|42501|permission denied/i.test(m))
+    return 'Il database non ti riconosce come amministratore di questa lega. Segnalacelo da Impostazioni \u203a Aiuto e manutenzione.';
+  if(/duplicate key|already exists|23505/i.test(m))
+    return 'Esiste gi\u00e0 qualcosa con questo nome: scegline un altro.';
+  if(/does not exist|PGRST202|schema cache/i.test(m))
+    return "Manca un pezzo del database: va eseguito l'SQL di questa versione. Segnalacelo da Aiuto e manutenzione.";
+  if(/JWT|invalid.*token|expired/i.test(m))
+    return 'La sessione \u00e8 scaduta: esci e rientra.';
+  if(/Failed to fetch|NetworkError|network ?error/i.test(m))
+    return 'Nessuna connessione: riprova fra poco.';
+  return 'Errore: '+m;
+}
 let toastT;function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
 
 /* ---------- NOTIFICHE PUSH ---------- */
@@ -6543,7 +6631,7 @@ async function saveLogoIntro(){
   const btn=document.getElementById('logoIntroSave'); if(btn)btn.disabled=true;
   const {error}=await sb.from('profiles').update({logo:logoIntroDraft}).eq('id',user.id);
   if(btn)btn.disabled=false;
-  if(error){ toast('Errore: '+error.message); return; }
+  if(error){ toast(errText(error)); return; }
   profile.logo=logoIntroDraft;
   teamLogoBy[user.id]=logoIntroDraft;
   document.getElementById('logoIntro').classList.add('hidden');
