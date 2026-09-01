@@ -997,6 +997,11 @@
   #tut{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1200;display:none}
   #tut.on{display:block}
   .tut-bk{position:fixed;background:rgba(4,10,22,.80)}
+  /* Il buco e' toccabile SOLO nei passi marcati tap. Negli altri questo
+     pannello trasparente ci sta sopra e mangia i tocchi: serve perche' molte
+     cose illuminate (una squadra in classifica, una card statistiche) durante
+     la demo aprirebbero schermate vuote, visto che le RPC tornano null. */
+  .tut-hole{position:fixed;background:transparent;display:none}
   .tut-ring{position:fixed;border:2px solid var(--accent);border-radius:15px;pointer-events:none;
     box-shadow:0 0 0 3px rgba(63,151,255,.20), 0 0 26px rgba(63,151,255,.34);transition:all .2s ease}
   .tut-card{position:fixed;left:50%;transform:translateX(-50%);width:min(420px,calc(100% - 26px));
@@ -2329,6 +2334,7 @@
   <div id="tut">
     <div class="tut-bk" id="tutT"></div><div class="tut-bk" id="tutB"></div>
     <div class="tut-bk" id="tutL"></div><div class="tut-bk" id="tutR"></div>
+    <div class="tut-hole" id="tutH"></div>
     <div class="tut-ring" id="tutRing" style="display:none"></div>
     <button class="tut-x" onclick="tutQuit()">Esci</button>
     <div class="tut-card" id="tutCard">
@@ -2449,7 +2455,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v18';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v19';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -2681,6 +2687,44 @@ function tutFakePlayers(){
   }
   return out;
 }
+/* Le due card «Statistiche» e la card «Rivivi» arrivano da RPC che durante la
+   demo tornano null: senza contenuto finto le sezioni resterebbero spente e non
+   ci sarebbe niente da mostrare. Le riempio a mano con gli stessi componenti
+   veri (hcardHTML / rvFactHTML), cosi' hanno esattamente la forma che avranno
+   quando saranno piene di dati veri. */
+function tutDemoCards(){
+  try{
+    const pc=document.getElementById('homeBcardPlayer'),
+          mc=document.getElementById('homeBcardMgr'),
+          w =document.getElementById('homeStatsWrap');
+    if(pc){
+      pc.innerHTML=hcardHTML({wm:'\ud83c\udfc5', eye:'Da giocatore', ttl:'In crescita',
+        sub:'Media 6,8 nelle ultime tre',
+        facts:[rvFactHTML('\ud83d\udcc8','+0,4','Forma'), rvFactHTML('\ud83c\udfaf','2\u00b0','Tra gli attaccanti')],
+        go:'Vedi la tua scheda'});
+      pc.style.display='block';
+    }
+    if(mc){
+      mc.innerHTML=hcardHTML({wm:'\ud83d\udc54', eye:'Da manager', ttl:'Terzo posto',
+        sub:'A 12,5 punti dalla vetta',
+        facts:[rvFactHTML('\ud83c\udfc6','3\u00b0','In classifica'), rvFactHTML('\ud83d\udc51','\u00d72','Re della giornata')],
+        go:'Vedi la tua squadra'});
+      mc.style.display='block';
+    }
+    if(w) w.style.display='block';
+    const rw=document.getElementById('homeRvWrap'), rg=document.getElementById('homeRvGrid');
+    if(rg){
+      rg.innerHTML='<div class="rvcard">'+hcardHTML({wm:'\ud83d\udcca', eye:'Ultima giornata',
+        ttl:'Giornata di prova', sub:'Pagellone \u00b7 giocata ieri',
+        facts:[rvFactHTML('\ud83e\udd47','Rossi 115','Re della giornata'),
+               rvFactHTML('\ud83d\ude4b','4\u00b0 88','La tua giornata')],
+        go:'Apri il pagellone'})+'</div>';
+    }
+    if(rw) rw.style.display='block';
+    try{ bindTrack('homeRvGrid','homeRvDots'); renderTrackDots('homeRvGrid','homeRvDots'); }catch(_){ }
+    try{ bindBcTrack(); renderBcDots(); }catch(_){ }
+  }catch(_){ }
+}
 /* la giornata di prova. id NEGATIVO apposta: se una scrittura sfuggisse alla
    rete, fallirebbe rumorosamente invece di toccare una riga vera. */
 function tutFakeMd(hours){
@@ -2764,7 +2808,13 @@ function tutStepsPlayer(){ return [
   tx:"Dopo la partita voti gli altri da 1 a 10. La <b>\ud83c\udfc6</b> \u00e8 l\u2019MVP."},
  {v:'classifica', el:'#lbList', before:()=>tutKick(30),
   ttl:'La classifica',
-  tx:"I punti si sommano. Tocca una squadra per vedere la sua bacheca."},
+  tx:"I punti si sommano. Toccando una squadra si apre la sua bacheca."},
+ {v:'home', el:'#homeStatsWrap',
+  ttl:'Le tue statistiche',
+  tx:"Come giochi e come va la squadra. Aprendole trovi trofei e record."},
+ {v:'home', el:'#homeRvWrap',
+  ttl:'Rivivi',
+  tx:"Ogni giornata finita ha il suo pagellone: voti, formazioni e chi ha vinto."},
  {ttl:'Fatto',
   tx:"Per rivedere la guida: <b>Impostazioni \u203a Come funziona</b>."}
 ];}
@@ -2809,7 +2859,11 @@ function tutStart(track){
     standings=players.slice(0,6).map((p,i)=>({manager_id:'demo-'+i, team_name:'Squadra '+p.name,
       player_name:p.name, points:64-i*7.5, delta:(i===1?1:(i===2?-1:0))}));
   }
-  computeLock(); renderAll();
+  // cache finta + orologio fresco: cosi' renderHomeBcards() esce subito per il
+  // throttle e non spegne le card che disegno io qui sotto
+  _homeCardCache={player:{demo:true}, team:{demo:true}};
+  _homeBcardsAt=Date.now();
+  computeLock(); renderAll(); tutDemoCards();
   TUT={track:track, steps:(track==='admin'?tutStepsAdmin():tutStepsPlayer()), i:-1};
   document.getElementById('tut').classList.add('on');
   tutLoop();
@@ -2828,6 +2882,7 @@ function tutGoTo(i){
   if(st.before){ try{ st.before(); }catch(_){ } }
   if(st.v) go(st.v);
   if(st.nav) setNav(st.nav);
+  tutDemoCards();   // renderAll() dentro `before` svuota Rivivi: lo rifaccio dopo
   document.getElementById('tutTtl').textContent=st.ttl;
   document.getElementById('tutTx').innerHTML=st.tx+(st.tap?'<span class="tut-try">\ud83d\udc46 puoi provarlo davvero</span>':'');
   document.getElementById('tutSkip').style.display=st.tap?'':'none';
@@ -2892,6 +2947,7 @@ function tutPlace(){
       _tutLastBox=box;
       T.style.cssText='position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(4,10,22,.88)';
       [B,L,R].forEach(x=>x.style.cssText='position:fixed;width:0;height:0');
+      const H0=document.getElementById('tutH'); if(H0) H0.style.display='none';
       ring.style.display='none';
       card.style.top=Math.max(72,Math.round(H/2)-130)+'px';
     }
@@ -2912,6 +2968,11 @@ function tutPlace(){
   ring.style.display='block';
   ring.style.left=x+'px'; ring.style.top=y+'px';
   ring.style.width=w+'px'; ring.style.height=h+'px';
+  const hole=document.getElementById('tutH');   // NB: H e' gia' l'altezza della finestra
+  if(hole){
+    if(st.tap){ hole.style.display='none'; }
+    else { hole.style.cssText=`position:fixed;background:transparent;left:${x}px;top:${y}px;width:${w}px;height:${h}px`; }
+  }
   // il fumetto va dove c'e' spazio: sotto se ci sta, altrimenti sopra
   const ch=card.offsetHeight||190;
   let top=(y+h+14+ch < H-12) ? (y+h+14) : (y-ch-14);
