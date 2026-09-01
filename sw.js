@@ -3,7 +3,7 @@
    - HTML SEMPRE fresca: ogni navigazione va in rete bypassando la cache HTTP,
      così dopo un deploy si vede subito la versione nuova (niente pagina "vecchia" in cache).
 */
-const SW_VERSION = '2026-09-01-tutorial';   // cambia questa stringa a OGNI deploy per forzare l'aggiornamento
+const SW_VERSION = '2026-09-01-tutorial-b';   // cambia questa stringa a OGNI deploy per forzare l'aggiornamento
 
 self.addEventListener('install', e => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
