@@ -95,8 +95,8 @@
       <a href="#anteprima">Anteprima</a>
       <a href="#come-funziona">Come funziona</a>
       <a href="#funzioni">Funzioni</a>
-      <a href="#prezzi">Prezzi</a>
       <a href="#installa">Installazione</a>
+      <a href="#prezzi">Prezzi</a>
       <a href="#punteggi">Punteggi</a>
       <a href="#domande">Domande</a>
     </nav>
@@ -117,12 +117,25 @@
   <a href="#anteprima">Anteprima</a>
   <a href="#come-funziona">Come funziona</a>
   <a href="#funzioni">Funzioni</a>
-  <a href="#prezzi">Prezzi</a>
   <a href="#installa">Installazione</a>
+  <a href="#prezzi">Prezzi</a>
   <a href="#punteggi">Punteggi</a>
   <a href="#domande">Domande</a>
   <a class="btn btn-primary" data-app-link href="#">Gioca ora</a>
 </aside>
+
+<!-- Avviso «prima installala»: compare da telefono quando si preme «Gioca ora»
+     senza aver aggiunto l'app alla Home. Su iPhone e' l'unico modo per avere le
+     notifiche, quindi vale la pena fermarli un attimo. Una volta sola: chi
+     sceglie «continua nel browser» non lo rivede piu'. -->
+<div class="scrim" id="instScrim" onclick="closeInst()"></div>
+<div class="instbox" id="instBox" role="dialog" aria-modal="true" aria-labelledby="instT">
+  <span class="ic">📲</span>
+  <h3 id="instT">Prima mettila sulla Home</h3>
+  <p>Non è solo un sito: con due passaggi diventa un'app vera, con la sua icona.<br><b>Su iPhone è l'unico modo per ricevere le notifiche</b> di presenze, formazione e pagellone.</p>
+  <a class="btn btn-primary" href="#installa" onclick="closeInst()">Come si installa &nbsp;→</a>
+  <button class="btn btn-ghost" type="button" onclick="skipInst()">Continua nel browser</button>
+</div>
 
 <main id="top">
 
@@ -328,76 +341,7 @@
   </div>
 </section>
 
-<!-- ============================================================
-     PREZZI
-     Il TOTALE e' il prezzo. Il costo a testa e' solo la
-     rassicurazione, e si calcola dal cursore: senza JavaScript
-     resta il valore di partenza (15 persone), che e' gia' giusto.
-     ============================================================ -->
-<section id="prezzi">
-  <div class="wrap">
-    <div class="sec-head rise">
-      <span class="eyebrow">Prezzi</span>
-      <h2>Gratis per giocare. Pro per ricordare.</h2>
-      <p class="lead">Il gioco è tutto nella versione gratuita: formazioni, voti, pagellone, classifica, bacheca, notifiche. Pro serve quando la lega cresce e quando le stagioni cominciano a essere più di una.</p>
-    </div>
 
-    <div class="plans rise">
-      <div class="plan" style="--acc:rgba(47,217,138,.9)">
-        <h3>FantaCalcetto</h3>
-        <p class="psub">Per cominciare, e per restarci.</p>
-        <div class="pcost">Gratis<small>Per sempre. Nessuna pubblicità, mai.</small></div>
-        <ul>
-          <li><span class="tk">✓</span><span>Fino a <b>15 giocatori</b> nella lega</span></li>
-          <li><span class="tk">✓</span><span>Tutto il gioco: presenze, formazione, crediti, capitano</span></li>
-          <li><span class="tk">✓</span><span>Voti, MVP e <b>pagellone</b> a ogni giornata</span></li>
-          <li><span class="tk">✓</span><span>Classifica, bacheca e statistiche della stagione in corso</span></li>
-          <li><span class="tk">✓</span><span>Promemoria automatici e apertura delle giornate</span></li>
-          <li class="off"><span class="tk">–</span><span>Solo l'ultima stagione: quelle prima restano chiuse</span></li>
-        </ul>
-      </div>
-
-      <div class="plan pro" style="--acc:rgba(255,194,61,.9)">
-        <span class="ptag">Pro</span>
-        <h3>FantaCalcetto Pro</h3>
-        <p class="psub">Quando siete tanti e giocate da un pezzo.</p>
-        <div class="pcost">€29,90<small>A stagione, per tutta la lega. La paga l'organizzatore, una volta sola.</small></div>
-        <ul>
-          <li><span class="tk">✓</span><span><b>Giocatori illimitati</b>: nessun tetto, mai</span></li>
-          <li><span class="tk">✓</span><span>Tutte le <b>stagioni archiviate</b>, per sempre</span></li>
-          <li><span class="tk">✓</span><span><b>Albo d'oro</b> completo e recap di ogni annata</span></li>
-          <li><span class="tk">✓</span><span>Tutto quello che c'è nella versione gratuita</span></li>
-          <li><span class="tk">✓</span><span>Una transazione l'anno. Nessun rinnovo automatico.</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="calc rise">
-      <div class="ceye">Pro · una stagione intera</div>
-      <div class="cbig">€29,90</div>
-      <div class="cwhat">Per <u>tutta la lega</u>, non a testa.</div>
-      <div class="cwhen">Si paga una volta sola, all'inizio della stagione.</div>
-
-      <div class="csep"></div>
-
-      <div class="cq">Quanti siete? <b id="pxN">15</b></div>
-      <input type="range" id="pxRange" min="6" max="40" step="1" value="15"
-             aria-label="Quante persone ci sono nella lega">
-      <div class="cscale"><span>6</span><span>40</span></div>
-
-      <div class="chead"><b id="pxEach">€2,00</b><span>a testa, per tutta la stagione</span></div>
-
-      <p class="cnote">La paga l'organizzatore. Se poi ve la dividete tra voi, <b>lo decidete voi</b>: l'app tiene il conto di chi ha saldato, i soldi si muovono come già fate per il campo.</p>
-    </div>
-
-    <div class="ptrial rise">
-      <span class="ic">🎁</span>
-      <div><b>Le prime 5 giornate sono Pro per tutti.</b> Cinque settimane vere, non cinque giorni: il tempo di capire se al gruppo piace. Alla fine decidi, e se non fai niente resti sulla versione gratuita — nessuno viene buttato fuori dalla lega.</div>
-    </div>
-
-    <p class="cnote rise" style="margin-top:18px;max-width:640px;font-size:13.5px">€29,90 è il <b>prezzo di lancio</b> della prima stagione. Dalla successiva il prezzo sarà di €39,90.</p>
-  </div>
-</section>
 
 <!-- ============================================================
      INSTALLAZIONE — linguette iPhone/Android, passi in carosello.
@@ -532,6 +476,70 @@
 </section>
 
 <!-- ============================================================
+     PREZZI
+     Il TOTALE e' il prezzo. Il costo a testa e' solo la
+     rassicurazione, e si calcola dal cursore: senza JavaScript
+     resta il valore di partenza (15 persone), che e' gia' giusto.
+     ============================================================ -->
+<section id="prezzi">
+  <div class="wrap">
+    <div class="sec-head rise">
+      <span class="eyebrow">Prezzi</span>
+      <h2>Gratis per giocare. Pro se crescete.</h2>
+      <p class="lead">Il gioco è tutto nella versione gratuita. Pro serve quando siete più di 15, o quando le stagioni cominciano a essere più di una.</p>
+    </div>
+
+    <div class="plans rise">
+      <div class="plan">
+        <h3>FantaCalcetto</h3>
+        <div class="pcost">Gratis<small>per sempre</small></div>
+        <ul>
+          <li><span class="tk">✓</span><span>Fino a <b>15 giocatori</b></span></li>
+          <li><span class="tk">✓</span><span>Tutto il gioco</span></li>
+          <li><span class="tk">✓</span><span>Pagellone e classifica</span></li>
+          <li><span class="tk">✓</span><span>Storico dell'<b>ultima stagione</b></span></li>
+          <li><span class="tk">✓</span><span>Zero pubblicità</span></li>
+        </ul>
+      </div>
+
+      <div class="plan pro">
+        <h3>FantaCalcetto <span class="gd">Pro</span></h3>
+        <div class="pcost"><s>€39,90</s>€29,90<small>a stagione (fino a 38 giornate), tutta la lega</small></div>
+        <ul>
+          <li><span class="tk">✓</span><span><b>Giocatori illimitati</b></span></li>
+          <li><span class="tk">✓</span><span>Storico di <b>tutte le stagioni</b></span></li>
+          <li><span class="tk">✓</span><span>Albo d'oro completo</span></li>
+          <li><span class="tk">✓</span><span>Tutto quello del gratis</span></li>
+          <li><span class="tk">✓</span><span>Nessun rinnovo automatico</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="calc rise">
+      <div class="ceye">Pro · una stagione intera, fino a 38 giornate</div>
+      <div class="cwas"><s>€39,90</s><i>dalla prossima stagione</i></div>
+      <div class="cbig">€29,90</div>
+      <div class="cwhat">Per <u>tutta la lega</u>, non a testa.</div>
+
+      <div class="csep"></div>
+
+      <div class="cq">Quanti siete? <b id="pxN">15</b></div>
+      <input type="range" id="pxRange" min="6" max="40" step="1" value="15"
+             aria-label="Quante persone ci sono nella lega">
+      <div class="cscale"><span>6</span><span>40</span></div>
+
+      <div class="chead"><b id="pxEach">€2,00</b><span>a testa, per tutta la stagione</span></div>
+
+      <div class="cflags">
+        <span class="cflag"><b>✓</b> Nessun rinnovo automatico</span>
+        <span class="cflag"><b>✓</b> Si paga una volta e basta</span>
+      </div>
+      <p class="cnote">La prende l'organizzatore. Quando la stagione finisce, finisce: se non fate niente non vi arriva nessun addebito.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
      PUNTEGGI — la tabellina, il resto sta nel regolamento
      ============================================================ -->
 <section id="punteggi">
@@ -570,6 +578,7 @@
     </div>
     <div class="faq rise">
       <details><summary>Quanto costa?</summary><div class="a"><p><b>Giocare è gratis</b>, per sempre e senza pubblicità: fino a 15 giocatori avete il gioco completo, pagellone e classifica compresi. <b>Pro costa €29,90 a stagione per tutta la lega</b> (non a testa) e serve se siete più di 15 o se volete tenere le stagioni passate. <a href="#prezzi">Vedi i prezzi</a>.</p></div></details>
+      <details><summary>C'è una prova a tempo?</summary><div class="a"><p><b>No, e non serve.</b> La versione gratuita non è una prova: è il gioco completo, senza scadenza e senza carta di credito. Pro si prende solo quando serve davvero, cioè quando superate i 15 giocatori o quando volete rivedere le stagioni passate.</p></div></details>
       <details><summary>Quanti bisogna essere?</summary><div class="a"><p><b>Da dieci in su</b>, così le formazioni possono essere diverse tra loro. Con quindici è perfetto. La versione gratuita arriva <b>fino a 15 giocatori</b>; oltre serve Pro, e lì non c'è nessun tetto. Chi è già dentro <b>non viene mai tolto</b>.</p></div></details>
       <details><summary>Si può giocare senza scendere in campo?</summary><div class="a"><p><b>Sì.</b> Chi non gioca a calcetto — un amico, la fidanzata, chi è infortunato a lungo — entra come <b>solo manager</b>: ha la sua squadra, schiera la formazione e sta in classifica come tutti. Non prende voti, perché non gioca, e non compare nel sondaggio delle presenze. Se possa votare i giocatori lo decide l'organizzatore.</p></div></details>
       <details><summary>Serve scaricarla dagli store?</summary><div class="a"><p><b>No, è una PWA.</b> È un sito che si aggiunge alla schermata Home e da lì funziona come un'app: <b>icona sua, schermo intero, notifiche</b>. Gli aggiornamenti arrivano da soli, senza passare da App Store o Play Store.</p></div></details>
@@ -615,7 +624,54 @@
    L'app vive in /app/; questa pagina è la vetrina alla radice.
    ------------------------------------------------------------ */
 var APP_URL = '/app/';
-document.querySelectorAll('[data-app-link]').forEach(function(a){ a.href = APP_URL; });
+
+/* PRIMA INSTALLALA. Chi arriva dal motore di ricerca puo' non aver visto la
+   sezione installazione: se preme «Gioca ora» da telefono e l'app non e' sulla
+   Home, gli si ricorda una volta sola. Chi ce l'ha gia' installata (o ha gia'
+   scelto di continuare nel browser) va dritto al gioco senza intoppi. */
+function isStandalone(){
+  try{ return (window.matchMedia && matchMedia('(display-mode: standalone)').matches)
+              || navigator.standalone === true; }catch(e){ return false; }
+}
+function isPhone(){ return /iphone|ipad|ipod|android/i.test(navigator.userAgent || ''); }
+/* Torna a farsi vedere. Prima bastava un «continua nel browser» per non
+   rivederlo mai: chi gioca da mesi dal browser non se lo sarebbe mai
+   ricordato, e su iPhone e' l'unico modo per avere le notifiche.
+   Ora il rifiuto vale 7 giorni, poi l'avviso riappare — sempre e solo al
+   momento in cui si preme «Gioca ora», mai all'apertura della pagina.
+   NOTA ONESTA: da questa pagina NON si puo' sapere se l'app e' gia' sulla
+   Home. Chi la installa poi apre direttamente l'app (lo script in testa lo
+   manda su /app/), quindi chi arriva qui e preme «Gioca ora» quasi sempre
+   non ce l'ha. Meglio ricordarglielo ogni tanto che mai. */
+var INST_SNOOZE = 7 * 24 * 60 * 60 * 1000;
+function instSeen(){
+  try{
+    var t = parseInt(localStorage.getItem('fc_inst_ok') || '0', 10);
+    return !!t && (Date.now() - t) < INST_SNOOZE;
+  }catch(e){ return true; }
+}
+function openInst(){
+  document.getElementById('instScrim').classList.add('open');
+  document.getElementById('instBox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeInst(){
+  document.getElementById('instScrim').classList.remove('open');
+  document.getElementById('instBox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function skipInst(){
+  try{ localStorage.setItem('fc_inst_ok', String(Date.now())); }catch(e){}
+  closeInst(); location.href = APP_URL;
+}
+document.querySelectorAll('[data-app-link]').forEach(function(a){
+  a.href = APP_URL;
+  a.addEventListener('click', function(e){
+    if (isStandalone() || !isPhone() || instSeen()) return;   // niente intoppo
+    e.preventDefault(); openInst();
+  });
+});
+addEventListener('keydown', function(e){ if (e.key === 'Escape') closeInst(); });
 document.getElementById('yy').textContent = new Date().getFullYear();
 
 /* ------------------------------------------------------------

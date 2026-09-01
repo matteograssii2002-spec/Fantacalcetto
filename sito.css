@@ -355,11 +355,15 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;margin-top:clamp(40p
   letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px;
   background:rgba(255,194,61,.16);color:var(--gold);
 }
-.plan h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:21px;letter-spacing:-.025em;margin-bottom:4px}
+.plan h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:19px;letter-spacing:-.025em;margin-bottom:4px}
+.plan h3 .gd{color:var(--gold)}
 .plan .psub{color:var(--muted);font-size:14.5px;margin-bottom:18px}
 .plan .pcost{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1.1}
 .plan.pro .pcost{color:var(--gold)}
-.plan .pcost small{display:block;font-family:'Hanken Grotesk';font-weight:600;font-size:13.5px;color:var(--muted);margin-top:5px;letter-spacing:0}
+.plan .pcost small{display:block;font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--muted);margin-top:5px;letter-spacing:0}
+/* il prezzo pieno barrato: piccolo, sopra, e MAI presentato come «prima era».
+   E' il prezzo che partira' davvero dalla stagione successiva. */
+.plan .pcost s{display:block;font-size:14px;color:var(--muted);text-decoration-thickness:1.5px;margin-bottom:2px}
 .plan ul{list-style:none;margin:20px 0 0;display:grid;gap:10px}
 .plan li{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.5}
 .plan li .tk{flex:none;width:19px;height:19px;border-radius:50%;display:grid;place-items:center;
@@ -378,9 +382,17 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;margin-top:clamp(40p
     linear-gradient(180deg,rgba(31,58,108,.40),rgba(13,26,47,.55));
 }
 .calc .ceye{font-size:12.5px;font-weight:800;letter-spacing:.10em;text-transform:uppercase;color:var(--gold)}
+/* nel riquadro grande: barrato piccolo sopra, con scritto a cosa si riferisce,
+   cosi' non lo si puo' leggere come uno sconto finto su un prezzo mai fatto */
+.calc .cwas{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:10px}
+.calc .cwas s{font-family:'JetBrains Mono',monospace;font-size:20px;color:var(--muted);
+  text-decoration-thickness:2px}
+.calc .cwas i{font-style:normal;font-size:11.5px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--muted);background:rgba(150,185,240,.10);
+  border-radius:999px;padding:4px 9px}
 .calc .cbig{
   font-family:'Bricolage Grotesque';font-weight:800;letter-spacing:-.04em;line-height:1;
-  font-size:clamp(58px,12vw,92px);margin:10px 0 6px;
+  font-size:clamp(62px,13vw,98px);margin:4px 0 8px;
   background:linear-gradient(180deg,#ffe6a8,var(--gold));
   -webkit-background-clip:text;background-clip:text;color:transparent;
 }
@@ -405,29 +417,63 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;margin-top:clamp(40p
 }
 .calc .cscale{display:flex;justify-content:space-between;max-width:min(420px,100%);
   margin:0 auto 20px;font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+/* Il «a testa» e' la cosa che convince: va vista da lontano. Resta comunque
+   piu' piccolo del totale (98px contro 46) perche' la gerarchia non deve
+   ribaltarsi: il prezzo e' quello della lega, non della persona. */
 .calc .chead{
-  display:inline-flex;align-items:baseline;gap:9px;flex-wrap:wrap;justify-content:center;
-  background:rgba(47,217,138,.12);border:1px solid rgba(47,217,138,.32);
-  border-radius:999px;padding:11px 20px;
+  display:inline-flex;flex-direction:column;align-items:center;gap:2px;
+  background:rgba(47,217,138,.13);border:1px solid rgba(47,217,138,.36);
+  border-radius:20px;padding:14px 28px;
+  box-shadow:0 18px 44px -26px rgba(47,217,138,.9);
 }
-.calc .chead b{font-family:'JetBrains Mono',monospace;font-size:clamp(24px,4.4vw,30px);
-  font-weight:700;color:var(--green);letter-spacing:-.02em}
-.calc .chead span{font-size:14.5px;font-weight:600;color:#bff0da}
+.calc .chead b{font-family:'Bricolage Grotesque';font-size:clamp(34px,7.4vw,46px);
+  font-weight:800;color:var(--green);letter-spacing:-.035em;line-height:1.05}
+.calc .chead span{font-size:14px;font-weight:700;color:#bff0da;letter-spacing:.01em}
+.calc .cflags{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-top:18px}
+.calc .cflag{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;
+  color:#cfe0f7;background:rgba(150,185,240,.08);border:1px solid var(--line-strong);
+  border-radius:999px;padding:8px 15px}
+.calc .cflag b{color:var(--green);font-size:13px}
 .calc .cnote{color:var(--muted);font-size:14px;margin-top:18px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.6}
 .calc .cnote b{color:var(--text)}
 
-.ptrial{
-  margin-top:16px;display:flex;gap:13px;align-items:flex-start;
-  border:1px solid rgba(63,151,255,.28);background:rgba(63,151,255,.08);
-  border-radius:16px;padding:17px 19px;font-size:15px;line-height:1.55;
-}
-.ptrial .ic{font-size:21px;line-height:1;flex:none}
-.ptrial b{font-weight:700}
-
+/* Affiancate SEMPRE, anche sul telefono: due colonne si confrontano con lo
+   sguardo, una sopra l'altra bisogna ricordarsela. Sotto i 420px si stringe
+   tutto invece di impilare. */
 @media(max-width:760px){
-  .plans{grid-template-columns:1fr}
-  .plan{padding:20px 18px 22px}
+  .plan{padding:17px 14px 19px}
+  .plan h3{font-size:16.5px}
+  .plan .pcost{font-size:23px}
+  .plan li{font-size:13px;gap:8px}
 }
+@media(max-width:420px){
+  .plans{gap:9px}
+  .plan{padding:14px 11px 16px;border-radius:15px}
+  .plan h3{font-size:14.5px;letter-spacing:-.03em}
+  .plan .psub{display:none}
+  .plan .pcost{font-size:20px}
+  .plan .pcost s{font-size:12.5px}
+  .plan .pcost small{font-size:11px}
+  .plan ul{gap:8px;margin-top:15px}
+  .plan li{font-size:12px;gap:6px;line-height:1.4}
+  .plan li .tk{width:15px;height:15px;font-size:9px;margin-top:1px}
+}
+
+/* ---------- avviso «prima installala» ---------- */
+.instbox{
+  position:fixed;z-index:70;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);
+  width:calc(100% - 40px);max-width:400px;text-align:center;
+  background:var(--bg2);border:1px solid var(--line-strong);border-radius:22px;
+  padding:26px 22px 22px;box-shadow:var(--shadow);
+  opacity:0;pointer-events:none;transition:opacity .24s, transform .24s cubic-bezier(.2,.8,.2,1);
+}
+.instbox.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.instbox .ic{font-size:42px;line-height:1;display:block;margin-bottom:10px}
+.instbox h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:21px;letter-spacing:-.025em;margin-bottom:9px}
+.instbox p{color:var(--muted);font-size:15px;line-height:1.6;margin-bottom:18px}
+.instbox p b{color:var(--text)}
+.instbox .btn{width:100%;justify-content:center}
+.instbox .btn-ghost{margin-top:10px}
 
 .rise{opacity:0;transform:translateY(22px)}
 .rise.seen{opacity:1;transform:none;transition:opacity .65s cubic-bezier(.2,.8,.2,1), transform .65s cubic-bezier(.2,.8,.2,1)}
