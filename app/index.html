@@ -989,6 +989,37 @@
   .opt .pr{font-family:'JetBrains Mono';font-weight:700;color:var(--gold);font-size:14px}
   .opt .rm{font-size:12px;color:var(--red);font-weight:600}
   .icocircle{width:38px;height:38px;border-radius:11px;background:var(--surface2);display:grid;place-items:center;font-size:16px}
+  /* ---------- TUTORIAL: riflettore + fumetto ----------
+     Il buco NON e' un box-shadow gigante: sono quattro pannelli che coprono
+     tutto tranne il rettangolo scelto. Cosi' i pannelli mangiano i tocchi
+     (niente pulsanti premuti per sbaglio nel buio) e il pezzo illuminato resta
+     davvero toccabile, che e' il punto del tutorial. */
+  #tut{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1200;display:none}
+  #tut.on{display:block}
+  .tut-bk{position:fixed;background:rgba(4,10,22,.80)}
+  .tut-ring{position:fixed;border:2px solid var(--accent);border-radius:15px;pointer-events:none;
+    box-shadow:0 0 0 3px rgba(63,151,255,.20), 0 0 26px rgba(63,151,255,.34);transition:all .2s ease}
+  .tut-card{position:fixed;left:50%;transform:translateX(-50%);width:min(430px,calc(100% - 26px));
+    background:var(--surface);border:1px solid var(--line-strong);border-radius:19px;padding:16px 17px 13px;
+    box-shadow:0 26px 64px -18px rgba(0,6,18,.92);transition:top .2s ease}
+  .tut-card .tt{font-family:'Bricolage Grotesque';font-weight:800;font-size:17px;letter-spacing:-.02em;margin:0 0 6px}
+  .tut-card .tx{font-size:13.5px;line-height:1.58;color:#cfe0f7;margin:0}
+  .tut-card .tx b{color:var(--text);font-weight:700}
+  .tut-try{display:inline-block;margin-top:9px;font-size:11.5px;font-weight:700;color:var(--accent-soft);
+    background:rgba(63,151,255,.12);border:1px solid rgba(63,151,255,.3);border-radius:8px;padding:4px 9px}
+  .tut-foot{display:flex;align-items:center;gap:9px;margin-top:14px}
+  .tut-dots{flex:1;display:flex;gap:5px;align-items:center}
+  .tut-dots i{width:6px;height:6px;border-radius:50%;background:var(--line-strong);transition:all .2s}
+  .tut-dots i.on{background:var(--accent);width:17px;border-radius:4px}
+  .tut-b{border:none;border-radius:11px;padding:10px 15px;font-family:'Hanken Grotesk';font-weight:700;
+    font-size:13.5px;cursor:pointer;white-space:nowrap}
+  .tut-b.go{background:var(--accent);color:#fff}
+  .tut-b.sk{background:transparent;color:var(--muted);padding-left:6px;padding-right:6px}
+  .tut-x{position:fixed;top:calc(9px + env(safe-area-inset-top));right:11px;
+    background:rgba(20,38,68,.94);border:1px solid var(--line-strong);color:var(--text);border-radius:11px;
+    padding:8px 12px;font-size:12.5px;font-weight:700;font-family:'Hanken Grotesk';cursor:pointer}
+  @media (prefers-reduced-motion: reduce){ .tut-ring,.tut-card,.tut-dots i{transition:none} }
+
   .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#fff;font-weight:700;font-size:14px;padding:12px 20px;border-radius:12px;z-index:90;opacity:0;pointer-events:none;transition:all .3s;box-shadow:0 10px 30px rgba(0,0,0,.4);max-width:90%;text-align:center}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   /* ---- Pannello Bonus/Malus dal vivo (admin, durante la partita) ---- */
@@ -2000,12 +2031,13 @@
       <button class="navrow" onclick="setNav('page-notifiche')"><span class="ic">🔔</span><span class="lab">Notifiche<small>Avvisi delle giornate</small></span><span class="go">›</span></button>
       <div class="setgrp">La lega</div>
       <button class="navrow" onclick="setNav('page-regolamento')"><span class="ic">📖</span><span class="lab">Regolamento<small>Come si fanno i punti</small></span><span class="go">›</span></button>
+      <button class="navrow" id="rowTut" onclick="tutFromSettings()"><span class="ic">🎓</span><span class="lab">Come funziona<small>Rivedi la guida, quando vuoi</small></span><span class="go">›</span></button>
       <button class="navrow" id="alboRow" onclick="openAlboSheet()" style="display:none"><span class="ic">🏆</span><span class="lab">Albo d'oro<small id="alboSub">Le stagioni archiviate</small></span><span class="go">›</span></button>
       <div class="setgrp" id="admGrp" style="display:none">Gestione</div>
-      <button class="navrow gold adminRow" onclick="setNav('page-giornata')" style="display:none"><span class="ic">⚽</span><span class="lab">Centro giornata<small id="admMdSub">—</small></span><span class="go">›</span></button>
+      <button class="navrow gold adminRow" id="rowMd" onclick="setNav('page-giornata')" style="display:none"><span class="ic">⚽</span><span class="lab">Centro giornata<small id="admMdSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold ownerRow" onclick="setNav('page-stagione')" style="display:none"><span class="ic">📅</span><span class="lab">Stagione<small id="admSeaSub">—</small></span><span class="go">›</span></button>
-      <button class="navrow gold ownerRow" onclick="setNav('page-regole')" style="display:none"><span class="ic">⚙️</span><span class="lab">Regole della lega<small>Quando giocate, presenze, portiere, crediti</small></span><span class="go">›</span></button>
-      <button class="navrow gold adminRow" onclick="setNav('page-lega')" style="display:none"><span class="ic">🏆</span><span class="lab">Gestione lega<small>Inviti, giocatori, permessi</small></span><span class="go">›</span></button>
+      <button class="navrow gold ownerRow" id="rowRules" onclick="setNav('page-regole')" style="display:none"><span class="ic">⚙️</span><span class="lab">Regole della lega<small>Quando giocate, presenze, portiere, crediti</small></span><span class="go">›</span></button>
+      <button class="navrow gold adminRow" id="rowLeague" onclick="setNav('page-lega')" style="display:none"><span class="ic">🏆</span><span class="lab">Gestione lega<small>Inviti, giocatori, permessi</small></span><span class="go">›</span></button>
       <button class="navrow gold ownerRow" onclick="setNav('page-manutenzione')" style="display:none"><span class="ic">🛟</span><span class="lab">Aiuto e manutenzione<small>Segnala un problema, ricalcola il recap</small></span><span class="go">›</span></button>
       <div class="setfoot">
         <button class="logout" id="logoutBtn">Esci dall'account</button>
@@ -2294,6 +2326,21 @@
       <div id="tlpList"></div>
     </div>
   </div>
+  <div id="tut">
+    <div class="tut-bk" id="tutT"></div><div class="tut-bk" id="tutB"></div>
+    <div class="tut-bk" id="tutL"></div><div class="tut-bk" id="tutR"></div>
+    <div class="tut-ring" id="tutRing" style="display:none"></div>
+    <button class="tut-x" onclick="tutQuit()">Esci \u2715</button>
+    <div class="tut-card" id="tutCard">
+      <p class="tt" id="tutTtl"></p>
+      <p class="tx" id="tutTx"></p>
+      <div class="tut-foot">
+        <div class="tut-dots" id="tutDots"></div>
+        <button class="tut-b sk" id="tutSkip" onclick="tutNext()">Salta</button>
+        <button class="tut-b go" id="tutGo" onclick="tutNext()">Avanti</button>
+      </div>
+    </div>
+  </div>
   <div class="toast" id="toast"></div>
 
   <div class="statmodal-bg" id="pushBg" onclick="closePushPrompt()"></div>
@@ -2402,7 +2449,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v16';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v17';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -2572,6 +2619,320 @@ function gateStatus(msg,bad){
   const e=document.getElementById('gateStatus'); if(!e) return;
   e.textContent=msg||'';
   e.classList.toggle('bad', !!bad && !!msg);
+}
+
+/* ============================================================================
+   TUTORIAL — due percorsi, riflettore sull'app vera, giornata di prova locale.
+
+   Perche' sull'app vera e non su schermate finte: chi impara qui deve
+   ritrovare le stesse cose domani, con i nomi dei suoi amici e la sua squadra.
+   Il prezzo e' che i pulsanti sotto sono veri, quindi serve una rete.
+
+   LA RETE: tutSbGuard() sostituisce `sb` con un finto client. Ogni rpc,
+   insert, update, delete e upsert torna indietro SENZA partire, con
+   error:null — cosi' l'app crede che sia andata bene, aggiorna lo stato
+   locale (che poi buttiamo) e non mostra errori rossi. Un punto solo invece
+   di trenta funzioni da ricordarsi di disarmare.
+   Le letture (`data:null`) sono innocue: tutte le funzioni di caricamento
+   dell'app sono gia' scritte con `if(data&&data[0])`, quindi tengono il
+   valore che c'e'.
+   `auth` e `storage` restano quelli veri: servono per la sessione e per gli
+   avatar, e non scrivono niente di nostro.
+   ============================================================================ */
+const TUT_KEY='fc_tut_done';
+let TUT=null, _tutSnap=null, _sbReal=null, _tutRaf=null, _tutLastBox='';
+
+function tutSbGuard(){
+  if(_sbReal) return;
+  _sbReal=sb;
+  const okv=()=>({data:null,error:null});
+  const q=()=>{ const o={};
+    ['select','insert','update','upsert','delete','eq','neq','in','is','not','gt','gte','lt','lte',
+     'like','ilike','match','filter','order','limit','range','single','maybeSingle','csv','returns']
+      .forEach(m=>{ o[m]=()=>o; });
+    o.then=(res)=>{ try{ res(okv()); }catch(_){ } return Promise.resolve(okv()); };
+    o.catch=()=>o; o.finally=(f)=>{ try{ f(); }catch(_){ } return o; };
+    return o; };
+  sb={
+    rpc:()=>Promise.resolve(okv()),
+    from:()=>q(),
+    auth:_sbReal.auth,
+    storage:_sbReal.storage,
+    channel:()=>{ const c={on:()=>c, subscribe:()=>c, unsubscribe:()=>c}; return c; },
+    removeChannel:()=>{},
+    getChannels:()=>[]
+  };
+}
+function tutSbFree(){ if(_sbReal){ sb=_sbReal; _sbReal=null; } }
+
+/* nomi neutri: non devono somigliare a quelli veri del gruppo, o uno crede
+   che il tutorial stia parlando di persone in carne e ossa */
+const TUT_NAMES=['Rossi','Bianchi','Verdi','Neri','Gialli','Bruni','Conti','Rizzo','Sarti','Moro'];
+const TUT_COST =[26,18,30,15,22,20,24,17,21,19];
+function tutFakePlayers(){
+  const out=(players||[]).slice(0,10).map(p=>Object.assign({},p));
+  let i=0;
+  while(out.length<10){
+    out.push({ id:-100-i, name:TUT_NAMES[i%TUT_NAMES.length],
+               role:(i%2?'DIF':'ATT'),
+               avatar:((avatars||[])[i%Math.max(1,(avatars||[]).length)]||{}).name||null,
+               cost:TUT_COST[i%TUT_COST.length], owner_id:null, injured:false, present:true });
+    i++;
+  }
+  return out;
+}
+/* la giornata di prova. id NEGATIVO apposta: se una scrittura sfuggisse alla
+   rete, fallirebbe rumorosamente invece di toccare una riga vera. */
+function tutFakeMd(hours){
+  const k=Date.now()+hours*HOUR;
+  return { id:-1, label:'Giornata di prova', status:'open',
+           kickoff:new Date(k).toISOString(),
+           vote_deadline:new Date(k+VOTING_OPEN_AFTER+VOTING_WINDOW).toISOString(),
+           skip_poll:false, season_id:null, cost_applied:false,
+           reminder_sent:false, lineup_open_sent:false,
+           presence_remind_sent:false, lineup_remind_sent:false };
+}
+/* sposta il fischio d'inizio: e' il trucco che permette di far vedere in
+   sequenza fasi che nella vita vera distano giorni (sondaggio a +60h,
+   formazioni a +30h, voti a -3h). */
+function tutKick(h){
+  if(!currentMd) return;
+  const k=Date.now()+h*HOUR;
+  currentMd.kickoff=new Date(k).toISOString();
+  currentMd.vote_deadline=new Date(k+VOTING_OPEN_AFTER+VOTING_WINDOW).toISOString();
+  computeLock(); renderAll();
+}
+
+function tutSnap(){
+  _tutSnap={
+    md:currentMd, players:players, pres:mdPresent, lineup:lineup, cap:captain,
+    mod:formModule, votes:myVotes, nom:myNom, mvp:mvpPid, sega:segaPid,
+    avg:averages, stats:adminStats, presSelf:presenceSelf, saved:mdResultsSaved,
+    stand:standings, ls:{}
+  };
+  try{ Object.keys(localStorage).forEach(k=>{ if(/^fc_/.test(k)) _tutSnap.ls[k]=localStorage.getItem(k); }); }catch(_){}
+}
+function tutRestore(){
+  if(!_tutSnap) return;
+  const p=_tutSnap; _tutSnap=null;
+  currentMd=p.md; players=p.players; mdPresent=p.pres; lineup=p.lineup; captain=p.cap;
+  formModule=p.mod; SLOTS=MODULES[formModule].slots;
+  myVotes=p.votes; myNom=p.nom; mvpPid=p.mvp; segaPid=p.sega;
+  averages=p.avg; adminStats=p.stats; presenceSelf=p.presSelf; mdResultsSaved=p.saved;
+  standings=p.stand;
+  // le bozze locali del pannello partita si sporcherebbero: rimesse com'erano
+  try{
+    Object.keys(localStorage).forEach(k=>{ if(/^fc_/.test(k) && !(k in p.ls)) localStorage.removeItem(k); });
+    Object.keys(p.ls).forEach(k=>{ localStorage.setItem(k,p.ls[k]); });
+  }catch(_){}
+}
+
+/* ---------- i due percorsi ---------- */
+function tutStepsPlayer(){ return [
+ {ttl:'Benvenuto in FantaCalcetto',
+  tx:"Ti faccio vedere l\u2019app in un minuto. Ho aperto una <b>giornata di prova</b> che esiste solo sul tuo telefono: qualunque cosa tocchi adesso <b>non viene salvata</b> e sparisce appena finiamo."},
+ {v:'home', el:'.hero',
+  ttl:'La Home dice cosa fare',
+  tx:"In cima c\u2019\u00e8 sempre <b>una cosa sola</b>: quella che serve adesso. Schierare, votare, oppure niente quando non c\u2019\u00e8 niente da fare."},
+ {v:'home', el:'#homePresence', tap:true, before:()=>tutKick(60),
+  ttl:'Prima di tutto: ci sei?',
+  tx:"Qualche giorno prima della partita l\u2019app chiede chi gioca. <b>Tocca \u00abCi sono\u00bb</b>: chi non risponde non entra in campo."},
+ {v:'formazione', el:'#modPick', before:()=>tutKick(30),
+  ttl:'Il modulo',
+  tx:"Tre disposizioni. <b>1-3-1</b> vale 5 punti in pi\u00f9, <b>1-1-3</b> ne toglie 5: pi\u00f9 difendi, pi\u00f9 prendi. Quelli impossibili con i presenti di oggi restano spenti."},
+ {v:'formazione', el:'.budget-wrap',
+  ttl:'Cento crediti',
+  tx:"Ogni giocatore ha un prezzo, e i pi\u00f9 forti costano di pi\u00f9. Devi schierarne <b>cinque</b> senza sforare i 100."},
+ {v:'formazione', el:'#pitch', tap:true,
+  ttl:'Il campo',
+  tx:"Tocca uno slot vuoto per scegliere chi ci va. Tocca uno gi\u00e0 schierato per <b>farlo capitano</b> \u2014 il capitano vale <b>doppio</b> \u2014 oppure per toglierlo."},
+ {v:'formazione', el:'#saveBtn',
+  ttl:'Conferma, o non conta',
+  tx:"Finch\u00e9 non premi qui la formazione non \u00e8 salvata. Puoi cambiarla quante volte vuoi fino a <b>5 minuti prima</b> del fischio d\u2019inizio."},
+ {v:'voti', el:'#voteList', tap:true, before:()=>tutKick(-3),
+  ttl:'Dopo la partita: i voti',
+  tx:"Da 1 a 10 a ogni giocatore, anche mezzi. La <b>\ud83c\udfc6</b> \u00e8 l\u2019MVP e raddoppia il voto di chi la prende. Restano aperti 24 ore, poi la giornata si chiude da sola."},
+ {v:'classifica', el:'#lbList', before:()=>tutKick(30),
+  ttl:'La classifica',
+  tx:"I punti di ogni giornata si sommano nella stagione. Tocca una squadra per aprire la sua <b>bacheca</b>: trofei, record e traguardi."},
+ {ttl:'Ecco, tutto qui',
+  tx:"Il resto lo scopri giocando. Se vuoi rivedere questa guida sta in <b>Impostazioni \u203a Come funziona</b>."}
+];}
+
+function tutStepsAdmin(){ return [
+ {ttl:'La parte da amministratore',
+  tx:"Queste schermate le vedi solo tu. Sono quattro, e la buona notizia \u00e8 che quasi tutto va avanti da s\u00e9."},
+ {v:'settings', nav:'setMenu', el:'#rowLeague',
+  ttl:'Invita i tuoi amici',
+  tx:"\u00c8 la prima cosa da fare: qui dentro c\u2019\u00e8 il <b>link d\u2019invito</b> da mandare nel gruppo. Una lega da solo non gioca."},
+ {v:'settings', nav:'setMenu', el:'#rowRules',
+  ttl:'Quando giocate di solito',
+  tx:"Imposta giorno e ora fissi, una volta. Da l\u00ec in poi <b>le giornate si aprono da sole</b> 72 ore prima e i promemoria partono senza che tu faccia niente."},
+ {v:'settings', nav:'page-giornata', el:'#mdcSteps',
+  ttl:'Il Centro giornata',
+  tx:"La sequenza della giornata, col passo acceso su dove siete adesso. Sotto trovi <b>una sola azione</b>: quella che serve ora, mai un muro di pulsanti."},
+ {v:'settings', nav:'page-giornata', el:'#presCard',
+  before:()=>{ const c=document.getElementById('presCard'); if(c){ c.style.display='block'; c.classList.add('open'); } },
+  ttl:'Chi gioca questa giornata',
+  tx:"Se qualcuno si dimentica di rispondere, lo segni tu. \u00c8 anche la via d\u2019uscita quando la lista dei presenti resta vuota e nessuno riesce a schierare."},
+ {v:'voti', el:'#adminCard', before:()=>tutKick(-3),
+  ttl:'Gol, assist, chi ha vinto',
+  tx:"Finita la partita apri il pannello e segni cos\u2019\u00e8 successo. <b>\u00c8 l\u2019unica cosa che devi fare ogni settimana</b>: tutto il resto lo fa l\u2019app."},
+ {ttl:'Il resto va da solo',
+  tx:"La giornata si apre, i promemoria partono, le formazioni si bloccano e la giornata si chiude da sola. Se qualcosa si inceppa, <b>il Centro giornata te lo dice</b> invece di lasciarti nel dubbio."}
+];}
+
+/* ---------- motore ---------- */
+function tutStart(track){
+  if(TUT) return;
+  if(!profile){ return; }
+  tutSnap(); tutSbGuard();
+  // dati finti: la giornata, e i giocatori solo se la rosa vera e' troppo corta
+  presenceSelf=true;
+  currentMd=tutFakeMd(60);
+  if(!players || players.length<8) players=tutFakePlayers();
+  mdPresent=new Set(players.map(p=>p.id));
+  lineup={}; captain=null; formModule='1-2-2'; SLOTS=MODULES[formModule].slots;
+  myVotes={}; myNom={mvp:'',sega:''}; mvpPid=0; segaPid=0; averages={}; adminStats={};
+  mdResultsSaved=false;
+  if(!standings || standings.length<3){
+    standings=players.slice(0,6).map((p,i)=>({manager_id:'demo-'+i, team_name:'Squadra '+p.name,
+      player_name:p.name, points:64-i*7.5, delta:(i===1?1:(i===2?-1:0))}));
+  }
+  computeLock(); renderAll();
+  TUT={track:track, steps:(track==='admin'?tutStepsAdmin():tutStepsPlayer()), i:-1};
+  document.getElementById('tut').classList.add('on');
+  tutLoop();
+  tutGoTo(0);
+}
+/* passa da un percorso all'altro senza smontare la giornata di prova */
+function tutSwitch(track){
+  if(!TUT) return;
+  TUT={track:track, steps:(track==='admin'?tutStepsAdmin():tutStepsPlayer()), i:-1};
+  tutGoTo(0);
+}
+function tutGoTo(i){
+  if(!TUT) return;
+  TUT.i=i;
+  const st=TUT.steps[i], last=(i===TUT.steps.length-1);
+  if(st.before){ try{ st.before(); }catch(_){ } }
+  if(st.v) go(st.v);
+  if(st.nav) setNav(st.nav);
+  document.getElementById('tutTtl').textContent=st.ttl;
+  document.getElementById('tutTx').innerHTML=st.tx+(st.tap?'<span class="tut-try">\ud83d\udc46 puoi provarlo davvero</span>':'');
+  document.getElementById('tutSkip').style.display=st.tap?'':'none';
+  const g=document.getElementById('tutGo');
+  g.textContent = !last ? 'Avanti'
+                : (TUT.track==='player' && canOp() ? 'Ora la parte da admin \u2192' : 'Ho capito');
+  document.getElementById('tutDots').innerHTML=TUT.steps.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('');
+  _tutLastBox='';
+  const el=st.el?document.querySelector(st.el):null;
+  if(el){ try{ el.scrollIntoView({block:'center',behavior:'smooth'}); }
+          catch(_){ try{ el.scrollIntoView(); }catch(__){ } } }
+  setTimeout(tutPlace,70);
+}
+function tutNext(){
+  if(!TUT) return;
+  if(TUT.i>=TUT.steps.length-1){
+    if(TUT.track==='player' && canOp()){ tutSwitch('admin'); return; }
+    tutQuit(); return;
+  }
+  tutGoTo(TUT.i+1);
+}
+/* Il riflettore insegue l'elemento a ogni frame ma SCRIVE solo quando il
+   rettangolo cambia davvero: senza questa guardia, su iPhone lo scorrimento
+   diventa a scatti. */
+function tutLoop(){
+  if(!TUT){ _tutRaf=null; return; }
+  tutPlace();
+  _tutRaf=requestAnimationFrame(tutLoop);
+}
+function tutPlace(){
+  if(!TUT) return;
+  const st=TUT.steps[TUT.i]||{};
+  const T=document.getElementById('tutT'), B=document.getElementById('tutB'),
+        L=document.getElementById('tutL'), R=document.getElementById('tutR'),
+        ring=document.getElementById('tutRing'), card=document.getElementById('tutCard');
+  if(!T||!card) return;
+  const W=window.innerWidth, H=window.innerHeight;
+  let el=st.el?document.querySelector(st.el):null;
+  if(el && !el.getClientRects().length) el=null;      // c'e' nel DOM ma non a schermo
+  if(!el){
+    const box='full';
+    if(box!==_tutLastBox){
+      _tutLastBox=box;
+      T.style.cssText='position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(4,10,22,.88)';
+      [B,L,R].forEach(x=>x.style.cssText='position:fixed;width:0;height:0');
+      ring.style.display='none';
+      card.style.top=Math.max(72,Math.round(H/2)-130)+'px';
+    }
+    return;
+  }
+  const r=el.getBoundingClientRect(), pad=8;
+  const x=Math.max(0,Math.round(r.left-pad)), y=Math.max(0,Math.round(r.top-pad));
+  const w=Math.max(0,Math.min(W-x,Math.round(r.width+pad*2)));
+  const h=Math.max(0,Math.min(H-y,Math.round(r.height+pad*2)));
+  const box=x+','+y+','+w+','+h;
+  if(box===_tutLastBox) return;
+  _tutLastBox=box;
+  const bg='rgba(4,10,22,.80)';
+  T.style.cssText=`position:fixed;left:0;top:0;width:100%;height:${y}px;background:${bg}`;
+  B.style.cssText=`position:fixed;left:0;top:${y+h}px;width:100%;bottom:0;background:${bg}`;
+  L.style.cssText=`position:fixed;left:0;top:${y}px;width:${x}px;height:${h}px;background:${bg}`;
+  R.style.cssText=`position:fixed;left:${x+w}px;top:${y}px;right:0;height:${h}px;background:${bg}`;
+  ring.style.display='block';
+  ring.style.left=x+'px'; ring.style.top=y+'px';
+  ring.style.width=w+'px'; ring.style.height=h+'px';
+  // il fumetto va dove c'e' spazio: sotto se ci sta, altrimenti sopra
+  const ch=card.offsetHeight||190;
+  let top=(y+h+14+ch < H-12) ? (y+h+14) : (y-ch-14);
+  if(top<12) top=Math.max(12,H-ch-14);
+  card.style.top=top+'px';
+}
+function tutQuit(){
+  if(!TUT) return;
+  TUT=null;
+  if(_tutRaf){ cancelAnimationFrame(_tutRaf); _tutRaf=null; }
+  document.getElementById('tut').classList.remove('on');
+  tutSbFree();
+  tutRestore();
+  try{ localStorage.setItem(TUT_KEY,'1'); }catch(_){ }
+  computeLock(); renderAll(); go('home');
+  toast('Guida chiusa \u00b7 la ritrovi in Impostazioni');
+}
+/* la riga nelle Impostazioni: agli admin chiede quale dei due */
+function tutFromSettings(){
+  if(!canOp()){ tutStart('player'); return; }
+  document.getElementById('sheetTitle').textContent='Rivedi la guida';
+  document.getElementById('sheetHint').textContent='Due percorsi. Puoi farli tutti e due, uno dopo l\u2019altro.';
+  document.getElementById('sheetList').innerHTML=
+    '<button class="save" onclick="closeSheet();setTimeout(()=>tutStart(\'player\'),260)">\u26bd Come si gioca</button>'+
+    '<button class="set-btn" style="margin-top:10px" onclick="closeSheet();setTimeout(()=>tutStart(\'admin\'),260)">\ud83d\udee0\ufe0f Cosa fa l\u2019amministratore</button>';
+  openSheet();
+}
+/* prima apertura: solo se non c'e' gia' un'altra schermata davanti (regole
+   della lega appena create, invito alle notifiche, pagellone). Al massimo sei
+   tentativi: se non si libera, ripartira' al lancio successivo. */
+function tutBusy(){
+  /* ATTENZIONE: nell'app convivono DUE modi di nascondere un overlay.
+     Le pagine a schermo intero usano la classe `hidden`; i modali e il foglio
+     usano `open` al contrario (base a opacity:0, che NON e' display:none).
+     Un controllo su getComputedStyle().display li darebbe tutti per aperti. */
+  const vis=(id)=>{ const e=document.getElementById(id); return !!e && !e.classList.contains('hidden'); };
+  const opn=(id)=>{ const e=document.getElementById(id); return !!e && e.classList.contains('open'); };
+  return vis('rulesSetup') || vis('logoIntro') || vis('pwsetup')
+      || vis('gate') || vis('welcome') || vis('onboard') || vis('league')
+      || opn('pushModal') || opn('pag') || opn('sheet');
+}
+function maybeShowTutorial(try_n){
+  try{ if(localStorage.getItem(TUT_KEY)) return; }catch(_){ return; }
+  const n=try_n||0;
+  if(TUT) return;
+  // Sei tentativi da 3 secondi: se il campo non si libera (per esempio perche'
+  // sta finendo di impostare le regole della lega) la guida ripartira' al
+  // lancio successivo, invece di piombare sopra a quello che sta facendo.
+  if(tutBusy()){ if(n<6) setTimeout(()=>maybeShowTutorial(n+1),3000); return; }
+  setTimeout(()=>{ if(!TUT && !tutBusy()) tutStart('player'); },700);
 }
 
 /* ---------- SPLASH (logo durante il caricamento) ---------- */
@@ -2833,6 +3194,7 @@ async function afterLogin(){
     }
     maybeAskPush();          // invito notifiche alla prima apertura (una volta per dispositivo)
     maybeShowNotifBanner();  // banner mensile per chi non le ha ancora attivate
+    maybeShowTutorial();     // guida alla prima apertura (aspetta che il resto sia sparito)
   }
   await loadMaintenance(); subscribeMaintenance();
   try{ sb.rpc('touch_last_seen'); }catch(_){}   // battito "attivo" per la dashboard super-admin
