@@ -330,6 +330,105 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;margin-top:clamp(40p
    COMPARSA ALLO SCROLL — la classe la mette lo script.
    Senza JS (o con "riduci movimento") tutto resta visibile.
    ============================================================ */
+/* ============================================================
+   PREZZI
+   Gerarchia: il TOTALE e' il prezzo, il costo a testa e' la
+   rassicurazione. Se si invertono le dimensioni la gente crede
+   di dover pagare in quindici, ed e' esattamente il malinteso
+   da evitare.
+   ============================================================ */
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.plan{
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,rgba(31,58,108,.34),rgba(13,26,47,.42));
+  border:1px solid var(--line);border-radius:18px;padding:24px 22px 26px;
+}
+.plan::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;
+  background:var(--acc,var(--accent));opacity:.9}
+.plan.pro{
+  border-color:rgba(255,194,61,.34);
+  background:linear-gradient(180deg,rgba(255,194,61,.10),rgba(13,26,47,.5));
+  box-shadow:0 26px 60px -38px rgba(255,194,61,.6);
+}
+.plan .ptag{
+  position:absolute;top:16px;right:16px;font-size:11px;font-weight:800;
+  letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px;
+  background:rgba(255,194,61,.16);color:var(--gold);
+}
+.plan h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:21px;letter-spacing:-.025em;margin-bottom:4px}
+.plan .psub{color:var(--muted);font-size:14.5px;margin-bottom:18px}
+.plan .pcost{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1.1}
+.plan.pro .pcost{color:var(--gold)}
+.plan .pcost small{display:block;font-family:'Hanken Grotesk';font-weight:600;font-size:13.5px;color:var(--muted);margin-top:5px;letter-spacing:0}
+.plan ul{list-style:none;margin:20px 0 0;display:grid;gap:10px}
+.plan li{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.5}
+.plan li .tk{flex:none;width:19px;height:19px;border-radius:50%;display:grid;place-items:center;
+  font-size:11px;font-weight:800;margin-top:2px;background:rgba(47,217,138,.16);color:var(--green)}
+.plan.pro li .tk{background:rgba(255,194,61,.18);color:var(--gold)}
+.plan li.off .tk{background:rgba(150,185,240,.10);color:var(--muted)}
+.plan li.off{color:var(--muted)}
+
+/* --- il calcolatore --- */
+.calc{
+  margin-top:16px;text-align:center;position:relative;overflow:hidden;
+  border:1px solid rgba(255,194,61,.30);border-radius:22px;
+  padding:clamp(28px,4.4vw,44px) 22px clamp(24px,3.4vw,34px);
+  background:
+    radial-gradient(90% 130% at 50% -20%, rgba(255,194,61,.18), transparent 62%),
+    linear-gradient(180deg,rgba(31,58,108,.40),rgba(13,26,47,.55));
+}
+.calc .ceye{font-size:12.5px;font-weight:800;letter-spacing:.10em;text-transform:uppercase;color:var(--gold)}
+.calc .cbig{
+  font-family:'Bricolage Grotesque';font-weight:800;letter-spacing:-.04em;line-height:1;
+  font-size:clamp(58px,12vw,92px);margin:10px 0 6px;
+  background:linear-gradient(180deg,#ffe6a8,var(--gold));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.calc .cwhat{font-size:clamp(16px,2vw,19px);font-weight:700}
+.calc .cwhen{color:var(--muted);font-size:14.5px;margin-top:4px}
+.calc .csep{height:1px;margin:26px auto 22px;max-width:420px;
+  background:linear-gradient(90deg,transparent,var(--line-strong),transparent)}
+.calc .cq{font-size:15.5px;font-weight:600;margin-bottom:14px}
+.calc .cq b{font-family:'JetBrains Mono',monospace;color:var(--accent-soft);font-size:18px}
+.calc input[type=range]{
+  -webkit-appearance:none;appearance:none;width:min(420px,100%);height:8px;border-radius:99px;
+  background:linear-gradient(90deg,var(--accent),var(--gold));outline:none;margin:0 0 6px;
+}
+.calc input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:30px;height:30px;border-radius:50%;
+  background:#fff;border:3px solid var(--accent);cursor:pointer;
+  box-shadow:0 6px 18px -6px rgba(0,6,20,.9);
+}
+.calc input[type=range]::-moz-range-thumb{
+  width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid var(--accent);
+  cursor:pointer;box-shadow:0 6px 18px -6px rgba(0,6,20,.9);
+}
+.calc .cscale{display:flex;justify-content:space-between;max-width:min(420px,100%);
+  margin:0 auto 20px;font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.calc .chead{
+  display:inline-flex;align-items:baseline;gap:9px;flex-wrap:wrap;justify-content:center;
+  background:rgba(47,217,138,.12);border:1px solid rgba(47,217,138,.32);
+  border-radius:999px;padding:11px 20px;
+}
+.calc .chead b{font-family:'JetBrains Mono',monospace;font-size:clamp(24px,4.4vw,30px);
+  font-weight:700;color:var(--green);letter-spacing:-.02em}
+.calc .chead span{font-size:14.5px;font-weight:600;color:#bff0da}
+.calc .cnote{color:var(--muted);font-size:14px;margin-top:18px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.6}
+.calc .cnote b{color:var(--text)}
+
+.ptrial{
+  margin-top:16px;display:flex;gap:13px;align-items:flex-start;
+  border:1px solid rgba(63,151,255,.28);background:rgba(63,151,255,.08);
+  border-radius:16px;padding:17px 19px;font-size:15px;line-height:1.55;
+}
+.ptrial .ic{font-size:21px;line-height:1;flex:none}
+.ptrial b{font-weight:700}
+
+@media(max-width:760px){
+  .plans{grid-template-columns:1fr}
+  .plan{padding:20px 18px 22px}
+}
+
 .rise{opacity:0;transform:translateY(22px)}
 .rise.seen{opacity:1;transform:none;transition:opacity .65s cubic-bezier(.2,.8,.2,1), transform .65s cubic-bezier(.2,.8,.2,1)}
 @media (prefers-reduced-motion:reduce){.rise{opacity:1;transform:none}}

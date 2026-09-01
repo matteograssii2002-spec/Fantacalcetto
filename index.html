@@ -49,7 +49,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="sito.css?v=9">
+<link rel="stylesheet" href="sito.css?v=10">
 
 <script type="application/ld+json">
 {
@@ -60,8 +60,11 @@
   "operatingSystem":"iOS, Android, Web",
   "url":"https://www.fantacalcettoitalia.it/",
   "inLanguage":"it",
-  "description":"App gratuita per giocare al fantacalcio sulla partita di calcetto tra amici: presenze, formazione a 5, crediti, voti, pagellone e classifica di stagione.",
-  "offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}
+  "description":"App per giocare al fantacalcio sulla partita di calcetto tra amici: presenze, formazione a 5, crediti, voti, pagellone e classifica di stagione. Gratis fino a 15 giocatori.",
+  "offers":[
+    {"@type":"Offer","name":"FantaCalcetto","price":"0","priceCurrency":"EUR","description":"Gratis per sempre, fino a 15 giocatori per lega."},
+    {"@type":"Offer","name":"FantaCalcetto Pro","price":"29.90","priceCurrency":"EUR","description":"Prezzo di lancio a stagione, per tutta la lega: giocatori illimitati e tutte le stagioni archiviate."}
+  ]
 }
 </script>
 <script type="application/ld+json">
@@ -69,8 +72,8 @@
   "@context":"https://schema.org",
   "@type":"FAQPage",
   "mainEntity":[
-    {"@type":"Question","name":"Quanto costa FantaCalcetto?","acceptedAnswer":{"@type":"Answer","text":"Niente. Nessuna versione a pagamento e nessuna pubblicità: tutte le funzioni sono aperte a tutte le leghe."}},
-    {"@type":"Question","name":"Quante persone servono per giocare?","acceptedAnswer":{"@type":"Answer","text":"Da dieci in su, così le formazioni possono essere diverse tra loro. Con quindici o venti è perfetto e non c'è un massimo."}},
+    {"@type":"Question","name":"Quanto costa FantaCalcetto?","acceptedAnswer":{"@type":"Answer","text":"Giocare è gratis, per sempre e senza pubblicità: fino a 15 giocatori la lega ha il gioco completo, pagellone e classifica compresi. FantaCalcetto Pro costa 29,90 euro a stagione per tutta la lega, non a testa, e serve se siete più di 15 o se volete tenere le stagioni passate."}},
+    {"@type":"Question","name":"Quante persone servono per giocare?","acceptedAnswer":{"@type":"Answer","text":"Da dieci in su, così le formazioni possono essere diverse tra loro. Con quindici è perfetto. La versione gratuita arriva fino a 15 giocatori; oltre serve Pro, che non ha nessun tetto. Chi è già nella lega non viene mai tolto."}},
     {"@type":"Question","name":"Si può giocare senza scendere in campo?","acceptedAnswer":{"@type":"Answer","text":"Sì. Chi non gioca a calcetto entra come solo manager: ha la sua squadra, schiera la formazione e sta in classifica. Non prende voti e non compare nel sondaggio delle presenze."}},
     {"@type":"Question","name":"Bisogna scaricare l'app da App Store o Play Store?","acceptedAnswer":{"@type":"Answer","text":"No, è una PWA. È un sito che si aggiunge alla schermata Home e da lì funziona come un'app: icona sua, schermo intero e notifiche. Gli aggiornamenti arrivano da soli, senza passare dagli store."}},
     {"@type":"Question","name":"Chi assegna i voti ai giocatori?","acceptedAnswer":{"@type":"Answer","text":"I giocatori stessi: a fine partita ognuno vota gli altri e la media è il voto di giornata. L'organizzatore inserisce solo gol, assist, rigori e risultato."}},
@@ -92,6 +95,7 @@
       <a href="#anteprima">Anteprima</a>
       <a href="#come-funziona">Come funziona</a>
       <a href="#funzioni">Funzioni</a>
+      <a href="#prezzi">Prezzi</a>
       <a href="#installa">Installazione</a>
       <a href="#punteggi">Punteggi</a>
       <a href="#domande">Domande</a>
@@ -113,6 +117,7 @@
   <a href="#anteprima">Anteprima</a>
   <a href="#come-funziona">Come funziona</a>
   <a href="#funzioni">Funzioni</a>
+  <a href="#prezzi">Prezzi</a>
   <a href="#installa">Installazione</a>
   <a href="#punteggi">Punteggi</a>
   <a href="#domande">Domande</a>
@@ -324,6 +329,77 @@
 </section>
 
 <!-- ============================================================
+     PREZZI
+     Il TOTALE e' il prezzo. Il costo a testa e' solo la
+     rassicurazione, e si calcola dal cursore: senza JavaScript
+     resta il valore di partenza (15 persone), che e' gia' giusto.
+     ============================================================ -->
+<section id="prezzi">
+  <div class="wrap">
+    <div class="sec-head rise">
+      <span class="eyebrow">Prezzi</span>
+      <h2>Gratis per giocare. Pro per ricordare.</h2>
+      <p class="lead">Il gioco è tutto nella versione gratuita: formazioni, voti, pagellone, classifica, bacheca, notifiche. Pro serve quando la lega cresce e quando le stagioni cominciano a essere più di una.</p>
+    </div>
+
+    <div class="plans rise">
+      <div class="plan" style="--acc:rgba(47,217,138,.9)">
+        <h3>FantaCalcetto</h3>
+        <p class="psub">Per cominciare, e per restarci.</p>
+        <div class="pcost">Gratis<small>Per sempre. Nessuna pubblicità, mai.</small></div>
+        <ul>
+          <li><span class="tk">✓</span><span>Fino a <b>15 giocatori</b> nella lega</span></li>
+          <li><span class="tk">✓</span><span>Tutto il gioco: presenze, formazione, crediti, capitano</span></li>
+          <li><span class="tk">✓</span><span>Voti, MVP e <b>pagellone</b> a ogni giornata</span></li>
+          <li><span class="tk">✓</span><span>Classifica, bacheca e statistiche della stagione in corso</span></li>
+          <li><span class="tk">✓</span><span>Promemoria automatici e apertura delle giornate</span></li>
+          <li class="off"><span class="tk">–</span><span>Solo l'ultima stagione: quelle prima restano chiuse</span></li>
+        </ul>
+      </div>
+
+      <div class="plan pro" style="--acc:rgba(255,194,61,.9)">
+        <span class="ptag">Pro</span>
+        <h3>FantaCalcetto Pro</h3>
+        <p class="psub">Quando siete tanti e giocate da un pezzo.</p>
+        <div class="pcost">€29,90<small>A stagione, per tutta la lega. La paga l'organizzatore, una volta sola.</small></div>
+        <ul>
+          <li><span class="tk">✓</span><span><b>Giocatori illimitati</b>: nessun tetto, mai</span></li>
+          <li><span class="tk">✓</span><span>Tutte le <b>stagioni archiviate</b>, per sempre</span></li>
+          <li><span class="tk">✓</span><span><b>Albo d'oro</b> completo e recap di ogni annata</span></li>
+          <li><span class="tk">✓</span><span>Tutto quello che c'è nella versione gratuita</span></li>
+          <li><span class="tk">✓</span><span>Una transazione l'anno. Nessun rinnovo automatico.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="calc rise">
+      <div class="ceye">Pro · una stagione intera</div>
+      <div class="cbig">€29,90</div>
+      <div class="cwhat">Per <u>tutta la lega</u>, non a testa.</div>
+      <div class="cwhen">Si paga una volta sola, all'inizio della stagione.</div>
+
+      <div class="csep"></div>
+
+      <div class="cq">Quanti siete? <b id="pxN">15</b></div>
+      <input type="range" id="pxRange" min="6" max="40" step="1" value="15"
+             aria-label="Quante persone ci sono nella lega">
+      <div class="cscale"><span>6</span><span>40</span></div>
+
+      <div class="chead"><b id="pxEach">€2,00</b><span>a testa, per tutta la stagione</span></div>
+
+      <p class="cnote">La paga l'organizzatore. Se poi ve la dividete tra voi, <b>lo decidete voi</b>: l'app tiene il conto di chi ha saldato, i soldi si muovono come già fate per il campo.</p>
+    </div>
+
+    <div class="ptrial rise">
+      <span class="ic">🎁</span>
+      <div><b>Le prime 5 giornate sono Pro per tutti.</b> Cinque settimane vere, non cinque giorni: il tempo di capire se al gruppo piace. Alla fine decidi, e se non fai niente resti sulla versione gratuita — nessuno viene buttato fuori dalla lega.</div>
+    </div>
+
+    <p class="cnote rise" style="margin-top:18px;max-width:640px;font-size:13.5px">€29,90 è il <b>prezzo di lancio</b> della prima stagione. Dalla successiva il prezzo sarà di €39,90.</p>
+  </div>
+</section>
+
+<!-- ============================================================
      INSTALLAZIONE — linguette iPhone/Android, passi in carosello.
      Il cerchio rosso (.hot) indica cosa toccare: posizione e
      misura in percentuale sullo screenshot, vedi sito.css.
@@ -493,8 +569,8 @@
       <h2>Domande frequenti</h2>
     </div>
     <div class="faq rise">
-      <details><summary>Quanto costa?</summary><div class="a"><p><b>Niente.</b> Nessuna versione a pagamento, nessuna pubblicità, tutte le funzioni aperte a tutte le leghe.</p></div></details>
-      <details><summary>Quanti bisogna essere?</summary><div class="a"><p><b>Da dieci in su</b>, così le formazioni possono essere diverse tra loro. Con quindici o venti è perfetto, e <b>non c'è un massimo</b>.</p></div></details>
+      <details><summary>Quanto costa?</summary><div class="a"><p><b>Giocare è gratis</b>, per sempre e senza pubblicità: fino a 15 giocatori avete il gioco completo, pagellone e classifica compresi. <b>Pro costa €29,90 a stagione per tutta la lega</b> (non a testa) e serve se siete più di 15 o se volete tenere le stagioni passate. <a href="#prezzi">Vedi i prezzi</a>.</p></div></details>
+      <details><summary>Quanti bisogna essere?</summary><div class="a"><p><b>Da dieci in su</b>, così le formazioni possono essere diverse tra loro. Con quindici è perfetto. La versione gratuita arriva <b>fino a 15 giocatori</b>; oltre serve Pro, e lì non c'è nessun tetto. Chi è già dentro <b>non viene mai tolto</b>.</p></div></details>
       <details><summary>Si può giocare senza scendere in campo?</summary><div class="a"><p><b>Sì.</b> Chi non gioca a calcetto — un amico, la fidanzata, chi è infortunato a lungo — entra come <b>solo manager</b>: ha la sua squadra, schiera la formazione e sta in classifica come tutti. Non prende voti, perché non gioca, e non compare nel sondaggio delle presenze. Se possa votare i giocatori lo decide l'organizzatore.</p></div></details>
       <details><summary>Serve scaricarla dagli store?</summary><div class="a"><p><b>No, è una PWA.</b> È un sito che si aggiunge alla schermata Home e da lì funziona come un'app: <b>icona sua, schermo intero, notifiche</b>. Gli aggiornamenti arrivano da soli, senza passare da App Store o Play Store.</p></div></details>
       <details><summary>Chi assegna i voti?</summary><div class="a"><p><b>I giocatori.</b> A fine partita ognuno vota gli altri e <b>la media è il voto di giornata</b>. L'organizzatore inserisce solo i fatti: gol, assist, rigori, risultato.</p></div></details>
@@ -541,6 +617,30 @@
 var APP_URL = '/app/';
 document.querySelectorAll('[data-app-link]').forEach(function(a){ a.href = APP_URL; });
 document.getElementById('yy').textContent = new Date().getFullYear();
+
+/* ------------------------------------------------------------
+   6) CALCOLATORE DEL PREZZO
+   Il totale non si muove mai: e' quello il prezzo. Il cursore
+   cambia solo il «a testa», che serve a far capire l'ordine di
+   grandezza. Senza JavaScript la pagina mostra comunque il
+   valore di partenza (15 persone), che e' gia' corretto.
+   ------------------------------------------------------------ */
+var pxR = document.getElementById('pxRange');
+if (pxR) {
+  var PX_TOT = 29.90;
+  var pxN = document.getElementById('pxN'), pxE = document.getElementById('pxEach');
+  function pxDraw(){
+    var n = Math.max(1, parseInt(pxR.value, 10) || 15);
+    pxN.textContent = n;
+    var each = PX_TOT / n;
+    /* arrotondo per ECCESSO ai centesimi: meglio dire un centesimo in piu'
+       che promettere una cifra che sommata non torna. */
+    each = Math.ceil(each * 100) / 100;
+    pxE.textContent = '\u20ac' + each.toFixed(2).replace('.', ',');
+  }
+  pxR.addEventListener('input', pxDraw);
+  pxDraw();
+}
 
 /* 2) BARRA IN ALTO */
 var tb = document.getElementById('topbar');
