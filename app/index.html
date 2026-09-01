@@ -108,14 +108,24 @@
     width:calc(100% - 44px);max-width:348px;text-align:center;font-size:15.5px;line-height:1.45;font-weight:600;
     letter-spacing:-.005em;color:#dce8fb;text-shadow:0 1px 12px rgba(4,12,26,.6);
     opacity:0;animation:spFadeIn .6s ease 1.72s both}
-  .sp-load{display:flex;gap:7px;position:absolute;bottom:calc(40px + env(safe-area-inset-bottom));opacity:0;animation:spFadeIn .55s ease 1.62s both}
+  /* BARRA DI CARICAMENTO. La percentuale segue i passi VERI dell'avvio (sessione,
+     avatar, profilo, lega, giocatori, classifica, giornata), non un timer: una barra
+     finta che si pianta al 90% fa sembrare l'app rotta piu' dei puntini che c'erano
+     prima. Non torna mai indietro e arriva a 100 prima della dissolvenza. */
+  .sp-load{display:flex;flex-direction:column;align-items:center;gap:9px;position:absolute;
+    bottom:calc(34px + env(safe-area-inset-bottom));width:calc(100% - 88px);max-width:258px;
+    opacity:0;animation:spFadeIn .55s ease 1.62s both}
   @keyframes spFadeIn{to{opacity:1}}
-  .sp-load i{width:8px;height:8px;border-radius:50%;background:var(--accent-soft);animation:spBlink 1.1s infinite ease-in-out}
-  .sp-load i:nth-child(2){animation-delay:.16s}.sp-load i:nth-child(3){animation-delay:.32s}
+  .sp-bar{width:100%;height:5px;border-radius:99px;background:rgba(150,185,240,.16);
+    overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.34)}
+  .sp-bar i{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-soft));
+    box-shadow:0 0 12px rgba(63,151,255,.6)}
+  .sp-pct{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;
+    font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--accent-soft);opacity:.92}
   @media (prefers-reduced-motion: reduce){
     .sp-logowrap,.sp-name .np-a,.sp-name .np-b,.sp-tag,.sp-tip,.sp-load,.sp-hero,.sp-logo,.sp-logowrap::after{animation-duration:.01ms;animation-iteration-count:1}
   }
-  @keyframes spBlink{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
 
   /* ---- OFFLINE / nessuna connessione (vale anche da app nativa: è tutto lato client) ---- */
   #offline{position:fixed;top:0;bottom:0;left:0;right:0;z-index:1400;display:none;flex-direction:column;
@@ -700,6 +710,13 @@
   .mdc-step.done .tx b{color:var(--muted)}
   .mdc-step .tx small{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.45}
   .mdc-step.now .tx small{color:var(--accent-soft)}
+  /* Riquadri di stato del Centro giornata: spiegano PERCHE' siamo in questa
+     situazione, prima dell'azione. Azzurro = va tutto bene, e' informazione;
+     ambra = serve una mossa tua, altrimenti la lega si ferma. */
+  .mdc-note{border-radius:13px;padding:11px 13px;font-size:12.5px;line-height:1.55;margin:13px 0 0}
+  .mdc-note b{font-weight:700}
+  .mdc-note.ok{background:rgba(63,151,255,.09);border:1px solid rgba(63,151,255,.30);color:#cfe2ff}
+  .mdc-note.warn{background:rgba(255,194,61,.09);border:1px solid rgba(255,194,61,.34);color:var(--gold-soft)}
   /* HOME — «Rivivi»: non più due targhette mezze vuote, ma due locandine che
      dicono già qualcosa (chi ha vinto, come sei andato tu). Larghezza piena come
      Statistiche: una card alla volta, sono i pallini a dire che ce n'è un'altra. */
@@ -1544,7 +1561,10 @@
   <!-- stessa illustrazione della welcome: la src viene copiata da #wcHero (niente doppione del base64) -->
   <div class="sp-hero"><img id="spHero" alt="" loading="eager" decoding="async"></div>
   <div class="sp-tip" id="spTip"></div>
-  <div class="sp-load"><i></i><i></i><i></i></div>
+  <div class="sp-load">
+    <div class="sp-bar"><i id="spBarFill"></i></div>
+    <div class="sp-pct" id="spPct">0%</div>
+  </div>
 </div>
 
 <!-- OFFLINE · nessuna connessione / modalità aereo (tutto lato client: vale anche da app nativa) -->
@@ -2379,7 +2399,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v13';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v14';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -2554,10 +2574,38 @@ function gateStatus(msg,bad){
 /* ---------- SPLASH (logo durante il caricamento) ---------- */
 let _splashGone=false;
 function hideSplash(){
-  if(_splashGone)return; _splashGone=true;
+  if(_splashGone)return;
+  try{ spTo(100); _spPct=100; _spPaint(); }catch(_){ }   // mai sparire a meta' barra
+  _splashGone=true;
   const s=document.getElementById('splash'); if(!s)return;
   s.classList.add('gone');
   setTimeout(()=>{ s.style.display='none'; }, 600);
+}
+/* ---------- BARRA DI CARICAMENTO ----------
+   `spTo(n)` alza l'OBIETTIVO; la barra ci va incontro con un'andatura morbida,
+   cosi' si muove sempre invece di scattare da un valore all'altro. I numeri
+   sono agganciati ai passi veri di boot()/afterLogin(): se una chiamata e'
+   lenta la barra rallenta li', che e' l'informazione onesta. Non torna mai
+   indietro (una percentuale che scende e' peggio che non averla). */
+let _spPct=0, _spGoal=0, _spRaf=null;
+function _spPaint(){
+  const f=document.getElementById('spBarFill'), n=document.getElementById('spPct');
+  if(f) f.style.width=_spPct.toFixed(1)+'%';
+  if(n) n.textContent=Math.round(_spPct)+'%';
+}
+function _spTick(){
+  const gap=_spGoal-_spPct;
+  if(gap>0.2){ _spPct+=Math.max(gap*0.14, 0.3); if(_spPct>_spGoal) _spPct=_spGoal; }
+  else _spPct=_spGoal;
+  _spPaint();
+  _spRaf = (_spPct<_spGoal) ? requestAnimationFrame(_spTick) : null;
+}
+function spTo(pct){
+  if(_splashGone) return;
+  pct=Math.max(0,Math.min(100,Number(pct)||0));
+  if(pct<=_spGoal) return;
+  _spGoal=pct;
+  if(!_spRaf) _spRaf=requestAnimationFrame(_spTick);
 }
 let authIntent=null;
 /* true = in QUESTA apertura dell'app la persona è passata dalla schermata di
@@ -2681,6 +2729,7 @@ async function boot(){
     if(_h.get('type')==='recovery'||_q.get('type')==='recovery'){ _recoveryLink=true; _gateAwaitNewPw=true; }
   }catch(_){ }
   sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+  spTo(10);
   if('serviceWorker' in navigator){ try{
     await navigator.serviceWorker.register('/sw.js');
     // quando un nuovo service worker prende il controllo, ricarica UNA volta per prendere l'HTML fresca
@@ -2689,6 +2738,7 @@ async function boot(){
     // controlla subito se c'è una versione più recente
     try{ const reg=await navigator.serviceWorker.getRegistration(); if(reg) reg.update(); }catch(_){}
   }catch(_){} }
+  spTo(16);
   // durante il recupero password la verifica del codice apre già una sessione: se lasciassi
   // passare questo listener l'app entrerebbe PRIMA che la nuova password sia stata salvata.
   sb.auth.onAuthStateChange((_e,session)=>{
@@ -2703,6 +2753,7 @@ async function boot(){
   let session=null;
   try{ const r=await sb.auth.getSession(); session=r&&r.data?r.data.session:null; }
   catch(_){ if(!await netAlive()){ showOffline(); return; } }
+  spTo(24);
   // sessione aperta dal link di recupero: prima la nuova password, poi si entra
   if(session&&_recoveryLink){ gateEnterRecovery(session.user?session.user.email:''); return; }
   if(session){ user=session.user; afterLogin(); }
@@ -2718,9 +2769,9 @@ async function boot(){
   }
 }
 async function afterLogin(){
-  await loadAvatars();
-  await loadLogos();
-  profile=await loadProfile();
+  await loadAvatars();  spTo(34);
+  await loadLogos();    spTo(41);
+  profile=await loadProfile(); spTo(49);
   document.getElementById('gate').classList.add('hidden');
   document.getElementById('welcome').classList.add('hidden');
   if(!profile){
@@ -2749,10 +2800,13 @@ async function afterLogin(){
   else {
     document.getElementById('onboard').classList.add('hidden');
     document.getElementById('league').classList.add('hidden');
-    await loadMyLeague();
-    await loadTeamLogos();
-    await loadSeason();
-    await loadPlayers(); await loadStandings(); await loadMatchdayData(); await loadPlannedPresences();
+    await loadMyLeague();   spTo(58);
+    await loadTeamLogos();  spTo(64);
+    await loadSeason();     spTo(70);
+    await loadPlayers();    spTo(78);
+    await loadStandings();  spTo(85);
+    await loadMatchdayData(); spTo(92);
+    await loadPlannedPresences(); spTo(96);
     applyProfile(); renderAll();
     // rete di sicurezza regole lega: se ho appena creato la lega ma l'onboarding si era
     // interrotto prima di impostare le regole, le richiedo comunque adesso (finché non le salvo).
@@ -4604,6 +4658,7 @@ function renderMatchday(){
    stessa schermata, una volta come primaria e una dentro la fisarmonica. */
 const MD_ACTIONS={
   open:   {cls:'save',    ic:'\u26a1', lab:'Apri subito la giornata',  fn:'openNowMatchday()'},
+  pres:   {cls:'save',    ic:'\ud83d\udfe2', lab:'Segna chi gioca questa giornata', fn:'openPresCard()'},
   kick:   {cls:'set-btn', ic:'\ud83d\udd51', lab:'Modifica orario di questa giornata', fn:'openEditKickoffSheet()'},
   panel:  {cls:'save',    ic:'\ud83d\udcca', lab:'Apri pannello partita',   fn:'openLiveStats()'},
   close:  {cls:'save',    ic:'\ud83c\udfc1', lab:'Chiudi la giornata adesso', fn:'closeMatchday()'},
@@ -4617,7 +4672,9 @@ function mdActionHTML(k,mt){
 function mdcPrimaryKey(){
   const i=mdPhaseIdx();
   if(i<0) return 'open';
-  if(i===1||i===2) return 'kick';
+  // formazioni aperte con la lista dei presenti vuota: LA cosa da fare non e'
+  // spostare l'orario, e' dire chi gioca — altrimenti non schiera nessuno.
+  if(i===1||i===2) return noPresences() ? 'pres' : 'kick';
   if(i===3) return 'panel';
   // a voti aperti: se i risultati non sono ancora stati salvati l'azione è
   // inserirli, non chiudere. Chiudere senza esiti manda in classifica una
@@ -4640,6 +4697,9 @@ const HERO_TODO={
   open:  {ttl:'Nessuna giornata <span class="hot">in programma</span>',
           cta:'\ud83d\udcc5 Programma la prossima →',
           note:"Aprila adesso scegliendo data e ora, oppure imposta il giorno fisso in Regole della lega."},
+  pres:  {ttl:'Nessuno risulta <span class="hot">presente</span>',
+          cta:'\ud83d\udfe2 Segna chi gioca \u2192',
+          note:'Le formazioni sono aperte ma la lista dei presenti \u00e8 vuota: finch\u00e9 resta cos\u00ec nessuno pu\u00f2 schierare.'},
   panel: {ttl:'Partita <span class="hot">in corso</span>',
           cta:'\ud83d\udcca Inserisci i risultati →',
           note:'Gol, assist ed esito: puoi segnarli dal vivo o tutti insieme a fine partita.'},
@@ -4664,6 +4724,46 @@ function heroAdminTodo(){
   };
 }
 function openRecapCurrent(){ if(currentMd) openRecap(currentMd.id,false); }
+/* ---------- FORMAZIONI APERTE MA NESSUN PRESENTE ----------
+   Succede in due casi veri, non teorici: la giornata si apre gia' dentro le 36h
+   (il sondaggio nasce chiuso e nessuno ha fatto in tempo a rispondere), oppure
+   e' stata aperta con «Apri subito», che spegne il sondaggio per definizione.
+   In entrambi i casi `matchday_players` e' vuoto: le formazioni risultano
+   aperte ma NESSUNO puo' schierare, e la lega si ferma senza un motivo visibile.
+   La via d'uscita — «Chi gioca questa giornata» — esisteva gia' ma non era
+   indicata da nessuna parte: la conosceva solo chi aveva letto la documentazione.
+   Controllo solo la fase 2 (formazioni): durante il sondaggio la lista vuota e'
+   normale, la partita e' gia' iniziata e' troppo tardi per stare addosso. */
+function noPresences(){
+  return !!(currentMd && currentMd.status!=='closed' && canOp()
+            && mdPhaseIdx()===2 && mdPresent.size===0);
+}
+function openPresCard(){
+  go('settings'); setNav('page-giornata');
+  const c=document.getElementById('presCard');
+  if(!c) return;
+  c.style.display='block';          // in modalita' giocatori applyProfile la nasconde
+  c.classList.add('open');
+  setTimeout(()=>{ try{ c.scrollIntoView({behavior:'smooth',block:'center'}); }
+                   catch(_){ try{ c.scrollIntoView(); }catch(__){ } } }, 240);
+}
+/* ---------- PERCHE' NON C'E' NESSUNA GIORNATA ----------
+   Prima, a giornata assente, l'app non diceva niente. Ma «non succede niente»
+   e' indistinguibile da «l'app e' rotta»: e' esattamente quello che e' successo
+   nella lega di prova, dove l'orario della settimana era gia' passato e il cron
+   — correttamente — aspettava la settimana dopo, in silenzio. */
+function autoOpenStatusHTML(){
+  const box=(cls,tx)=>`<div class="mdc-note ${cls}">${tx}</div>`;
+  if(!schedDraft.auto_open)
+    return box('warn',"\u23f8\ufe0f <b>Apertura automatica in pausa</b>: nessuna giornata partir\u00e0 da sola. Riattivala in \u00abQuando giocate di solito\u00bb, oppure aprine una adesso qui sotto.");
+  if(schedDraft.weekday==null || !schedDraft.time)
+    return box('warn',"\u26a0\ufe0f <b>Manca il giorno o l'ora della partita</b>: senza quelli l'apertura automatica non pu\u00f2 funzionare. Impostali in \u00abQuando giocate di solito\u00bb.");
+  const k=nextWeeklyKickoffLocal(schedDraft.weekday,schedDraft.time);
+  const op=new Date(k.getTime()-72*HOUR);
+  if(op.getTime()<=Date.now())
+    return box('ok',"\ud83e\udd16 <b>Apertura automatica attiva.</b> La prossima giornata \u00e8 "+fmtDayTime(k)+" e siamo gi\u00e0 dentro le 72h: si apre da sola entro pochi minuti. Se ti serve prima, aprila adesso.");
+  return box('ok',"\ud83e\udd16 <b>Apertura automatica attiva.</b> La prossima giornata \u00e8 "+fmtDayTime(k)+": si apre da sola "+fmtDayTime(op)+", 72h prima del fischio d'inizio. Fino ad allora \u00e8 normale che non ci sia niente.");
+}
 function renderMdCenter(){
   const box=document.getElementById('mdcSteps'), pr=document.getElementById('mdcPrimary');
   if(!box||!pr) return;
@@ -4683,7 +4783,11 @@ function renderMdCenter(){
   }).join('');
   // l'azione del momento, da sola, con la sua spiegazione
   const key=mdcPrimaryKey();
-  let h=mdActionHTML(key,14);
+  // il riquadro di stato viene PRIMA del pulsante: spiega la situazione, poi propone la mossa
+  let h='';
+  if(key==='open') h+=autoOpenStatusHTML();
+  if(key==='pres') h+=`<div class="mdc-note warn">\u26a0\ufe0f <b>Nessuno risulta presente.</b> Le formazioni sono aperte ma la lista \u00e8 vuota: cos\u00ec nessuno pu\u00f2 schierare. Segna tu chi gioca e tutti potranno andare in campo.</div>`;
+  h+=mdActionHTML(key,14);
   if(key==='open')  h+=`<p class="vs" id="openNowHint" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${openNowHintText()}</p>`
     +`<button class="set-btn" style="margin-top:10px" onclick="setNav('page-quando')">\ud83d\uddd3\ufe0f Quando giocate di solito</button>`;
   if(key==='close') h+=`<p class="vs" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${closeMdHintText()}</p>`;
