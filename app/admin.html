@@ -9,157 +9,266 @@
 <link rel="apple-touch-icon" href="/icon-512.png?v=3">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png?v=3">
 <link rel="shortcut icon" href="/icon-512.png?v=3">
+<!-- I font erano dichiarati nel CSS ma non caricati da nessuna parte: la console
+     ha sempre girato coi font di sistema. Ora ci sono davvero. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#070f1e; --surface:#0e1f38; --surface2:#10294d; --line:#1d3a63;
+    --bg:#070f1e; --bg2:#0a1830; --surface:#0e1f38; --surface2:#10294d; --line:#1d3a63;
     --line-strong:#2a4f86; --text:#eaf1fb; --muted:#8aa3c2; --accent:#3d8bff; --accent-soft:#7fb0ff;
-    --gold:#eab24a; --gold-soft:#f0c879; --green:#37c98a; --red:#ff6b6b;
+    --gold:#eab24a; --gold-soft:#f0c879; --green:#37c98a; --red:#ff6b6b; --amber:#ffb84d;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:linear-gradient(170deg,#070f1e,#0a1830);color:var(--text);
-    font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;
-    -webkit-font-smoothing:antialiased;padding:max(18px,env(safe-area-inset-top)) 16px 40px;min-height:100vh}
-  .wrap{max-width:720px;margin:0 auto}
-  h1{font-size:23px;font-weight:800;letter-spacing:-.02em;margin:0 0 2px;font-family:'Bricolage Grotesque',sans-serif}
-  .sub{color:var(--muted);font-size:13px;margin:0 0 20px}
-  .num{font-family:'JetBrains Mono',ui-monospace,monospace}
-  .card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px}
-  .card h2{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 12px}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  @media(max-width:520px){.grid{grid-template-columns:repeat(2,1fr)}}
-  .stat{background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:13px 12px}
-  .stat b{display:block;font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800;letter-spacing:-.01em;line-height:1.1}
-  .stat span{display:block;color:var(--muted);font-size:11.5px;font-weight:600;margin-top:3px}
-  .stat.green b{color:var(--green)} .stat.gold b{color:var(--gold)} .stat.red b{color:var(--red)} .stat.muted b{color:var(--muted)}
-  button{font-family:inherit;cursor:pointer;border:none}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:linear-gradient(170deg,#070f1e,#0a1830);background-attachment:fixed;
+    color:var(--text);font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:760px;margin:0 auto;padding:0 15px 56px}
+  h1{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0;font-family:'Bricolage Grotesque',sans-serif}
+  h3{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;letter-spacing:-.02em;margin:0}
+  .sub{color:var(--muted);font-size:12.5px;margin:0}
+  .num{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+  button,input{font-family:inherit}
+  button{cursor:pointer;border:none;color:inherit}
+
+  /* barra in alto, resta appiccicata: da qui si aggiorna e si esce sempre */
+  .top{position:sticky;top:0;z-index:30;background:rgba(7,15,30,.86);backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);margin:0 -15px 15px;padding:max(11px,env(safe-area-inset-top)) 15px 11px;
+    display:flex;align-items:center;gap:10px}
+  .top .sp{flex:1;min-width:0}
+  .iconbtn{background:var(--surface2);border:1px solid var(--line-strong);border-radius:11px;
+    padding:8px 12px;font-size:13px;font-weight:700;white-space:nowrap}
+  .iconbtn:active{transform:scale(.96)}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:13px}
+  .card h2{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 12px}
+  .card h2 .rt{float:right;text-transform:none;letter-spacing:0;font-weight:700;color:var(--accent-soft)}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .grid.g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:460px){.grid{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--surface2);border:1px solid var(--line);border-radius:13px;padding:12px 11px}
+  .stat b{display:block;font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:800;line-height:1.1}
+  .stat span{display:block;color:var(--muted);font-size:11px;font-weight:600;margin-top:3px}
+  .stat.green b{color:var(--green)} .stat.gold b{color:var(--gold)}
+  .stat.red b{color:var(--red)} .stat.muted b{color:var(--muted)} .stat.blue b{color:var(--accent-soft)}
+
+  /* SEMAFORO: la cosa piu' importante della pagina, quindi sta in cima e
+     cambia colore tutto insieme invece di essere un pallino in un angolo */
+  .health{border-radius:18px;padding:15px 16px;margin-bottom:13px;border:1px solid;display:flex;gap:13px;align-items:flex-start}
+  .health .bulb{width:13px;height:13px;border-radius:50%;flex:none;margin-top:4px}
+  .health .ht{font-weight:800;font-size:15px;letter-spacing:-.01em}
+  .health .hs{font-size:12.5px;line-height:1.5;margin-top:3px;opacity:.92}
+  .health.ok  {background:rgba(55,201,138,.10);border-color:rgba(55,201,138,.34);color:#bff0da}
+  .health.ok   .bulb{background:var(--green);box-shadow:0 0 0 5px rgba(55,201,138,.16)}
+  .health.warn{background:rgba(255,184,77,.10);border-color:rgba(255,184,77,.36);color:#ffdfae}
+  .health.warn .bulb{background:var(--amber);box-shadow:0 0 0 5px rgba(255,184,77,.16)}
+  .health.bad {background:rgba(255,107,107,.11);border-color:rgba(255,107,107,.40);color:#ffcbcb}
+  .health.bad  .bulb{background:var(--red);box-shadow:0 0 0 5px rgba(255,107,107,.18)}
+  .health.dim {background:var(--surface);border-color:var(--line);color:var(--muted)}
+  .health.dim  .bulb{background:var(--muted)}
+
   .btn{background:var(--accent);color:#fff;font-weight:700;font-size:14px;border-radius:12px;padding:12px 16px;width:100%}
   .btn.ghost{background:var(--surface2);color:var(--text);border:1px solid var(--line-strong)}
-  .btn.danger{background:var(--red)} .btn.green{background:var(--green)}
+  .btn.danger{background:var(--red);color:#2a0708} .btn.green{background:var(--green);color:#04281a}
+  .btn.sm{padding:9px 13px;font-size:13px;width:auto}
   .btn:active{transform:scale(.99)}
-  input{font-family:inherit;background:var(--surface2);border:1px solid var(--line-strong);color:var(--text);
+  input{background:var(--surface2);border:1px solid var(--line-strong);color:var(--text);
     border-radius:11px;padding:11px 12px;font-size:15px;width:100%}
-  .row{display:flex;gap:10px;align-items:center}
-  .maint-state{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-weight:700}
-  .dot{width:11px;height:11px;border-radius:50%;flex:none}
-  .dot.on{background:var(--red);box-shadow:0 0 0 4px rgba(255,107,107,.18)}
-  .dot.off{background:var(--green);box-shadow:0 0 0 4px rgba(55,201,138,.18)}
-  table{width:100%;border-collapse:collapse;font-size:13px}
-  th{text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:6px 8px;border-bottom:1px solid var(--line)}
-  td{padding:9px 8px;border-bottom:1px solid var(--line)}
-  .pill{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px}
-  .pill.a{background:rgba(55,201,138,.15);color:var(--green)} .pill.i{background:rgba(138,163,194,.13);color:var(--muted)}
-  .tog{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface2);color:var(--text)}
-  .tog.paid{background:rgba(234,178,74,.16);color:var(--gold);border-color:rgba(234,178,74,.4)}
-  .del{font-size:15px;line-height:1;padding:5px 9px;border-radius:9px;border:1px solid rgba(255,107,107,.4);background:rgba(255,107,107,.14);color:var(--red);cursor:pointer}
-  .del:active{transform:scale(.94)}
-  .note{color:var(--muted);font-size:11.5px;margin-top:8px;line-height:1.5}
-  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#13294a;color:#fff;
-    padding:11px 18px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:50;border:1px solid var(--line-strong)}
+  input::placeholder{color:#6f88a8}
+  .row{display:flex;gap:9px;align-items:center}
+  .note{color:var(--muted);font-size:11.5px;margin-top:9px;line-height:1.55}
+  .lk{color:var(--accent-soft);text-decoration:none;font-size:13px;cursor:pointer}
+
+  .pill{display:inline-block;font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;
+    letter-spacing:.03em;text-transform:uppercase;white-space:nowrap}
+  .pill.a{background:rgba(55,201,138,.15);color:var(--green)}
+  .pill.i{background:rgba(138,163,194,.13);color:var(--muted)}
+  .pill.p{background:rgba(234,178,74,.16);color:var(--gold)}
+  .pill.b{background:rgba(61,139,255,.16);color:var(--accent-soft)}
+  .pill.r{background:rgba(255,107,107,.16);color:var(--red)}
+
+  /* una lega = una scheda che si tocca. La tabella a 6 colonne su iPhone
+     costringeva a scorrere in orizzontale per leggere due numeri. */
+  .lg{background:var(--surface2);border:1px solid var(--line);border-radius:15px;padding:13px 14px;
+    margin-bottom:9px;cursor:pointer;transition:border-color .15s}
+  .lg:active{transform:scale(.995);border-color:var(--line-strong)}
+  .lg .n{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .lg .n b{font-size:15px;font-weight:700;letter-spacing:-.01em}
+  .lg .n .id{color:var(--muted);font-size:12px}
+  .lg .meta{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.55}
+  .lg .meta b{color:var(--text);font-weight:700}
+  .lg .chev{float:right;color:var(--muted);font-size:17px;line-height:1}
+
+  /* pagina di dettaglio: overlay a schermo intero, non un modale.
+     Sfondo opaco, scorre lei, niente pagina che balla sotto (iPhone). */
+  .page{position:fixed;top:0;left:0;right:0;bottom:0;z-index:60;overflow-y:auto;
+    -webkit-overflow-scrolling:touch;background:linear-gradient(170deg,#070f1e,#0a1830);display:none}
+  .page.on{display:block}
+  .back{background:none;color:var(--accent-soft);font-size:14px;font-weight:700;padding:4px 0;margin-bottom:12px}
+
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .kv:last-child{border-bottom:none}
+  .kv .k{color:var(--muted);flex:none}
+  .kv .v{text-align:right;word-break:break-word;font-weight:600}
+  .kv .v.mono{font-family:'JetBrains Mono',monospace;font-size:12.5px}
+
+  .mrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .mrow:last-child{border-bottom:none}
+  .mrow .mi{flex:1;min-width:0}
+  .mrow .mi b{display:block;font-size:13.5px;font-weight:700}
+  .mrow .mi small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mrow .mr{flex:none;text-align:right;font-size:11px;color:var(--muted);line-height:1.5}
+
+  .flags{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+  .fl{font-size:11px;font-weight:700;padding:5px 9px;border-radius:9px;border:1px solid var(--line);
+    background:var(--surface2);color:var(--muted)}
+  .fl.sent{border-color:rgba(55,201,138,.35);color:var(--green);background:rgba(55,201,138,.10)}
+  .fl.late{border-color:rgba(255,107,107,.40);color:var(--red);background:rgba(255,107,107,.11)}
+
+  .danger-zone{border-color:rgba(255,107,107,.32);background:rgba(255,107,107,.05)}
+  .danger-zone h2{color:var(--red)}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#13294a;
+    color:#fff;padding:12px 18px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;
+    transition:.25s;z-index:90;border:1px solid var(--line-strong);max-width:min(92vw,420px);text-align:center;line-height:1.45}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  .center{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}
+  .center{min-height:82vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}
   .center .card{width:100%;max-width:340px}
-  .err{color:var(--red);font-size:13px;margin-top:8px}
-  .lk{color:var(--accent-soft);text-decoration:none;font-size:13px}
+  .err{color:var(--red);font-size:13px;margin-top:8px;line-height:1.5}
+  .empty{color:var(--muted);font-size:13px;padding:12px 2px;line-height:1.55}
+  .skel{color:var(--muted);font-size:13px;padding:8px 2px}
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- LOGIN -->
-  <div id="loginView" class="center" style="display:none">
-    <div class="card">
-      <h1 style="text-align:center">🔐 Console</h1>
-      <p class="sub" style="text-align:center" id="loginSub">Accedi con la mail del tuo account super-admin.</p>
-      <div id="step1">
-        <input id="email" type="email" inputmode="email" placeholder="la-tua@email.it" autocomplete="email">
-        <button class="btn" style="margin-top:10px" onclick="sendCode()">Invia codice</button>
-      </div>
-      <div id="step2" style="display:none">
-        <input id="code" inputmode="numeric" placeholder="Codice ricevuto via email" maxlength="8">
-        <button class="btn" style="margin-top:10px" onclick="verifyCode()">Entra</button>
-        <p class="note">Ti abbiamo inviato un codice via email.</p>
-      </div>
-      <div class="err" id="loginErr"></div>
+<!-- ========================= LOGIN ========================= -->
+<div class="wrap"><div id="loginView" class="center" style="display:none">
+  <div class="card">
+    <h1 style="text-align:center">🔐 Console</h1>
+    <p class="sub" style="text-align:center;margin:6px 0 14px" id="loginSub">Accedi con la mail del tuo account super-admin.</p>
+    <div id="step1">
+      <input id="email" type="email" inputmode="email" placeholder="la-tua@email.it" autocomplete="email">
+      <button class="btn" style="margin-top:10px" onclick="sendCode()">Invia codice</button>
     </div>
+    <div id="step2" style="display:none">
+      <input id="code" inputmode="numeric" placeholder="Codice ricevuto via email" maxlength="8">
+      <button class="btn" style="margin-top:10px" onclick="verifyCode()">Entra</button>
+      <p class="note">Ti abbiamo inviato un codice via email.</p>
+    </div>
+    <div class="err" id="loginErr"></div>
   </div>
-
-  <!-- DENIED -->
-  <div id="denyView" class="center" style="display:none">
-    <div class="card">
-      <div style="font-size:44px">⛔</div>
-      <h1 style="text-align:center">Accesso riservato</h1>
-      <p class="sub" style="text-align:center">Questa console è solo per il super-admin dell'app.</p>
-      <button class="btn ghost" onclick="signOut()">Esci</button>
-    </div>
-  </div>
-
-  <!-- DASHBOARD -->
-  <div id="dash" style="display:none">
-    <div class="row" style="justify-content:space-between;margin-bottom:4px">
-      <h1>📊 Console super-admin</h1>
-      <a class="lk" href="javascript:void(0)" onclick="signOut()">Esci</a>
-    </div>
-    <p class="sub">Pannello di controllo dell'app · solo tu. <a class="lk" href="javascript:void(0)" onclick="loadAll()">↻ Aggiorna</a></p>
-
-    <!-- MANUTENZIONE GLOBALE -->
-    <div class="card">
-      <h2>Manutenzione globale</h2>
-      <div class="maint-state"><span class="dot off" id="mDot"></span><span id="mLabel">—</span></div>
-      <button class="btn" id="mBtn" onclick="toggleMaint()">—</button>
-      <p class="note">Attivandola, <b>tutti gli utenti di tutte le leghe</b> vengono bloccati (e buttati fuori se dentro). Tu resti l'unico a poter usare l'app.</p>
-    </div>
-
-    <!-- NUMERI -->
-    <div class="card">
-      <h2>Leghe</h2>
-      <div class="grid">
-        <div class="stat"><b id="lTot">–</b><span>Totali</span></div>
-        <div class="stat green"><b id="lAct">–</b><span>Attive</span></div>
-        <div class="stat muted"><b id="lIna">–</b><span>Inattive</span></div>
-        <div class="stat gold"><b id="lPaid">–</b><span>A pagamento</span></div>
-        <div class="stat"><b id="lFree">–</b><span>Gratis</span></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Utenti</h2>
-      <div class="grid">
-        <div class="stat"><b id="uTot">–</b><span>Totali</span></div>
-        <div class="stat green"><b id="uAct">–</b><span>Attivi (30g)</span></div>
-        <div class="stat muted"><b id="uIna">–</b><span>Inattivi</span></div>
-      </div>
-    </div>
-
-    <!-- ECONOMIA -->
-    <div class="card">
-      <h2>Economia</h2>
-      <div class="grid">
-        <div class="stat red"><b id="eCost">–</b><span>Costo/mese</span></div>
-        <div class="stat gold"><b id="eRev">–</b><span>Ricavo stim.</span></div>
-        <div class="stat" id="eMarginCard"><b id="eMargin">–</b><span>Margine stim.</span></div>
-      </div>
-      <div class="row" style="margin-top:12px;gap:10px">
-        <input id="inCost" inputmode="decimal" placeholder="Costo €/mese">
-        <input id="inPrice" inputmode="decimal" placeholder="Prezzo €/lega">
-      </div>
-      <button class="btn ghost" style="margin-top:10px" onclick="saveEconomics()">Salva economia</button>
-      <p class="note">Da configurare a mano: il ricavo stimato = leghe a pagamento × prezzo per lega.</p>
-    </div>
-
-    <!-- TABELLA LEGHE -->
-    <div class="card">
-      <h2>Tutte le leghe</h2>
-      <div style="overflow-x:auto">
-        <table id="lgTable">
-          <thead><tr><th>#</th><th>Nome</th><th>Membri</th><th>Stato</th><th>Tipo</th><th>Elimina</th></tr></thead>
-          <tbody id="lgBody"></tbody>
-        </table>
-      </div>
-      <p class="note">Tocca «Gratis/Pagante» per cambiare il tipo della lega. Il 🗑️ elimina <b>definitivamente</b> la lega e tutti i suoi dati (membri, giocatori, giornate, account email…): chiede una doppia conferma. La lega #1 è protetta 🔒.</p>
-    </div>
-  </div>
-
 </div>
+
+<!-- ========================= NEGATO ========================= -->
+<div id="denyView" class="center" style="display:none">
+  <div class="card">
+    <div style="font-size:44px">⛔</div>
+    <h1 style="text-align:center">Accesso riservato</h1>
+    <p class="sub" style="text-align:center;margin:6px 0 14px">Questa console è solo per il super-admin dell'app.</p>
+    <button class="btn ghost" onclick="signOut()">Esci</button>
+  </div>
+</div></div>
+
+<!-- ========================= CONSOLE ========================= -->
+<div id="app" style="display:none">
+<div class="wrap">
+  <div class="top">
+    <div class="sp"><h1>Console</h1><p class="sub" id="topSub">—</p></div>
+    <button class="iconbtn" onclick="loadAll()" id="refBtn">↻</button>
+    <button class="iconbtn" onclick="signOut()">Esci</button>
+  </div>
+
+  <div id="sqlWarn" style="display:none" class="health warn">
+    <span class="bulb"></span>
+    <div><div class="ht">Manca <span class="num">console_a.sql</span></div>
+      <div class="hs">Le funzioni nuove non rispondono, quindi la console gira in versione ridotta: niente semaforo, niente scheda delle leghe. Esegui il file nell'SQL Editor di Supabase e ricarica.</div></div>
+  </div>
+
+  <!-- semaforo -->
+  <div id="health" class="health dim"><span class="bulb"></span>
+    <div><div class="ht" id="hTitle">Controllo automazione…</div><div class="hs" id="hSub">—</div></div>
+  </div>
+
+  <!-- giornate vive -->
+  <div class="card" id="liveCard" style="display:none">
+    <h2>Giornate vive adesso <span class="rt" id="liveCount"></span></h2>
+    <div id="liveBody"></div>
+  </div>
+
+  <!-- manutenzione globale -->
+  <div class="card">
+    <h2>Manutenzione globale</h2>
+    <div class="row" style="margin-bottom:11px;font-weight:700;font-size:14px">
+      <span class="bulb" id="mDot" style="width:11px;height:11px;border-radius:50%;background:var(--green)"></span>
+      <span id="mLabel">—</span>
+    </div>
+    <button class="btn" id="mBtn" onclick="toggleMaint()">—</button>
+    <p class="note">Attivandola, <b>tutti gli utenti di tutte le leghe</b> vengono bloccati (e buttati fuori se dentro). Tu resti l'unico a poter usare l'app.</p>
+  </div>
+
+  <!-- numeri -->
+  <div class="card">
+    <h2>Numeri</h2>
+    <div class="grid">
+      <div class="stat blue"><b id="lTot">–</b><span>Leghe</span></div>
+      <div class="stat green"><b id="lAct">–</b><span>Attive (30g)</span></div>
+      <div class="stat muted"><b id="lIna">–</b><span>Ferme</span></div>
+      <div class="stat"><b id="uTot">–</b><span>Utenti</span></div>
+      <div class="stat green"><b id="uAct">–</b><span>Attivi (30g)</span></div>
+      <div class="stat gold"><b id="pTot">–</b><span>Con notifiche</span></div>
+    </div>
+  </div>
+
+  <!-- economia -->
+  <div class="card">
+    <h2>Economia</h2>
+    <div class="grid">
+      <div class="stat red"><b id="eCost">–</b><span>Costo/mese</span></div>
+      <div class="stat gold"><b id="eRev">–</b><span>Ricavo stim.</span></div>
+      <div class="stat" id="eMarginCard"><b id="eMargin">–</b><span>Margine stim.</span></div>
+    </div>
+    <div class="row" style="margin-top:11px">
+      <input id="inCost" inputmode="decimal" placeholder="Costo €/mese">
+      <input id="inPrice" inputmode="decimal" placeholder="Prezzo €/lega">
+    </div>
+    <button class="btn ghost" style="margin-top:10px" onclick="saveEconomics()">Salva economia</button>
+    <p class="note">Inseriti a mano. Ricavo stimato = leghe a pagamento × prezzo per lega.</p>
+  </div>
+
+  <!-- leghe -->
+  <div class="card">
+    <h2>Leghe <span class="rt" id="lgCount"></span></h2>
+    <input id="lgSearch" placeholder="Cerca per nome, admin o email…" oninput="renderLeagues()" style="margin-bottom:11px">
+    <div class="row" style="margin-bottom:12px;flex-wrap:wrap;gap:7px">
+      <button class="iconbtn" data-sort="id"     onclick="setSort('id')">#</button>
+      <button class="iconbtn" data-sort="act"    onclick="setSort('act')">Attività</button>
+      <button class="iconbtn" data-sort="mem"    onclick="setSort('mem')">Membri</button>
+      <button class="iconbtn" data-sort="new"    onclick="setSort('new')">Recenti</button>
+    </div>
+    <div id="lgBody"><div class="skel">Carico…</div></div>
+  </div>
+
+  <!-- leghe ferme -->
+  <div class="card" id="staleCard" style="display:none">
+    <h2>Leghe ferme <span class="rt" id="staleCount"></span></h2>
+    <div id="staleBody"></div>
+    <p class="note">Nessuna giornata negli ultimi 30 giorni. È il segnale di ritenzione: una lega che smette di giocare sta morendo, e di solito lo fa in silenzio.</p>
+  </div>
+</div>
+</div>
+
+<!-- ========================= DETTAGLIO LEGA ========================= -->
+<div class="page" id="pageLeague">
+  <div class="wrap" style="padding-top:max(14px,env(safe-area-inset-top))">
+    <button class="back" onclick="closeLeague()">‹ Tutte le leghe</button>
+    <div id="lgDetail"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -168,28 +277,46 @@ const SUPABASE_URL  = 'https://lfvpseusbsyzniugczbx.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-let emailVal = '';
-function show(id){ ['loginView','denyView','dash'].forEach(v=>document.getElementById(v).style.display=(v===id?(id==='dash'?'block':'flex'):'none')); }
-function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2200); }
-function eur(v){ return (v==null)?'—':('€'+Number(v).toLocaleString('it-IT')); }
+const WD = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+const MIN=60000, HOUR=3600000;
+let emailVal='', leagues=[], leaguesById={}, health=null, sortBy='act', hasNewRpc=true;
 
-// ---- AUTH ----
+/* ---------- utilita' ---------- */
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function show(id){ ['loginView','denyView','app'].forEach(v=>{
+  const e=document.getElementById(v); if(e) e.style.display=(v===id?(id==='app'?'block':'flex'):'none'); }); }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3000); }
+function eur(v){ return (v==null||v==='')?'—':('€'+Number(v).toLocaleString('it-IT')); }
+function dt(v){ if(!v) return '—'; const d=new Date(v); if(isNaN(d)) return '—';
+  return d.toLocaleString('it-IT',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+function dOnly(v){ if(!v) return '—'; const d=new Date(v); if(isNaN(d)) return '—';
+  return d.toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'}); }
+/* «4 minuti fa» invece di un orario da confrontare a mente: il dato che conta
+   qui e' sempre «quanto tempo e' passato», non «che ora era». */
+function ago(v){ if(!v) return '—'; const d=new Date(v); if(isNaN(d)) return '—';
+  let s=Math.floor((Date.now()-d.getTime())/1000);
+  if(s<0) s=0;
+  if(s<60) return s+' sec fa';
+  if(s<3600) return Math.floor(s/60)+' min fa';
+  if(s<86400) return Math.floor(s/3600)+'h fa';
+  const g=Math.floor(s/86400); return g+(g===1?' giorno fa':' giorni fa'); }
+function msAgo(v){ const d=v?new Date(v):null; return (d&&!isNaN(d))?(Date.now()-d.getTime()):null; }
+
+/* ---------- accesso ---------- */
 async function boot(){
   const { data:{ session } } = await sb.auth.getSession();
   if(!session){ show('loginView'); return; }
   await gate();
 }
 async function gate(){
-  // sa_overview e' protetta lato server: se non sei super-admin, lancia errore.
   try{
     const { data, error } = await sb.rpc('sa_overview');
     if(error) throw error;
-    show('dash');
+    show('app');
     paintOverview(data);
-    loadLeagues();
-  }catch(e){
-    show('denyView');
-  }
+    await loadAll(true);
+  }catch(e){ show('denyView'); }
 }
 async function sendCode(){
   emailVal=(document.getElementById('email').value||'').trim().toLowerCase();
@@ -210,49 +337,364 @@ async function verifyCode(){
 }
 async function signOut(){ await sb.auth.signOut(); location.reload(); }
 
-// ---- DATA ----
-async function loadAll(){ await gate(); toast('Aggiornato'); }
-function paintOverview(d){
-  const set=(id,v)=>document.getElementById(id).textContent=v;
-  set('lTot',d.leagues_total); set('lAct',d.leagues_active); set('lIna',d.leagues_inactive);
-  set('lPaid',d.leagues_paid); set('lFree',d.leagues_free);
-  set('uTot',d.users_total); set('uAct',d.users_active); set('uIna',d.users_inactive);
-  set('eCost',eur(d.monthly_cost)); set('eRev',eur(d.revenue_est)); set('eMargin',eur(d.margin_est));
-  const mc=document.getElementById('eMarginCard'); mc.className='stat '+((d.margin_est!=null&&d.margin_est<0)?'red':'green');
-  if(d.monthly_cost!=null) document.getElementById('inCost').value=d.monthly_cost;
-  if(d.price_per_league!=null) document.getElementById('inPrice').value=d.price_per_league;
-  // manutenzione
-  const on=!!d.maintenance;
-  document.getElementById('mDot').className='dot '+(on?'on':'off');
-  document.getElementById('mLabel').textContent=on?'ATTIVA — app bloccata per tutti':'Spenta — app online';
-  const b=document.getElementById('mBtn');
-  b.textContent=on?'🟢 Rimetti l\u2019app online':'🛠️ Attiva manutenzione globale';
-  b.className='btn '+(on?'green':'danger');
-  b.dataset.on=on?'1':'0';
-}
-let leaguesById={};
-async function loadLeagues(){
-  try{
-    const { data, error } = await sb.rpc('sa_leagues');
-    if(error) throw error;
-    const list=data||[];
-    leaguesById={}; list.forEach(l=>leaguesById[l.id]=l);
-    const rows=list.map(l=>{
-      const act=l.active?'<span class="pill a">attiva</span>':'<span class="pill i">inattiva</span>';
-      const paid=l.is_paid
-        ? `<button class="tog paid" onclick="togglePaid(${l.id},false)">Pagante</button>`
-        : `<button class="tog" onclick="togglePaid(${l.id},true)">Gratis</button>`;
-      const nm=(l.name||'—').replace(/</g,'&lt;');
-      const del=(l.id===1)
-        ? '<span style="color:var(--muted);font-size:15px">🔒</span>'
-        : `<button class="del" onclick="saDeleteLeague(${l.id})" aria-label="Elimina lega">🗑️</button>`;
-      return `<tr><td class="num">${l.id}</td><td>${nm}</td><td class="num">${l.members_active||0}/${l.members||0}</td><td>${act}</td><td>${paid}</td><td>${del}</td></tr>`;
-    }).join('');
-    document.getElementById('lgBody').innerHTML=rows||'<tr><td colspan="6" style="color:var(--muted)">Nessuna lega.</td></tr>';
-  }catch(e){ toast('Errore elenco leghe'); }
+/* ---------- caricamento ---------- */
+async function loadAll(silent){
+  const b=document.getElementById('refBtn'); b.textContent='…'; b.disabled=true;
+  const [ov, he, lg] = await Promise.all([
+    sb.rpc('sa_overview').then(r=>r.error?null:r.data).catch(()=>null),
+    sb.rpc('sa_health').then(r=>r.error?null:r.data).catch(()=>null),
+    sb.rpc('sa_leagues_full').then(r=>r.error?null:r.data).catch(()=>null)
+  ]);
+  if(ov) paintOverview(ov);
+  health=he;
+  hasNewRpc = !!(he || lg);
+  document.getElementById('sqlWarn').style.display = hasNewRpc?'none':'flex';
+  paintHealth(he);
+  if(lg){ leagues=lg||[]; }
+  else {
+    // rete di sicurezza: se console_a.sql non c'e' ancora, si usa la vecchia
+    const old=await sb.rpc('sa_leagues').then(r=>r.error?null:r.data).catch(()=>null);
+    leagues=(old||[]).map(l=>({ id:l.id, name:l.name, is_paid:l.is_paid, active:l.active,
+                                members:l.members, members_active:l.members_active }));
+  }
+  leaguesById={}; leagues.forEach(l=>leaguesById[l.id]=l);
+  renderLeagues();
+  renderLive(he);
+  renderStale(he);
+  document.getElementById('topSub').textContent='Aggiornata '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+  b.textContent='↻'; b.disabled=false;
+  if(!silent) toast('Aggiornato');
 }
 
-// ---- AZIONI ----
+function paintOverview(d){
+  const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=(v==null?'–':v); };
+  set('lTot',d.leagues_total); set('lAct',d.leagues_active); set('lIna',d.leagues_inactive);
+  set('uTot',d.users_total);   set('uAct',d.users_active);
+  set('eCost',eur(d.monthly_cost)); set('eRev',eur(d.revenue_est)); set('eMargin',eur(d.margin_est));
+  const mc=document.getElementById('eMarginCard');
+  mc.className='stat '+((d.margin_est!=null&&d.margin_est<0)?'red':'green');
+  if(d.monthly_cost!=null) document.getElementById('inCost').value=d.monthly_cost;
+  if(d.price_per_league!=null) document.getElementById('inPrice').value=d.price_per_league;
+  const on=!!d.maintenance;
+  const dot=document.getElementById('mDot');
+  dot.style.background = on?'var(--red)':'var(--green)';
+  dot.style.boxShadow  = on?'0 0 0 4px rgba(255,107,107,.18)':'0 0 0 4px rgba(55,201,138,.18)';
+  document.getElementById('mLabel').textContent = on?'ATTIVA — app bloccata per tutti':'Spenta — app online';
+  const b=document.getElementById('mBtn');
+  b.textContent = on?'🟢 Rimetti l\u2019app online':'🛠️ Attiva manutenzione globale';
+  b.className='btn '+(on?'green':'danger');
+  b.dataset.on = on?'1':'0';
+}
+
+/* ---------- IL SEMAFORO ----------
+   La domanda a cui deve rispondere e' una sola: «sta girando?». Il segnale
+   piu' vicino alla verita' e' l'ultima risposta HTTP della Edge Function,
+   perche' dice che notify e' stata chiamata davvero E cosa ha risposto; il
+   giro del cron da solo direbbe «partito» anche se la funzione ha risposto 500.
+   Verde sotto i 15 minuti, giallo sotto l'ora, rosso oltre. */
+function paintHealth(h){
+  const box=document.getElementById('health');
+  const t=document.getElementById('hTitle'), s=document.getElementById('hSub');
+  if(!h){ box.className='health dim'; t.textContent='Automazione: non leggibile';
+    s.textContent='Le funzioni di controllo non rispondono. Esegui console_a.sql.'; return; }
+  const job=h.cron_job, run=h.cron_run, http=h.http_last;
+  const parts=[];
+
+  if(job && job.active===false){
+    box.className='health bad';
+    t.textContent='Il cron è SPENTO';
+    s.textContent='Il job «'+(job.jobname||job.jobid)+'» esiste ma è disattivato: non si apre niente e non parte nessun promemoria. Riattivalo con  update cron.job set active=true.';
+    return;
+  }
+  if(!job){ parts.push('job del cron non leggibile'); }
+  else parts.push('job «'+esc(job.jobname||job.jobid)+'» · '+esc(job.schedule||''));
+
+  const age = msAgo(http && http.when);
+  const runAge = msAgo(run && run.started);
+  const best = (age==null) ? runAge : (runAge==null ? age : Math.min(age,runAge));
+
+  if(run && run.status && String(run.status).toLowerCase()!=='succeeded')
+    parts.push('ultimo giro: '+esc(run.status));
+  if(http && http.code && Number(http.code)>=400)
+    parts.push('ultima risposta HTTP '+http.code);
+  if(http && http.error) parts.push('errore: '+esc(String(http.error).slice(0,90)));
+
+  let cls='dim', ttl='Automazione: nessun segnale';
+  if(best==null){
+    ttl='Automazione: nessun segnale recente';
+    parts.unshift('non risulta nessun giro registrato');
+  } else {
+    const quando = ago(http&&http.when) !== '—' ? ago(http.when) : ago(run&&run.started);
+    if(best < 15*MIN){ cls='ok';   ttl='Automazione attiva · ultimo giro '+quando; }
+    else if(best < 60*MIN){ cls='warn'; ttl='Automazione in ritardo · ultimo giro '+quando; }
+    else { cls='bad'; ttl='Automazione FERMA · ultimo giro '+quando; }
+  }
+  const httpBad = !!(http && Number(http.code)>=400);
+  const runBad  = !!(run && run.status && String(run.status).toLowerCase()!=='succeeded');
+  if((httpBad||runBad) && cls==='ok') cls='warn';
+  box.className='health '+cls;
+  t.textContent=ttl;
+  s.innerHTML=parts.join(' · ') + (h.matchdays_open!=null
+    ? '<br>'+h.matchdays_open+(h.matchdays_open===1?' giornata viva':' giornate vive')
+      +' · '+(h.push_total||0)+' iscrizioni push' : '');
+}
+
+/* ---------- giornate vive ---------- */
+function phaseOf(m){
+  if(!m || m.status==='closed') return 'Conclusa';
+  if(!m.kickoff) return 'Aperta';
+  const k=new Date(m.kickoff).getTime(), now=Date.now();
+  const lock=k-5*MIN, vOpen=k+HOUR, vClose=vOpen+24*HOUR;
+  const pollClose = m.skip_poll ? 0 : (k-36*HOUR);
+  if(!m.skip_poll && now<pollClose) return 'Sondaggio presenze';
+  if(now<lock)   return 'Formazioni aperte';
+  if(now<vOpen)  return 'Partita';
+  if(now<=vClose)return 'Voti aperti';
+  return 'Da archiviare';
+}
+/* i quattro flag con la loro scadenza: e' qui che si vede se un promemoria
+   e' saltato. La scadenza si calcola dal fischio d'inizio con gli stessi
+   numeri di notify.ts. */
+function flagList(m){
+  if(!m || !m.kickoff) return [];
+  const k=new Date(m.kickoff).getTime(), lock=k-5*MIN, out=[];
+  const poll = !m.skip_poll;
+  if(poll){
+    out.push({key:'presence_remind_sent', lab:'promemoria presenze', due:k-38*HOUR});
+    out.push({key:'lineup_open_sent',     lab:'formazioni aperte',   due:k-36*HOUR});
+  }
+  out.push({key:'lineup_remind_sent', lab:'schiera (−8h)', due:lock-8*HOUR});
+  out.push({key:'reminder_sent',      lab:'ultima ora',    due:lock-HOUR});
+  return out.filter(f=>m[f.key]!==undefined).map(f=>{
+    const sent=!!m[f.key], late=!sent && Date.now()>f.due+20*MIN;
+    return Object.assign(f,{sent,late});
+  });
+}
+function flagsHTML(m){
+  const fs=flagList(m);
+  if(!fs.length) return '';
+  return '<div class="flags">'+fs.map(f=>
+    `<span class="fl ${f.sent?'sent':(f.late?'late':'')}">${f.sent?'✓':(f.late?'✕':'·')} ${esc(f.lab)}</span>`
+  ).join('')+'</div>';
+}
+function renderLive(h){
+  const card=document.getElementById('liveCard'), body=document.getElementById('liveBody');
+  const list=(h&&h.live_matchdays)||[];
+  if(!list.length){ card.style.display='none'; return; }
+  card.style.display='block';
+  document.getElementById('liveCount').textContent=list.length;
+  body.innerHTML=list.map(m=>{
+    const late=flagList(m).some(f=>f.late);
+    return `<div class="mrow">
+      <div class="mi">
+        <b>${esc(m.league_name||'—')} · ${esc(m.label||'')}</b>
+        <small>${esc(phaseOf(m))} · fischio ${dt(m.kickoff)} · ${m.presenti||0} presenti</small>
+        ${flagsHTML(m)}
+      </div>
+      <div class="mr">${late?'<span class="pill r">controlla</span>':'<span class="pill a">ok</span>'}</div>
+    </div>`;
+  }).join('');
+}
+function renderStale(h){
+  const card=document.getElementById('staleCard'), body=document.getElementById('staleBody');
+  const list=(h&&h.stale_leagues)||[];
+  if(!list.length){ card.style.display='none'; return; }
+  card.style.display='block';
+  document.getElementById('staleCount').textContent=list.length;
+  body.innerHTML=list.map(l=>`<div class="mrow">
+      <div class="mi"><b>${esc(l.name||('#'+l.id))}</b>
+        <small>${l.last?('ultima giornata '+ago(l.last)):'nessuna giornata, mai'}</small></div>
+      <div class="mr">${l.days!=null?('<span class="num">'+l.days+'</span> g'):'—'}</div>
+    </div>`).join('');
+}
+
+/* ---------- elenco leghe ---------- */
+function setSort(k){ sortBy=k; renderLeagues(); }
+function renderLeagues(){
+  const q=(document.getElementById('lgSearch').value||'').trim().toLowerCase();
+  document.querySelectorAll('[data-sort]').forEach(b=>{
+    b.style.borderColor = (b.dataset.sort===sortBy)?'var(--accent)':'var(--line-strong)';
+    b.style.color       = (b.dataset.sort===sortBy)?'var(--accent-soft)':'var(--text)';
+  });
+  let list=leagues.slice();
+  if(q) list=list.filter(l=>[l.name,l.admin_name,l.admin_email,l.slug]
+    .some(x=>String(x||'').toLowerCase().includes(q)));
+  const t=v=>{ const d=v?new Date(v).getTime():0; return isNaN(d)?0:d; };
+  if(sortBy==='id')  list.sort((a,b)=>a.id-b.id);
+  if(sortBy==='new') list.sort((a,b)=>t(b.created_at)-t(a.created_at));
+  if(sortBy==='mem') list.sort((a,b)=>(b.members||0)-(a.members||0));
+  if(sortBy==='act') list.sort((a,b)=>t(b.last_act)-t(a.last_act)||b.id-a.id);
+  document.getElementById('lgCount').textContent=list.length+(q?(' / '+leagues.length):'');
+  if(!list.length){ document.getElementById('lgBody').innerHTML='<div class="empty">Nessuna lega trovata.</div>'; return; }
+  document.getElementById('lgBody').innerHTML=list.map(l=>{
+    const badges=[
+      l.active?'<span class="pill a">attiva</span>':'<span class="pill i">ferma</span>',
+      l.is_paid?'<span class="pill p">pagante</span>':'',
+      l.cur_label?'<span class="pill b">'+esc(l.cur_label)+'</span>':'',
+      l.id===1?'<span class="pill b">🔒 principale</span>':''
+    ].filter(Boolean).join(' ');
+    const meta = hasNewRpc ? [
+      '<b>'+(l.members||0)+'</b> membri'+(l.members_push!=null?(' · <b>'+l.members_push+'</b> con notifiche'):''),
+      '<b>'+(l.mds_closed||0)+'</b> giornate giocate'+(l.season_number?(' · stagione '+l.season_number):''),
+      l.admin_name?('admin: <b>'+esc(l.admin_name)+'</b>'):'',
+      l.last_act?('ultima attività '+ago(l.last_act)):'nessuna attività'
+    ].filter(Boolean).join('<br>')
+    : ('<b>'+(l.members_active||0)+'/'+(l.members||0)+'</b> membri attivi');
+    return `<div class="lg" onclick="openLeague(${l.id})">
+      <span class="chev">›</span>
+      <div class="n"><b>${esc(l.name||'—')}</b><span class="id num">#${l.id}</span>${badges}</div>
+      <div class="meta">${meta}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- scheda di una lega ---------- */
+function openLeague(id){
+  const p=document.getElementById('pageLeague');
+  document.getElementById('lgDetail').innerHTML='<div class="skel">Carico la scheda…</div>';
+  p.classList.add('on'); p.scrollTop=0;
+  loadLeagueDetail(id);
+}
+function closeLeague(){ document.getElementById('pageLeague').classList.remove('on'); }
+async function loadLeagueDetail(id){
+  const { data, error } = await sb.rpc('sa_league_detail',{ p_league:id }).catch(e=>({error:e}));
+  const box=document.getElementById('lgDetail');
+  if(error||!data){
+    const l=leaguesById[id]||{};
+    box.innerHTML=`<h3>${esc(l.name||('#'+id))}</h3>
+      <div class="card" style="margin-top:12px"><div class="empty">Scheda non disponibile: serve <span class="num">console_a.sql</span>.</div></div>`
+      + dangerHTML(id, l.name||('#'+id));
+    return;
+  }
+  const l=data.league||{}, mem=data.members||[], mds=data.matchdays||[], seas=data.seasons||[];
+  const cur=mds.find(m=>m.status!=='closed')||null;
+  const closed=mds.filter(m=>m.status==='closed').length;
+  const withPush=mem.filter(m=>m.has_push).length;
+  const kv=(k,v,mono)=>`<div class="kv"><span class="k">${k}</span><span class="v${mono?' mono':''}">${v}</span></div>`;
+
+  box.innerHTML=`
+    <div class="row" style="align-items:flex-start;gap:10px;margin-bottom:4px">
+      <div style="flex:1;min-width:0">
+        <h3>${esc(l.name||'—')}</h3>
+        <p class="sub" style="margin-top:4px">#${l.id} · ${esc(l.slug||'')}</p>
+      </div>
+      ${l.is_paid?'<span class="pill p">pagante</span>':'<span class="pill i">gratis</span>'}
+    </div>
+
+    <div class="card" style="margin-top:13px">
+      <h2>Identikit</h2>
+      ${kv('Creata il', dOnly(l.created_at))}
+      ${kv('Da', esc(l.admin_name||'—')+(l.admin_team?(' · '+esc(l.admin_team)):''))}
+      ${kv('Email admin', esc(l.admin_email||'—'), true)}
+      ${kv('Link d\'invito','/app/?lega='+esc(l.slug||''), true)}
+      <div class="kv"><span class="k">Password lega</span>
+        <span class="v mono" id="lgPw"><button class="iconbtn" style="padding:5px 10px;font-size:12px"
+          onclick="revealPw(${l.id})">mostra</button></span></div>
+    </div>
+
+    <div class="card">
+      <h2>Numeri</h2>
+      <div class="grid">
+        <div class="stat blue"><b>${mem.length}</b><span>Membri</span></div>
+        <div class="stat ${withPush<mem.length?'gold':'green'}"><b>${withPush}</b><span>Con notifiche</span></div>
+        <div class="stat"><b>${l.players!=null?l.players:'–'}</b><span>In rosa</span></div>
+        <div class="stat green"><b>${closed}</b><span>Giornate giocate</span></div>
+        <div class="stat"><b>${seas.length}</b><span>Stagioni</span></div>
+        <div class="stat muted"><b>${mds.length}</b><span>Giornate viste</span></div>
+      </div>
+      ${withPush<mem.length?`<p class="note">⚠️ <b>${mem.length-withPush}</b> ${mem.length-withPush===1?'persona non riceve':'persone non ricevono'} nessuna notifica: su iPhone le push arrivano solo se l'app è stata aggiunta alla Home.</p>`:''}
+    </div>
+
+    <div class="card">
+      <h2>Come è impostata</h2>
+      ${kv('Apertura', l.auto_open
+          ? ('automatica · ogni '+(l.auto_weekday!=null?WD[l.auto_weekday]:'?')+' alle '+String(l.auto_time||'').slice(0,5))
+          : '<span style="color:var(--gold-soft)">in pausa</span>')}
+      ${kv('Presenze', l.presence_self?'le segnano i giocatori':'le segna l\'admin')}
+      ${kv('Portiere', l.gk_fixed?'fisso (ruolo POR)':'a rotazione')}
+      ${kv('Crediti', l.credit_mode==='poll'?'da sondaggio':'a mano')}
+    </div>
+
+    ${cur?`<div class="card">
+      <h2>Giornata in corso</h2>
+      ${kv('Giornata', esc(cur.label||'—'))}
+      ${kv('Fase', esc(phaseOf(cur)))}
+      ${kv('Fischio d\'inizio', dt(cur.kickoff))}
+      ${kv('Presenti', (cur.presenti||0)+(cur.presenti===0?' ⚠️':''))}
+      ${kv('Voti arrivati', cur.voti||0)}
+      ${cur.skip_poll?kv('Sondaggio','saltato («Apri subito»)'):''}
+      <p class="note" style="margin-bottom:0">Promemoria automatici:</p>
+      ${flagsHTML(cur)}
+      <button class="btn ghost" style="margin-top:13px" onclick="resetFlags(${cur.id},${l.id})">🔄 Rimanda i promemoria</button>
+      <p class="note">Azzera i flag di invio: al giro successivo (max 10 minuti) il cron rimanda quelli scaduti. Non tocca nessun dato di gioco.</p>
+    </div>`:`<div class="card"><h2>Giornata in corso</h2><div class="empty">Nessuna giornata aperta.</div></div>`}
+
+    <div class="card">
+      <h2>Membri <span class="rt">${mem.length}</span></h2>
+      ${mem.length?mem.map(m=>`<div class="mrow">
+        <div class="mi">
+          <b>${esc(m.team_name||'—')} ${m.is_admin?'<span class="pill p">admin</span>':''}${m.is_player===false?'<span class="pill i">manager</span>':''}</b>
+          <small>${esc(m.player_name||'')} · ${esc(m.email||'—')}</small>
+        </div>
+        <div class="mr">${m.has_push?'🔔':'<span style="opacity:.45">🔕</span>'}<br>${m.last_seen?ago(m.last_seen):'mai visto'}</div>
+      </div>`).join(''):'<div class="empty">Nessun membro.</div>'}
+    </div>
+
+    <div class="card">
+      <h2>Ultime giornate <span class="rt">${mds.length}</span></h2>
+      ${mds.length?mds.map(m=>`<div class="mrow">
+        <div class="mi"><b>${esc(m.label||('#'+m.id))} ${m.status!=='closed'?'<span class="pill a">viva</span>':''}</b>
+          <small>${dt(m.kickoff)} · ${m.presenti||0} presenti · ${m.voti||0} voti${m.closed_at?(' · chiusa '+ago(m.closed_at)):''}</small></div>
+        <div class="mr num">#${m.id}</div>
+      </div>`).join(''):'<div class="empty">Nessuna giornata.</div>'}
+    </div>
+
+    <div class="card">
+      <h2>Stagioni <span class="rt">${seas.length}</span></h2>
+      ${seas.length?seas.map(s=>`<div class="mrow">
+        <div class="mi"><b>Stagione ${s.number} ${s.status==='open'?'<span class="pill a">aperta</span>':'<span class="pill i">archiviata</span>'}</b>
+          <small>${s.mds}/38 giornate · dal ${dOnly(s.started_at)}${s.ended_at?(' al '+dOnly(s.ended_at)):''}</small></div>
+      </div>`).join(''):'<div class="empty">Nessuna stagione.</div>'}
+    </div>
+
+    <div class="card">
+      <h2>Piano</h2>
+      <button class="btn ghost" onclick="togglePaid(${l.id},${l.is_paid?'false':'true'})">
+        ${l.is_paid?'Riporta a Gratis':'Segna come Pagante'}</button>
+      <p class="note">Alimenta il ricavo stimato in home. Le leghe fondatrici andranno distinte da qui quando ci sarà il Pezzo B.</p>
+    </div>
+
+    ${dangerHTML(l.id, l.name)}
+  `;
+}
+function dangerHTML(id,name){
+  if(id===1) return `<div class="card"><h2>Zona pericolosa</h2>
+    <div class="empty">🔒 La lega principale non è eliminabile.</div></div>`;
+  return `<div class="card danger-zone"><h2>Zona pericolosa</h2>
+    <button class="btn danger" onclick="saDeleteLeague(${id})">🗑️ Elimina «${esc(name||('#'+id))}»</button>
+    <p class="note">Cancella <b>per sempre</b> giocatori, giornate, voti, formazioni, classifiche, sondaggi, impostazioni e gli <b>account email</b> di tutti i membri. Chiede due conferme, la seconda scrivendo il nome esatto.</p>
+  </div>`;
+}
+async function revealPw(id){
+  const el=document.getElementById('lgPw');
+  try{
+    const { data, error } = await sb.rpc('sa_league_password',{ p_league:id });
+    if(error) throw error;
+    el.textContent = data || '—';
+  }catch(e){ el.textContent='non leggibile'; }
+}
+
+/* ---------- azioni ---------- */
+async function resetFlags(mdId, leagueId){
+  if(!confirm('Rimandare i promemoria della giornata #'+mdId+'?\n\nI flag di invio vengono azzerati: al prossimo giro il cron rimanda quelli già scaduti. Nessun dato di gioco viene toccato.')) return;
+  try{
+    const { data, error } = await sb.rpc('sa_reset_md_flags',{ p_matchday:mdId });
+    if(error) throw error;
+    if(data && data.ok===false){ toast('Nessun flag da azzerare'); return; }
+    toast('Fatto: il cron rimanderà entro 10 minuti');
+    await loadLeagueDetail(leagueId); await loadAll(true);
+  }catch(e){ toast('Errore: '+((e&&e.message)||e)); }
+}
 async function toggleMaint(){
   const on=document.getElementById('mBtn').dataset.on==='1';
   const next=!on;
@@ -261,35 +703,36 @@ async function toggleMaint(){
     const { error } = await sb.rpc('sa_set_maintenance',{ p_on:next });
     if(error) throw error;
     toast(next?'Manutenzione attivata':'App di nuovo online');
-    await gate();
-  }catch(e){ toast('Errore: '+(e.message||e)); }
+    await loadAll(true);
+  }catch(e){ toast('Errore: '+((e&&e.message)||e)); }
 }
 async function togglePaid(id,paid){
   try{
     const { error } = await sb.rpc('sa_set_league_paid',{ p_league:id, p_paid:paid });
     if(error) throw error;
-    await gate();
-  }catch(e){ toast('Errore'); }
+    toast(paid?'Segnata come pagante':'Riportata a gratis');
+    await loadAll(true);
+    if(document.getElementById('pageLeague').classList.contains('on')) await loadLeagueDetail(id);
+  }catch(e){ toast('Errore: '+((e&&e.message)||e)); }
 }
 async function saDeleteLeague(id){
   if(id===1){ toast('La lega principale non è eliminabile'); return; }
   const l=leaguesById[id]||{}; const name=l.name||('#'+id);
-  // 1° conferma: avviso forte
   if(!confirm('⚠️ ELIMINARE DEFINITIVAMENTE la lega «'+name+'» (#'+id+')?\n\n'+
     'Verranno cancellati PER SEMPRE e senza recupero:\n'+
     '• giocatori, giornate, voti, formazioni, classifiche\n'+
     '• sondaggi, notifiche e impostazioni della lega\n'+
     '• gli ACCOUNT EMAIL di tutti i membri\n\n'+
     'Questa azione NON è reversibile.')) return;
-  // 2° conferma: scrivi il nome esatto (anti-tocco accidentale)
   const typed=prompt('Per confermare, scrivi il nome ESATTO della lega:\n\n«'+name+'»');
   if(typed===null) return;
   if((typed||'').trim()!==String(name).trim()){ toast('Il nome non combacia. Eliminazione annullata.'); return; }
   try{
     const { error } = await sb.rpc('sa_delete_league',{ p_league:id });
     if(error) throw error;
-    toast('Lega «'+name+'» eliminata ✅');
-    await gate();
+    toast('Lega «'+name+'» eliminata');
+    closeLeague();
+    await loadAll(true);
   }catch(e){
     const m=(e&&e.message)||String(e);
     if(m.includes('not_superadmin')) toast('Non autorizzato');
@@ -305,7 +748,7 @@ async function saveEconomics(){
     const { error } = await sb.rpc('sa_set_economics',{ p_monthly_cost:c===''?null:Number(c), p_price:p===''?null:Number(p) });
     if(error) throw error;
     toast('Economia salvata');
-    await gate();
+    await loadAll(true);
   }catch(e){ toast('Errore'); }
 }
 
