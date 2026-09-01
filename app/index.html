@@ -999,11 +999,11 @@
   .tut-bk{position:fixed;background:rgba(4,10,22,.80)}
   .tut-ring{position:fixed;border:2px solid var(--accent);border-radius:15px;pointer-events:none;
     box-shadow:0 0 0 3px rgba(63,151,255,.20), 0 0 26px rgba(63,151,255,.34);transition:all .2s ease}
-  .tut-card{position:fixed;left:50%;transform:translateX(-50%);width:min(430px,calc(100% - 26px));
-    background:var(--surface);border:1px solid var(--line-strong);border-radius:19px;padding:16px 17px 13px;
+  .tut-card{position:fixed;left:50%;transform:translateX(-50%);width:min(420px,calc(100% - 26px));
+    background:var(--surface);border:1px solid var(--line-strong);border-radius:18px;padding:14px 16px 11px;
     box-shadow:0 26px 64px -18px rgba(0,6,18,.92);transition:top .2s ease}
-  .tut-card .tt{font-family:'Bricolage Grotesque';font-weight:800;font-size:17px;letter-spacing:-.02em;margin:0 0 6px}
-  .tut-card .tx{font-size:13.5px;line-height:1.58;color:#cfe0f7;margin:0}
+  .tut-card .tt{font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;letter-spacing:-.02em;margin:0 0 5px}
+  .tut-card .tx{font-size:13.5px;line-height:1.5;color:#cfe0f7;margin:0}
   .tut-card .tx b{color:var(--text);font-weight:700}
   .tut-try{display:inline-block;margin-top:9px;font-size:11.5px;font-weight:700;color:var(--accent-soft);
     background:rgba(63,151,255,.12);border:1px solid rgba(63,151,255,.3);border-radius:8px;padding:4px 9px}
@@ -2330,7 +2330,7 @@
     <div class="tut-bk" id="tutT"></div><div class="tut-bk" id="tutB"></div>
     <div class="tut-bk" id="tutL"></div><div class="tut-bk" id="tutR"></div>
     <div class="tut-ring" id="tutRing" style="display:none"></div>
-    <button class="tut-x" onclick="tutQuit()">Esci \u2715</button>
+    <button class="tut-x" onclick="tutQuit()">Esci</button>
     <div class="tut-card" id="tutCard">
       <p class="tt" id="tutTtl"></p>
       <p class="tx" id="tutTx"></p>
@@ -2449,7 +2449,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v17';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v18';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -2708,7 +2708,15 @@ function tutSnap(){
     md:currentMd, players:players, pres:mdPresent, lineup:lineup, cap:captain,
     mod:formModule, votes:myVotes, nom:myNom, mvp:mvpPid, sega:segaPid,
     avg:averages, stats:adminStats, presSelf:presenceSelf, saved:mdResultsSaved,
-    stand:standings, ls:{}
+    stand:standings,
+    // Le card «Statistiche» della Home vivono in una cache con throttle di 20s.
+    // Durante la demo le RPC tornano null, le card si spengono e updateStatsWrap()
+    // nasconde tutta la sezione; senza rimettere a posto cache e orologio, la
+    // chiamata dentro renderAll() uscirebbe subito e la sezione resterebbe
+    // sparita fino al riavvio dell'app. E' successo davvero.
+    cardCache:{player:_homeCardCache.player, team:_homeCardCache.team},
+    cardAt:_homeBcardsAt,
+    ls:{}
   };
   try{ Object.keys(localStorage).forEach(k=>{ if(/^fc_/.test(k)) _tutSnap.ls[k]=localStorage.getItem(k); }); }catch(_){}
 }
@@ -2720,6 +2728,8 @@ function tutRestore(){
   myVotes=p.votes; myNom=p.nom; mvpPid=p.mvp; segaPid=p.sega;
   averages=p.avg; adminStats=p.stats; presenceSelf=p.presSelf; mdResultsSaved=p.saved;
   standings=p.stand;
+  _homeCardCache={player:p.cardCache.player, team:p.cardCache.team};
+  _homeBcardsAt=0;                       // azzero l'orologio: il ricarico deve poter partire
   // le bozze locali del pannello partita si sporcherebbero: rimesse com'erano
   try{
     Object.keys(localStorage).forEach(k=>{ if(/^fc_/.test(k) && !(k in p.ls)) localStorage.removeItem(k); });
@@ -2729,57 +2739,57 @@ function tutRestore(){
 
 /* ---------- i due percorsi ---------- */
 function tutStepsPlayer(){ return [
- {ttl:'Benvenuto in FantaCalcetto',
-  tx:"Ti faccio vedere l\u2019app in un minuto. Ho aperto una <b>giornata di prova</b> che esiste solo sul tuo telefono: qualunque cosa tocchi adesso <b>non viene salvata</b> e sparisce appena finiamo."},
+ {ttl:'Benvenuto',
+  tx:"Ti faccio vedere l\u2019app in un minuto. Questa \u00e8 una <b>giornata di prova</b>: niente di quello che tocchi viene salvato."},
  {v:'home', el:'.hero',
-  ttl:'La Home dice cosa fare',
-  tx:"In cima c\u2019\u00e8 sempre <b>una cosa sola</b>: quella che serve adesso. Schierare, votare, oppure niente quando non c\u2019\u00e8 niente da fare."},
+  ttl:'La Home',
+  tx:"In cima trovi sempre la cosa da fare adesso."},
  {v:'home', el:'#homePresence', tap:true, before:()=>tutKick(60),
-  ttl:'Prima di tutto: ci sei?',
-  tx:"Qualche giorno prima della partita l\u2019app chiede chi gioca. <b>Tocca \u00abCi sono\u00bb</b>: chi non risponde non entra in campo."},
+  ttl:'Ci sei?',
+  tx:"Prima di ogni partita l\u2019app chiede chi gioca. Chi non risponde non entra in campo."},
  {v:'formazione', el:'#modPick', before:()=>tutKick(30),
   ttl:'Il modulo',
-  tx:"Tre disposizioni. <b>1-3-1</b> vale 5 punti in pi\u00f9, <b>1-1-3</b> ne toglie 5: pi\u00f9 difendi, pi\u00f9 prendi. Quelli impossibili con i presenti di oggi restano spenti."},
+  tx:"<b>1-3-1</b> vale 5 punti in pi\u00f9, <b>1-1-3</b> cinque in meno."},
  {v:'formazione', el:'.budget-wrap',
   ttl:'Cento crediti',
-  tx:"Ogni giocatore ha un prezzo, e i pi\u00f9 forti costano di pi\u00f9. Devi schierarne <b>cinque</b> senza sforare i 100."},
+  tx:"Cinque giocatori, 100 crediti. I pi\u00f9 forti costano di pi\u00f9."},
  {v:'formazione', el:'#pitch', tap:true,
   ttl:'Il campo',
-  tx:"Tocca uno slot vuoto per scegliere chi ci va. Tocca uno gi\u00e0 schierato per <b>farlo capitano</b> \u2014 il capitano vale <b>doppio</b> \u2014 oppure per toglierlo."},
+  tx:"Tocca uno slot per scegliere. Tocca chi \u00e8 gi\u00e0 in campo per farlo <b>capitano</b>: vale doppio."},
  {v:'formazione', el:'#saveBtn',
-  ttl:'Conferma, o non conta',
-  tx:"Finch\u00e9 non premi qui la formazione non \u00e8 salvata. Puoi cambiarla quante volte vuoi fino a <b>5 minuti prima</b> del fischio d\u2019inizio."},
+  ttl:'Conferma',
+  tx:"La formazione vale solo se premi qui. Puoi cambiarla fino a 5 minuti prima del via."},
  {v:'voti', el:'#voteList', tap:true, before:()=>tutKick(-3),
-  ttl:'Dopo la partita: i voti',
-  tx:"Da 1 a 10 a ogni giocatore, anche mezzi. La <b>\ud83c\udfc6</b> \u00e8 l\u2019MVP e raddoppia il voto di chi la prende. Restano aperti 24 ore, poi la giornata si chiude da sola."},
+  ttl:'I voti',
+  tx:"Dopo la partita voti gli altri da 1 a 10. La <b>\ud83c\udfc6</b> \u00e8 l\u2019MVP."},
  {v:'classifica', el:'#lbList', before:()=>tutKick(30),
   ttl:'La classifica',
-  tx:"I punti di ogni giornata si sommano nella stagione. Tocca una squadra per aprire la sua <b>bacheca</b>: trofei, record e traguardi."},
- {ttl:'Ecco, tutto qui',
-  tx:"Il resto lo scopri giocando. Se vuoi rivedere questa guida sta in <b>Impostazioni \u203a Come funziona</b>."}
+  tx:"I punti si sommano. Tocca una squadra per vedere la sua bacheca."},
+ {ttl:'Fatto',
+  tx:"Per rivedere la guida: <b>Impostazioni \u203a Come funziona</b>."}
 ];}
 
 function tutStepsAdmin(){ return [
- {ttl:'La parte da amministratore',
-  tx:"Queste schermate le vedi solo tu. Sono quattro, e la buona notizia \u00e8 che quasi tutto va avanti da s\u00e9."},
+ {ttl:'Da amministratore',
+  tx:"Quattro cose che vedi solo tu."},
  {v:'settings', nav:'setMenu', el:'#rowLeague',
-  ttl:'Invita i tuoi amici',
-  tx:"\u00c8 la prima cosa da fare: qui dentro c\u2019\u00e8 il <b>link d\u2019invito</b> da mandare nel gruppo. Una lega da solo non gioca."},
+  ttl:'Invita',
+  tx:"Qui c\u2019\u00e8 il link da mandare nel gruppo. Fallo per primo."},
  {v:'settings', nav:'setMenu', el:'#rowRules',
-  ttl:'Quando giocate di solito',
-  tx:"Imposta giorno e ora fissi, una volta. Da l\u00ec in poi <b>le giornate si aprono da sole</b> 72 ore prima e i promemoria partono senza che tu faccia niente."},
+  ttl:'Quando giocate',
+  tx:"Imposta giorno e ora. Da l\u00ec le giornate si aprono da sole."},
  {v:'settings', nav:'page-giornata', el:'#mdcSteps',
-  ttl:'Il Centro giornata',
-  tx:"La sequenza della giornata, col passo acceso su dove siete adesso. Sotto trovi <b>una sola azione</b>: quella che serve ora, mai un muro di pulsanti."},
+  ttl:'Centro giornata',
+  tx:"La sequenza della giornata. Sotto, l\u2019azione che serve adesso."},
  {v:'settings', nav:'page-giornata', el:'#presCard',
   before:()=>{ const c=document.getElementById('presCard'); if(c){ c.style.display='block'; c.classList.add('open'); } },
-  ttl:'Chi gioca questa giornata',
-  tx:"Se qualcuno si dimentica di rispondere, lo segni tu. \u00c8 anche la via d\u2019uscita quando la lista dei presenti resta vuota e nessuno riesce a schierare."},
+  ttl:'Chi gioca',
+  tx:"Segni tu chi c\u2019\u00e8, se qualcuno non risponde."},
  {v:'voti', el:'#adminCard', before:()=>tutKick(-3),
-  ttl:'Gol, assist, chi ha vinto',
-  tx:"Finita la partita apri il pannello e segni cos\u2019\u00e8 successo. <b>\u00c8 l\u2019unica cosa che devi fare ogni settimana</b>: tutto il resto lo fa l\u2019app."},
- {ttl:'Il resto va da solo',
-  tx:"La giornata si apre, i promemoria partono, le formazioni si bloccano e la giornata si chiude da sola. Se qualcosa si inceppa, <b>il Centro giornata te lo dice</b> invece di lasciarti nel dubbio."}
+  ttl:'I risultati',
+  tx:"Gol, assist e chi ha vinto. \u00c8 l\u2019unica cosa da fare ogni settimana."},
+ {ttl:'Fine',
+  tx:"Il resto va da solo: apertura, promemoria, chiusura."}
 ];}
 
 /* ---------- motore ---------- */
@@ -2826,10 +2836,29 @@ function tutGoTo(i){
                 : (TUT.track==='player' && canOp() ? 'Ora la parte da admin \u2192' : 'Ho capito');
   document.getElementById('tutDots').innerHTML=TUT.steps.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('');
   _tutLastBox='';
-  const el=st.el?document.querySelector(st.el):null;
-  if(el){ try{ el.scrollIntoView({block:'center',behavior:'smooth'}); }
-          catch(_){ try{ el.scrollIntoView(); }catch(__){ } } }
-  setTimeout(tutPlace,70);
+  tutScrollTo(st.el?document.querySelector(st.el):null);
+  tutPlace();
+  // tre riposizionamenti di sicurezza: fra un passo e l'altro cambiano vista,
+  // contenuto e altezze, e l'ultima parola deve averla la misura piu' recente
+  setTimeout(tutPlace,80); setTimeout(tutPlace,240); setTimeout(tutPlace,520);
+}
+/* Scorrimento ISTANTANEO e calcolato a mano dentro #scrollwrap.
+   Con scrollIntoView({behavior:'smooth'}) il riflettore finiva sull'elemento
+   sbagliato: su iOS lo scorrimento fluido gira sul compositore e mette in
+   pausa requestAnimationFrame, quindi il ciclo che insegue il rettangolo
+   restava fermo dov'era prima che la pagina si muovesse. Qui invece lo
+   scorrimento e' sincrono: quando tutPlace() misura, la pagina e' gia' ferma
+   al punto giusto. */
+function tutScrollTo(el){
+  if(!el) return;
+  const sw=document.getElementById('scrollwrap');
+  if(!sw) return;
+  try{
+    const r=el.getBoundingClientRect(), sr=sw.getBoundingClientRect();
+    if(!r.height && !r.width) return;
+    const want=sw.scrollTop + (r.top - sr.top) - Math.max(0,(sr.height - r.height)/2);
+    sw.scrollTop=Math.max(0, Math.min(want, sw.scrollHeight - sw.clientHeight));
+  }catch(_){ }
 }
 function tutNext(){
   if(!TUT) return;
@@ -2897,7 +2926,9 @@ function tutQuit(){
   tutSbFree();
   tutRestore();
   try{ localStorage.setItem(TUT_KEY,'1'); }catch(_){ }
-  computeLock(); renderAll(); go('home');
+  computeLock(); renderAll();
+  renderHomeBcards(true);   // force: senza, il throttle lascerebbe la sezione spenta
+  go('home');
   toast('Guida chiusa \u00b7 la ritrovi in Impostazioni');
 }
 /* la riga nelle Impostazioni: agli admin chiede quale dei due */
