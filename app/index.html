@@ -327,6 +327,9 @@
 
   .styb{padding:8px 13px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'Hanken Grotesk'}
   .styb.on{border-color:var(--accent);color:var(--accent-soft);background:rgba(63,151,255,.12)}
+  /* scelta non praticabile in questo momento: resta VISIBILE (cosi' si capisce che
+     esiste) ma spenta, e il perche' e' scritto sotto — mai un pulsante che sparisce */
+  .styb[disabled]{opacity:.4;cursor:default}
   .ed-row .ed-lab{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:7px;text-transform:uppercase;letter-spacing:.05em}
   .ed-sw{display:flex;flex-wrap:wrap;gap:8px}
 
@@ -2399,7 +2402,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v14';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v15';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -4232,9 +4235,62 @@ async function setAutoOpen(on){
    Apre ADESSO la giornata programmata qui sopra: kickoff = prossimo giorno+ora impostati.
    Se non c'è ancora una programmazione, ripiega sull'apertura manuale (data/ora a mano). */
 function openNowHintText(){
-  if(schedDraft.weekday==null||!schedDraft.time) return 'Fa partire la giornata ADESSO (data/ora a scelta): niente sondaggio, formazioni subito aperte, presenti li segni tu qui sotto.';
+  const base="Fa partire la giornata ADESSO, senza aspettare le 72h. Nella scheda scegli se chiedere le presenze ai giocatori o segnarle tu.";
+  if(schedDraft.weekday==null||!schedDraft.time) return base+' Data e ora a tua scelta.';
   const k=nextWeeklyKickoffLocal(schedDraft.weekday,schedDraft.time);
-  return `Fa partire la giornata ADESSO, senza aspettare le 72h: niente sondaggio, formazioni subito aperte, presenti li segni tu qui sotto. Proporrà ${fmtDayTime(k)}, ma puoi cambiare giorno e ora.`;
+  return base+' Proporrà '+fmtDayTime(k)+', ma puoi cambiare giorno e ora.';
+}
+/* ---------- «APRI SUBITO»: CON O SENZA SONDAGGIO ----------
+   Il pulsante metteva sempre skip_poll=true, e non esisteva NESSUN modo di
+   aprire a mano una giornata chiedendo le presenze: chi voleva solo saltare
+   l'attesa delle 72h si ritrovava dodici presenze da segnare a mano senza
+   averlo chiesto. Adesso sceglie lui.
+   Il vincolo vero e' uno solo: il sondaggio chiude 36h prima del fischio
+   d'inizio (PRESENCE_CLOSE_BEFORE), quindi con una partita piu' vicina di
+   cosi' nascerebbe gia' chiuso. In quel caso l'opzione resta a schermo ma
+   spenta, col motivo scritto sotto. */
+let openNowPoll=false;
+function pickOpenNowPoll(on){ openNowPoll=!!on; renderOpenNowChoice(); }
+/* quanto durerebbe il sondaggio con l'orario scelto adesso (negativo = impossibile) */
+function openNowPollGap(){
+  const el=document.getElementById('mdKick'); if(!el||!el.value) return null;
+  const k=new Date(el.value).getTime();
+  if(isNaN(k)) return null;
+  return k - PRESENCE_CLOSE_BEFORE - Date.now();
+}
+function durLabel(ms){
+  const h=Math.floor(ms/HOUR);
+  if(h>=48) return Math.floor(h/24)+' giorni';
+  if(h>=24) return 'pi\u00f9 di un giorno';
+  if(h>=2)  return h+' ore';
+  if(h>=1)  return "un'ora";
+  return Math.max(1,Math.round(ms/MIN))+' minuti';
+}
+function renderOpenNowChoice(){
+  const box=document.getElementById('mdPollChoice'); if(!box) return;
+  const btn=document.getElementById('mdOpenBtn');
+  // Lega in modalità admin: il sondaggio non esiste per definizione, niente da scegliere.
+  if(!presenceSelf){
+    openNowPoll=false;
+    box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12px;margin:12px 2px 0;line-height:1.5">In questa lega le presenze le segni tu: appena aperta la giornata dovrai indicare chi gioca. Per farle segnare ai giocatori, cambia la regola in \u00abRegole della lega \u203a Presenze\u00bb.</p>`;
+    if(btn) btn.textContent='\u26a1 Apri subito';
+    return;
+  }
+  const gap=openNowPollGap();
+  const can=(gap!=null && gap>0);
+  if(!can) openNowPoll=false;
+  let hint;
+  if(!can) hint="\u26a0\ufe0f Il sondaggio presenze chiude <b>36h prima</b> del fischio d'inizio: con questo orario nascerebbe gi\u00e0 chiuso. Per chiedere le presenze sposta la partita pi\u00f9 in l\u00e0.";
+  else if(openNowPoll) hint='Ognuno dice se c\'\u00e8 dalla Home. Il sondaggio resta aperto <b>'+durLabel(gap)+'</b>, poi si aprono le formazioni. Puoi comunque correggere le presenze quando vuoi.';
+  else hint="Niente sondaggio: le formazioni si aprono subito e i presenti li segni tu in \u00abChi gioca questa giornata\u00bb.";
+  box.innerHTML=`
+    <div class="field-lab" style="margin-top:15px">Le presenze</div>
+    <div class="ed-sw">
+      <button class="styb ${openNowPoll?'on':''}" ${can?'':'disabled'} onclick="pickOpenNowPoll(true)">\ud83d\uddf3\ufe0f Chiedi chi c'\u00e8</button>
+      <button class="styb ${openNowPoll?'':'on'}" onclick="pickOpenNowPoll(false)">\u270d\ufe0f Le segno io</button>
+    </div>
+    <p class="vs" style="color:${can?'var(--muted)':'var(--gold-soft)'};font-size:12px;margin:10px 2px 0;line-height:1.5">${hint}</p>`;
+  if(btn) btn.textContent = openNowPoll ? "\ud83d\uddf3\ufe0f Apri e chiedi chi c'\u00e8" : '\u26a1 Apri subito';
 }
 function refreshOpenNowHint(){const h=document.getElementById('openNowHint'); if(h)h.textContent=openNowHintText();}
 function openNowMatchday(){
@@ -4403,18 +4459,21 @@ function renderHomePresence(){
 
 function openMatchdaySheet(now){
   const q=!!now;
+  openNowPoll=false;
   document.getElementById('sheetTitle').textContent = q?'Apri subito la giornata':'Apri nuova giornata';
   document.getElementById('sheetHint').textContent = q
-    ? 'Conferma quando si gioca (cambialo se giocate in un giorno diverso dal solito). La giornata parte adesso: niente sondaggio presenze (i presenti li segni tu) e formazioni aperte da subito.'
+    ? "Conferma quando si gioca (cambialo se giocate in un giorno diverso dal solito), poi scegli come raccogliere le presenze. La giornata parte adesso, senza aspettare le 72h."
     : 'Quando si gioca? Le formazioni si bloccano 5 min prima del via, i voti aprono ~1h dopo e restano aperti 24h.';
   // «Apri subito»: precompilo col prossimo orario programmato (se c'è), altrimenti domani alle 20:00
   let val=defaultKickoff();
   if(q && schedDraft.weekday!=null && schedDraft.time) val=toLocalInput(nextWeeklyKickoffLocal(schedDraft.weekday,schedDraft.time));
   document.getElementById('sheetList').innerHTML=`
     <div class="field-lab">Data e ora della partita</div>
-    <input class="ob-input" type="datetime-local" id="mdKick" value="${val}" style="padding:13px;font-size:15px">
-    <button class="save" onclick="confirmMatchday(${q})">${q?'⚡ Apri subito':'Apri giornata'}</button>`;
+    <input class="ob-input" type="datetime-local" id="mdKick" value="${val}"${q?' oninput="renderOpenNowChoice()"':''} style="padding:13px;font-size:15px">
+    ${q?'<div id="mdPollChoice"></div>':''}
+    <button class="save" id="mdOpenBtn" onclick="confirmMatchday(${q?'!openNowPoll':'false'})">${q?'⚡ Apri subito':'Apri giornata'}</button>`;
   openSheet();
+  if(q) renderOpenNowChoice();
 }
 async function confirmMatchday(skipPoll){
   const v=document.getElementById('mdKick').value;
@@ -4448,8 +4507,15 @@ async function createMatchday(kickoffISO, skipPoll){
   await loadSeason();       // la giornata può aver fatto partire una nuova stagione
   await loadMatchdaysList(); await loadMdPresent(); await loadPlayerStats();
   await loadAverages(); subscribeLive(); ensureStats();
-  renderAll(); openSettings(); toast(skipPoll?('Aperta '+data.label+' ⚡ Ora segna chi gioca'):('Aperta '+data.label));
-  pushNotify(data.label+' aperta! ⚽', 'Schiera la tua formazione prima del fischio d\'inizio.');
+  renderAll(); openSettings();
+  // il messaggio deve dire la verità su QUESTA giornata: con il sondaggio aperto
+  // «schiera la formazione» sarebbe un invito a fare una cosa ancora impossibile.
+  const withPoll = presenceSelf && !skipPoll;
+  toast(withPoll ? ('Aperta '+data.label+' \ud83d\uddf3\ufe0f Sondaggio presenze aperto')
+                 : ('Aperta '+data.label+' \u26a1 Ora segna chi gioca'));
+  pushNotify(data.label+' aperta! \u26bd', withPoll
+    ? "Di' se ci sei: il sondaggio presenze \u00e8 aperto."
+    : "Schiera la tua formazione prima del fischio d'inizio.");
 }
 function clearRoundLocal(){
   lineup={}; captain=null; formModule='1-2-2'; SLOTS=MODULES[formModule].slots;   // campo
