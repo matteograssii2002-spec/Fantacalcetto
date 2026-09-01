@@ -337,7 +337,9 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;margin-top:clamp(40p
    di dover pagare in quindici, ed e' esattamente il malinteso
    da evitare.
    ============================================================ */
-.plans{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+/* stretch, non start: le due schede devono finire alla stessa altezza anche
+   quando una riga va a capo solo da una parte */
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch}
 .plan{
   position:relative;overflow:hidden;
   background:linear-gradient(180deg,rgba(31,58,108,.34),rgba(13,26,47,.42));
@@ -358,12 +360,18 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;margin-top:clamp(40p
 .plan h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:19px;letter-spacing:-.025em;margin-bottom:4px}
 .plan h3 .gd{color:var(--gold)}
 .plan .psub{color:var(--muted);font-size:14.5px;margin-bottom:18px}
+.plan{display:flex;flex-direction:column}
+.plan ul{flex:1 1 auto}
 .plan .pcost{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1.1}
 .plan.pro .pcost{color:var(--gold)}
-.plan .pcost small{display:block;font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--muted);margin-top:5px;letter-spacing:0}
+.plan .pcost small{display:block;font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:var(--muted);margin-top:5px;letter-spacing:0;
+  line-height:1.3;min-height:2.6em}   /* due righe riservate sempre: allinea le liste sotto */
 /* il prezzo pieno barrato: piccolo, sopra, e MAI presentato come «prima era».
    E' il prezzo che partira' davvero dalla stagione successiva. */
+/* Il barrato c'e' solo nel Pro: nel gratis resta la stessa riga, invisibile,
+   cosi' i due prezzi (e le due liste sotto) partono dalla stessa altezza. */
 .plan .pcost s{display:block;font-size:14px;color:var(--muted);text-decoration-thickness:1.5px;margin-bottom:2px}
+.plan .pcost s.ghost{visibility:hidden}
 .plan ul{list-style:none;margin:20px 0 0;display:grid;gap:10px}
 .plan li{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.5}
 .plan li .tk{flex:none;width:19px;height:19px;border-radius:50%;display:grid;place-items:center;
@@ -384,18 +392,38 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;margin-top:clamp(40p
 .calc .ceye{font-size:12.5px;font-weight:800;letter-spacing:.10em;text-transform:uppercase;color:var(--gold)}
 /* nel riquadro grande: barrato piccolo sopra, con scritto a cosa si riferisce,
    cosi' non lo si puo' leggere come uno sconto finto su un prezzo mai fatto */
-.calc .cwas{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:10px}
-.calc .cwas s{font-family:'JetBrains Mono',monospace;font-size:20px;color:var(--muted);
-  text-decoration-thickness:2px}
-.calc .cwas i{font-style:normal;font-size:11.5px;font-weight:700;letter-spacing:.05em;
-  text-transform:uppercase;color:var(--muted);background:rgba(150,185,240,.10);
-  border-radius:999px;padding:4px 9px}
+/* Fascetta d'angolo: e' la cosa che dice «adesso conviene» prima ancora che
+   si legga il numero. Il riquadro ha gia' overflow:hidden, quindi si taglia
+   pulita sull'angolo. */
+.calc .cribbon{
+  position:absolute;top:20px;right:-52px;transform:rotate(45deg);
+  width:200px;text-align:center;padding:7px 0;
+  font-size:11.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+  color:#2a1c00;background:linear-gradient(135deg,#ffe6a8,var(--gold));
+  box-shadow:0 8px 22px -10px rgba(255,194,61,.9);
+}
+/* Il barrato: piu' grosso di prima e con la riga ROSSA, che si vede da lontano.
+   L'etichetta accanto dice «dalla prossima stagione», al futuro: cosi' non lo
+   si puo' leggere come uno sconto su un prezzo mai praticato. */
+.calc .cwas{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.calc .cwas s{font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(24px,4.6vw,30px);
+  color:#8ea6c8;letter-spacing:-.02em;
+  text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:3px}
+.calc .cwas i{font-style:normal;font-size:11.5px;font-weight:800;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--gold-soft);background:rgba(255,194,61,.14);
+  border:1px solid rgba(255,194,61,.30);border-radius:999px;padding:5px 11px}
 .calc .cbig{
   font-family:'Bricolage Grotesque';font-weight:800;letter-spacing:-.04em;line-height:1;
-  font-size:clamp(62px,13vw,98px);margin:4px 0 8px;
-  background:linear-gradient(180deg,#ffe6a8,var(--gold));
+  font-size:clamp(62px,13vw,98px);margin:6px 0 8px;
+  /* la luce che attraversa il numero: e' una banda chiara dentro il gradiente,
+     spostata dall'animazione. Niente immagini, niente sovrapposizioni. */
+  background:linear-gradient(100deg,var(--gold) 0%,#ffe6a8 38%,#fffdf5 47%,#ffe6a8 56%,var(--gold) 100%);
+  background-size:300% 100%;
   -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:cshine 5.5s linear infinite;
 }
+@keyframes cshine{0%{background-position:220% 0}100%{background-position:-80% 0}}
+@media (prefers-reduced-motion:reduce){.calc .cbig{animation:none;background-position:50% 0}}
 .calc .cwhat{font-size:clamp(16px,2vw,19px);font-weight:700}
 .calc .cwhen{color:var(--muted);font-size:14.5px;margin-top:4px}
 .calc .csep{height:1px;margin:26px auto 22px;max-width:420px;
@@ -434,6 +462,18 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;margin-top:clamp(40p
   color:#cfe0f7;background:rgba(150,185,240,.08);border:1px solid var(--line-strong);
   border-radius:999px;padding:8px 15px}
 .calc .cflag b{color:var(--green);font-size:13px}
+/* pulsante Pro: oro pieno, largo, e' l'azione della sezione */
+.btn-gold{
+  background:linear-gradient(135deg,#ffd470,var(--gold));color:#2a1c00;border-color:transparent;
+  box-shadow:0 16px 36px -16px rgba(255,194,61,.95), inset 0 1px 0 rgba(255,255,255,.35);
+}
+.btn-gold:hover{box-shadow:0 20px 44px -14px rgba(255,194,61,1), inset 0 1px 0 rgba(255,255,255,.45)}
+.calc #proBtn{margin-top:22px;min-width:min(300px,100%);justify-content:center;font-size:16px;padding:15px 26px}
+.calc .csoon{
+  max-height:0;opacity:0;overflow:hidden;transition:max-height .3s ease, opacity .3s ease, margin .3s ease;
+  color:var(--gold-soft);font-size:13.5px;line-height:1.55;margin:0 auto;max-width:380px;
+}
+.calc .csoon.on{max-height:80px;opacity:1;margin-top:11px}
 .calc .cnote{color:var(--muted);font-size:14px;margin-top:18px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.6}
 .calc .cnote b{color:var(--text)}
 

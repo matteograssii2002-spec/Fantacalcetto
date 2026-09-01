@@ -131,10 +131,10 @@
 <div class="scrim" id="instScrim" onclick="closeInst()"></div>
 <div class="instbox" id="instBox" role="dialog" aria-modal="true" aria-labelledby="instT">
   <span class="ic">📲</span>
-  <h3 id="instT">Prima mettila sulla Home</h3>
-  <p>Non è solo un sito: con due passaggi diventa un'app vera, con la sua icona.<br><b>Su iPhone è l'unico modo per ricevere le notifiche</b> di presenze, formazione e pagellone.</p>
-  <a class="btn btn-primary" href="#installa" onclick="closeInst()">Come si installa &nbsp;→</a>
-  <button class="btn btn-ghost" type="button" onclick="skipInst()">Continua nel browser</button>
+  <h3 id="instT">Installa sulla Home</h3>
+  <p>L'installazione si fa <b>dalla pagina del gioco</b>, non da questa. Una volta aggiunta alla schermata Home, l'app ha icona propria, si apre a schermo intero e riceve le notifiche.<br><b>Su iPhone le notifiche funzionano solo con l'app installata.</b></p>
+  <button class="btn btn-primary" type="button" onclick="goApp()">Vai al gioco &nbsp;→</button>
+  <a class="btn btn-ghost" href="#installa" onclick="closeInst()">Come installarla</a>
 </div>
 
 <main id="top">
@@ -492,7 +492,7 @@
     <div class="plans rise">
       <div class="plan">
         <h3>FantaCalcetto</h3>
-        <div class="pcost">Gratis<small>per sempre</small></div>
+        <div class="pcost"><s class="ghost"> </s>Gratis<small>per sempre</small></div>
         <ul>
           <li><span class="tk">✓</span><span>Fino a <b>15 giocatori</b></span></li>
           <li><span class="tk">✓</span><span>Tutto il gioco</span></li>
@@ -504,7 +504,7 @@
 
       <div class="plan pro">
         <h3>FantaCalcetto <span class="gd">Pro</span></h3>
-        <div class="pcost"><s>€39,90</s>€29,90<small>a stagione (fino a 38 giornate), tutta la lega</small></div>
+        <div class="pcost"><s>€39,90</s>€29,90<small>a stagione, tutta la lega</small></div>
         <ul>
           <li><span class="tk">✓</span><span><b>Giocatori illimitati</b></span></li>
           <li><span class="tk">✓</span><span>Storico di <b>tutte le stagioni</b></span></li>
@@ -516,6 +516,7 @@
     </div>
 
     <div class="calc rise">
+      <span class="cribbon">Prezzo di lancio</span>
       <div class="ceye">Pro · una stagione intera, fino a 38 giornate</div>
       <div class="cwas"><s>€39,90</s><i>dalla prossima stagione</i></div>
       <div class="cbig">€29,90</div>
@@ -534,6 +535,9 @@
         <span class="cflag"><b>✓</b> Nessun rinnovo automatico</span>
         <span class="cflag"><b>✓</b> Si paga una volta e basta</span>
       </div>
+      <button class="btn btn-gold" type="button" id="proBtn" onclick="proSoon()">Passa a Pro &nbsp;→</button>
+      <p class="csoon" id="proSoon">Il pagamento apre a breve. Intanto potete creare la lega e giocare gratis.</p>
+
       <p class="cnote">La prende l'organizzatore. Quando la stagione finisce, finisce: se non fate niente non vi arriva nessun addebito.</p>
     </div>
   </div>
@@ -660,7 +664,11 @@ function closeInst(){
   document.getElementById('instBox').classList.remove('open');
   document.body.style.overflow = '';
 }
-function skipInst(){
+/* «Vai al gioco» e' l'azione PRINCIPALE: l'avviso ricorda, non sbarra la strada.
+   Le istruzioni del sito dicono «prima Gioca ora, poi installa», perche' quello
+   che va aggiunto alla Home e' /app/ e non questa pagina: un avviso che
+   pretendesse l'installazione prima manderebbe la gente in un vicolo cieco. */
+function goApp(){
   try{ localStorage.setItem('fc_inst_ok', String(Date.now())); }catch(e){}
   closeInst(); location.href = APP_URL;
 }
@@ -681,6 +689,14 @@ document.getElementById('yy').textContent = new Date().getFullYear();
    grandezza. Senza JavaScript la pagina mostra comunque il
    valore di partenza (15 persone), che e' gia' corretto.
    ------------------------------------------------------------ */
+/* Il pulsante Pro c'e' ma il pagamento non e' ancora collegato: invece di un
+   tasto morto (che sembra rotto), il clic scopre una riga che dice come stanno
+   le cose. Quando ci sara' il checkout, qui va solo cambiata la destinazione. */
+function proSoon(){
+  var n = document.getElementById('proSoon');
+  if (n) n.classList.add('on');
+}
+
 var pxR = document.getElementById('pxRange');
 if (pxR) {
   var PX_TOT = 29.90;
