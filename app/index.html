@@ -954,6 +954,34 @@
   .bch-mgr .bm-lab{font-size:11.5px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:5px;width:100%}
   .bch-empty{font-size:12.5px;color:var(--muted);text-align:center;padding:6px 0}
   /* ---- PAGINA BACHECA (full screen, niente sfondo che balla) ---- */
+  /* ===== PIANI — FantaCalcetto Pro (sessione 56) ===== */
+  .pro-page{z-index:95}
+  .pro-hero{text-align:center;padding:4px 0 16px}
+  .pro-badge{display:inline-block;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:11px;line-height:1;
+    letter-spacing:.18em;color:#3a2a00;background:linear-gradient(135deg,var(--gold),var(--gold-soft));
+    padding:7px 12px;border-radius:8px;margin-bottom:12px}
+  .pro-tit{font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:800;margin:0 0 10px}
+  .pro-tit span{background:linear-gradient(135deg,var(--gold),var(--gold-soft));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .pro-why{color:var(--muted);font-size:14px;line-height:1.55;margin:0 auto;max-width:340px}
+  .pro-list{display:flex;flex-direction:column;gap:10px;margin:16px 0 18px}
+  .pro-it{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px}
+  .pro-it .tk{color:var(--gold);font-weight:800;font-size:15px;line-height:1.35;flex:none}
+  .pro-it b{display:block;font-size:14.5px;margin-bottom:3px}
+  .pro-it small{display:block;color:var(--muted);font-size:12.5px;line-height:1.45}
+  .pro-it.off .tk{color:var(--muted)}
+  .pro-price{text-align:center;background:linear-gradient(160deg,var(--surface2),var(--surface));
+    border:1px solid var(--line-strong);border-radius:18px;padding:20px 16px;margin-bottom:16px}
+  .pro-price .pp-big{font-family:'Bricolage Grotesque',sans-serif;font-size:38px;font-weight:800;color:var(--gold);line-height:1}
+  .pro-price .pp-sub{font-size:13.5px;margin-top:8px}
+  .pro-price .pp-note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
+  .pro-status{font-size:12.5px;color:var(--muted);line-height:1.5;text-align:center;margin-top:12px}
+  .pro-foot{font-size:11.5px;color:var(--muted);text-align:center;line-height:1.55;margin:20px 0 0}
+  .plan-seats{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:12px}
+  .plan-seats b{display:block;font-size:14.5px;margin-bottom:4px}
+  .plan-seats span{display:block;color:var(--muted);font-size:12.5px;line-height:1.45}
+  .plan-seats button{margin-top:10px;background:none;border:none;color:var(--gold);font-weight:700;
+    font-size:12.5px;padding:0;cursor:pointer;touch-action:manipulation}
+  .plan-seats.full{border-color:rgba(255,194,61,.45)}
   .bch-page{z-index:90}
   .bch-page-bar{position:sticky;top:0;z-index:2;display:flex;align-items:center;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:linear-gradient(180deg,var(--bg),rgba(8,14,26,.85) 70%,transparent);backdrop-filter:blur(6px)}
   .bch-back{background:var(--surface2);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:14px;padding:9px 15px 9px 11px;border-radius:12px;cursor:pointer}
@@ -2038,6 +2066,7 @@
       <button class="navrow" onclick="setNav('page-regolamento')"><span class="ic">📖</span><span class="lab">Regolamento<small>Come si fanno i punti</small></span><span class="go">›</span></button>
       <button class="navrow" id="rowTut" onclick="tutFromSettings()"><span class="ic">🎓</span><span class="lab">Come funziona<small>Rivedi la guida, quando vuoi</small></span><span class="go">›</span></button>
       <button class="navrow" id="alboRow" onclick="openAlboSheet()" style="display:none"><span class="ic">🏆</span><span class="lab">Albo d'oro<small id="alboSub">Le stagioni archiviate</small></span><span class="go">›</span></button>
+      <button class="navrow" id="rowPro" onclick="openPro('info')" style="display:none"><span class="ic">⭐</span><span class="lab">FantaCalcetto Pro<small id="proRowSub">—</small></span><span class="go">›</span></button>
       <div class="setgrp" id="admGrp" style="display:none">Gestione</div>
       <button class="navrow gold adminRow" id="rowMd" onclick="setNav('page-giornata')" style="display:none"><span class="ic">⚽</span><span class="lab">Centro giornata<small id="admMdSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold ownerRow" onclick="setNav('page-stagione')" style="display:none"><span class="ic">📅</span><span class="lab">Stagione<small id="admSeaSub">—</small></span><span class="go">›</span></button>
@@ -2231,6 +2260,7 @@
       <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
       <div class="section-h"><h2>Gestione lega</h2></div>
       <p class="setintro">Le persone della lega. Le regole del gioco stanno in <b>Regole della lega</b>.</p>
+      <div id="planSeats" style="display:none"></div>
       <button class="navrow gold" id="inviteCard" onclick="setNav('page-invita')"><span class="ic">✉️</span><span class="lab">Invita nella lega<small>Link d'invito e password</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="manageCard" onclick="setNav('page-giocatori')"><span class="ic">👥</span><span class="lab">Giocatori<small id="manageSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="viceCard" onclick="setNav('page-vice')" style="display:none"><span class="ic">🛡️</span><span class="lab">Vice-admin<small>Chi gestisce le giornate al posto tuo</small></span><span class="go">›</span></button>
@@ -2358,6 +2388,37 @@
     <button class="set-btn" style="margin-top:9px" onclick="closePushPrompt()">No, grazie</button>
   </div>
 
+  <!-- ===== PAGINA «FantaCalcetto Pro» (overlay a pagina intera) =====
+       Una pagina sola, tre porte d'ingresso: il tetto raggiunto, una stagione
+       archiviata, la riga nelle Impostazioni. Il testo del perche' cambia
+       (proWhy), il resto no: chi ci arriva due volte da due strade diverse
+       deve riconoscere la stessa pagina. -->
+  <div class="overlay hidden bch-page pro-page" id="proPage">
+    <div class="bch-page-bar">
+      <button class="bch-back" onclick="closePro()" aria-label="Indietro">‹ Indietro</button>
+    </div>
+    <div class="bch-page-inner">
+      <div class="pro-hero">
+        <div class="pro-badge">PRO</div>
+        <h2 class="pro-tit">FantaCalcetto <span>Pro</span></h2>
+        <p class="pro-why" id="proWhy">—</p>
+      </div>
+      <div class="pro-list">
+        <div class="pro-it"><span class="tk">✓</span><div><b>Giocatori illimitati</b><small>Nessun tetto: nella lega entra chi volete, quando volete.</small></div></div>
+        <div class="pro-it"><span class="tk">✓</span><div><b>Tutte le stagioni</b><small>Classifiche, schede e bacheca di ogni annata restano consultabili per sempre.</small></div></div>
+        <div class="pro-it"><span class="tk">✓</span><div><b>Albo d'oro completo</b><small>Il recap di fine stagione di ogni annata, riapribile quando volete.</small></div></div>
+        <div class="pro-it off"><span class="tk">·</span><div><b>Tutto quello che avete già</b><small>Gioco, pagellone, classifica e bacheca non cambiano: sono completi anche senza Pro. E niente pubblicità, in nessuno dei due.</small></div></div>
+      </div>
+      <div class="pro-price" id="proPrice">
+        <div class="pp-big">€29,90</div>
+        <div class="pp-sub">a stagione, per <u>tutta la lega</u> — non a testa</div>
+        <div class="pp-note">Si paga una volta sola, <b>senza rinnovo automatico</b>. Una stagione intera, fino a 38 giornate.</div>
+      </div>
+      <div id="proCta"></div>
+      <p class="pro-foot" id="proFoot"></p>
+    </div>
+  </div>
+
   <div class="overlay hidden bch-page" id="bachecaPage">
     <div class="bch-page-bar">
       <button class="bch-back" onclick="closeBacheca()" aria-label="Indietro">‹ Indietro</button>
@@ -2455,7 +2516,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v19';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v20';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -3276,6 +3337,7 @@ async function afterLogin(){
     maybeShowLogoNotice();   // AVVISO TEMPORANEO (vedi blocco in fondo) — rimuovibile in un deploy futuro
     maybeShowLogoIntro();    // novità loghi: chiede di scegliere il logo a chi non ce l'ha ancora
     maybeAskPassword();      // chi c'era prima del login a password: gliela chiedo una volta sola
+    maybePlanFullNotice();   // lega arrivata al tetto: una volta sola, e solo all'admin
     const _qs=new URLSearchParams(location.search);
     const _rp=_qs.get('recap'), _sp=_qs.get('srecap');             // deep-link dalle push
     if(_sp && !isNaN(parseInt(_sp))){ openSeasonRecap(parseInt(_sp), false); }
@@ -3293,7 +3355,7 @@ async function afterLogin(){
   hideSplash();
 }
 let myLeague=null;
-async function loadMyLeague(){ try{ const {data}=await sb.rpc('get_my_league'); myLeague=(data&&data[0])||null; }catch(_){ myLeague=null; } renderLeagueName(); }
+async function loadMyLeague(){ try{ const {data}=await sb.rpc('get_my_league'); myLeague=(data&&data[0])||null; }catch(_){ myLeague=null; } await loadMyPlan(); renderLeagueName(); }
 function renderLeagueName(){
   const nm=myLeague?myLeague.name:'';
   const h=document.getElementById('homeLeague'); if(h)h.textContent=nm?('🏆 '+nm):'';
@@ -4230,6 +4292,7 @@ async function loadSeasonStandingsFor(id){
 }
 async function setViewSeason(id){
   const n=Number(id);
+  if(seasonLocked(n)){ openPro('storico'); return; }
   if(lbBusy || n===viewSeasonId) return;
   lbBusy=true;
   viewSeasonId=n;
@@ -4275,6 +4338,12 @@ function openSeasonPicker(ctx,kind,ref){
     const on=(s.id===viewSeasonId), live=(s.status==='open'), mds=Number(s.mds_closed||0);
     const sub=live ? ('In corso'+(mds?' · '+mds+(mds===1?' giornata':' giornate'):'')) 
                    : ('Archiviata'+(mds?' · '+mds+(mds===1?' giornata':' giornate'):''));
+    /* Bloccata si vede lo stesso, spenta e col motivo scritto: se sparisse,
+       nessuno saprebbe mai che quella stagione esiste ancora. */
+    if(seasonLocked(s.id))
+      return `<div class="opt" onclick="closeSheet();openPro('storico')"><div class="oav emo">🔒</div>`
+        +`<div class="info"><b>Stagione ${s.number}</b><span>${sub} · con Pro</span></div>`
+        +`<span class="pr" style="color:var(--gold);font-weight:800;font-size:11px;letter-spacing:.08em">PRO</span></div>`;
     return `<div class="opt" onclick="closeSheet();${q}${s.id})"><div class="oav emo">${live?'⚽':'🏆'}</div>`
       +`<div class="info"><b>Stagione ${s.number}</b><span>${sub}</span></div>`
       +`<span class="pr on">${on?'✓':''}</span></div>`;
@@ -5501,6 +5570,16 @@ document.getElementById('obBtn').onclick=async function(){
       }), 15000, 'onboard_join');
       if(e1){
         const m=e1.message||'';
+        const _cd=String(e1.code||'')+' '+String(e1.details||'')+' '+String(e1.hint||'');
+        /* IL MURO DEI 15. Il database rifiuta con SQLSTATE FC015 (trigger
+           trg_member_cap). Non e' colpa di chi sta entrando, quindi il
+           messaggio non lo colpevolizza e non gli propone di pagare: il
+           passaggio a Pro lo fa l'admin, che intanto viene avvisato per nome. */
+        if(_cd.indexOf('FC015')>=0 || m.indexOf('FC015')>=0 || _cd.indexOf('league_full')>=0 || /raggiunto i \d+ membri/.test(m)){
+          obErr('obStatusTeam','Questa lega è al completo: ha raggiunto il numero massimo di persone. Abbiamo avvisato l\u2019amministratore, che pu\u00f2 ampliarla — riprova pi\u00f9 tardi o chiediglielo di persona.');
+          try{ await sb.rpc('log_join_attempt',{p_league:pendingLeague.id,p_name:pname}); }catch(_){ }
+          return;
+        }
         if(m.includes('team_taken')) obErr('obStatusTeam','Questo nome squadra è già in uso in questa lega.','teamInput');
         else if(m.includes('player_taken')){ obErr('obStatusChar','Questo nome giocatore è già in uso in questa lega.','playerInput'); obGo(1); }
         else if(m.includes('password')){ toast('Password della lega errata'); showLeague(); }
@@ -5558,7 +5637,7 @@ function applyProfile(){
   ['gkCard','presModeCard','schedCard','creditRow','seasonCard'].forEach(id=>{const e=document.getElementById(id); if(e)e.style.display=profile.is_admin?'':'none';});   // regole: solo proprietario
   renderRuleRows();
 }
-function renderAll(){renderHero();renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderSeasonRecapButton();renderHomeBcards();renderCampoTeam();}
+function renderAll(){renderHero();renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderSeasonRecapButton();renderHomeBcards();renderCampoTeam();renderPlanUI();}
 /* striscia squadra (logo + nome) sopra il campo verde */
 function renderCampoTeam(){
   const el=document.getElementById('campoTeam'); if(!el)return;
@@ -5720,7 +5799,9 @@ function cardSeasonBarHTML(kind,ref){
     +`Stagione ${sn?sn.number:(displaySeason?displaySeason.number:1)}</button></div>`;
 }
 function setCardSeason(kind,ref,id){
-  const n=Number(id); if(n===viewSeasonId) return;
+  const n=Number(id);
+  if(seasonLocked(n)){ openPro('storico'); return; }
+  if(n===viewSeasonId) return;
   viewSeasonId=n;
   if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){ } }
   const box=document.getElementById(kind==='player'?'statBacheca':'teamBacheca');
@@ -5743,6 +5824,180 @@ function bindCardSeasonSwipe(boxId,kind,ref){
   },{passive:true});
   el.addEventListener('touchend',()=>{ x0=y0=null; },{passive:true});
 }
+/* ==========================================================================
+   PIANI — FantaCalcetto e FantaCalcetto Pro (sessione 56)
+
+   Il gioco e' completo anche gratis. Pro tocca due cose sole:
+     · il TETTO dei 15 iscritti (lo fa il database, trigger trg_member_cap);
+     · lo STORICO, cioe' le stagioni diverse da quella di riferimento.
+
+   ⚠️ REGOLA DI FONDO: SI FALLISCE APERTI.
+   Se `get_my_plan` non risponde (rete lenta, piani.sql non eseguita, tutorial
+   in corso) si assume PRO. Meglio non bloccare niente a un pagante che
+   bloccare per sbaglio una lega che ha diritto a tutto. Il tetto vero e'
+   comunque nel database: qui si governa solo cosa si vede.
+
+   Il tetto e la promessa delle 20 fondatrici stanno in `piani.sql`.
+   ========================================================================== */
+let myPlan = { plan:'pro', founder:false, is_pro:true, members:0, member_cap:15, seats_left:99, loaded:false };
+
+/* MODALITA' PROVA — `?piano=free` in coda all'indirizzo.
+   Serve a te: la Fossa di Lissone e' fondatrice, quindi senza questo non
+   vedresti mai il muro ne' lo storico bloccato. Agisce SOLO su questo schermo:
+   il database non cambia, e nessuno resta fuori davvero. Si spegne togliendo
+   il parametro. */
+let planFakeFree = false;
+try { planFakeFree = (new URLSearchParams(location.search).get('piano') === 'free'); } catch(_) { }
+
+async function loadMyPlan(){
+  try{
+    const {data,error}=await sb.rpc('get_my_plan');
+    const r=(data&&data[0])||null;
+    if(error||!r) throw error||new Error('no plan');
+    myPlan={ plan:r.plan||'free', founder:!!r.founder, is_pro:!!r.is_pro,
+             members:Number(r.members||0), member_cap:Number(r.member_cap||15),
+             seats_left:Number(r.seats_left||0), loaded:true };
+  }catch(_){
+    myPlan={ plan:'pro', founder:false, is_pro:true, members:0, member_cap:15, seats_left:99, loaded:false };
+  }
+  if(planFakeFree){ myPlan.is_pro=false; myPlan.plan='free'; myPlan.founder=false; myPlan.loaded=true; }
+}
+function isPro(){ return !!(myPlan && myPlan.is_pro); }
+
+/* Una stagione e' bloccata se non e' quella di riferimento e la lega non e' Pro.
+   La stagione in corso non si blocca MAI: il presente e' gratis. */
+function seasonLocked(id){
+  if(isPro() || id==null) return false;
+  if(displaySeasonId==null) return false;
+  return Number(id)!==Number(displaySeasonId);
+}
+
+/* ---------- LA PAGINA PRO ---------- */
+const PRO_WHY={
+  muro:   "Siete al completo. Nella versione gratuita una lega arriva a 15 persone: chi prova a entrare adesso resta fuori. Con Pro il tetto non c'\u00e8.",
+  tetto:  "La rosa si sta riempiendo. Nella versione gratuita una lega arriva a 15 persone; da l\u00ec in poi chi prova a entrare resta fuori. Con Pro il tetto non c'\u00e8.",
+  storico:"Senza Pro si consulta la stagione in corso. Le stagioni archiviate non spariscono \u2014 restano dov'erano, e con Pro tornano consultabili per sempre.",
+  info:   "Il gioco \u00e8 tutto qui, anche senza pagare niente. Pro serve in due casi soli: quando siete pi\u00f9 di 15, o quando le stagioni cominciano a essere pi\u00f9 di una."
+};
+function openPro(reason){
+  const pg=document.getElementById('proPage'); if(!pg) return;
+  renderProPage(reason||'info');
+  pg.classList.remove('hidden');
+  const inner=pg.querySelector('.bch-page-inner'); if(inner) inner.scrollTop=0;
+  pg.scrollTop=0;
+}
+function closePro(){
+  const pg=document.getElementById('proPage'); if(pg) pg.classList.add('hidden');
+}
+/* Apertura AUTOMATICA (non richiesta dall'utente): al massimo una a settimana
+   per dispositivo, qualunque cosa succeda. Le aperture volute — la riga nelle
+   Impostazioni, una stagione bloccata toccata apposta — passano da openPro e
+   non sono contate: sono l'utente che chiede, non l'app che propone. */
+function proMaybeShow(reason){
+  try{
+    const last=Number(localStorage.getItem('fc_pro_seen')||0);
+    if(Date.now()-last < 7*24*3600*1000) return false;
+    localStorage.setItem('fc_pro_seen', String(Date.now()));
+  }catch(_){ }
+  openPro(reason); return true;
+}
+function renderProPage(reason){
+  const why=document.getElementById('proWhy');
+  const cta=document.getElementById('proCta');
+  const foot=document.getElementById('proFoot');
+  const price=document.getElementById('proPrice');
+  const owner=!!(profile&&profile.is_admin);
+
+  /* Chi e' gia' Pro non deve leggere un'offerta: legge una conferma. */
+  if(isPro()){
+    if(why) why.textContent = myPlan.founder
+      ? "La tua lega \u00e8 una delle prime 20: Pro gratis, per sempre. Non pagherai mai niente, n\u00e9 adesso n\u00e9 in futuro."
+      : "La tua lega \u00e8 Pro: giocatori illimitati e tutte le stagioni consultabili.";
+    if(price) price.style.display='none';
+    if(cta) cta.innerHTML='';
+    if(foot) foot.textContent = myPlan.founder ? "\ud83c\udfc5 Lega fondatrice \u00b7 numero riservato" : '';
+    return;
+  }
+  if(price) price.style.display='';
+  if(why) why.textContent = PRO_WHY[reason] || PRO_WHY.info;
+
+  if(owner){
+    /* L'admin e' l'unico che puo' pagare: a lui il pulsante. */
+    if(cta) cta.innerHTML='<button class="ob-btn" style="margin-top:0" onclick="proCheckout()">Passa a Pro</button>'
+      +'<div class="pro-status" id="proStatus">Paghi tu una volta sola e vale per tutta la lega.</div>';
+    if(foot) foot.textContent='';
+  }else{
+    /* Un membro che preme «Passa a Pro» e scopre di non poter fare niente e'
+       un'occasione buttata: gli si da' una cosa che puo' fare davvero. */
+    if(cta) cta.innerHTML='<button class="ob-btn" style="margin-top:0" onclick="proTellAdmin()">Dillo al tuo admin</button>'
+      +'<div class="pro-status">Il passaggio lo fa chi amministra la lega: vale per tutti e si paga una volta sola.</div>';
+    if(foot) foot.textContent='';
+  }
+}
+/* Il checkout non c'\u00e8 ancora: il pulsante dice la verita' e non finge. */
+function proCheckout(){
+  const st=document.getElementById('proStatus');
+  if(st) st.innerHTML="<b style=\"color:var(--gold)\">Il pagamento apre a breve.</b><br>Sto sistemando gli ultimi dettagli: appena si pu\u00f2, lo trovi qui. Nel frattempo non serve fare niente e la lega continua a funzionare come adesso.";
+  if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){ } }
+}
+function proTellAdmin(){
+  const nm=(myLeague&&myLeague.name)?(' della lega '+myLeague.name):'';
+  const tx="Ho visto che con FantaCalcetto Pro"+nm+" non c'\u00e8 il tetto dei 15 giocatori e restano tutte le stagioni. Costa 29,90\u20ac a stagione per tutta la lega, non a testa. Ci passiamo? www.fantacalcettoitalia.it/#prezzi";
+  if(navigator.share){
+    navigator.share({text:tx}).catch(()=>{});
+    return;
+  }
+  try{ navigator.clipboard.writeText(tx); toast('Messaggio copiato: incollalo nel gruppo'); }
+  catch(_){ toast('Copia questo: '+tx.slice(0,40)+'\u2026'); }
+}
+
+/* ---------- QUELLO CHE IL PIANO CAMBIA A SCHERMO ---------- */
+function renderPlanUI(){
+  const r=document.getElementById('rowPro'), sub=document.getElementById('proRowSub');
+  if(r&&sub){
+    r.style.display = profile ? 'flex' : 'none';
+    sub.textContent = myPlan.founder ? 'Lega fondatrice \u00b7 Pro per sempre'
+                    : isPro()        ? 'La tua lega \u00e8 Pro'
+                    : 'Giocatori illimitati e tutte le stagioni';
+  }
+  const b=document.getElementById('planSeats');
+  if(b){
+    const show = !isPro() && myPlan.loaded && canOp();
+    b.style.display = show ? 'block' : 'none';
+    if(show){
+      const n=myPlan.members, cap=myPlan.member_cap, left=myPlan.seats_left, full=(left<=0);
+      b.className='plan-seats'+(full?' full':'');
+      b.innerHTML='<b>Rosa: '+n+' di '+cap+'</b><span>'
+        +(full ? 'Siete al completo: chi prova a entrare adesso resta fuori. Nessuno di voi viene toccato.'
+               : (left===1?'Resta un posto.':'Restano '+left+' posti.')+' Il piano gratuito arriva a '+cap+' persone.')
+        +'</span><button onclick="openPro(\''+(full?'muro':'tetto')+'\')">FantaCalcetto Pro \u203a</button>';
+    }
+  }
+}
+/* Avviso UNA volta sola, quando la lega tocca il tetto. Non e' una proposta:
+   e' un fatto, e serve a evitare all'admin la figuraccia di scoprirlo dal
+   primo amico rimasto fuori. Non e' una push: non c'e' nessun momento in cui
+   il server sappia che il tetto e' stato appena raggiunto, e inventarne uno
+   vorrebbe dire un altro giro di cron per un avviso solo. */
+function maybePlanFullNotice(){
+  if(isPro() || !myPlan.loaded) return;
+  if(!(profile && profile.is_admin)) return;
+  if(myPlan.seats_left>0) return;
+  const k='fc_plan_full_'+((profile&&profile.league_id)||0);
+  try{ if(localStorage.getItem(k)) return; localStorage.setItem(k,'1'); }catch(_){ return; }
+  const o=document.createElement('div');
+  o.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(5,12,24,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px';
+  o.innerHTML='<div style="max-width:340px;background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:20px;padding:22px;text-align:center;box-shadow:0 24px 60px -20px rgba(0,0,0,.7)">'
+    +'<div style="font-size:34px;margin-bottom:10px">\u26a0\ufe0f</div>'
+    +'<div style="font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px;color:#eaf1fb">La lega \u00e8 al completo</div>'
+    +'<p style="color:#8aa3c2;font-size:14px;line-height:1.55;margin:0 0 18px">Siete in <b>'+myPlan.members+'</b>, il massimo del piano gratuito. Nessuno viene toccato e la lega funziona come sempre \u2014 ma il prossimo che prova a entrare rester\u00e0 fuori.</p>'
+    +'<button id="pfOk" style="width:100%;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;border:none;padding:14px;border-radius:13px;cursor:pointer">Ho capito</button>'
+    +'<button id="pfPro" style="width:100%;margin-top:9px;background:none;border:none;color:#ffc23d;font-weight:700;font-size:13.5px;padding:8px;cursor:pointer">Vedi FantaCalcetto Pro</button></div>';
+  document.body.appendChild(o);
+  o.querySelector('#pfOk').onclick=()=>o.remove();
+  o.querySelector('#pfPro').onclick=()=>{ o.remove(); openPro('muro'); };
+}
+
 /* ---------- PAGINA BACHECA (overlay full-screen) ---------- */
 function openBacheca(which){
   const pg=document.getElementById('bachecaPage');
@@ -7933,7 +8188,10 @@ function renderSeasonRecapButton(){
     r.style.display=lastClosedSeason?'flex':'none';
     const sub=document.getElementById('alboSub');
     const n=allSeasons.filter(x=>x.status!=='open').length;
-    if(sub&&lastClosedSeason) sub.textContent=n>1?(n+' stagioni archiviate'):('La Stagione '+lastClosedSeason.number+' archiviata');
+    if(sub&&lastClosedSeason){
+      sub.textContent=n>1?(n+' stagioni archiviate'):('La Stagione '+lastClosedSeason.number+' archiviata');
+      if(seasonLocked(lastClosedSeason.id)) sub.textContent='\ud83d\udd12 '+sub.textContent+' · con Pro';
+    }
   }
 }
 /* Elenco delle stagioni archiviate: da qui si riapre il recap di ognuna,
@@ -7941,11 +8199,17 @@ function renderSeasonRecapButton(){
 function openAlboSheet(){
   const past=allSeasons.filter(s=>s.status!=='open');
   if(!past.length){ toast('Nessuna stagione archiviata'); return; }
+  // tutte bloccate: l'elenco non avrebbe niente di apribile, si va dritti al perche'
+  if(past.every(s=>seasonLocked(s.id))){ openPro('storico'); return; }
   if(past.length===1){ openSeasonRecap(past[0].id,false); return; }
   document.getElementById('sheetTitle').textContent="Albo d'oro";
   document.getElementById('sheetHint').textContent='Riapri il recap di una stagione.';
   document.getElementById('sheetList').innerHTML=past.map(s=>{
     const mds=Number(s.mds_closed||0);
+    if(seasonLocked(s.id))
+      return `<div class="opt" onclick="closeSheet();openPro('storico')"><div class="oav emo">\ud83d\udd12</div>`
+        +`<div class="info"><b>Stagione ${s.number}</b><span>Archiviata · con Pro</span></div>`
+        +`<span class="pr" style="color:var(--gold);font-weight:800;font-size:11px;letter-spacing:.08em">PRO</span></div>`;
     return `<div class="opt" onclick="closeSheet();openSeasonRecap(${s.id},false)"><div class="oav emo">\ud83c\udfc6</div>`
       +`<div class="info"><b>Stagione ${s.number}</b><span>${mds?(mds+(mds===1?' giornata':' giornate')):'Archiviata'}</span></div>`
       +`<span class="pr">\u203a</span></div>`;
@@ -7958,6 +8222,11 @@ function openSeasonRecapLatest(){
 }
 
 async function openSeasonRecap(id, auto){
+  /* `auto` e' il recap che parte da solo alla chiusura della stagione: quello
+     non si tocca mai. Alla chiusura la stagione appena finita E' la stagione
+     di riferimento, quindi non e' bloccata: il gruppo si guarda il suo finale
+     comunque. Si blocca dopo, quando ne comincia un'altra. */
+  if(!auto && seasonLocked(id)){ openPro('storico'); return; }
   if(recapBusy) return; recapBusy=true;
   try{
     const {data,error}=await sb.rpc('get_season_recap', id?{p_season:id}:{});
