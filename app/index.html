@@ -245,6 +245,11 @@
   .gate-links a b{color:var(--text)}
   .gate-links a.small{font-size:13px;color:var(--muted)}
   .gate-links a.small b{color:var(--accent-soft)}
+  /* Riga legale sotto l'accesso: e' il punto in cui i dati si raccolgono,
+     quindi e' li' che l'informativa dev'essere raggiungibile. Sempre visibile,
+     in tutti i passaggi del gate, anche quando gateLinks si svuota. */
+  .gate-legal{margin-top:22px;text-align:center;font-size:11.5px;line-height:1.55;color:var(--muted)}
+  .gate-legal a{color:var(--accent-soft);text-decoration:underline;text-underline-offset:2px}
   /* ---- passaggio alla password per chi c'era già ----
      Stessa impalcatura del gate (azione in fondo, nella zona del pollice),
      ma con un riquadro che spiega il perché: nessuno deve chiedersi
@@ -1732,6 +1737,7 @@
     </div>
     <div class="gate-status" id="gateStatus"></div>
     <div class="gate-links" id="gateLinks"></div>
+    <p class="gate-legal">Proseguendo accetti i <a href="/termini.html" target="_blank" rel="noopener">Termini di servizio</a><br>e dichiari di aver letto l'<a href="/privacy.html" target="_blank" rel="noopener">Informativa privacy</a>.</p>
   </div>
 </div></div>
 
@@ -2073,6 +2079,10 @@
       <button class="navrow gold ownerRow" id="rowRules" onclick="setNav('page-regole')" style="display:none"><span class="ic">⚙️</span><span class="lab">Regole della lega<small>Quando giocate, presenze, portiere, crediti</small></span><span class="go">›</span></button>
       <button class="navrow gold adminRow" id="rowLeague" onclick="setNav('page-lega')" style="display:none"><span class="ic">🏆</span><span class="lab">Gestione lega<small>Inviti, giocatori, permessi</small></span><span class="go">›</span></button>
       <button class="navrow gold ownerRow" onclick="setNav('page-manutenzione')" style="display:none"><span class="ic">🛟</span><span class="lab">Aiuto e manutenzione<small>Segnala un problema, ricalcola il recap</small></span><span class="go">›</span></button>
+      <div class="setgrp">Informazioni</div>
+      <button class="navrow" onclick="openLegal('/privacy.html')"><span class="ic">🔒</span><span class="lab">Informativa privacy<small>Quali dati sono trattati e come</small></span><span class="go">›</span></button>
+      <button class="navrow" onclick="openLegal('/termini.html')"><span class="ic">📄</span><span class="lab">Termini di servizio<small>Le condizioni d'uso</small></span><span class="go">›</span></button>
+      <button class="navrow" onclick="askAccountDeletion()"><span class="ic">🗑️</span><span class="lab">Elimina il mio account<small>Cancellazione dei dati</small></span><span class="go">›</span></button>
       <div class="setfoot">
         <button class="logout" id="logoutBtn">Esci dall'account</button>
         <p style="text-align:center;color:var(--muted);font-size:11px;margin:14px 0 0;letter-spacing:.03em">FantaCalcetto · <span id="appVersion">—</span></p>
@@ -2516,7 +2526,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v20';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v21';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -5996,6 +6006,67 @@ function maybePlanFullNotice(){
   document.body.appendChild(o);
   o.querySelector('#pfOk').onclick=()=>o.remove();
   o.querySelector('#pfPro').onclick=()=>{ o.remove(); openPro('muro'); };
+}
+
+/* ==========================================================================
+   PAGINE LEGALI E CANCELLAZIONE DELL'ACCOUNT (sessione 58)
+
+   Le due pagine stanno sul sito, non dentro l'app: sono documenti che devono
+   restare leggibili anche da chi l'app non ce l'ha (e da un motore di ricerca).
+   Si aprono in una scheda a parte, cosi' chi le legge non perde la sessione.
+
+   ⚠️ LA CANCELLAZIONE NON E' AUTOMATICA, ED E' UNA SCELTA.
+   Un account non e' una riga: l'utente compare in profili, presenze, voti dati
+   e ricevuti, formazioni, statistiche, iscrizioni push. E soprattutto, se chi
+   chiede di sparire e' l'unico amministratore di una lega, quella lega resta
+   senza padrone e gli altri membri restano bloccati.
+   Il GDPR chiede un canale funzionante e una risposta entro 30 giorni, non un
+   pulsante: quindi qui si inoltra la richiesta, e la cancellazione la esegue
+   una persona che puo' accorgersi del caso limite. Quando la si automatizzera'
+   servira' PRIMA decidere cosa succede alle leghe orfane.
+   ========================================================================== */
+const LEGAL_MAIL = 'accesso@fantacalcettoitalia.it';
+
+function openLegal(url){
+  try{ window.open(url, '_blank', 'noopener'); }
+  catch(_){ location.href = url; }
+}
+
+function askAccountDeletion(){
+  const mail = (user && user.email) ? user.email : '';
+  const lega = (myLeague && myLeague.name) ? myLeague.name : '';
+  const owner = !!(profile && profile.is_admin);
+
+  const oggetto = 'Richiesta di cancellazione account';
+  const corpo = 'Chiedo la cancellazione del mio account e dei dati personali che mi riguardano.'
+    + '\n\nEmail dell\'account: ' + (mail || '(indicare l\'email)')
+    + (lega ? ('\nLega: ' + lega) : '')
+    + '\n\nSono consapevole che l\'operazione e\' irreversibile e comporta la rimozione dei miei punteggi, voti e presenze.';
+  const mailto = 'mailto:' + LEGAL_MAIL
+    + '?subject=' + encodeURIComponent(oggetto)
+    + '&body='    + encodeURIComponent(corpo);
+
+  const o=document.createElement('div');
+  o.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(5,12,24,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px';
+  o.innerHTML='<div style="max-width:360px;max-height:88%;overflow-y:auto;background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:20px;padding:22px;box-shadow:0 24px 60px -20px rgba(0,0,0,.7)">'
+    +'<div style="font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:20px;margin-bottom:10px;color:#eaf1fb;text-align:center">Elimina il mio account</div>'
+    +'<p style="color:#8aa3c2;font-size:13.5px;line-height:1.55;margin:0 0 12px">La cancellazione rimuove il profilo e <b style="color:#eaf1fb">tutti i dati di gioco</b>: punteggi, voti, presenze e trofei. La classifica della lega cambier\u00e0 per tutti. <b style="color:#eaf1fb">L\'operazione non si pu\u00f2 annullare.</b></p>'
+    + (owner
+        ? '<p style="color:#f3e2be;font-size:13px;line-height:1.5;margin:0 0 12px;background:rgba(255,194,61,.1);border-left:3px solid #ffc23d;border-radius:0 10px 10px 0;padding:11px 13px">\u26a0\ufe0f Amministri una lega: prima della cancellazione va deciso a chi passarla, altrimenti gli altri membri restano senza nessuno che apra le giornate. Indicalo nel messaggio.</p>'
+        : '')
+    +'<p style="color:#8aa3c2;font-size:13px;line-height:1.55;margin:0 0 18px">Premendo qui sotto si apre un messaggio gi\u00e0 scritto, indirizzato a <b style="color:#eaf1fb">'+LEGAL_MAIL+'</b>. La cancellazione viene eseguita <b style="color:#eaf1fb">entro 30 giorni</b> e riceverai conferma.</p>'
+    +'<button id="adMail" style="width:100%;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;border:none;padding:14px;border-radius:13px;cursor:pointer">Scrivi la richiesta</button>'
+    +'<button id="adCopy" style="width:100%;margin-top:9px;background:none;border:1px solid rgba(150,185,240,.2);color:#cfdff5;font-weight:700;font-size:13.5px;padding:12px;border-radius:12px;cursor:pointer">Copia l\'indirizzo</button>'
+    +'<button id="adNo" style="width:100%;margin-top:9px;background:none;border:none;color:#8aa3c2;font-weight:700;font-size:13.5px;padding:10px;cursor:pointer">Annulla</button></div>';
+  document.body.appendChild(o);
+  o.querySelector('#adNo').onclick=()=>o.remove();
+  o.querySelector('#adMail').onclick=()=>{ o.remove(); location.href=mailto; };
+  o.querySelector('#adCopy').onclick=()=>{
+    /* rete di sicurezza: su un telefono senza app di posta configurata il
+       mailto non apre niente e il pulsante sembrerebbe rotto. */
+    try{ navigator.clipboard.writeText(LEGAL_MAIL); toast('Indirizzo copiato'); }
+    catch(_){ toast(LEGAL_MAIL); }
+  };
 }
 
 /* ---------- PAGINA BACHECA (overlay full-screen) ---------- */
