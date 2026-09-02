@@ -323,7 +323,8 @@ section{padding:clamp(46px,6.4vw,86px) 0;position:relative}
 footer{border-top:1px solid var(--line);padding:32px 0 40px;margin-top:clamp(40px,5.5vw,72px)}
 .foot{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between}
 .foot small{color:var(--muted);font-size:13.5px}
-.foot nav{display:flex;gap:20px;font-size:14px;color:var(--muted);font-weight:600}
+.foot nav{display:flex;flex-wrap:wrap;gap:12px 20px;font-size:14px;color:var(--muted);font-weight:600}
+.foot nav a{white-space:nowrap}   /* le voci vanno a capo INTERE, mai spezzate a meta' */
 .foot nav a:hover{color:var(--text)}
 
 /* ============================================================
@@ -566,6 +567,12 @@ table{width:100%;border-collapse:collapse;margin:18px 0 24px;font-size:15.5px}
 th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line)}
 th{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:700}
 td:last-child,th:last-child{text-align:right;white-space:nowrap}
+/* Tabelle DISCORSIVE (privacy, termini): l'ultima colonna e' testo, non un
+   numero. Qui il nowrap va tolto o la tabella esce dallo schermo. */
+.tbl{table-layout:fixed}
+.tbl td,.tbl th{text-align:left;vertical-align:top;overflow-wrap:anywhere}
+.tbl td:last-child,.tbl th:last-child{text-align:left;white-space:normal}
+.doc{overflow-x:hidden}   /* rete di sicurezza: niente scorrimento laterale */
 .note{
   background:rgba(63,151,255,.08);border-left:3px solid var(--accent);
   border-radius:0 12px 12px 0;padding:15px 18px;margin:22px 0;font-size:15.5px;color:#cfdff5;
