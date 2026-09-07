@@ -2070,7 +2070,7 @@
       <button class="navrow" onclick="setNav('page-notifiche')"><span class="ic">🔔</span><span class="lab">Notifiche<small>Avvisi delle giornate</small></span><span class="go">›</span></button>
       <div class="setgrp">La lega</div>
       <button class="navrow" onclick="setNav('page-regolamento')"><span class="ic">📖</span><span class="lab">Regolamento<small>Come si fanno i punti</small></span><span class="go">›</span></button>
-      <button class="navrow" id="rowTut" onclick="tutFromSettings()"><span class="ic">🎓</span><span class="lab">Come funziona<small>Rivedi la guida, quando vuoi</small></span><span class="go">›</span></button>
+      <button class="navrow" id="rowTut" onclick="tutFromSettings()"><span class="ic">🎓</span><span class="lab">Tutorial<small>Rivedi le funzioni principali dell’app</small></span><span class="go">›</span></button>
       <button class="navrow" id="alboRow" onclick="openAlboSheet()" style="display:none"><span class="ic">🏆</span><span class="lab">Albo d'oro<small id="alboSub">Le stagioni archiviate</small></span><span class="go">›</span></button>
       <button class="navrow" id="rowPro" onclick="openPro('info')" style="display:none"><span class="ic">⭐</span><span class="lab">FantaCalcetto Pro<small id="proRowSub">—</small></span><span class="go">›</span></button>
       <div class="setgrp" id="admGrp" style="display:none">Gestione</div>
@@ -2526,7 +2526,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v21';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v22';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -2854,8 +2854,8 @@ function tutRestore(){
 
 /* ---------- i due percorsi ---------- */
 function tutStepsPlayer(){ return [
- {ttl:'Benvenuto',
-  tx:"Ti faccio vedere l\u2019app in un minuto. Questa \u00e8 una <b>giornata di prova</b>: niente di quello che tocchi viene salvato."},
+ {ttl:'Questo \u00e8 un tutorial',
+  tx:"In un minuto ti mostro le <b>funzioni principali</b> dell\u2019app: chi gioca, la formazione, i voti e la classifica.<br><br>Quella che vedi \u00e8 una <b>giornata di prova</b>: niente di quello che tocchi viene salvato."},
  {v:'home', el:'.hero',
   ttl:'La Home',
   tx:"In cima trovi sempre la cosa da fare adesso."},
@@ -2887,12 +2887,12 @@ function tutStepsPlayer(){ return [
   ttl:'Rivivi',
   tx:"Ogni giornata finita ha il suo pagellone: voti, formazioni e chi ha vinto."},
  {ttl:'Fatto',
-  tx:"Per rivedere la guida: <b>Impostazioni \u203a Come funziona</b>."}
+  tx:"Il tutorial finisce qui. Per rivederlo: <b>Impostazioni \u203a Tutorial</b>."}
 ];}
 
 function tutStepsAdmin(){ return [
- {ttl:'Da amministratore',
-  tx:"Quattro cose che vedi solo tu."},
+ {ttl:'Tutorial \u00b7 da amministratore',
+  tx:"Seconda parte: le funzioni che vedi <b>solo tu</b>, perch\u00e9 sei l\u2019amministratore della lega."},
  {v:'settings', nav:'setMenu', el:'#rowLeague',
   ttl:'Invita',
   tx:"Qui c\u2019\u00e8 il link da mandare nel gruppo. Fallo per primo."},
@@ -2910,7 +2910,7 @@ function tutStepsAdmin(){ return [
   ttl:'I risultati',
   tx:"Gol, assist e chi ha vinto. \u00c8 l\u2019unica cosa da fare ogni settimana."},
  {ttl:'Fine',
-  tx:"Il resto va da solo: apertura, promemoria, chiusura."}
+  tx:"Il resto va da solo: apertura, promemoria, chiusura.<br><br>Per rivedere il tutorial: <b>Impostazioni \u203a Tutorial</b>."}
 ];}
 
 /* ---------- motore ---------- */
@@ -3061,13 +3061,13 @@ function tutQuit(){
   computeLock(); renderAll();
   renderHomeBcards(true);   // force: senza, il throttle lascerebbe la sezione spenta
   go('home');
-  toast('Guida chiusa \u00b7 la ritrovi in Impostazioni');
+  toast('Tutorial chiuso \u00b7 lo ritrovi in Impostazioni');
 }
-/* la riga nelle Impostazioni: agli admin chiede quale dei due */
+/* la riga «Tutorial» nelle Impostazioni: agli admin chiede quale dei due percorsi */
 function tutFromSettings(){
   if(!canOp()){ tutStart('player'); return; }
-  document.getElementById('sheetTitle').textContent='Rivedi la guida';
-  document.getElementById('sheetHint').textContent='Due percorsi. Puoi farli tutti e due, uno dopo l\u2019altro.';
+  document.getElementById('sheetTitle').textContent='Rivedi il tutorial';
+  document.getElementById('sheetHint').textContent='Il tutorial ha due percorsi. Puoi farli tutti e due, uno dopo l\u2019altro.';
   document.getElementById('sheetList').innerHTML=
     '<button class="save" onclick="closeSheet();setTimeout(()=>tutStart(\'player\'),260)">\u26bd Come si gioca</button>'+
     '<button class="set-btn" style="margin-top:10px" onclick="closeSheet();setTimeout(()=>tutStart(\'admin\'),260)">\ud83d\udee0\ufe0f Cosa fa l\u2019amministratore</button>';
@@ -3092,7 +3092,7 @@ function maybeShowTutorial(try_n){
   const n=try_n||0;
   if(TUT) return;
   // Sei tentativi da 3 secondi: se il campo non si libera (per esempio perche'
-  // sta finendo di impostare le regole della lega) la guida ripartira' al
+  // sta finendo di impostare le regole della lega) il tutorial ripartira' al
   // lancio successivo, invece di piombare sopra a quello che sta facendo.
   if(tutBusy()){ if(n<6) setTimeout(()=>maybeShowTutorial(n+1),3000); return; }
   setTimeout(()=>{ if(!TUT && !tutBusy()) tutStart('player'); },700);
@@ -3358,7 +3358,7 @@ async function afterLogin(){
     }
     maybeAskPush();          // invito notifiche alla prima apertura (una volta per dispositivo)
     maybeShowNotifBanner();  // banner mensile per chi non le ha ancora attivate
-    maybeShowTutorial();     // guida alla prima apertura (aspetta che il resto sia sparito)
+    maybeShowTutorial();     // tutorial alla prima apertura (aspetta che il resto sia sparito)
   }
   await loadMaintenance(); subscribeMaintenance();
   try{ sb.rpc('touch_last_seen'); }catch(_){}   // battito "attivo" per la dashboard super-admin
