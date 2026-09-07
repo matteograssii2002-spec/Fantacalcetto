@@ -836,15 +836,20 @@
   .mdot:nth-child(2){animation-delay:.2s}.mdot:nth-child(3){animation-delay:.4s}
   @keyframes mblink{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
 
-  .sheet-bg{position:fixed;inset:0;z-index:60;background:rgba(4,10,22,.65);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s}
+  /* z-index del foglio: deve stare SOPRA le pagine a schermo intero
+     (.bch-page 90 · .pro-page 95 · .ls-open 120 · .pag 500), o il selettore
+     delle stagioni dentro la scheda giocatore si apre dietro alla scheda e i
+     tocchi non arrivano. Sotto al tutorial (1200) e all'offline (1400).
+     L'ordine relativo con modali e toast e' rimasto quello di prima. */
+  .sheet-bg{position:fixed;inset:0;z-index:600;background:rgba(4,10,22,.65);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s}
   .sheet-bg.open{opacity:1;pointer-events:auto}
-  .sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%) translateY(100%);width:100%;max-width:var(--maxw);z-index:61;background:var(--bg2);border:1px solid var(--line-strong);border-bottom:none;border-radius:24px 24px 0 0;padding:8px 18px calc(22px + env(safe-area-inset-bottom));max-height:82vh;overflow-y:auto;transition:transform .32s cubic-bezier(.2,.8,.2,1)}
+  .sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%) translateY(100%);width:100%;max-width:var(--maxw);z-index:601;background:var(--bg2);border:1px solid var(--line-strong);border-bottom:none;border-radius:24px 24px 0 0;padding:8px 18px calc(22px + env(safe-area-inset-bottom));max-height:82vh;overflow-y:auto;transition:transform .32s cubic-bezier(.2,.8,.2,1)}
   .sheet.open{transform:translateX(-50%) translateY(0)}
   .grip{width:42px;height:5px;border-radius:3px;background:var(--line-strong);margin:8px auto 4px}
 
-  .statmodal-bg{position:fixed;inset:0;z-index:70;background:rgba(4,10,22,.72);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .22s}
+  .statmodal-bg{position:fixed;inset:0;z-index:610;background:rgba(4,10,22,.72);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .22s}
   .statmodal-bg.open{opacity:1;pointer-events:auto}
-  .statmodal{position:fixed;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);width:calc(100% - 56px);max-width:340px;z-index:71;background:var(--bg2);border:1px solid var(--line-strong);border-radius:22px;padding:20px 18px 18px;opacity:0;pointer-events:none;transition:opacity .22s,transform .22s cubic-bezier(.2,.8,.2,1)}
+  .statmodal{position:fixed;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);width:calc(100% - 56px);max-width:340px;z-index:611;background:var(--bg2);border:1px solid var(--line-strong);border-radius:22px;padding:20px 18px 18px;opacity:0;pointer-events:none;transition:opacity .22s,transform .22s cubic-bezier(.2,.8,.2,1)}
   .statmodal.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
   .statx{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:10px;border:none;background:var(--surface2);color:var(--muted);font-size:14px;cursor:pointer;display:grid;place-items:center}
   .stat-head{display:flex;align-items:center;gap:13px;margin-bottom:16px}
@@ -1027,9 +1032,23 @@
      tutto tranne il rettangolo scelto. Cosi' i pannelli mangiano i tocchi
      (niente pulsanti premuti per sbaglio nel buio) e il pezzo illuminato resta
      davvero toccabile, che e' il punto del tutorial. */
-  #tut{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1200;display:none}
+  /* ATTENZIONE ai pointer-events: #tut e' un riquadro grande quanto lo schermo.
+     Senza `pointer-events:none` qui, il «buco» del riflettore non e' toccabile
+     lo stesso, perche' e' il CONTENITORE a mangiarsi il tocco. I tocchi devono
+     prenderli solo i quattro pannelli scuri, il tappo, la card e il tasto Esci. */
+  #tut{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1200;display:none;pointer-events:none}
   #tut.on{display:block}
-  .tut-bk{position:fixed;background:rgba(4,10,22,.80)}
+  #tut .tut-bk,#tut .tut-hole,#tut .tut-card,#tut .tut-x{pointer-events:auto}
+  /* MODO LIBERO. Nei passi «puoi provarlo davvero», al primo tocco vero il
+     tutorial si toglie di mezzo: via i pannelli scuri (o il foglio dei giocatori
+     e la tastiera dei voti si aprirebbero sotto al velo) e card in alto, per
+     lasciare libero il fondo dello schermo da cui i fogli salgono. */
+  #tut.free .tut-bk{opacity:0;pointer-events:none}
+  #tut.free .tut-ring{opacity:0}
+  #tut.free .tut-card{top:calc(56px + env(safe-area-inset-top)) !important}
+  .rvcard.wait{opacity:.72;cursor:default}
+  .rvcard.wait:active{transform:none}
+  .tut-bk{position:fixed;background:rgba(4,10,22,.80);transition:opacity .22s ease}
   /* Il buco e' toccabile SOLO nei passi marcati tap. Negli altri questo
      pannello trasparente ci sta sopra e mangia i tocchi: serve perche' molte
      cose illuminate (una squadra in classifica, una card statistiche) durante
@@ -1058,7 +1077,7 @@
     padding:8px 12px;font-size:12.5px;font-weight:700;font-family:'Hanken Grotesk';cursor:pointer}
   @media (prefers-reduced-motion: reduce){ .tut-ring,.tut-card,.tut-dots i{transition:none} }
 
-  .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#fff;font-weight:700;font-size:14px;padding:12px 20px;border-radius:12px;z-index:90;opacity:0;pointer-events:none;transition:all .3s;box-shadow:0 10px 30px rgba(0,0,0,.4);max-width:90%;text-align:center}
+  .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#fff;font-weight:700;font-size:14px;padding:12px 20px;border-radius:12px;z-index:620;opacity:0;pointer-events:none;transition:all .3s;box-shadow:0 10px 30px rgba(0,0,0,.4);max-width:90%;text-align:center}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   /* ---- Pannello Bonus/Malus dal vivo (admin, durante la partita) ---- */
   .live-open{border-color:var(--gold)!important;color:var(--gold-soft)!important;background:rgba(255,194,61,.1)!important}
@@ -2526,7 +2545,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v22';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v23';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -2937,6 +2956,7 @@ function tutStart(track){
   computeLock(); renderAll(); tutDemoCards();
   TUT={track:track, steps:(track==='admin'?tutStepsAdmin():tutStepsPlayer()), i:-1};
   document.getElementById('tut').classList.add('on');
+  document.addEventListener('pointerdown',tutTapWatch,true);
   tutLoop();
   tutGoTo(0);
 }
@@ -2946,16 +2966,39 @@ function tutSwitch(track){
   TUT={track:track, steps:(track==='admin'?tutStepsAdmin():tutStepsPlayer()), i:-1};
   tutGoTo(0);
 }
+/* MODO LIBERO ------------------------------------------------------------
+   Finche' non tocchi, i quattro pannelli scuri coprono tutto tranne il buco.
+   Al primo tocco DENTRO il buco (cioe' un tocco che non finisce su un elemento
+   del tutorial) si passa al modo libero: lo schermo torna tutto tuo, la card
+   resta in alto con «Avanti». Senza questo, premere una casella del campo
+   apriva il foglio dei giocatori dietro al velo scuro: sembrava rotto. */
+function tutFreeOn(){
+  if(!TUT || TUT.free) return;
+  TUT.free=true;
+  const t=document.getElementById('tut'); if(t) t.classList.add('free');
+  const b=document.querySelector('#tutTx .tut-try');
+  if(b) b.textContent='\u2713 prova pure \u00b7 poi premi Avanti';
+}
+function tutTapWatch(e){
+  if(!TUT || TUT.free) return;
+  const st=TUT.steps[TUT.i]||{};
+  if(!st.tap) return;
+  const t=document.getElementById('tut');
+  if(t && t.contains(e.target)) return;   // ha premuto la card, Esci o un pannello
+  tutFreeOn();
+}
 function tutGoTo(i){
   if(!TUT) return;
   TUT.i=i;
+  TUT.free=false;
+  const _t=document.getElementById('tut'); if(_t) _t.classList.remove('free');
   const st=TUT.steps[i], last=(i===TUT.steps.length-1);
   if(st.before){ try{ st.before(); }catch(_){ } }
   if(st.v) go(st.v);
   if(st.nav) setNav(st.nav);
   tutDemoCards();   // renderAll() dentro `before` svuota Rivivi: lo rifaccio dopo
   document.getElementById('tutTtl').textContent=st.ttl;
-  document.getElementById('tutTx').innerHTML=st.tx+(st.tap?'<span class="tut-try">\ud83d\udc46 puoi provarlo davvero</span>':'');
+  document.getElementById('tutTx').innerHTML=st.tx+(st.tap?'<span class="tut-try">\ud83d\udc46 toccalo: funziona davvero</span>':'');
   document.getElementById('tutSkip').style.display=st.tap?'':'none';
   const g=document.getElementById('tutGo');
   g.textContent = !last ? 'Avanti'
@@ -3004,6 +3047,9 @@ function tutLoop(){
 }
 function tutPlace(){
   if(!TUT) return;
+  // in modo libero i pannelli sono trasparenti e la card sta in alto per CSS:
+  // non c'e' niente da misurare, e riscriverlo a ogni frame rimetterebbe il velo
+  if(TUT.free) return;
   const st=TUT.steps[TUT.i]||{};
   const T=document.getElementById('tutT'), B=document.getElementById('tutB'),
         L=document.getElementById('tutL'), R=document.getElementById('tutR'),
@@ -3054,7 +3100,9 @@ function tutQuit(){
   if(!TUT) return;
   TUT=null;
   if(_tutRaf){ cancelAnimationFrame(_tutRaf); _tutRaf=null; }
-  document.getElementById('tut').classList.remove('on');
+  document.removeEventListener('pointerdown',tutTapWatch,true);
+  const _t=document.getElementById('tut');
+  _t.classList.remove('on'); _t.classList.remove('free');
   tutSbFree();
   tutRestore();
   try{ localStorage.setItem(TUT_KEY,'1'); }catch(_){ }
@@ -4340,7 +4388,7 @@ function renderLegaSeasonHead(){
 function openSeasonPicker(ctx,kind,ref){
   if(allSeasons.length<2) return;
   document.getElementById('sheetTitle').textContent='Stagioni';
-  document.getElementById('sheetHint').textContent='Scegli quale stagione guardare.';
+  document.getElementById('sheetHint').textContent='Scegli quale stagione guardare. La scheda si aggiorna subito.';
   const q=(ctx==='card')
     ? (kind==='player'?`setCardSeason('player',${ref},`:`setCardSeason('team','${String(ref).replace(/'/g,"\\'")}',`)
     : 'setViewSeason(';
@@ -7462,8 +7510,17 @@ function resumePagAuto(){
 function stopPagAuto(){ _pagActive=false; _pagDur=0; _pagElapsed=0; if(_pagRAF){cancelAnimationFrame(_pagRAF);_pagRAF=null;} }
 const _avBlob={};
 
+/* L'ultima giornata chiusa DELLA STAGIONE IN CORSO. Senza il filtro sulla
+   stagione, appena si archiviava un campionato la Home continuava a proporre il
+   pagellone dell'ultima giornata di quello vecchio, presentandolo come «Ultima
+   giornata». Il confronto e' con `currentSeasonId` (dove finiscono le giornate
+   NUOVE), non con `displaySeasonId`, che nell'intervallo fra due stagioni punta
+   ancora a quella archiviata. Se le stagioni non ci sono (currentSeasonId nullo)
+   il comportamento resta esattamente quello di prima. */
 function latestClosedMd(){
-  return (matchdaysList||[]).filter(m=>m.status==='closed').sort((a,b)=>b.id-a.id)[0]||null;
+  const closed=(matchdaysList||[]).filter(m=>m.status==='closed').sort((a,b)=>b.id-a.id);
+  if(currentSeasonId==null) return closed[0]||null;
+  return closed.find(m=>Number(m.season_id)===Number(currentSeasonId))||null;
 }
 /* HOME — «Rivivi»: pagellone di giornata e recap di stagione erano due targhette
    con dentro due righe di testo, in un riquadro largo tutto lo schermo: tanto vuoto
@@ -7522,6 +7579,18 @@ async function rvFillMd(mdId){
     : rvFactHTML('👥',String(rows.length),'Squadre in gioco');
   box.innerHTML=h;
 }
+/* Stagione nuova, nessuna giornata chiusa ancora, ma un archivio c'e': al posto
+   del pagellone vecchio si dice cosa manca. Non e' cliccabile apposta — non c'e'
+   niente da aprire, e un tap a vuoto sarebbe peggio di nessun tap. */
+function rvMdWaitCardHTML(){
+  const n=currentSeason?Number(currentSeason.number):null;
+  return `<div class="rvcard wait">${hcardHTML({
+    wm:'\ud83d\udcca', eye:'Ultima giornata', ttl:'Ancora nessuna',
+    sub:(n?('Stagione '+n+' \u00b7 tutto da giocare'):'Stagione nuova \u00b7 tutto da giocare'),
+    facts:[ rvFactHTML('\ud83d\uddd3','Apri','La prima giornata')
+          + rvFactHTML('\ud83d\udcca','A fine partita','Arriva il pagellone') ]
+  })}</div>`;
+}
 function rvMdCardHTML(md){
   const when=md.kickoff?rvShortDate(new Date(md.kickoff)):'';
   return `<div class="rvcard" onclick="openRecapLatest()">${hcardHTML({
@@ -7556,10 +7625,14 @@ function renderRecapButton(){
   const w=document.getElementById('homeRvWrap'), g=document.getElementById('homeRvGrid');
   if(!w||!g) return;
   const md=latestClosedMd(), s=lastClosedSeason;
+  // stagione nuova senza giornate chiuse ma con un archivio alle spalle:
+  // al posto del pagellone vecchio, la card che spiega cosa manca
+  const attesa=(!md && !!s);
   w.style.display=(md||s)?'block':'none';
   if(!md&&!s){ g.innerHTML=''; return; }
   let h='';
   if(md) h+=rvMdCardHTML(md);
+  else if(attesa) h+=rvMdWaitCardHTML();
   if(s)  h+=rvSeasonCardHTML(s);
   g.innerHTML=h;
   bindTrack('homeRvGrid','homeRvDots'); renderTrackDots('homeRvGrid','homeRvDots');
