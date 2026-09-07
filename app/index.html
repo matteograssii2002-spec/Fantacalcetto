@@ -652,7 +652,27 @@
   .pag-lb{width:100%;max-width:380px;margin-top:6px;max-height:56vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:4px 2px}
   @media (prefers-reduced-motion: reduce){ .skel-anim{animation:none} .mvw .mv.rv{animation:none} }
 
-  .prof{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 16px}
+  /* La scheda del profilo ora si tocca e porta al Profilo: la riga «Profilo»
+     diceva la stessa cosa due centimetri piu' sotto. */
+  .prof{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 16px;
+    width:100%;text-align:left;cursor:pointer;font-family:inherit;color:inherit}
+  .prof:active{transform:scale(.995)}
+  /* CONFRONTO STAGIONE / SEMPRE. Prima la scheda giocatore mostrava sempre i
+     totali di carriera (cambiavi stagione e i numeri non si muovevano), la
+     scheda squadra solo quelli della stagione scelta: due bugie opposte. */
+  .cmp{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .cmp-h{display:flex;align-items:center;padding:10px 14px 8px;font-size:11px;font-weight:800;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
+  .cmp-h .k{flex:1}
+  .cmp-h .a,.cmp-h .b{width:78px;text-align:right}
+  .cmp-h .a{color:var(--accent-soft)}
+  .cmp-r{display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);font-size:14px}
+  .cmp-r:last-child{border-bottom:none}
+  .cmp-r .k{flex:1;min-width:0;color:var(--muted);font-weight:600}
+  .cmp-r .a,.cmp-r .b{width:78px;text-align:right;font-family:'Bricolage Grotesque';font-weight:800;font-size:16px}
+  .cmp-r .a{color:var(--text)}
+  .cmp-r .b{color:var(--muted)}
+  .prof .pgo{margin-left:auto;color:var(--muted);font-size:19px;line-height:1}
   .prof img{width:50px;height:auto;border-radius:10px}
   .prof .pinfo b{font-family:'Bricolage Grotesque';font-weight:800;font-size:19px}
   .prof .pinfo span{font-size:13px;color:var(--muted);display:block;margin-top:2px}
@@ -2137,29 +2157,49 @@
     <!-- ===== MENU (lista) ===== -->
     <div class="setpage on" id="setMenu">
       <div class="section-h"><h2>Impostazioni</h2></div>
-      <div class="prof"><div id="setPreview"></div><div class="pinfo"><b id="setTeamName">La tua squadra</b><span id="setPlayerName">Giocatore</span></div></div>
-      <div class="setgrp">Il mio account</div>
-      <button class="navrow" onclick="setNav('page-profilo')"><span class="ic">👤</span><span class="lab">Profilo<small>Nome, squadra, avatar</small></span><span class="go">›</span></button>
-      <button class="navrow" onclick="setNav('page-notifiche')"><span class="ic">🔔</span><span class="lab">Notifiche<small>Avvisi delle giornate</small></span><span class="go">›</span></button>
-      <div class="setgrp">La lega</div>
+      <button class="prof" onclick="setNav('page-profilo')"><div id="setPreview"></div><div class="pinfo"><b id="setTeamName">La tua squadra</b><span id="setPlayerName">Giocatore</span></div><span class="pgo">›</span></button>
+      <button class="navrow" onclick="setNav('page-notifiche')"><span class="ic">🔔</span><span class="lab">Notifiche<small id="notifRowSub">Avvisi delle giornate</small></span><span class="go">›</span></button>
       <button class="navrow" onclick="setNav('page-regolamento')"><span class="ic">📖</span><span class="lab">Regolamento<small>Come si fanno i punti</small></span><span class="go">›</span></button>
       <button class="navrow" id="rowTut" onclick="tutFromSettings()"><span class="ic">🎓</span><span class="lab">Tutorial<small>Rivedi le funzioni principali dell’app</small></span><span class="go">›</span></button>
       <button class="navrow" id="alboRow" onclick="openAlboSheet()" style="display:none"><span class="ic">🏆</span><span class="lab">Albo d'oro<small id="alboSub">Le stagioni archiviate</small></span><span class="go">›</span></button>
       <button class="navrow" id="rowPro" onclick="openPro('info')" style="display:none"><span class="ic">⭐</span><span class="lab">FantaCalcetto Pro<small id="proRowSub">—</small></span><span class="go">›</span></button>
-      <div class="setgrp" id="admGrp" style="display:none">Gestione</div>
+      <div class="setgrp" id="admGrp" style="display:none">Amministrazione</div>
+      <!-- La giornata resta FUORI dall'hub: e' la cosa che un amministratore apre
+           piu' spesso, e nasconderla dietro un tap in piu' sarebbe un peggioramento
+           vero. Tutto il resto della gestione sta dietro una porta sola. -->
       <button class="navrow gold adminRow" id="rowMd" onclick="setNav('page-giornata')" style="display:none"><span class="ic">⚽</span><span class="lab">Centro giornata<small id="admMdSub">—</small></span><span class="go">›</span></button>
-      <button class="navrow gold ownerRow" onclick="setNav('page-stagione')" style="display:none"><span class="ic">📅</span><span class="lab">Stagione<small id="admSeaSub">—</small></span><span class="go">›</span></button>
-      <button class="navrow gold ownerRow" id="rowRules" onclick="setNav('page-regole')" style="display:none"><span class="ic">⚙️</span><span class="lab">Regole della lega<small>Quando giocate, presenze, portiere, crediti</small></span><span class="go">›</span></button>
-      <button class="navrow gold adminRow" id="rowLeague" onclick="setNav('page-lega')" style="display:none"><span class="ic">🏆</span><span class="lab">Gestione lega<small>Inviti, giocatori, permessi</small></span><span class="go">›</span></button>
-      <button class="navrow gold ownerRow" onclick="setNav('page-manutenzione')" style="display:none"><span class="ic">🛟</span><span class="lab">Aiuto e manutenzione<small>Segnala un problema, ricalcola il recap</small></span><span class="go">›</span></button>
-      <div class="setgrp">Informazioni</div>
-      <button class="navrow" onclick="openLegal('/privacy.html')"><span class="ic">🔒</span><span class="lab">Informativa privacy<small>Quali dati sono trattati e come</small></span><span class="go">›</span></button>
-      <button class="navrow" onclick="openLegal('/termini.html')"><span class="ic">📄</span><span class="lab">Termini di servizio<small>Le condizioni d'uso</small></span><span class="go">›</span></button>
-      <button class="navrow" onclick="askAccountDeletion()"><span class="ic">🗑️</span><span class="lab">Elimina il mio account<small>Cancellazione dei dati</small></span><span class="go">›</span></button>
+      <button class="navrow gold adminRow" id="rowAdminHub" onclick="setNav('page-admin')" style="display:none"><span class="ic">🛠️</span><span class="lab">Amministra la lega<small id="admHubSub">Persone, regole, stagione</small></span><span class="go">›</span></button>
+      <div class="setgrp">Altro</div>
+      <button class="navrow" onclick="setNav('page-privacy')"><span class="ic">🔒</span><span class="lab">Privacy e dati<small>Informativa, termini, cancellazione</small></span><span class="go">›</span></button>
       <div class="setfoot">
         <button class="logout" id="logoutBtn">Esci dall'account</button>
         <p style="text-align:center;color:var(--muted);font-size:11px;margin:14px 0 0;letter-spacing:.03em">FantaCalcetto · <span id="appVersion">—</span></p>
       </div>
+    </div>
+
+    <!-- ===== AMMINISTRA LA LEGA (hub) =====
+         Prima erano cinque righe oro sparse nel menu principale, con due nomi
+         che si somigliavano al punto da non poterli distinguere: «Regole della
+         lega» e «Gestione lega». Qui stanno insieme e si chiamano per quello
+         che sono: le persone da una parte, le regole dall'altra. -->
+    <div class="setpage" id="page-admin">
+      <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
+      <div class="section-h"><h2>Amministra la lega</h2></div>
+      <p class="setintro">Tutto quello che gestisci tu. Gli altri membri non vedono questa pagina.</p>
+      <button class="navrow gold adminRow" id="rowLeague" onclick="setNav('page-lega')"><span class="ic">👥</span><span class="lab">Le persone<small id="admPeopleSub">Inviti, giocatori, avvisi, permessi</small></span><span class="go">›</span></button>
+      <button class="navrow gold ownerRow" id="rowRules" onclick="setNav('page-regole')"><span class="ic">⚙️</span><span class="lab">Le regole del gioco<small>Quando giocate, presenze, portiere, crediti</small></span><span class="go">›</span></button>
+      <button class="navrow gold ownerRow" onclick="setNav('page-stagione')"><span class="ic">📅</span><span class="lab">Stagione<small id="admSeaSub">—</small></span><span class="go">›</span></button>
+      <button class="navrow gold ownerRow" onclick="setNav('page-manutenzione')"><span class="ic">🛟</span><span class="lab">Aiuto e manutenzione<small>Segnala un problema, ricalcola il recap</small></span><span class="go">›</span></button>
+    </div>
+
+    <!-- ===== PRIVACY E DATI ===== -->
+    <div class="setpage" id="page-privacy">
+      <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
+      <div class="section-h"><h2>Privacy e dati</h2></div>
+      <p class="setintro">Tre pagine che si aprono una volta nella vita. Stavano nel menu principale accanto a quelle di ogni giorno.</p>
+      <button class="navrow" onclick="openLegal('/privacy.html')"><span class="ic">🔒</span><span class="lab">Informativa privacy<small>Quali dati sono trattati e come</small></span><span class="go">›</span></button>
+      <button class="navrow" onclick="openLegal('/termini.html')"><span class="ic">📄</span><span class="lab">Termini di servizio<small>Le condizioni d'uso</small></span><span class="go">›</span></button>
+      <button class="navrow" onclick="askAccountDeletion()"><span class="ic">🗑️</span><span class="lab">Elimina il mio account<small>Cancellazione dei dati</small></span><span class="go">›</span></button>
     </div>
 
     <!-- ===== PROFILO ===== -->
@@ -2251,7 +2291,7 @@
 
     <!-- ===== STAGIONE ===== -->
     <div class="setpage" id="page-stagione">
-      <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
+      <button class="subback" onclick="setNav('page-admin')">‹ Amministra</button>
       <div class="section-h"><h2>Stagione</h2></div>
       <div class="set-card" id="seasonCard"><div id="seasonBox"></div></div>
     </div>
@@ -2265,7 +2305,7 @@
          Gli id gkCard / presModeCard restano sull'elemento ESTERNO (la riga),
          perché applyProfile() li usa per mostrarli al solo proprietario. -->
     <div class="setpage" id="page-regole">
-      <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
+      <button class="subback" onclick="setNav('page-admin')">‹ Amministra</button>
       <div class="section-h"><h2>Regole della lega</h2></div>
       <p class="setintro">Si impostano una volta e valgono per tutte le giornate. Quello che riguarda la giornata in corso sta nel <b>Centro giornata</b>.</p>
       <button class="navrow gold" id="schedCard" onclick="setNav('page-quando')"><span class="ic">🗓️</span><span class="lab">Quando giocate di solito<small id="schedSub">—</small></span><span class="go">›</span></button>
@@ -2340,9 +2380,9 @@
          interruttore sta in Regole della lega. Il «Sondaggio valori» è andato
          via di qui: era una regola, ora vive in Regole → Crediti dei giocatori. -->
     <div class="setpage" id="page-lega">
-      <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
-      <div class="section-h"><h2>Gestione lega</h2></div>
-      <p class="setintro">Le persone della lega. Le regole del gioco stanno in <b>Regole della lega</b>.</p>
+      <button class="subback" onclick="setNav('page-admin')">‹ Amministra</button>
+      <div class="section-h"><h2>Le persone</h2></div>
+      <p class="setintro">Chi c'è nella lega e cosa può fare. Le regole del gioco stanno in <b>Le regole del gioco</b>.</p>
       <div id="planSeats" style="display:none"></div>
       <button class="navrow gold" id="inviteCard" onclick="setNav('page-invita')"><span class="ic">✉️</span><span class="lab">Invita nella lega<small>Link d'invito e password</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="manageCard" onclick="setNav('page-giocatori')"><span class="ic">👥</span><span class="lab">Giocatori<small id="manageSub">—</small></span><span class="go">›</span></button>
@@ -2353,7 +2393,7 @@
 
     <!-- ===== LEGA: INVITA ===== -->
     <div class="setpage" id="page-invita">
-      <button class="subback" onclick="setNav('page-lega')">‹ Gestione lega</button>
+      <button class="subback" onclick="setNav('page-lega')">‹ Le persone</button>
       <div class="section-h"><h2>Invita nella lega</h2></div>
       <p class="setintro">Condividi link e password con i tuoi amici: con questi due entrano da soli.</p>
       <div class="set-card">
@@ -2368,7 +2408,7 @@
 
     <!-- ===== LEGA: CHI RICEVE GLI AVVISI ===== -->
     <div class="setpage" id="page-avvisi">
-      <button class="subback" onclick="setNav('page-lega')">‹ Gestione lega</button>
+      <button class="subback" onclick="setNav('page-lega')">‹ Le persone</button>
       <div class="section-h"><h2>Chi riceve gli avvisi</h2></div>
       <p class="setintro">Chi non ha le notifiche si perde l’apertura della giornata e la formazione in scadenza. Non è un problema suo soltanto: la giornata si trascina per tutti.</p>
       <div class="set-card"><div id="pushList"><p class="setintro" style="margin:0">Carico…</p></div></div>
@@ -2377,7 +2417,7 @@
 
     <!-- ===== LEGA: GIOCATORI ===== -->
     <div class="setpage" id="page-giocatori">
-      <button class="subback" onclick="setNav('page-lega')">‹ Gestione lega</button>
+      <button class="subback" onclick="setNav('page-lega')">‹ Le persone</button>
       <div class="section-h"><h2>Giocatori</h2></div>
       <p class="setintro">Il listone della lega: modifica, elimina o aggiungi giocatori. I <b>crediti</b> di un giocatore si cambiano dalla sua ✏️.</p>
       <div class="set-card">
@@ -2388,7 +2428,7 @@
 
     <!-- ===== LEGA: VICE-ADMIN ===== -->
     <div class="setpage" id="page-vice">
-      <button class="subback" onclick="setNav('page-lega')">‹ Gestione lega</button>
+      <button class="subback" onclick="setNav('page-lega')">‹ Le persone</button>
       <div class="section-h"><h2>Vice-admin</h2></div>
       <p class="setintro">Chi può gestire partite e giornate al posto tuo: aprire e chiudere, bonus ed esito, presenze, reset. Non potrà cambiare le regole né la lega. Tocca un nome per nominarlo o rimuoverlo.</p>
       <div class="set-card"><div id="viceList" class="preschips"></div></div>
@@ -2396,7 +2436,7 @@
 
     <!-- ===== LEGA: CHI PUÒ VOTARE ===== -->
     <div class="setpage" id="page-votanti">
-      <button class="subback" onclick="setNav('page-lega')">‹ Gestione lega</button>
+      <button class="subback" onclick="setNav('page-lega')">‹ Le persone</button>
       <div class="section-h"><h2>Chi può votare</h2></div>
       <p class="setintro">Di norma votano i giocatori scesi in campo. Da qui abiliti al voto anche chi fa <b>solo il manager</b>. Tocca un nome per abilitarlo o toglierlo.</p>
       <div class="set-card"><div id="voterList" class="preschips"></div></div>
@@ -2412,7 +2452,7 @@
          questo è riservato al super-admin (#maintCard, vedi applyProfile).
          Al suo posto, per tutti gli altri admin, c'è il canale per segnalare. -->
     <div class="setpage" id="page-manutenzione">
-      <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
+      <button class="subback" onclick="setNav('page-admin')">‹ Amministra</button>
       <div class="section-h"><h2>Aiuto e manutenzione</h2></div>
       <p class="setintro">Roba che serve di rado. In condizioni normali qui non devi entrare.</p>
       <div class="set-card">
@@ -2611,7 +2651,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v26';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v27';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -6407,6 +6447,30 @@ function pgRingHTML(val,label,pct,color){
 /* Scheda giocatore. Le barre sono rapportate al MIGLIORE della lega, non a un
    massimo teorico: è l'unico paragone che significhi qualcosa in un gruppo di
    15 amici, e si legge senza numeri. */
+/* Tabella di confronto: a sinistra la stagione scelta, a destra il totale di
+   sempre. Compare solo con almeno due stagioni: con una sola le due colonne
+   direbbero lo stesso numero due volte. Le righe senza dato spariscono, cosi'
+   se una RPC non espone una metrica per stagione non resta un trattino a vuoto. */
+function cmpTableHTML(rows, seasonLabel){
+  const vis=rows.filter(r=>r.a!=null || r.b!=null);
+  if(!vis.length) return '';
+  return `<div class="cmp">
+    <div class="cmp-h"><span class="k">\u2014</span><span class="a">${esc(seasonLabel)}</span><span class="b">Sempre</span></div>`
+    + vis.map(r=>`<div class="cmp-r"><span class="k">${esc(r.k)}</span>`
+        +`<span class="a">${r.a!=null?r.a:'\u2014'}</span>`
+        +`<span class="b">${r.b!=null?r.b:'\u2014'}</span></div>`).join('')
+    + `</div>`;
+}
+/* Le RPC delle schede non hanno tutte la stessa forma: alcune mettono i numeri
+   in `stats`, altre in cima all'oggetto. Invece di indovinare, li cerco in
+   entrambi i posti: se una metrica non c'e', la riga non viene disegnata. */
+function pickStat(card, key){
+  if(!card) return null;
+  const st=card.stats||{};
+  const v = (st[key]!=null) ? st[key] : (card[key]!=null ? card[key] : null);
+  return (v==null||v==='') ? null : v;
+}
+function fmtVoto(v){ return v==null?null:String(Math.round(Number(v)*100)/100).replace('.',','); }
 function playerStatsGridHTML(s){
   let maxG=1,maxA=1,maxP=1;
   Object.keys(playerStats||{}).forEach(k=>{
@@ -6456,10 +6520,26 @@ function openPlayerStats(id){
 function refreshPlayerCard(id){
   const bch=document.getElementById('statBacheca'); if(!bch) return;
   loadVoteTrend(id, viewSeasonId);   // il grafico segue la stagione selezionata
-  loadPlayerCard(id, viewSeasonId).then(card=>{
-    // se nel frattempo si è chiuso o si è aperta un'altra card, non sovrascrivere
+  /* Due chiamate: una per la stagione scelta, una senza stagione (= sempre).
+     La griglia in alto resta quella di carriera, com'era; il confronto vero
+     sta qui sotto, dove si legge riga per riga. */
+  const wantCmp = (allSeasons.length>=2);
+  Promise.all([
+    loadPlayerCard(id, viewSeasonId),
+    wantCmp ? loadPlayerCard(id, null) : Promise.resolve(null)
+  ]).then(([card, allCard])=>{
     if(_statCardId!==id) return;
-    bch.innerHTML=cardSeasonBarHTML('player',id)+bachecaHTML(card,{includeManager:false});
+    let cmp='';
+    if(wantCmp){
+      const sn=seasonById(viewSeasonId);
+      cmp=cmpTableHTML([
+        {k:'Gol',        a:pickStat(card,'gol'),        b:pickStat(allCard,'gol')},
+        {k:'Assist',     a:pickStat(card,'assist'),     b:pickStat(allCard,'assist')},
+        {k:'Voto medio', a:fmtVoto(pickStat(card,'voto')), b:fmtVoto(pickStat(allCard,'voto'))},
+        {k:'Presenze',   a:pickStat(card,'presences'),  b:pickStat(allCard,'presences')}
+      ], sn?('Stagione '+sn.number):'Stagione');
+    }
+    bch.innerHTML=cardSeasonBarHTML('player',id)+cmp+bachecaHTML(card,{includeManager:false});
     bindCardSeasonSwipe('statBacheca','player',id);
   });
 }
@@ -6593,16 +6673,44 @@ function openTeamCard(managerId){
 }
 /* ricarica la scheda squadra per la stagione selezionata (viewSeasonId) */
 function refreshTeamCard(managerId){
-  loadTeamCard(managerId, viewSeasonId).then(card=>{
+  const wantCmp = (allSeasons.length>=2);
+  Promise.all([
+    loadTeamCard(managerId, viewSeasonId),
+    wantCmp ? loadTeamCard(managerId, null) : Promise.resolve(null)
+  ]).then(([card, allCard])=>{
     if(_teamCardId!==managerId) return;
     if(!card||card.error){ document.getElementById('teamName').textContent='Squadra'; document.getElementById('teamBacheca').innerHTML='<div class="bch-empty">Scheda non disponibile.</div>'; return; }
     document.getElementById('teamName').textContent=card.team_name||card.player_name||'Squadra';
     document.getElementById('teamSub').textContent=card.player_name&&card.team_name?('Manager: '+card.player_name):'Manager';
     document.getElementById('teamGrid').innerHTML=teamStatsGridHTML(card);
-    document.getElementById('teamBacheca').innerHTML=cardSeasonBarHTML('team',managerId)+bachecaHTML(card,{includeManager:false});
+    let cmp='';
+    if(wantCmp){
+      const sn=seasonById(viewSeasonId);
+      const pm=v=>v==null?null:fmtPts(v);
+      cmp=cmpTableHTML([
+        {k:'Miglior giornata',   a:pm(pickStat(card,'best_md')),     b:pm(pickStat(allCard,'best_md'))},
+        {k:'Miglior balzo',      a:sgn(pickStat(card,'best_climb')), b:sgn(pickStat(allCard,'best_climb'))},
+        {k:'Re della giornata',  a:mult(pickStat(card,'wins')),      b:mult(pickStat(allCard,'wins'))},
+        {k:'Giornate da leader', a:mult(pickStat(card,'leader_days')),b:mult(pickStat(allCard,'leader_days'))},
+        {k:'Miglior posizione',  a:ord(pickStat(card,'best_pos')),   b:ord(pickStat(allCard,'best_pos'))}
+      ], sn?('Stagione '+sn.number):'Stagione');
+    }
+    /* I TRAGUARDI sono cumulativi per definizione (\u00abcecchino: 40 gol in
+       totale\u00bb): sulla scheda giocatore restavano cambiando stagione, su quella
+       squadra sparivano, perche' get_team_card li filtra per stagione mentre
+       get_player_card no. Qui prendo le medaglie dalla chiamata SENZA stagione,
+       cosi' le due schede si comportano allo stesso modo. I TITOLI invece
+       restano quelli della stagione scelta: quelli una stagione ce l'hanno. */
+    const shown = (allCard && allCard.badges && allCard.badges.length)
+      ? Object.assign({}, card, {badges:allCard.badges})
+      : card;
+    document.getElementById('teamBacheca').innerHTML=cardSeasonBarHTML('team',managerId)+cmp+bachecaHTML(shown,{includeManager:false});
     bindCardSeasonSwipe('teamBacheca','team',managerId);
   });
 }
+function sgn(v){ return (v==null||!Number(v))?null:('+'+v); }
+function mult(v){ return (v==null||!Number(v))?null:('\u00d7'+v); }
+function ord(v){ return (v==null||!Number(v))?null:(v+'\u00b0'); }
 function closeTeamModal(){ closeBacheca(); }
 function openMyPlayerBacheca(){ const mp=(typeof myPlayer==='function')?myPlayer():null; if(mp) openPlayerStats(mp.id); }
 function openMyTeamBacheca(){ if(user) openTeamCard(user.id); }
@@ -7599,7 +7707,19 @@ async function ensurePush(){
     await sb.from('push_subscriptions').upsert({endpoint:sub.endpoint,user_id:user.id,sub:sub.toJSON()},{onConflict:'endpoint'});
   }catch(_){}
 }
+/* Le righe delle Impostazioni dicono lo STATO, non cosa c'e' dentro: «attive»
+   invece di «avvisi delle giornate». Cosa c'e' dentro lo sai dopo la prima
+   volta; com'è messo adesso no, e per saperlo dovevi entrare. */
+function renderNotifRowSub(){
+  const e=document.getElementById('notifRowSub'); if(!e) return;
+  if(!pushSupported()){ e.textContent = fcIsStandalone()?'Non supportate qui':'Servono con l\u2019app sulla Home'; return; }
+  const p=Notification.permission;
+  e.textContent = p==='granted' ? 'Attive'
+                : p==='denied'  ? 'Bloccate dal telefono'
+                : 'Da attivare';
+}
 function renderNotifBtn(){
+  renderNotifRowSub();
   const b=document.getElementById('notifBtn'); if(!b)return;
   if(!pushSupported()){ b.textContent='Non supportate su questo dispositivo'; b.disabled=true; b.className='set-btn'; return; }
   const p=Notification.permission;
