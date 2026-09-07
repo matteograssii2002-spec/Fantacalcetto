@@ -50,6 +50,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="sito.css?v=11">
+<style>
+  /* «Punteggi e Regolamento» e' lungo quasi il triplo di «Punteggi»: sotto i
+     1240px il menu in alto non ci sta piu' e va sostituito dalla tendina.
+     La regola sta QUI e non in sito.css apposta: sito.css e' condiviso con
+     regolamento/privacy/termini, e cambiarlo vorrebbe dire alzare ?v= su
+     quattro file invece che caricarne uno. */
+  @media (max-width:1240px){ .topnav{display:none} .topbar .btn{margin-left:auto} }
+</style>
 
 <script type="application/ld+json">
 {
@@ -94,10 +102,10 @@
     <nav class="topnav" data-nav aria-label="Sezioni">
       <a href="#anteprima">Anteprima</a>
       <a href="#come-funziona">Come funziona</a>
-      <a href="#funzioni">Funzioni</a>
       <a href="#installa">Installazione</a>
       <a href="#prezzi">Prezzi</a>
-      <a href="#punteggi">Punteggi</a>
+      <a href="#funzioni">Funzioni</a>
+      <a href="#punteggi">Punteggi e Regolamento</a>
       <a href="#domande">Domande</a>
     </nav>
     <a class="btn btn-primary btn-sm" data-app-link href="#">Gioca ora</a>
@@ -116,10 +124,10 @@
   </div>
   <a href="#anteprima">Anteprima</a>
   <a href="#come-funziona">Come funziona</a>
-  <a href="#funzioni">Funzioni</a>
   <a href="#installa">Installazione</a>
   <a href="#prezzi">Prezzi</a>
-  <a href="#punteggi">Punteggi</a>
+  <a href="#funzioni">Funzioni</a>
+  <a href="#punteggi">Punteggi e Regolamento</a>
   <a href="#domande">Domande</a>
   <a class="btn btn-primary" data-app-link href="#">Gioca ora</a>
 </aside>
@@ -321,25 +329,6 @@
   </div>
 </section>
 
-<!-- ============================================================
-     FUNZIONI
-     ============================================================ -->
-<section id="funzioni">
-  <div class="wrap">
-    <div class="sec-head rise">
-      <span class="eyebrow">Funzioni</span>
-      <h2>Cosa contiene l'app</h2>
-    </div>
-    <div class="grid rise">
-      <div class="card" style="--acc:rgba(255,194,61,.9);--chip:rgba(255,194,61,.14)"><span class="ic">💰</span><h3>Crediti che si muovono</h3><p>Chi rende più di quanto costa sale, chi delude scende.</p></div>
-      <div class="card" style="--acc:rgba(63,151,255,.9);--chip:rgba(63,151,255,.14)"><span class="ic">🃏</span><h3>Card dei giocatori</h3><p>Ruolo, valore e voto medio. Si toccano e si aprono.</p></div>
-      <div class="card" style="--acc:rgba(255,194,61,.9);--chip:rgba(255,194,61,.14)"><span class="ic">🏆</span><h3>Bacheca dei trofei</h3><p>Traguardi che restano e titoli che cambiano ogni anno.</p></div>
-      <div class="card" style="--acc:rgba(47,217,138,.9);--chip:rgba(47,217,138,.14)"><span class="ic">🔔</span><h3>Promemoria automatici</h3><p>Presenze, formazione, ultima ora, giornata chiusa.</p></div>
-      <div class="card" style="--acc:rgba(126,194,255,.9);--chip:rgba(126,194,255,.14)"><span class="ic">📆</span><h3>Stagioni e recap</h3><p>Fino a 38 giornate, poi l'archivio con premi e record.</p></div>
-      <div class="card" style="--acc:rgba(255,93,107,.9);--chip:rgba(255,93,107,.14)"><span class="ic">🧤</span><h3>Regole su misura</h3><p>Portiere, presenze e valori li imposta l'organizzatore.</p></div>
-    </div>
-  </div>
-</section>
 
 
 
@@ -545,6 +534,26 @@
     <div class="pfound rise">
       <span class="ic">🏅</span>
       <div><b>Le prime 20 leghe sono Pro gratis, per sempre.</b> Giocatori illimitati e storico di tutte le stagioni, senza pagare mai — né adesso né in futuro.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FUNZIONI
+     ============================================================ -->
+<section id="funzioni">
+  <div class="wrap">
+    <div class="sec-head rise">
+      <span class="eyebrow">Funzioni</span>
+      <h2>Cosa contiene l'app</h2>
+    </div>
+    <div class="grid rise">
+      <div class="card" style="--acc:rgba(255,194,61,.9);--chip:rgba(255,194,61,.14)"><span class="ic">💰</span><h3>Crediti che si muovono</h3><p>Chi rende più di quanto costa sale, chi delude scende.</p></div>
+      <div class="card" style="--acc:rgba(63,151,255,.9);--chip:rgba(63,151,255,.14)"><span class="ic">🃏</span><h3>Card dei giocatori</h3><p>Ruolo, valore e voto medio. Si toccano e si aprono.</p></div>
+      <div class="card" style="--acc:rgba(255,194,61,.9);--chip:rgba(255,194,61,.14)"><span class="ic">🏆</span><h3>Bacheca dei trofei</h3><p>Traguardi che restano e titoli che cambiano ogni anno.</p></div>
+      <div class="card" style="--acc:rgba(47,217,138,.9);--chip:rgba(47,217,138,.14)"><span class="ic">🔔</span><h3>Promemoria automatici</h3><p>Presenze, formazione, ultima ora, giornata chiusa.</p></div>
+      <div class="card" style="--acc:rgba(126,194,255,.9);--chip:rgba(126,194,255,.14)"><span class="ic">📆</span><h3>Stagioni e recap</h3><p>Fino a 38 giornate, poi l'archivio con premi e record.</p></div>
+      <div class="card" style="--acc:rgba(255,93,107,.9);--chip:rgba(255,93,107,.14)"><span class="ic">🧤</span><h3>Regole su misura</h3><p>Portiere, presenze e valori li imposta l'organizzatore.</p></div>
     </div>
   </div>
 </section>
