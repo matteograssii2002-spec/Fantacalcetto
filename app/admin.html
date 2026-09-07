@@ -752,11 +752,19 @@ function lgCardHTML(l){
     l.last_act?('ultima attivit\u00e0 '+ago(l.last_act)):'nessuna attivit\u00e0'
   ].filter(Boolean).join('<br>')
   : ('<b>'+(l.members_active||0)+'/'+(l.members||0)+'</b> membri attivi');
+  /* Le leghe ferme si eliminano da qui: sono quelle che si vogliono togliere di
+     mezzo, e obbligare a entrare nella scheda per farlo era un giro inutile.
+     Il pulsante compare SOLO se e' ferma, non e' la principale, e comunque
+     saDeleteLeague chiede due conferme di cui una col nome esatto. */
+  const kill = (!l.active && l.id!==1)
+    ? `<button class="chip" style="margin-top:10px;border-color:rgba(255,107,107,.4);color:var(--red)"
+         onclick="event.stopPropagation();saDeleteLeague(${l.id})">\ud83d\uddd1\ufe0f Elimina</button>` : '';
   return `<div class="lg" onclick="openLeague(${l.id})">
     <span class="chev">\u203a</span>
     <div class="n"><b>${esc(l.name||'\u2014')}</b><span class="id num">#${l.id}</span>${badges}</div>
     <div class="meta">${meta}</div>
     ${capHTML(l)}
+    ${kill}
   </div>`;
 }
 
@@ -769,12 +777,26 @@ function openLeague(id){
 }
 function closeLeague(){ document.getElementById('pageLeague').classList.remove('on'); }
 async function loadLeagueDetail(id){
-  const { data, error } = await sb.rpc('sa_league_detail',{ p_league:id }).catch(e=>({error:e}));
+  /* ATTENZIONE: sb.rpc() NON restituisce una Promise vera, ma un builder di
+     postgrest-js che espone soltanto `then`. Chiamargli `.catch()` sopra lancia
+     subito un TypeError, la funzione muore prima di scrivere qualcosa e la
+     scheda resta per sempre su «Carico la scheda…». Funziona invece dopo un
+     `.then()`, che una Promise vera la restituisce: e' per questo che loadAll()
+     non ne ha mai risentito. Qui si usa try/catch e non c'e' piu' dubbio. */
+  let data=null, error=null;
+  try{
+    const r = await sb.rpc('sa_league_detail',{ p_league:id });
+    data=r.data; error=r.error;
+  }catch(e){ error=e; }
   const box=document.getElementById('lgDetail');
   const lst=leaguesById[id]||{}, pl=plansById[id]||null;
   if(error||!data){
+    const msg=(error&&(error.message||error.hint))||'';
     box.innerHTML=`<h3>${esc(lst.name||('#'+id))}</h3>
-      <div class="card" style="margin-top:12px"><div class="empty">Scheda non disponibile: serve <span class="num">console_a.sql</span>.</div></div>`
+      <div class="card" style="margin-top:12px"><div class="empty">Scheda non disponibile.
+      ${msg?('<br><span class="num" style="font-size:12px">'+esc(String(msg).slice(0,180))+'</span>')
+           :'Serve <span class="num">console_a.sql</span>.'}</div></div>`
+      + planBoxHTML(id, lst)
       + dangerHTML(id, lst.name||('#'+id));
     return;
   }
@@ -796,17 +818,9 @@ async function loadLeagueDetail(id){
       ${planPill({_founder:founder,_plan:plan,_founder_no:pl?pl.founder_no:null})}
     </div>
 
-    <div class="card" style="margin-top:13px">
-      <h2>Piano</h2>
-      ${kv('Piano attuale', plan==='free'?'FantaCalcetto (gratis)':'FantaCalcetto Pro')}
-      ${founder?kv('Fondatrice','s\u00ec \u00b7 n\u00b0'+(pl&&pl.founder_no?pl.founder_no:'?')+' su '+((plans&&plans.founder_slots)||20)):kv('Fondatrice','no')}
-      ${kv('Tetto membri', plan==='free'?(mem.length+' / '+cap):'nessuno (Pro)')}
-      ${(pl&&pl.plan_since)?kv('Piano dal', dOnly(pl.plan_since)):''}
-      ${plan==='free'&&mem.length>=cap?'<p class="note" style="color:var(--amber)">\u26a0\ufe0f Tetto raggiunto: nuovi ingressi rifiutati con <span class="num">FC015</span>.</p>':''}
-      ${founder?'<p class="note">Le fondatrici hanno Pro per sempre e non entrano nel ricavo stimato. Lo slot si libera solo con un\u2019azione manuale e deliberata.</p>':''}
-      <button class="btn ghost" style="margin-top:11px" onclick="togglePaid(${l.id},${l.is_paid?'false':'true'})">
-        ${l.is_paid?'Riporta a Gratis':'Segna come Pagante'}</button>
-    </div>
+    ${planBoxHTML(l.id, {name:l.name,_plan:plan,_founder:founder,_cap:cap,
+                         _founder_no:pl?pl.founder_no:null,
+                         _since:pl?pl.plan_since:null, _members:mem.length})}
 
     <div class="card">
       <h2>Identikit</h2>
@@ -886,6 +900,47 @@ async function loadLeagueDetail(id){
 
     ${dangerHTML(l.id, l.name)}
   `;
+}
+/* IL PIANO — la console vecchia aveva un solo interruttore, «Segna come
+   pagante», che scriveva `is_paid`. Ma il modello commerciale vive sulla
+   colonna `plan`: cambiare is_paid spostava il ricavo stimato e NON toccava
+   ne' il tetto dei membri ne' quello che l'app mostra all'utente. Da qui in poi
+   il comando e' uno solo, sa_set_plan(), che scrive plan, plan_since e tiene
+   is_paid allineato. */
+function planBoxHTML(id, l){
+  const plan=l._plan||'free', founder=!!l._founder, cap=l._cap||15;
+  const mem=(l._members!=null)?l._members:(l.members||0);
+  const kv=(k,v)=>`<div class="kv"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  const pieno=(plan==='free'&&mem>=cap);
+  return `<div class="card" style="margin-top:13px">
+    <h2>Piano</h2>
+    ${kv('Piano attuale', plan==='free'?'FantaCalcetto (gratis)':'FantaCalcetto Pro')}
+    ${kv('Fondatrice', founder?('s\u00ec \u00b7 n\u00b0'+(l._founder_no||'?')+' su '+((plans&&plans.founder_slots)||20)):'no')}
+    ${kv('Tetto membri', plan==='free'?(mem+' / '+cap):'nessuno (Pro)')}
+    ${l._since?kv('Piano dal', dOnly(l._since)):''}
+    ${pieno?'<p class="note" style="color:var(--amber)">\u26a0\ufe0f Tetto raggiunto: nuovi ingressi rifiutati con <span class="num">FC015</span>.</p>':''}
+    ${plan==='free'
+      ? `<button class="btn" style="margin-top:11px" onclick="setPlan(${id},'pro')">\u2b50 Passa a Pro</button>`
+      : `<button class="btn ghost" style="margin-top:11px" onclick="setPlan(${id},'free')">Riporta a Gratis</button>`}
+    ${founder?'<p class="note">\u00c8 una fondatrice: ha Pro per sempre per patto e non entra nel ricavo stimato. Riportarla a gratis <b>non libera</b> lo slot, che si libera solo a mano.</p>'
+             :'<p class="note">Cambia il piano davvero: tetto dei membri, schermate dell\u2019app e ricavo stimato si allineano tutti a questo.</p>'}
+  </div>`;
+}
+async function setPlan(id, plan){
+  const l=leaguesById[id]||{};
+  const nome=l.name||('#'+id);
+  if(plan==='free' && !confirm('Riportare \u00ab'+nome+'\u00bb al piano gratis?\n\nTorna il tetto dei 15 membri. Se adesso sono di pi\u00f9, restano tutti dentro: il tetto blocca solo i NUOVI ingressi.')) return;
+  try{
+    const { error } = await sb.rpc('sa_set_plan',{ p_league:id, p_plan:plan });
+    if(error) throw error;
+    toast(plan==='pro'?'Passata a Pro':'Riportata a gratis');
+    await loadAll(true);
+    if(document.getElementById('pageLeague').classList.contains('on')) await loadLeagueDetail(id);
+  }catch(e){
+    const m=(e&&e.message)||String(e);
+    if(m.includes('sa_set_plan')||m.includes('does not exist')) toast('Manca console_b2.sql: esegui la SQL nuova');
+    else toast('Errore: '+m);
+  }
 }
 function dangerHTML(id,name){
   if(id===1) return `<div class="card"><h2>Zona pericolosa</h2>
