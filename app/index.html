@@ -2545,7 +2545,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v23';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v24';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -3088,7 +3088,8 @@ function tutPlace(){
   const hole=document.getElementById('tutH');   // NB: H e' gia' l'altezza della finestra
   if(hole){
     if(st.tap){ hole.style.display='none'; }
-    else { hole.style.cssText=`position:fixed;background:transparent;left:${x}px;top:${y}px;width:${w}px;height:${h}px`; }
+    else { hole.style.cssText=`position:fixed;display:block;background:transparent;`
+      +`left:${x}px;top:${y}px;width:${w}px;height:${h}px`; }
   }
   // il fumetto va dove c'e' spazio: sotto se ci sta, altrimenti sopra
   const ch=card.offsetHeight||190;
@@ -4386,7 +4387,9 @@ function renderLegaSeasonHead(){
 /* Elenco stagioni in un foglio a comparsa: scala a 20 stagioni senza diventare
    una fila di pillole illeggibile. */
 function openSeasonPicker(ctx,kind,ref){
-  if(allSeasons.length<2) return;
+  // prima usciva in silenzio: se l'elenco non era arrivato sembrava rotto
+  if(!allSeasons.length){ toast('Sto ancora caricando le stagioni'); return; }
+  if(allSeasons.length<2){ toast('C\u2019\u00e8 una stagione sola, per ora'); return; }
   document.getElementById('sheetTitle').textContent='Stagioni';
   document.getElementById('sheetHint').textContent='Scegli quale stagione guardare. La scheda si aggiorna subito.';
   const q=(ctx==='card')
@@ -8891,6 +8894,15 @@ function shareSeason(){
   p.addEventListener('touchend', ()=>{ y0=x0=null; }, {passive:true});
 })();
 
+/* Il foglio a comparsa sta nel markup PRIMA delle pagine a schermo intero.
+   Con lo z-index basta, ma se un antenato crea un contesto di impilamento
+   (transform, filter, opacity) lo z-index vale solo dentro quel contesto e il
+   foglio torna a finire dietro. Spostarlo in fondo al <body> toglie il dubbio
+   una volta per tutte: a parita' di contesto vince chi viene dopo. */
+try{
+  const _sb=document.getElementById('sheetBg'), _sh=document.getElementById('sheet');
+  if(_sb&&_sh){ document.body.appendChild(_sb); document.body.appendChild(_sh); }
+}catch(_){ }
 boot();
 </script>
 </body>

@@ -141,6 +141,59 @@
   .err{color:var(--red);font-size:13px;margin-top:8px;line-height:1.5}
   .empty{color:var(--muted);font-size:13px;padding:12px 2px;line-height:1.55}
   .skel{color:var(--muted);font-size:13px;padding:8px 2px}
+
+  /* ====================== AGGIUNTE DELLA VERSIONE 2 ======================
+     Il problema della console vecchia non erano i dati: c'erano quasi tutti.
+     Era che stavano tutti nella stessa colonna, uno sotto l'altro, senza una
+     gerarchia — semaforo, manutenzione, numeri, economia, leghe, leghe ferme —
+     e per arrivare a una lega si scorreva mezza pagina. Qui le domande sono
+     separate in tre: «gira?» (Oggi), «chi c'e'?» (Leghe), «quanto costa e
+     quanto rende?» (Conti). Ogni scheda risponde a una sola. */
+
+  .tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);
+    border-radius:14px;padding:5px;margin-bottom:14px;position:sticky;top:60px;z-index:25}
+  .tabs button{flex:1;border-radius:10px;padding:10px 6px;font-size:13.5px;font-weight:700;
+    background:transparent;color:var(--muted);transition:background .15s,color .15s;white-space:nowrap}
+  .tabs button.on{background:var(--surface2);color:var(--text);box-shadow:0 1px 0 rgba(255,255,255,.04) inset}
+  .tabs .dotmark{display:inline-block;width:6px;height:6px;border-radius:50%;
+    background:var(--amber);margin-left:5px;vertical-align:2px}
+  .tabpane{display:none} .tabpane.on{display:block}
+
+  /* una riga «serve un occhio»: titolo, motivo, e dove andare */
+  .att{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line);cursor:pointer}
+  .att:last-child{border-bottom:none}
+  .att .ai{font-size:17px;line-height:1.2;flex:none;width:22px;text-align:center}
+  .att .ab{flex:1;min-width:0}
+  .att .ab b{display:block;font-size:13.5px;font-weight:700}
+  .att .ab small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px;line-height:1.5}
+  .att .ac{flex:none;color:var(--muted);font-size:17px}
+
+  /* filtri: chip che si accendono, invece di quattro bottoni tutti uguali */
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+  .chip{background:var(--surface2);border:1px solid var(--line-strong);border-radius:999px;
+    padding:7px 13px;font-size:12.5px;font-weight:700;color:var(--muted);white-space:nowrap}
+  .chip.on{border-color:var(--accent);color:var(--accent-soft);background:rgba(61,139,255,.12)}
+  .chip .c{opacity:.65;font-weight:600;margin-left:4px}
+
+  .pill.f{background:rgba(234,178,74,.16);color:var(--gold)}
+  .pill.w{background:rgba(255,184,77,.16);color:var(--amber)}
+
+  /* barra del tetto membri: si capisce a colpo d'occhio quanto manca */
+  .cap{height:5px;border-radius:3px;background:var(--surface);overflow:hidden;margin-top:8px}
+  .cap i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
+  .cap.warn i{background:var(--amber)} .cap.full i{background:var(--red)}
+
+  /* slot fondatrici: venti caselle, si contano con gli occhi */
+  .slots{display:flex;flex-wrap:wrap;gap:5px;margin:12px 0 4px}
+  .slots i{width:calc((100% - 9*5px)/10);aspect-ratio:1;border-radius:5px;
+    background:var(--surface2);border:1px solid var(--line)}
+  .slots i.used{background:var(--gold);border-color:var(--gold);opacity:.85}
+
+  .lg .cap{margin-top:9px}
+  .big{font-family:'Bricolage Grotesque',sans-serif;font-size:27px;font-weight:800;letter-spacing:-.03em;line-height:1}
+  .sect{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--muted);margin:20px 2px 10px}
+  .ok-note{color:var(--green);font-size:13px;padding:10px 2px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -178,85 +231,108 @@
 <div class="wrap">
   <div class="top">
     <div class="sp"><h1>Console</h1><p class="sub" id="topSub">—</p></div>
-    <button class="iconbtn" onclick="loadAll()" id="refBtn">↻</button>
+    <button class="iconbtn" onclick="loadAll()" id="refBtn">&#8635;</button>
     <button class="iconbtn" onclick="signOut()">Esci</button>
+  </div>
+
+  <div class="tabs">
+    <button id="tabOggi"  class="on" onclick="setTab('oggi')">Oggi<span class="dotmark" id="attDot" style="display:none"></span></button>
+    <button id="tabLeghe"           onclick="setTab('leghe')">Leghe</button>
+    <button id="tabConti"           onclick="setTab('conti')">Conti</button>
   </div>
 
   <div id="sqlWarn" style="display:none" class="health warn">
     <span class="bulb"></span>
     <div><div class="ht">Manca <span class="num">console_a.sql</span></div>
-      <div class="hs">Le funzioni nuove non rispondono, quindi la console gira in versione ridotta: niente semaforo, niente scheda delle leghe. Esegui il file nell'SQL Editor di Supabase e ricarica.</div></div>
+      <div class="hs">Le funzioni di controllo non rispondono, quindi la console gira in versione ridotta. Esegui il file nell&rsquo;SQL Editor di Supabase e ricarica.</div></div>
+  </div>
+  <div id="sqlWarnB" style="display:none" class="health dim">
+    <span class="bulb"></span>
+    <div><div class="ht">Manca <span class="num">console_b.sql</span></div>
+      <div class="hs">Piani, fondatrici e numero di fondatrice non sono leggibili. Tutto il resto funziona.</div></div>
   </div>
 
-  <!-- semaforo -->
-  <div id="health" class="health dim"><span class="bulb"></span>
-    <div><div class="ht" id="hTitle">Controllo automazione…</div><div class="hs" id="hSub">—</div></div>
-  </div>
-
-  <!-- giornate vive -->
-  <div class="card" id="liveCard" style="display:none">
-    <h2>Giornate vive adesso <span class="rt" id="liveCount"></span></h2>
-    <div id="liveBody"></div>
-  </div>
-
-  <!-- manutenzione globale -->
-  <div class="card">
-    <h2>Manutenzione globale</h2>
-    <div class="row" style="margin-bottom:11px;font-weight:700;font-size:14px">
-      <span class="bulb" id="mDot" style="width:11px;height:11px;border-radius:50%;background:var(--green)"></span>
-      <span id="mLabel">—</span>
+  <!-- ============ OGGI ============ -->
+  <div class="tabpane on" id="paneOggi">
+    <div id="health" class="health dim"><span class="bulb"></span>
+      <div><div class="ht" id="hTitle">Controllo automazione&hellip;</div><div class="hs" id="hSub">&mdash;</div></div>
     </div>
-    <button class="btn" id="mBtn" onclick="toggleMaint()">—</button>
-    <p class="note">Attivandola, <b>tutti gli utenti di tutte le leghe</b> vengono bloccati (e buttati fuori se dentro). Tu resti l'unico a poter usare l'app.</p>
-  </div>
 
-  <!-- numeri -->
-  <div class="card">
-    <h2>Numeri</h2>
-    <div class="grid">
-      <div class="stat blue"><b id="lTot">–</b><span>Leghe</span></div>
-      <div class="stat green"><b id="lAct">–</b><span>Attive (30g)</span></div>
-      <div class="stat muted"><b id="lIna">–</b><span>Ferme</span></div>
-      <div class="stat"><b id="uTot">–</b><span>Utenti</span></div>
-      <div class="stat green"><b id="uAct">–</b><span>Attivi (30g)</span></div>
-      <div class="stat gold"><b id="pTot">–</b><span>Con notifiche</span></div>
+    <div class="card" id="attCard">
+      <h2>Serve un occhio <span class="rt" id="attCount"></span></h2>
+      <div id="attBody"><div class="skel">Controllo&hellip;</div></div>
+    </div>
+
+    <div class="card" id="liveCard" style="display:none">
+      <h2>Giornate vive adesso <span class="rt" id="liveCount"></span></h2>
+      <div id="liveBody"></div>
+    </div>
+
+    <div class="card">
+      <h2>Colpo d&rsquo;occhio</h2>
+      <div class="grid">
+        <div class="stat blue"><b id="lTot">&ndash;</b><span>Leghe</span></div>
+        <div class="stat green"><b id="lAct">&ndash;</b><span>Attive (30g)</span></div>
+        <div class="stat muted"><b id="lIna">&ndash;</b><span>Ferme</span></div>
+        <div class="stat"><b id="uTot">&ndash;</b><span>Utenti</span></div>
+        <div class="stat green"><b id="uAct">&ndash;</b><span>Attivi (30g)</span></div>
+        <div class="stat gold"><b id="pTot">&ndash;</b><span>Con notifiche</span></div>
+      </div>
     </div>
   </div>
 
-  <!-- economia -->
-  <div class="card">
-    <h2>Economia</h2>
-    <div class="grid">
-      <div class="stat red"><b id="eCost">–</b><span>Costo/mese</span></div>
-      <div class="stat gold"><b id="eRev">–</b><span>Ricavo stim.</span></div>
-      <div class="stat" id="eMarginCard"><b id="eMargin">–</b><span>Margine stim.</span></div>
+  <!-- ============ LEGHE ============ -->
+  <div class="tabpane" id="paneLeghe">
+    <div class="card">
+      <input id="lgSearch" placeholder="Cerca nome, admin, email o slug&hellip;" oninput="renderLeagues()" style="margin-bottom:11px">
+      <div class="chips" id="lgFilters"></div>
+      <div class="chips" style="margin-bottom:4px">
+        <button class="chip" data-sort="act" onclick="setSort('act')">Attivit&agrave;</button>
+        <button class="chip" data-sort="mem" onclick="setSort('mem')">Membri</button>
+        <button class="chip" data-sort="new" onclick="setSort('new')">Recenti</button>
+        <button class="chip" data-sort="id"  onclick="setSort('id')">Numero</button>
+      </div>
     </div>
-    <div class="row" style="margin-top:11px">
-      <input id="inCost" inputmode="decimal" placeholder="Costo €/mese">
-      <input id="inPrice" inputmode="decimal" placeholder="Prezzo €/lega">
-    </div>
-    <button class="btn ghost" style="margin-top:10px" onclick="saveEconomics()">Salva economia</button>
-    <p class="note">Inseriti a mano. Ricavo stimato = leghe a pagamento × prezzo per lega.</p>
+    <div class="sect">Elenco <span id="lgCount" style="color:var(--accent-soft)"></span></div>
+    <div id="lgBody"><div class="skel">Carico&hellip;</div></div>
   </div>
 
-  <!-- leghe -->
-  <div class="card">
-    <h2>Leghe <span class="rt" id="lgCount"></span></h2>
-    <input id="lgSearch" placeholder="Cerca per nome, admin o email…" oninput="renderLeagues()" style="margin-bottom:11px">
-    <div class="row" style="margin-bottom:12px;flex-wrap:wrap;gap:7px">
-      <button class="iconbtn" data-sort="id"     onclick="setSort('id')">#</button>
-      <button class="iconbtn" data-sort="act"    onclick="setSort('act')">Attività</button>
-      <button class="iconbtn" data-sort="mem"    onclick="setSort('mem')">Membri</button>
-      <button class="iconbtn" data-sort="new"    onclick="setSort('new')">Recenti</button>
+  <!-- ============ CONTI ============ -->
+  <div class="tabpane" id="paneConti">
+    <div class="card">
+      <h2>Slot fondatrici</h2>
+      <div class="row" style="align-items:baseline;gap:8px">
+        <span class="big num" id="fUsed">&ndash;</span>
+        <span class="sub">su <span class="num" id="fTot">20</span> occupati &middot; <b id="fFree">&ndash;</b> liberi</span>
+      </div>
+      <div class="slots" id="fSlots"></div>
+      <p class="note">Le prime venti leghe hanno Pro per sempre, per patto. Il conto lo tiene il trigger <span class="num">trg_founder_slot</span> nel database, non questa pagina. Uno slot si libera solo con un&rsquo;azione manuale e deliberata.</p>
     </div>
-    <div id="lgBody"><div class="skel">Carico…</div></div>
-  </div>
 
-  <!-- leghe ferme -->
-  <div class="card" id="staleCard" style="display:none">
-    <h2>Leghe ferme <span class="rt" id="staleCount"></span></h2>
-    <div id="staleBody"></div>
-    <p class="note">Nessuna giornata negli ultimi 30 giorni. È il segnale di ritenzione: una lega che smette di giocare sta morendo, e di solito lo fa in silenzio.</p>
+    <div class="card">
+      <h2>Denaro</h2>
+      <div class="grid">
+        <div class="stat red"><b id="eCost">&ndash;</b><span>Costo/mese</span></div>
+        <div class="stat gold"><b id="eRev">&ndash;</b><span>Ricavo stim.</span></div>
+        <div class="stat" id="eMarginCard"><b id="eMargin">&ndash;</b><span>Margine stim.</span></div>
+      </div>
+      <p class="note" id="revNote">&mdash;</p>
+      <div class="row" style="margin-top:11px">
+        <input id="inCost" inputmode="decimal" placeholder="Costo &euro;/mese">
+        <input id="inPrice" inputmode="decimal" placeholder="Prezzo &euro;/lega">
+      </div>
+      <button class="btn ghost" style="margin-top:10px" onclick="saveEconomics()">Salva</button>
+    </div>
+
+    <div class="card">
+      <h2>Manutenzione globale</h2>
+      <div class="row" style="margin-bottom:11px;font-weight:700;font-size:14px">
+        <span class="bulb" id="mDot" style="width:11px;height:11px;border-radius:50%;background:var(--green)"></span>
+        <span id="mLabel">&mdash;</span>
+      </div>
+      <button class="btn" id="mBtn" onclick="toggleMaint()">&mdash;</button>
+      <p class="note">Attivandola, <b>tutti gli utenti di tutte le leghe</b> vengono bloccati (e buttati fuori se sono dentro). Tu resti l&rsquo;unico a poter usare l&rsquo;app.</p>
+    </div>
   </div>
 </div>
 </div>
@@ -264,7 +340,7 @@
 <!-- ========================= DETTAGLIO LEGA ========================= -->
 <div class="page" id="pageLeague">
   <div class="wrap" style="padding-top:max(14px,env(safe-area-inset-top))">
-    <button class="back" onclick="closeLeague()">‹ Tutte le leghe</button>
+    <button class="back" onclick="closeLeague()">&lsaquo; Tutte le leghe</button>
     <div id="lgDetail"></div>
   </div>
 </div>
@@ -280,6 +356,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 const WD = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
 const MIN=60000, HOUR=3600000;
 let emailVal='', leagues=[], leaguesById={}, health=null, sortBy='act', hasNewRpc=true;
+let plans=null, plansById={}, filterBy='all', tab='oggi', attentions=[];
 
 /* ---------- utilita' ---------- */
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -337,60 +414,127 @@ async function verifyCode(){
 }
 async function signOut(){ await sb.auth.signOut(); location.reload(); }
 
+
+/* ---------- schede ---------- */
+function setTab(t){
+  tab=t;
+  ['oggi','leghe','conti'].forEach(k=>{
+    document.getElementById('pane'+k[0].toUpperCase()+k.slice(1)).classList.toggle('on',k===t);
+    document.getElementById('tab' +k[0].toUpperCase()+k.slice(1)).classList.toggle('on',k===t);
+  });
+  window.scrollTo(0,0);
+}
+
 /* ---------- caricamento ---------- */
 async function loadAll(silent){
-  const b=document.getElementById('refBtn'); b.textContent='…'; b.disabled=true;
-  const [ov, he, lg] = await Promise.all([
+  const b=document.getElementById('refBtn'); b.textContent='\u2026'; b.disabled=true;
+  /* quattro chiamate in parallelo, ognuna col suo paracadute: se una manca la
+     console non deve spegnersi, deve solo mostrare un po' meno. */
+  const [ov, he, lg, pl] = await Promise.all([
     sb.rpc('sa_overview').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_health').then(r=>r.error?null:r.data).catch(()=>null),
-    sb.rpc('sa_leagues_full').then(r=>r.error?null:r.data).catch(()=>null)
+    sb.rpc('sa_leagues_full').then(r=>r.error?null:r.data).catch(()=>null),
+    sb.rpc('sa_plans').then(r=>r.error?null:r.data).catch(()=>null)
   ]);
   if(ov) paintOverview(ov);
   health=he;
   hasNewRpc = !!(he || lg);
-  document.getElementById('sqlWarn').style.display = hasNewRpc?'none':'flex';
+  document.getElementById('sqlWarn').style.display  = hasNewRpc?'none':'flex';
+  document.getElementById('sqlWarnB').style.display = pl?'none':'flex';
   paintHealth(he);
+  /* sa_overview non porta sempre il totale delle iscrizioni push; sa_health si.
+     Se manca da una parte lo prendo dall'altra invece di lasciare un trattino. */
+  if(he && he.push_total!=null){
+    const e=document.getElementById('pTot');
+    if(e && (e.textContent==='\u2013'||e.textContent==='')) e.textContent=he.push_total;
+  }
+
   if(lg){ leagues=lg||[]; }
   else {
-    // rete di sicurezza: se console_a.sql non c'e' ancora, si usa la vecchia
     const old=await sb.rpc('sa_leagues').then(r=>r.error?null:r.data).catch(()=>null);
     leagues=(old||[]).map(l=>({ id:l.id, name:l.name, is_paid:l.is_paid, active:l.active,
                                 members:l.members, members_active:l.members_active }));
   }
   leaguesById={}; leagues.forEach(l=>leaguesById[l.id]=l);
+
+  /* i piani arrivano da sa_plans() e si uniscono per id: le funzioni vecchie
+     non sono state toccate, quindi il piano non poteva arrivare da li'. */
+  plans=pl||null; plansById={};
+  if(plans && plans.leagues) plans.leagues.forEach(p=>{ plansById[p.id]=p; });
+  leagues.forEach(l=>{
+    const p=plansById[l.id];
+    l._plan = p ? p.plan : (l.is_paid?'pro':'free');
+    l._founder = p ? !!p.founder : false;
+    l._founder_no = p ? p.founder_no : null;
+    l._cap = p ? p.member_cap : null;
+    if(p && p.members!=null && l.members==null) l.members=p.members;
+  });
+
+  paintMoney(ov);
+  renderFilters();
   renderLeagues();
   renderLive(he);
-  renderStale(he);
+  renderAttention();
   document.getElementById('topSub').textContent='Aggiornata '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
-  b.textContent='↻'; b.disabled=false;
+  b.textContent='\u21bb'; b.disabled=false;
   if(!silent) toast('Aggiornato');
 }
 
 function paintOverview(d){
-  const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=(v==null?'–':v); };
+  const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=(v==null?'\u2013':v); };
   set('lTot',d.leagues_total); set('lAct',d.leagues_active); set('lIna',d.leagues_inactive);
-  set('uTot',d.users_total);   set('uAct',d.users_active);
-  set('eCost',eur(d.monthly_cost)); set('eRev',eur(d.revenue_est)); set('eMargin',eur(d.margin_est));
-  const mc=document.getElementById('eMarginCard');
-  mc.className='stat '+((d.margin_est!=null&&d.margin_est<0)?'red':'green');
+  set('uTot',d.users_total);   set('uAct',d.users_active);   set('pTot',d.push_total);
   if(d.monthly_cost!=null) document.getElementById('inCost').value=d.monthly_cost;
   if(d.price_per_league!=null) document.getElementById('inPrice').value=d.price_per_league;
   const on=!!d.maintenance;
   const dot=document.getElementById('mDot');
   dot.style.background = on?'var(--red)':'var(--green)';
   dot.style.boxShadow  = on?'0 0 0 4px rgba(255,107,107,.18)':'0 0 0 4px rgba(55,201,138,.18)';
-  document.getElementById('mLabel').textContent = on?'ATTIVA — app bloccata per tutti':'Spenta — app online';
+  document.getElementById('mLabel').textContent = on?'ATTIVA \u2014 app bloccata per tutti':'Spenta \u2014 app online';
   const b=document.getElementById('mBtn');
-  b.textContent = on?'🟢 Rimetti l\u2019app online':'🛠️ Attiva manutenzione globale';
+  b.textContent = on?'\ud83d\udfe2 Rimetti l\u2019app online':'\ud83d\udee0\ufe0f Attiva manutenzione globale';
   b.className='btn '+(on?'green':'danger');
   b.dataset.on = on?'1':'0';
+  _lastOverview=d;
+}
+let _lastOverview=null;
+
+/* ---------- denaro ----------
+   Il ricavo stimato della console vecchia contava tutte le leghe segnate come
+   paganti, fondatrici comprese. Ma le fondatrici hanno Pro a vita per patto e
+   non pagheranno mai: tenerle dentro gonfiava il numero e basta. Se sa_plans()
+   risponde si usa il suo conto, che le esclude; altrimenti si ripiega su quello
+   vecchio, dicendolo. */
+function paintMoney(ov){
+  const cost = ov?ov.monthly_cost:null;
+  let rev, nota;
+  if(plans && plans.revenue_real!=null){
+    rev=plans.revenue_real;
+    nota='<b>'+plans.paying+'</b> '+(plans.paying===1?'lega Pro pagante':'leghe Pro paganti')
+        +' \u00d7 '+eur(plans.price)+'. Le <b>'+plans.founder_used+'</b> fondatrici sono escluse: hanno Pro per sempre e non pagheranno mai.';
+  } else {
+    rev = ov?ov.revenue_est:null;
+    nota='Conto vecchio: tutte le leghe segnate come paganti, fondatrici comprese. Esegui <span class="num">console_b.sql</span> per il numero giusto.';
+  }
+  const marg = (cost!=null && rev!=null) ? (Number(rev)-Number(cost)) : null;
+  document.getElementById('eCost').textContent=eur(cost);
+  document.getElementById('eRev').textContent=eur(rev);
+  document.getElementById('eMargin').textContent=eur(marg);
+  document.getElementById('eMarginCard').className='stat '+((marg!=null&&marg<0)?'red':'green');
+  document.getElementById('revNote').innerHTML=nota;
+
+  const used = plans?plans.founder_used:null, tot = plans?plans.founder_slots:20;
+  document.getElementById('fUsed').textContent = used==null?'\u2013':used;
+  document.getElementById('fTot').textContent  = tot;
+  document.getElementById('fFree').textContent = plans?plans.founder_free:'\u2013';
+  let sl=''; for(let i=0;i<tot;i++) sl+='<i class="'+((used!=null&&i<used)?'used':'')+'"></i>';
+  document.getElementById('fSlots').innerHTML=sl;
 }
 
 /* ---------- IL SEMAFORO ----------
    La domanda a cui deve rispondere e' una sola: «sta girando?». Il segnale
    piu' vicino alla verita' e' l'ultima risposta HTTP della Edge Function,
-   perche' dice che notify e' stata chiamata davvero E cosa ha risposto; il
-   giro del cron da solo direbbe «partito» anche se la funzione ha risposto 500.
+   perche' dice che notify e' stata chiamata davvero E cosa ha risposto.
    Verde sotto i 15 minuti, giallo sotto l'ora, rosso oltre. */
 function paintHealth(h){
   const box=document.getElementById('health');
@@ -399,15 +543,14 @@ function paintHealth(h){
     s.textContent='Le funzioni di controllo non rispondono. Esegui console_a.sql.'; return; }
   const job=h.cron_job, run=h.cron_run, http=h.http_last;
   const parts=[];
-
   if(job && job.active===false){
     box.className='health bad';
-    t.textContent='Il cron è SPENTO';
-    s.textContent='Il job «'+(job.jobname||job.jobid)+'» esiste ma è disattivato: non si apre niente e non parte nessun promemoria. Riattivalo con  update cron.job set active=true.';
+    t.textContent='Il cron \u00e8 SPENTO';
+    s.textContent='Il job \u00ab'+(job.jobname||job.jobid)+'\u00bb esiste ma \u00e8 disattivato: non si apre niente e non parte nessun promemoria. Riattivalo con  update cron.job set active=true.';
     return;
   }
   if(!job){ parts.push('job del cron non leggibile'); }
-  else parts.push('job «'+esc(job.jobname||job.jobid)+'» · '+esc(job.schedule||''));
+  else parts.push('job \u00ab'+esc(job.jobname||job.jobid)+'\u00bb \u00b7 '+esc(job.schedule||''));
 
   const age = msAgo(http && http.when);
   const runAge = msAgo(run && run.started);
@@ -424,19 +567,19 @@ function paintHealth(h){
     ttl='Automazione: nessun segnale recente';
     parts.unshift('non risulta nessun giro registrato');
   } else {
-    const quando = ago(http&&http.when) !== '—' ? ago(http.when) : ago(run&&run.started);
-    if(best < 15*MIN){ cls='ok';   ttl='Automazione attiva · ultimo giro '+quando; }
-    else if(best < 60*MIN){ cls='warn'; ttl='Automazione in ritardo · ultimo giro '+quando; }
-    else { cls='bad'; ttl='Automazione FERMA · ultimo giro '+quando; }
+    const quando = ago(http&&http.when) !== '\u2014' ? ago(http.when) : ago(run&&run.started);
+    if(best < 15*MIN){ cls='ok';   ttl='Automazione attiva \u00b7 ultimo giro '+quando; }
+    else if(best < 60*MIN){ cls='warn'; ttl='Automazione in ritardo \u00b7 ultimo giro '+quando; }
+    else { cls='bad'; ttl='Automazione FERMA \u00b7 ultimo giro '+quando; }
   }
   const httpBad = !!(http && Number(http.code)>=400);
   const runBad  = !!(run && run.status && String(run.status).toLowerCase()!=='succeeded');
   if((httpBad||runBad) && cls==='ok') cls='warn';
   box.className='health '+cls;
   t.textContent=ttl;
-  s.innerHTML=parts.join(' · ') + (h.matchdays_open!=null
+  s.innerHTML=parts.join(' \u00b7 ') + (h.matchdays_open!=null
     ? '<br>'+h.matchdays_open+(h.matchdays_open===1?' giornata viva':' giornate vive')
-      +' · '+(h.push_total||0)+' iscrizioni push' : '');
+      +' \u00b7 '+(h.push_total||0)+' iscrizioni push' : '');
 }
 
 /* ---------- giornate vive ---------- */
@@ -452,9 +595,6 @@ function phaseOf(m){
   if(now<=vClose)return 'Voti aperti';
   return 'Da archiviare';
 }
-/* i quattro flag con la loro scadenza: e' qui che si vede se un promemoria
-   e' saltato. La scadenza si calcola dal fischio d'inizio con gli stessi
-   numeri di notify.ts. */
 function flagList(m){
   if(!m || !m.kickoff) return [];
   const k=new Date(m.kickoff).getTime(), lock=k-5*MIN, out=[];
@@ -463,7 +603,7 @@ function flagList(m){
     out.push({key:'presence_remind_sent', lab:'promemoria presenze', due:k-38*HOUR});
     out.push({key:'lineup_open_sent',     lab:'formazioni aperte',   due:k-36*HOUR});
   }
-  out.push({key:'lineup_remind_sent', lab:'schiera (−8h)', due:lock-8*HOUR});
+  out.push({key:'lineup_remind_sent', lab:'schiera (\u22128h)', due:lock-8*HOUR});
   out.push({key:'reminder_sent',      lab:'ultima ora',    due:lock-HOUR});
   return out.filter(f=>m[f.key]!==undefined).map(f=>{
     const sent=!!m[f.key], late=!sent && Date.now()>f.due+20*MIN;
@@ -474,7 +614,7 @@ function flagsHTML(m){
   const fs=flagList(m);
   if(!fs.length) return '';
   return '<div class="flags">'+fs.map(f=>
-    `<span class="fl ${f.sent?'sent':(f.late?'late':'')}">${f.sent?'✓':(f.late?'✕':'·')} ${esc(f.lab)}</span>`
+    `<span class="fl ${f.sent?'sent':(f.late?'late':'')}">${f.sent?'\u2713':(f.late?'\u2715':'\u00b7')} ${esc(f.lab)}</span>`
   ).join('')+'</div>';
 }
 function renderLive(h){
@@ -487,36 +627,91 @@ function renderLive(h){
     const late=flagList(m).some(f=>f.late);
     return `<div class="mrow">
       <div class="mi">
-        <b>${esc(m.league_name||'—')} · ${esc(m.label||'')}</b>
-        <small>${esc(phaseOf(m))} · fischio ${dt(m.kickoff)} · ${m.presenti||0} presenti</small>
+        <b>${esc(m.league_name||'\u2014')} \u00b7 ${esc(m.label||'')}</b>
+        <small>${esc(phaseOf(m))} \u00b7 fischio ${dt(m.kickoff)} \u00b7 ${m.presenti||0} presenti</small>
         ${flagsHTML(m)}
       </div>
       <div class="mr">${late?'<span class="pill r">controlla</span>':'<span class="pill a">ok</span>'}</div>
     </div>`;
   }).join('');
 }
-function renderStale(h){
-  const card=document.getElementById('staleCard'), body=document.getElementById('staleBody');
-  const list=(h&&h.stale_leagues)||[];
-  if(!list.length){ card.style.display='none'; return; }
-  card.style.display='block';
-  document.getElementById('staleCount').textContent=list.length;
-  body.innerHTML=list.map(l=>`<div class="mrow">
-      <div class="mi"><b>${esc(l.name||('#'+l.id))}</b>
-        <small>${l.last?('ultima giornata '+ago(l.last)):'nessuna giornata, mai'}</small></div>
-      <div class="mr">${l.days!=null?('<span class="num">'+l.days+'</span> g'):'—'}</div>
-    </div>`).join('');
+
+/* ---------- «serve un occhio» ----------
+   La console vecchia aveva le leghe ferme in una scheda tutta sua, in fondo, e
+   i promemoria saltati sparsi nelle giornate vive. Erano due liste diverse per
+   la stessa domanda: «c'e' qualcosa che devo guardare?». Qui c'e' una lista
+   sola, ordinata per gravita', e ogni riga si tocca e porta dove serve. */
+function renderAttention(){
+  attentions=[];
+  const h=health||{};
+
+  (h.live_matchdays||[]).forEach(m=>{
+    const late=flagList(m).filter(f=>f.late);
+    if(late.length) attentions.push({sev:0, ic:'\ud83d\udd15',
+      t:esc(m.league_name||'\u2014')+' \u00b7 '+esc(m.label||''),
+      s:(late.length===1?'Promemoria saltato: ':'Promemoria saltati: ')+late.map(f=>f.lab).join(', '),
+      go:m.league_id});
+    else if(Number(m.presenti||0)===0 && phaseOf(m)!=='Sondaggio presenze')
+      attentions.push({sev:1, ic:'\ud83d\udc65',
+        t:esc(m.league_name||'\u2014')+' \u00b7 '+esc(m.label||''),
+        s:'Nessun presente e la giornata \u00e8 gi\u00e0 in \u00ab'+phaseOf(m)+'\u00bb',
+        go:m.league_id});
+  });
+
+  (h.stale_leagues||[]).forEach(l=>{
+    attentions.push({sev:2, ic:'\ud83d\udca4', t:esc(l.name||('#'+l.id)),
+      s:(l.last?('Ferma da '+(l.days!=null?l.days+' giorni':ago(l.last))):'Nessuna giornata, mai')
+        +' \u2014 una lega che smette di giocare muore in silenzio',
+      go:l.id});
+  });
+
+  /* leghe gratis vicine al tetto: e' l'unico momento in cui Pro serve davvero,
+     ed e' quindi l'unico momento in cui ha senso farsi vivi */
+  leagues.forEach(l=>{
+    if(l._plan!=='free') return;
+    const cap=l._cap||15, m=Number(l.members||0);
+    if(m>=cap) attentions.push({sev:1, ic:'\ud83d\udeab', t:esc(l.name||('#'+l.id)),
+      s:'Tetto raggiunto: '+m+'/'+cap+' membri, non pu\u00f2 entrare pi\u00f9 nessuno', go:l.id});
+    else if(m>=cap-2) attentions.push({sev:3, ic:'\u26a0\ufe0f', t:esc(l.name||('#'+l.id)),
+      s:'Vicina al tetto: '+m+'/'+cap+' membri', go:l.id});
+  });
+
+  attentions.sort((a,b)=>a.sev-b.sev);
+  const body=document.getElementById('attBody');
+  document.getElementById('attCount').textContent=attentions.length||'';
+  document.getElementById('attDot').style.display=attentions.length?'inline-block':'none';
+  if(!attentions.length){
+    body.innerHTML='<div class="ok-note">\u2713 Niente da guardare. Tutto quello che doveva partire \u00e8 partito.</div>';
+    return;
+  }
+  body.innerHTML=attentions.map(a=>`<div class="att" onclick="openLeague(${a.go})">
+    <span class="ai">${a.ic}</span>
+    <div class="ab"><b>${a.t}</b><small>${a.s}</small></div>
+    <span class="ac">\u203a</span></div>`).join('');
 }
 
 /* ---------- elenco leghe ---------- */
 function setSort(k){ sortBy=k; renderLeagues(); }
+function setFilter(k){ filterBy=k; renderFilters(); renderLeagues(); }
+function passFilter(l){
+  if(filterBy==='all')     return true;
+  if(filterBy==='pro')     return l._plan!=='free';
+  if(filterBy==='free')    return l._plan==='free';
+  if(filterBy==='founder') return !!l._founder;
+  if(filterBy==='stale')   return !l.active;
+  return true;
+}
+function renderFilters(){
+  const n=k=>leagues.filter(l=>{const s=filterBy;filterBy=k;const r=passFilter(l);filterBy=s;return r;}).length;
+  const defs=[['all','Tutte'],['pro','Pro'],['free','Gratis'],['founder','Fondatrici'],['stale','Ferme']];
+  document.getElementById('lgFilters').innerHTML=defs.map(([k,lab])=>
+    `<button class="chip ${filterBy===k?'on':''}" onclick="setFilter('${k}')">${lab}<span class="c">${n(k)}</span></button>`
+  ).join('');
+}
 function renderLeagues(){
   const q=(document.getElementById('lgSearch').value||'').trim().toLowerCase();
-  document.querySelectorAll('[data-sort]').forEach(b=>{
-    b.style.borderColor = (b.dataset.sort===sortBy)?'var(--accent)':'var(--line-strong)';
-    b.style.color       = (b.dataset.sort===sortBy)?'var(--accent-soft)':'var(--text)';
-  });
-  let list=leagues.slice();
+  document.querySelectorAll('[data-sort]').forEach(b=>b.classList.toggle('on', b.dataset.sort===sortBy));
+  let list=leagues.filter(passFilter);
   if(q) list=list.filter(l=>[l.name,l.admin_name,l.admin_email,l.slug]
     .some(x=>String(x||'').toLowerCase().includes(q)));
   const t=v=>{ const d=v?new Date(v).getTime():0; return isNaN(d)?0:d; };
@@ -524,34 +719,51 @@ function renderLeagues(){
   if(sortBy==='new') list.sort((a,b)=>t(b.created_at)-t(a.created_at));
   if(sortBy==='mem') list.sort((a,b)=>(b.members||0)-(a.members||0));
   if(sortBy==='act') list.sort((a,b)=>t(b.last_act)-t(a.last_act)||b.id-a.id);
-  document.getElementById('lgCount').textContent=list.length+(q?(' / '+leagues.length):'');
-  if(!list.length){ document.getElementById('lgBody').innerHTML='<div class="empty">Nessuna lega trovata.</div>'; return; }
-  document.getElementById('lgBody').innerHTML=list.map(l=>{
-    const badges=[
-      l.active?'<span class="pill a">attiva</span>':'<span class="pill i">ferma</span>',
-      l.is_paid?'<span class="pill p">pagante</span>':'',
-      l.cur_label?'<span class="pill b">'+esc(l.cur_label)+'</span>':'',
-      l.id===1?'<span class="pill b">🔒 principale</span>':''
-    ].filter(Boolean).join(' ');
-    const meta = hasNewRpc ? [
-      '<b>'+(l.members||0)+'</b> membri'+(l.members_push!=null?(' · <b>'+l.members_push+'</b> con notifiche'):''),
-      '<b>'+(l.mds_closed||0)+'</b> giornate giocate'+(l.season_number?(' · stagione '+l.season_number):''),
-      l.admin_name?('admin: <b>'+esc(l.admin_name)+'</b>'):'',
-      l.last_act?('ultima attività '+ago(l.last_act)):'nessuna attività'
-    ].filter(Boolean).join('<br>')
-    : ('<b>'+(l.members_active||0)+'/'+(l.members||0)+'</b> membri attivi');
-    return `<div class="lg" onclick="openLeague(${l.id})">
-      <span class="chev">›</span>
-      <div class="n"><b>${esc(l.name||'—')}</b><span class="id num">#${l.id}</span>${badges}</div>
-      <div class="meta">${meta}</div>
-    </div>`;
-  }).join('');
+  document.getElementById('lgCount').textContent=list.length+(list.length!==leagues.length?(' / '+leagues.length):'');
+  if(!list.length){ document.getElementById('lgBody').innerHTML='<div class="card"><div class="empty">Nessuna lega con questi filtri.</div></div>'; return; }
+  document.getElementById('lgBody').innerHTML=list.map(l=>lgCardHTML(l)).join('');
+}
+function planPill(l){
+  if(l._founder) return '<span class="pill f">\u2b50 fondatrice'+(l._founder_no?(' n\u00b0'+l._founder_no):'')+'</span>';
+  if(l._plan!=='free') return '<span class="pill p">pro</span>';
+  return '<span class="pill i">gratis</span>';
+}
+/* barra del tetto: solo per le gratis. Sulle Pro non c'e' tetto, e disegnare
+   una barra sempre vuota direbbe il contrario. */
+function capHTML(l){
+  if(l._plan!=='free') return '';
+  const cap=l._cap||15, m=Number(l.members||0), pct=Math.min(100,Math.round(m/cap*100));
+  const cls = m>=cap?'full':(m>=cap-2?'warn':'');
+  return `<div class="cap ${cls}"><i style="width:${pct}%"></i></div>`;
+}
+function lgCardHTML(l){
+  const badges=[
+    planPill(l),
+    l.active?'<span class="pill a">attiva</span>':'<span class="pill i">ferma</span>',
+    l.cur_label?'<span class="pill b">'+esc(l.cur_label)+'</span>':'',
+    l.id===1?'<span class="pill b">\ud83d\udd12 principale</span>':''
+  ].filter(Boolean).join(' ');
+  const cap=l._cap||15;
+  const meta = hasNewRpc ? [
+    '<b>'+(l.members||0)+'</b>'+(l._plan==='free'?('/'+cap):'')+' membri'
+      +(l.members_push!=null?(' \u00b7 <b>'+l.members_push+'</b> con notifiche'):''),
+    '<b>'+(l.mds_closed||0)+'</b> giornate giocate'+(l.season_number?(' \u00b7 stagione '+l.season_number):''),
+    l.admin_name?('admin: <b>'+esc(l.admin_name)+'</b>'):'',
+    l.last_act?('ultima attivit\u00e0 '+ago(l.last_act)):'nessuna attivit\u00e0'
+  ].filter(Boolean).join('<br>')
+  : ('<b>'+(l.members_active||0)+'/'+(l.members||0)+'</b> membri attivi');
+  return `<div class="lg" onclick="openLeague(${l.id})">
+    <span class="chev">\u203a</span>
+    <div class="n"><b>${esc(l.name||'\u2014')}</b><span class="id num">#${l.id}</span>${badges}</div>
+    <div class="meta">${meta}</div>
+    ${capHTML(l)}
+  </div>`;
 }
 
 /* ---------- scheda di una lega ---------- */
 function openLeague(id){
   const p=document.getElementById('pageLeague');
-  document.getElementById('lgDetail').innerHTML='<div class="skel">Carico la scheda…</div>';
+  document.getElementById('lgDetail').innerHTML='<div class="skel">Carico la scheda\u2026</div>';
   p.classList.add('on'); p.scrollTop=0;
   loadLeagueDetail(id);
 }
@@ -559,11 +771,11 @@ function closeLeague(){ document.getElementById('pageLeague').classList.remove('
 async function loadLeagueDetail(id){
   const { data, error } = await sb.rpc('sa_league_detail',{ p_league:id }).catch(e=>({error:e}));
   const box=document.getElementById('lgDetail');
+  const lst=leaguesById[id]||{}, pl=plansById[id]||null;
   if(error||!data){
-    const l=leaguesById[id]||{};
-    box.innerHTML=`<h3>${esc(l.name||('#'+id))}</h3>
+    box.innerHTML=`<h3>${esc(lst.name||('#'+id))}</h3>
       <div class="card" style="margin-top:12px"><div class="empty">Scheda non disponibile: serve <span class="num">console_a.sql</span>.</div></div>`
-      + dangerHTML(id, l.name||('#'+id));
+      + dangerHTML(id, lst.name||('#'+id));
     return;
   }
   const l=data.league||{}, mem=data.members||[], mds=data.matchdays||[], seas=data.seasons||[];
@@ -571,21 +783,36 @@ async function loadLeagueDetail(id){
   const closed=mds.filter(m=>m.status==='closed').length;
   const withPush=mem.filter(m=>m.has_push).length;
   const kv=(k,v,mono)=>`<div class="kv"><span class="k">${k}</span><span class="v${mono?' mono':''}">${v}</span></div>`;
+  const founder=pl?!!pl.founder:!!lst._founder;
+  const plan=pl?pl.plan:(lst._plan||(l.is_paid?'pro':'free'));
+  const cap=(pl&&pl.member_cap)||lst._cap||15;
 
   box.innerHTML=`
     <div class="row" style="align-items:flex-start;gap:10px;margin-bottom:4px">
       <div style="flex:1;min-width:0">
-        <h3>${esc(l.name||'—')}</h3>
-        <p class="sub" style="margin-top:4px">#${l.id} · ${esc(l.slug||'')}</p>
+        <h3>${esc(l.name||'\u2014')}</h3>
+        <p class="sub" style="margin-top:4px">#${l.id} \u00b7 ${esc(l.slug||'')}</p>
       </div>
-      ${l.is_paid?'<span class="pill p">pagante</span>':'<span class="pill i">gratis</span>'}
+      ${planPill({_founder:founder,_plan:plan,_founder_no:pl?pl.founder_no:null})}
     </div>
 
     <div class="card" style="margin-top:13px">
+      <h2>Piano</h2>
+      ${kv('Piano attuale', plan==='free'?'FantaCalcetto (gratis)':'FantaCalcetto Pro')}
+      ${founder?kv('Fondatrice','s\u00ec \u00b7 n\u00b0'+(pl&&pl.founder_no?pl.founder_no:'?')+' su '+((plans&&plans.founder_slots)||20)):kv('Fondatrice','no')}
+      ${kv('Tetto membri', plan==='free'?(mem.length+' / '+cap):'nessuno (Pro)')}
+      ${(pl&&pl.plan_since)?kv('Piano dal', dOnly(pl.plan_since)):''}
+      ${plan==='free'&&mem.length>=cap?'<p class="note" style="color:var(--amber)">\u26a0\ufe0f Tetto raggiunto: nuovi ingressi rifiutati con <span class="num">FC015</span>.</p>':''}
+      ${founder?'<p class="note">Le fondatrici hanno Pro per sempre e non entrano nel ricavo stimato. Lo slot si libera solo con un\u2019azione manuale e deliberata.</p>':''}
+      <button class="btn ghost" style="margin-top:11px" onclick="togglePaid(${l.id},${l.is_paid?'false':'true'})">
+        ${l.is_paid?'Riporta a Gratis':'Segna come Pagante'}</button>
+    </div>
+
+    <div class="card">
       <h2>Identikit</h2>
       ${kv('Creata il', dOnly(l.created_at))}
-      ${kv('Da', esc(l.admin_name||'—')+(l.admin_team?(' · '+esc(l.admin_team)):''))}
-      ${kv('Email admin', esc(l.admin_email||'—'), true)}
+      ${kv('Da', esc(l.admin_name||'\u2014')+(l.admin_team?(' \u00b7 '+esc(l.admin_team)):''))}
+      ${kv('Email admin', esc(l.admin_email||'\u2014'), true)}
       ${kv('Link d\'invito','/app/?lega='+esc(l.slug||''), true)}
       <div class="kv"><span class="k">Password lega</span>
         <span class="v mono" id="lgPw"><button class="iconbtn" style="padding:5px 10px;font-size:12px"
@@ -597,18 +824,18 @@ async function loadLeagueDetail(id){
       <div class="grid">
         <div class="stat blue"><b>${mem.length}</b><span>Membri</span></div>
         <div class="stat ${withPush<mem.length?'gold':'green'}"><b>${withPush}</b><span>Con notifiche</span></div>
-        <div class="stat"><b>${l.players!=null?l.players:'–'}</b><span>In rosa</span></div>
+        <div class="stat"><b>${l.players!=null?l.players:'\u2013'}</b><span>In rosa</span></div>
         <div class="stat green"><b>${closed}</b><span>Giornate giocate</span></div>
         <div class="stat"><b>${seas.length}</b><span>Stagioni</span></div>
         <div class="stat muted"><b>${mds.length}</b><span>Giornate viste</span></div>
       </div>
-      ${withPush<mem.length?`<p class="note">⚠️ <b>${mem.length-withPush}</b> ${mem.length-withPush===1?'persona non riceve':'persone non ricevono'} nessuna notifica: su iPhone le push arrivano solo se l'app è stata aggiunta alla Home.</p>`:''}
+      ${withPush<mem.length?`<p class="note">\u26a0\ufe0f <b>${mem.length-withPush}</b> ${mem.length-withPush===1?'persona non riceve':'persone non ricevono'} nessuna notifica: su iPhone le push arrivano solo se l'app \u00e8 stata aggiunta alla Home.</p>`:''}
     </div>
 
     <div class="card">
-      <h2>Come è impostata</h2>
+      <h2>Come \u00e8 impostata</h2>
       ${kv('Apertura', l.auto_open
-          ? ('automatica · ogni '+(l.auto_weekday!=null?WD[l.auto_weekday]:'?')+' alle '+String(l.auto_time||'').slice(0,5))
+          ? ('automatica \u00b7 ogni '+(l.auto_weekday!=null?WD[l.auto_weekday]:'?')+' alle '+String(l.auto_time||'').slice(0,5))
           : '<span style="color:var(--gold-soft)">in pausa</span>')}
       ${kv('Presenze', l.presence_self?'le segnano i giocatori':'le segna l\'admin')}
       ${kv('Portiere', l.gk_fixed?'fisso (ruolo POR)':'a rotazione')}
@@ -617,15 +844,15 @@ async function loadLeagueDetail(id){
 
     ${cur?`<div class="card">
       <h2>Giornata in corso</h2>
-      ${kv('Giornata', esc(cur.label||'—'))}
+      ${kv('Giornata', esc(cur.label||'\u2014'))}
       ${kv('Fase', esc(phaseOf(cur)))}
       ${kv('Fischio d\'inizio', dt(cur.kickoff))}
-      ${kv('Presenti', (cur.presenti||0)+(cur.presenti===0?' ⚠️':''))}
+      ${kv('Presenti', (cur.presenti||0)+(cur.presenti===0?' \u26a0\ufe0f':''))}
       ${kv('Voti arrivati', cur.voti||0)}
-      ${cur.skip_poll?kv('Sondaggio','saltato («Apri subito»)'):''}
+      ${cur.skip_poll?kv('Sondaggio','saltato (\u00abApri subito\u00bb)'):''}
       <p class="note" style="margin-bottom:0">Promemoria automatici:</p>
       ${flagsHTML(cur)}
-      <button class="btn ghost" style="margin-top:13px" onclick="resetFlags(${cur.id},${l.id})">🔄 Rimanda i promemoria</button>
+      <button class="btn ghost" style="margin-top:13px" onclick="resetFlags(${cur.id},${l.id})">\ud83d\udd04 Rimanda i promemoria</button>
       <p class="note">Azzera i flag di invio: al giro successivo (max 10 minuti) il cron rimanda quelli scaduti. Non tocca nessun dato di gioco.</p>
     </div>`:`<div class="card"><h2>Giornata in corso</h2><div class="empty">Nessuna giornata aperta.</div></div>`}
 
@@ -633,10 +860,10 @@ async function loadLeagueDetail(id){
       <h2>Membri <span class="rt">${mem.length}</span></h2>
       ${mem.length?mem.map(m=>`<div class="mrow">
         <div class="mi">
-          <b>${esc(m.team_name||'—')} ${m.is_admin?'<span class="pill p">admin</span>':''}${m.is_player===false?'<span class="pill i">manager</span>':''}</b>
-          <small>${esc(m.player_name||'')} · ${esc(m.email||'—')}</small>
+          <b>${esc(m.team_name||'\u2014')} ${m.is_admin?'<span class="pill p">admin</span>':''}${m.is_player===false?'<span class="pill i">manager</span>':''}</b>
+          <small>${esc(m.player_name||'')} \u00b7 ${esc(m.email||'\u2014')}</small>
         </div>
-        <div class="mr">${m.has_push?'🔔':'<span style="opacity:.45">🔕</span>'}<br>${m.last_seen?ago(m.last_seen):'mai visto'}</div>
+        <div class="mr">${m.has_push?'\ud83d\udd14':'<span style="opacity:.45">\ud83d\udd15</span>'}<br>${m.last_seen?ago(m.last_seen):'mai visto'}</div>
       </div>`).join(''):'<div class="empty">Nessun membro.</div>'}
     </div>
 
@@ -644,7 +871,7 @@ async function loadLeagueDetail(id){
       <h2>Ultime giornate <span class="rt">${mds.length}</span></h2>
       ${mds.length?mds.map(m=>`<div class="mrow">
         <div class="mi"><b>${esc(m.label||('#'+m.id))} ${m.status!=='closed'?'<span class="pill a">viva</span>':''}</b>
-          <small>${dt(m.kickoff)} · ${m.presenti||0} presenti · ${m.voti||0} voti${m.closed_at?(' · chiusa '+ago(m.closed_at)):''}</small></div>
+          <small>${dt(m.kickoff)} \u00b7 ${m.presenti||0} presenti \u00b7 ${m.voti||0} voti${m.closed_at?(' \u00b7 chiusa '+ago(m.closed_at)):''}</small></div>
         <div class="mr num">#${m.id}</div>
       </div>`).join(''):'<div class="empty">Nessuna giornata.</div>'}
     </div>
@@ -653,15 +880,8 @@ async function loadLeagueDetail(id){
       <h2>Stagioni <span class="rt">${seas.length}</span></h2>
       ${seas.length?seas.map(s=>`<div class="mrow">
         <div class="mi"><b>Stagione ${s.number} ${s.status==='open'?'<span class="pill a">aperta</span>':'<span class="pill i">archiviata</span>'}</b>
-          <small>${s.mds}/38 giornate · dal ${dOnly(s.started_at)}${s.ended_at?(' al '+dOnly(s.ended_at)):''}</small></div>
+          <small>${s.mds}/38 giornate \u00b7 dal ${dOnly(s.started_at)}${s.ended_at?(' al '+dOnly(s.ended_at)):''}</small></div>
       </div>`).join(''):'<div class="empty">Nessuna stagione.</div>'}
-    </div>
-
-    <div class="card">
-      <h2>Piano</h2>
-      <button class="btn ghost" onclick="togglePaid(${l.id},${l.is_paid?'false':'true'})">
-        ${l.is_paid?'Riporta a Gratis':'Segna come Pagante'}</button>
-      <p class="note">Alimenta il ricavo stimato in home. Le leghe fondatrici andranno distinte da qui quando ci sarà il Pezzo B.</p>
     </div>
 
     ${dangerHTML(l.id, l.name)}
@@ -669,9 +889,9 @@ async function loadLeagueDetail(id){
 }
 function dangerHTML(id,name){
   if(id===1) return `<div class="card"><h2>Zona pericolosa</h2>
-    <div class="empty">🔒 La lega principale non è eliminabile.</div></div>`;
+    <div class="empty">\ud83d\udd12 La lega principale non \u00e8 eliminabile.</div></div>`;
   return `<div class="card danger-zone"><h2>Zona pericolosa</h2>
-    <button class="btn danger" onclick="saDeleteLeague(${id})">🗑️ Elimina «${esc(name||('#'+id))}»</button>
+    <button class="btn danger" onclick="saDeleteLeague(${id})">\ud83d\uddd1\ufe0f Elimina \u00ab${esc(name||('#'+id))}\u00bb</button>
     <p class="note">Cancella <b>per sempre</b> giocatori, giornate, voti, formazioni, classifiche, sondaggi, impostazioni e gli <b>account email</b> di tutti i membri. Chiede due conferme, la seconda scrivendo il nome esatto.</p>
   </div>`;
 }
@@ -680,10 +900,9 @@ async function revealPw(id){
   try{
     const { data, error } = await sb.rpc('sa_league_password',{ p_league:id });
     if(error) throw error;
-    el.textContent = data || '—';
+    el.textContent = data || '\u2014';
   }catch(e){ el.textContent='non leggibile'; }
 }
-
 /* ---------- azioni ---------- */
 async function resetFlags(mdId, leagueId){
   if(!confirm('Rimandare i promemoria della giornata #'+mdId+'?\n\nI flag di invio vengono azzerati: al prossimo giro il cron rimanda quelli già scaduti. Nessun dato di gioco viene toccato.')) return;
@@ -751,6 +970,7 @@ async function saveEconomics(){
     await loadAll(true);
   }catch(e){ toast('Errore'); }
 }
+
 
 boot();
 </script>
