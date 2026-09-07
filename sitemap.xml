@@ -1,23 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Mappa del sito per i motori di ricerca.
+     Solo le pagine PUBBLICHE della vetrina: /app/ non entra mai qui
+     (ha gia' <meta name="robots" content="noindex">, ed e' giusto cosi').
+
+     <lastmod> va aggiornato quando la pagina cambia DAVVERO: e' un segnale di
+     freschezza, e se dice sempre "oggi" senza che nulla cambi, Google smette
+     di crederci. Formato: AAAA-MM-GG.
+
+     <priority> e <changefreq> sono stati tolti: Google li ignora dichiaratamente
+     dal 2023, e tenerli aggiornati era lavoro sprecato. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.fantacalcettoitalia.it/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
+    <lastmod>2026-09-02</lastmod>
   </url>
   <url>
     <loc>https://www.fantacalcettoitalia.it/regolamento.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-09-02</lastmod>
   </url>
   <url>
     <loc>https://www.fantacalcettoitalia.it/privacy.html</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <lastmod>2026-09-02</lastmod>
   </url>
   <url>
     <loc>https://www.fantacalcettoitalia.it/termini.html</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <lastmod>2026-09-02</lastmod>
   </url>
 </urlset>
