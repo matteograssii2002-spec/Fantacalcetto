@@ -768,6 +768,28 @@
   .subback{display:inline-flex;align-items:center;gap:3px;background:none;border:none;color:var(--accent-soft);font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;padding:8px 2px;margin-top:2px}
   .subback:active{opacity:.7}
   .setpage>.section-h{margin-top:6px}
+  /* SCHERMATA «PRIMA INSTALLALA» (link d'invito) e istruzioni Home.
+     Riusa .overlay/.ob-inner del resto del gate: stesso mondo, non una cosa
+     nuova che sembra un'altra app. */
+  .ig-hero{text-align:center;margin-bottom:4px}
+  .ig-hero .ic{font-size:46px;line-height:1;display:block;margin-bottom:10px}
+  .ig-lega{display:inline-block;margin:12px 0 2px;padding:9px 15px;border-radius:13px;
+    background:rgba(63,151,255,.13);border:1px solid rgba(63,151,255,.3);
+    font-family:'Bricolage Grotesque';font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .ig-steps{margin:20px 0 0;padding:0;list-style:none;counter-reset:igs}
+  .ig-steps li{counter-increment:igs;display:flex;gap:12px;align-items:flex-start;
+    padding:13px 0;border-bottom:1px solid var(--line)}
+  .ig-steps li:last-child{border-bottom:none}
+  .ig-steps li::before{content:counter(igs);flex:none;width:26px;height:26px;border-radius:50%;
+    background:var(--accent);color:#fff;font-weight:800;font-size:13px;
+    display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .ig-steps b{display:block;font-size:14.5px;font-weight:700;margin-bottom:2px}
+  .ig-steps span{font-size:12.5px;color:var(--muted);line-height:1.5}
+  .ig-why{margin-top:16px;padding:12px 14px;border-radius:13px;
+    background:rgba(255,194,61,.10);border:1px solid rgba(255,194,61,.28);
+    font-size:12.5px;line-height:1.55;color:#ffe3ad}
+  .ig-esc{display:block;text-align:center;margin-top:22px;font-size:12.5px;
+    color:var(--muted);text-decoration:underline;cursor:pointer}
   /* Banner notifiche mensile */
   .nbanner{display:none;align-items:center;gap:10px;background:linear-gradient(180deg,rgba(63,151,255,.16),rgba(63,151,255,.06));border:1px solid rgba(63,151,255,.32);border-radius:14px;padding:11px 12px;margin:0 0 6px}
   .nbanner.on{display:flex}
@@ -776,6 +798,11 @@
   .nb-go{flex:none;background:var(--accent);color:#fff;border:none;border-radius:9px;padding:8px 13px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit}
   .nb-go:active{transform:scale(.97)}
   .nb-x{flex:none;background:none;border:none;color:var(--muted);font-size:15px;cursor:pointer;padding:4px 2px}
+  /* variante oro: «aggiungila alla Home». Colore diverso da quello delle
+     notifiche perché chiede una cosa diversa, e i due non escono mai insieme. */
+  .nbanner.home{background:linear-gradient(180deg,rgba(255,194,61,.15),rgba(255,194,61,.05));
+    border-color:rgba(255,194,61,.32)}
+  .nbanner.home .nb-go{background:var(--gold);color:#2a1f05}
   /* Card presenze in home (modalità giocatori) */
   .hpcard{background:linear-gradient(160deg,rgba(255,194,61,.13),rgba(16,36,67,.65));border:1px solid rgba(255,194,61,.34);border-radius:18px;padding:16px 16px 14px;margin:14px 0 4px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
   .hpcard .hp-top{display:flex;align-items:center;gap:8px;font-family:'Bricolage Grotesque';font-weight:800;font-size:15px;color:var(--gold-soft)}
@@ -1716,6 +1743,31 @@
   </div>
 </div></div>
 
+<!-- PRIMA INSTALLALA — chi arriva dal link d'invito su un telefono senza l'app.
+     Due modi di finire qui:
+       'invite' = arrivo dal link, si prosegue solo dal link piccolo in fondo
+       'info'   = l'ho aperta io dal banner, si chiude e basta -->
+<div class="overlay hidden" id="instGate"><div class="ob-inner gate-center">
+  <div class="gate-top">
+    <div class="ob-brand"><div class="dot"><img src="/icon-512.png?v=3" alt=""></div><b>Fanta<span>Calcetto</span></b></div>
+    <div class="gate-bar" id="igBar" style="display:none">
+      <a class="wc-back" onclick="closeInstallHelp()">‹ Indietro</a>
+    </div>
+    <div class="ig-hero">
+      <span class="ic">\ud83d\udcf2</span>
+      <div class="ob-eye" id="igEye">Sei stato invitato</div>
+      <h1 id="igTitle">Prima aggiungila alla Home</h1>
+      <div class="ig-lega" id="igLega" style="display:none"></div>
+    </div>
+    <p class="gate-desc" id="igDesc">Un minuto adesso, e l’app è tua per sempre: si apre a schermo intero e ti avvisa quando si gioca.</p>
+  </div>
+  <div class="gate-bottom">
+    <ol class="ig-steps" id="igSteps"></ol>
+    <div class="ig-why" id="igWhy"></div>
+    <a class="ig-esc" id="igEsc" onclick="instGateSkip()">Continua nel browser, senza installare</a>
+  </div>
+</div></div>
+
 <!-- LOGIN GATE -->
 <div class="overlay hidden" id="gate"><div class="ob-inner gate-center">
   <div class="gate-top">
@@ -1981,6 +2033,12 @@
   </div>
 
   <div class="scrollwrap" id="scrollwrap">
+  <div class="nbanner home" id="homeBanner">
+    <span class="nb-ic">\ud83d\udcf2</span>
+    <span class="nb-tx">Aggiungi l’app alla Home: schermo intero, icona sua e <b>notifiche</b>.</span>
+    <button class="nb-go" onclick="openInstallHelp()">Come</button>
+    <button class="nb-x" onclick="dismissHomeBanner()" aria-label="Chiudi">\u2715</button>
+  </div>
   <div class="nbanner" id="notifBanner">
     <span class="nb-ic">🔔</span>
     <span class="nb-tx">Attiva le notifiche per non perdere l'apertura delle giornate.</span>
@@ -2306,6 +2364,8 @@
         <div style="display:flex;gap:8px;margin-bottom:10px"><input class="ob-input" id="invLink" readonly style="flex:1;margin:0;font-size:12px"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invLink')">Copia</button></div>
         <div class="field-lab">Password</div>
         <div style="display:flex;gap:8px"><input class="ob-input" id="invPwd" readonly style="flex:1;margin:0"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invPwd')">Copia</button></div>
+        <button class="save" style="margin-top:14px" onclick="shareInvite()">\ud83d\udce4 Condividi l\u2019invito</button>
+        <p class="setintro" style="margin:9px 0 0">Prepara il messaggio gi\u00e0 pronto: nome della lega, link, password e come aggiungerla alla Home.</p>
       </div>
     </div>
 
@@ -2545,7 +2605,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v24';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v25';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -3189,6 +3249,119 @@ let authIntent=null;
    sessione salvata sul telefono resta false: serve a distinguere «sono nuovo e
    devo scegliere la lega» da «la mia lega non c'è più». */
 let _interactiveAuth=false;
+/* ------------------------------------------------------------------
+   «PRIMA INSTALLALA»
+   Il link d'invito NON può aprire l'app installata: su iOS non esiste
+   nessun modo di farlo (niente deep link verso le PWA sulla Home, gli
+   Universal Links vogliono un'app nativa sull'App Store) e su Android
+   funziona a intermittenza. Il link quindi serve a chi l'app NON ce l'ha,
+   ed è l'unico ponte fra «un amico ti scrive» e «hai l'icona sulla Home».
+   Il guaio vero era un altro: chi arrivava finiva dritto nel gate del
+   browser, si registrava nella memoria di Safari, e il giorno che
+   installava l'app si ritrovava sloggato — perché su iOS la PWA ha una
+   memoria separata da Safari — senza capire perché. E siccome saltava la
+   vetrina, non vedeva mai nemmeno l'invito a installare.
+   ATTENZIONE: lo slug NON sopravvive all'installazione (iOS installa la
+   start_url del manifest), per questo il nome della lega si scrive grande:
+   è quello che la persona dovrà cercare dopo. ------------------------- */
+function fcIsStandalone(){
+  try{
+    if(window.navigator && window.navigator.standalone===true) return true;
+    return !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  }catch(_){ return false; }
+}
+function fcIsPhone(){ return /iphone|ipad|ipod|android/i.test(navigator.userAgent||''); }
+function fcIsIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent||''); }
+
+function igStepsHTML(){
+  if(fcIsIOS()) return ''
+    +'<li><b>Tocca <span style="font-size:15px">\u2934\ufe0e</span> Condividi</b>'
+    +'<span>Il quadrato con la freccia, in fondo allo schermo (o in alto, se usi Chrome).</span></li>'
+    +'<li><b>Scorri e tocca «Aggiungi a Home»</b><span>La voce con il quadratino e il più.</span></li>'
+    +'<li><b>Tocca «Aggiungi»</b><span>L’icona compare sulla Home come una vera app.</span></li>'
+    +'<li><b>Aprila da lì</b><span>Da adesso in poi usa sempre quell’icona, non il browser.</span></li>';
+  return ''
+    +'<li><b>Tocca ⋮ in alto a destra</b><span>Il menu del browser.</span></li>'
+    +'<li><b>«Installa app» o «Aggiungi a schermata Home»</b><span>A seconda del telefono cambia il nome.</span></li>'
+    +'<li><b>Conferma</b><span>L’icona compare sulla Home come una vera app.</span></li>'
+    +'<li><b>Aprila da lì</b><span>Da adesso in poi usa sempre quell’icona, non il browser.</span></li>';
+}
+function igWhyHTML(){
+  return fcIsIOS()
+    ? '\u26a0\ufe0f Su iPhone le notifiche <b>funzionano solo con l’app installata</b>. Dal browser non arrivano: niente avviso quando si apre la giornata, quando scade la formazione o quando escono i voti.'
+    : '\ud83d\udd14 Installata riceve le notifiche di apertura giornata, formazione in scadenza e voti.';
+}
+/* quando arrivo dal link d'invito e non ho l'app: si passa di qui */
+function showInstGate(lg){
+  hideSplash();
+  ['welcome','gate','league','onboard'].forEach(id=>{const e=document.getElementById(id); if(e)e.classList.add('hidden');});
+  document.getElementById('igBar').style.display='none';
+  document.getElementById('igEye').textContent='Sei stato invitato';
+  document.getElementById('igTitle').textContent='Prima aggiungila alla Home';
+  const L=document.getElementById('igLega');
+  if(lg && lg.name){
+    L.style.display='inline-block';
+    L.textContent=lg.name;
+    document.getElementById('igDesc').innerHTML='Dopo averla installata scegli <b>«Entra in una lega»</b> e cerca questo nome. Ricordatelo: il link non se lo porta dietro.';
+  } else { L.style.display='none'; }
+  document.getElementById('igSteps').innerHTML=igStepsHTML();
+  document.getElementById('igWhy').innerHTML=igWhyHTML();
+  const esc=document.getElementById('igEsc');
+  esc.textContent='Continua nel browser, senza installare';
+  esc.setAttribute('onclick','instGateSkip()');
+  const g=document.getElementById('instGate'); g.classList.remove('hidden'); g.scrollTop=0;
+}
+/* l'uscita di servizio: la ricordo 24h, o chi molla a metà registrazione
+   se la ritrova in faccia a ogni ricarica */
+function instGateSkip(){
+  try{ localStorage.setItem('fc_inv_skip', String(Date.now())); }catch(_){ }
+  document.getElementById('instGate').classList.add('hidden');
+  authIntent='join'; showGate('join');
+}
+function instGateSkipped(){
+  try{
+    const t=parseInt(localStorage.getItem('fc_inv_skip')||'0');
+    return !!t && (Date.now()-t) < 24*3600*1000;
+  }catch(_){ return false; }
+}
+/* la stessa schermata, aperta di mia volontà dal banner: si chiude e basta */
+function openInstallHelp(){
+  dismissHomeBanner();
+  document.getElementById('igBar').style.display='';
+  document.getElementById('igEye').textContent='Installazione';
+  document.getElementById('igTitle').textContent='Aggiungila alla Home';
+  document.getElementById('igLega').style.display='none';
+  document.getElementById('igDesc').textContent='Ci vuole un minuto. Poi l\u2019app si apre a schermo intero, con la sua icona, e pu\u00f2 avvisarti.';
+  document.getElementById('igSteps').innerHTML=igStepsHTML();
+  document.getElementById('igWhy').innerHTML=igWhyHTML();
+  const esc=document.getElementById('igEsc');
+  esc.textContent='Ho capito';
+  esc.setAttribute('onclick','closeInstallHelp()');
+  const g=document.getElementById('instGate'); g.classList.remove('hidden'); g.scrollTop=0;
+}
+function closeInstallHelp(){ document.getElementById('instGate').classList.add('hidden'); }
+
+/* BANNER «aggiungila alla Home»: una volta al mese, solo a chi gioca dal
+   browser. Prima non esisteva, e su iPhone il buco era doppio: senza l'app
+   installata `PushManager` non c'è, quindi pushSupported() è falso e
+   nemmeno il banner delle notifiche usciva mai. Si poteva giocare per mesi
+   senza che niente dicesse che mancava metà del prodotto. */
+function dismissHomeBanner(){
+  const b=document.getElementById('homeBanner'); if(b) b.classList.remove('on');
+  try{ localStorage.setItem('fc_home_banner', String(Date.now())); }catch(_){ }
+}
+function maybeShowHomeBanner(){
+  try{
+    if(fcIsStandalone() || !fcIsPhone()) return false;      // già installata, o non è un telefono
+    if(document.getElementById('lnOk') || _recapPending || document.getElementById('pag').classList.contains('open')) return false;
+    const last=parseInt(localStorage.getItem('fc_home_banner')||'0');
+    if(Date.now()-last < 30*24*3600*1000) return false;
+    const b=document.getElementById('homeBanner'); if(!b) return false;
+    b.classList.add('on');
+    localStorage.setItem('fc_home_banner', String(Date.now()));
+    return true;
+  }catch(_){ return false; }
+}
 function showWelcome(){
   authIntent=null;
   hideSplash();
@@ -3339,7 +3512,13 @@ async function boot(){
     const _slug=new URLSearchParams(location.search).get('lega');
     if(_slug){
       const lg=await resolveInvite();
-      if(lg){ authIntent='join'; showGate('join'); return; }
+      if(lg){
+        // da telefono e senza app installata si passa dalla schermata
+        // d'installazione: è l'unico momento in cui la persona è disposta a
+        // farlo, e se non lo fa adesso non lo farà mai
+        if(fcIsPhone() && !fcIsStandalone() && !instGateSkipped()){ showInstGate(lg); return; }
+        authIntent='join'; showGate('join'); return;
+      }
     }
     showWelcome();
   }
@@ -3406,7 +3585,10 @@ async function afterLogin(){
       maybeShowSeasonRecap().then(shown=>{ if(!shown) maybeShowRecap(); });
     }
     maybeAskPush();          // invito notifiche alla prima apertura (una volta per dispositivo)
-    maybeShowNotifBanner();  // banner mensile per chi non le ha ancora attivate
+    // prima l'installazione, poi le notifiche: senza app sulla Home le push
+    // non possono funzionare (su iPhone PushManager non esiste nemmeno), quindi
+    // i due banner non escono mai insieme e questo ha la precedenza
+    if(!maybeShowHomeBanner()) maybeShowNotifBanner();
     maybeShowTutorial();     // tutorial alla prima apertura (aspetta che il resto sia sparito)
   }
   await loadMaintenance(); subscribeMaintenance();
@@ -3812,6 +3994,29 @@ document.getElementById('lgCreateBtn').onclick=async function(){
   document.getElementById('league').classList.add('hidden');
   showOnboard();
 };
+/* Il messaggio pronto. L'admin da solo scriveva \u00abecco il link\u00bb e basta, e
+   chi lo riceveva non sapeva n\u00e9 il nome della lega (che gli servir\u00e0 dopo
+   l'installazione, perch\u00e9 lo slug non sopravvive) n\u00e9 che l'app va aggiunta
+   alla Home. Qui c'\u00e8 tutto in un colpo solo. */
+function inviteMsg(){
+  const link=(document.getElementById('invLink')||{}).value||'';
+  const pwd =(document.getElementById('invPwd') ||{}).value||'';
+  const nome=(myLeague&&myLeague.name)||'la nostra lega';   // myLeague, non il badge: quello ha l'emoji attaccata
+  return 'Ti ho invitato su FantaCalcetto \u2014 il fanta del nostro calcetto \u26bd\n\n'
+    +'Lega: '+nome+'\n'
+    +'Password: '+pwd+'\n'
+    +link+'\n\n'
+    +'Importante: apri il link dal telefono e AGGIUNGI L\u2019APP ALLA HOME quando te lo chiede. '
+    +'Dal browser le notifiche non arrivano, e su iPhone \u00e8 l\u2019unico modo per riceverle.';
+}
+async function shareInvite(){
+  const t=inviteMsg();
+  try{
+    if(navigator.share){ await navigator.share({text:t}); return; }
+  }catch(_){ return; }   // annullato dall'utente: non \u00e8 un errore
+  try{ await navigator.clipboard.writeText(t); toast('Messaggio copiato \u2705'); }
+  catch(_){ toast('Copia non riuscita'); }
+}
 function copyInvite(id){
   const el=document.getElementById(id); if(!el)return;
   try{ navigator.clipboard.writeText(el.value); toast('Copiato ✅'); }
