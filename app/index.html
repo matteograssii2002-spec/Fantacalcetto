@@ -771,24 +771,22 @@
   /* SCHERMATA «PRIMA INSTALLALA» (link d'invito) e istruzioni Home.
      Riusa .overlay/.ob-inner del resto del gate: stesso mondo, non una cosa
      nuova che sembra un'altra app. */
-  .ig-hero{text-align:center;margin-bottom:4px}
-  .ig-hero .ic{font-size:46px;line-height:1;display:block;margin-bottom:10px}
-  .ig-lega{display:inline-block;margin:12px 0 2px;padding:9px 15px;border-radius:13px;
-    background:rgba(63,151,255,.13);border:1px solid rgba(63,151,255,.3);
-    font-family:'Bricolage Grotesque';font-weight:800;font-size:18px;letter-spacing:-.02em}
-  .ig-steps{margin:20px 0 0;padding:0;list-style:none;counter-reset:igs}
-  .ig-steps li{counter-increment:igs;display:flex;gap:12px;align-items:flex-start;
-    padding:13px 0;border-bottom:1px solid var(--line)}
+  /* Tre passi, una riga l'uno, e basta. La versione lunga aveva occhiello,
+     sottotitolo, quattro passi con descrizione e un riquadro d'avviso: chi
+     arriva da WhatsApp non legge un tema, guarda se ci mette poco. */
+  .ig-hero{text-align:center}
+  .ig-hero .ic{font-size:52px;line-height:1;display:block;margin-bottom:8px}
+  .ig-inv{font-size:14px;color:var(--muted);line-height:1.55;margin:12px 0 0}
+  .ig-inv b{color:var(--text);font-weight:800}
+  .ig-steps{margin:26px 0 0;padding:0;list-style:none;counter-reset:igs}
+  .ig-steps li{counter-increment:igs;display:flex;gap:12px;align-items:center;
+    padding:15px 0;border-bottom:1px solid var(--line);font-size:15px;font-weight:600}
   .ig-steps li:last-child{border-bottom:none}
-  .ig-steps li::before{content:counter(igs);flex:none;width:26px;height:26px;border-radius:50%;
+  .ig-steps li::before{content:counter(igs);flex:none;width:25px;height:25px;border-radius:50%;
     background:var(--accent);color:#fff;font-weight:800;font-size:13px;
-    display:flex;align-items:center;justify-content:center;margin-top:1px}
-  .ig-steps b{display:block;font-size:14.5px;font-weight:700;margin-bottom:2px}
-  .ig-steps span{font-size:12.5px;color:var(--muted);line-height:1.5}
-  .ig-why{margin-top:16px;padding:12px 14px;border-radius:13px;
-    background:rgba(255,194,61,.10);border:1px solid rgba(255,194,61,.28);
-    font-size:12.5px;line-height:1.55;color:#ffe3ad}
-  .ig-esc{display:block;text-align:center;margin-top:22px;font-size:12.5px;
+    display:flex;align-items:center;justify-content:center}
+  .ig-why{margin:20px 0 0;font-size:13px;line-height:1.55;color:var(--gold-soft);text-align:center}
+  .ig-esc{display:block;text-align:center;margin-top:26px;font-size:13px;
     color:var(--muted);text-decoration:underline;cursor:pointer}
   /* Banner notifiche mensile */
   .nbanner{display:none;align-items:center;gap:10px;background:linear-gradient(180deg,rgba(63,151,255,.16),rgba(63,151,255,.06));border:1px solid rgba(63,151,255,.32);border-radius:14px;padding:11px 12px;margin:0 0 6px}
@@ -1754,17 +1752,15 @@
       <a class="wc-back" onclick="closeInstallHelp()">‹ Indietro</a>
     </div>
     <div class="ig-hero">
-      <span class="ic">\ud83d\udcf2</span>
-      <div class="ob-eye" id="igEye">Sei stato invitato</div>
-      <h1 id="igTitle">Prima aggiungila alla Home</h1>
-      <div class="ig-lega" id="igLega" style="display:none"></div>
+      <span class="ic">📲</span>
+      <h1 id="igTitle">Aggiungila alla Home</h1>
+      <p class="ig-inv" id="igLega"></p>
     </div>
-    <p class="gate-desc" id="igDesc">Un minuto adesso, e l’app è tua per sempre: si apre a schermo intero e ti avvisa quando si gioca.</p>
   </div>
   <div class="gate-bottom">
     <ol class="ig-steps" id="igSteps"></ol>
-    <div class="ig-why" id="igWhy"></div>
-    <a class="ig-esc" id="igEsc" onclick="instGateSkip()">Continua nel browser, senza installare</a>
+    <p class="ig-why" id="igWhy"></p>
+    <a class="ig-esc" id="igEsc" onclick="instGateSkip()">Continua nel browser</a>
   </div>
 </div></div>
 
@@ -2034,10 +2030,10 @@
 
   <div class="scrollwrap" id="scrollwrap">
   <div class="nbanner home" id="homeBanner">
-    <span class="nb-ic">\ud83d\udcf2</span>
+    <span class="nb-ic">📲</span>
     <span class="nb-tx">Aggiungi l’app alla Home: schermo intero, icona sua e <b>notifiche</b>.</span>
     <button class="nb-go" onclick="openInstallHelp()">Come</button>
-    <button class="nb-x" onclick="dismissHomeBanner()" aria-label="Chiudi">\u2715</button>
+    <button class="nb-x" onclick="dismissHomeBanner()" aria-label="Chiudi">✕</button>
   </div>
   <div class="nbanner" id="notifBanner">
     <span class="nb-ic">🔔</span>
@@ -2351,6 +2347,7 @@
       <button class="navrow gold" id="inviteCard" onclick="setNav('page-invita')"><span class="ic">✉️</span><span class="lab">Invita nella lega<small>Link d'invito e password</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="manageCard" onclick="setNav('page-giocatori')"><span class="ic">👥</span><span class="lab">Giocatori<small id="manageSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="viceCard" onclick="setNav('page-vice')" style="display:none"><span class="ic">🛡️</span><span class="lab">Vice-admin<small>Chi gestisce le giornate al posto tuo</small></span><span class="go">›</span></button>
+      <button class="navrow gold" id="pushCard" onclick="setNav('page-avvisi')"><span class="ic">🔔</span><span class="lab">Chi riceve gli avvisi<small id="avvisiSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="voterCard" onclick="setNav('page-votanti')"><span class="ic">🗳️</span><span class="lab">Chi può votare<small>Abilita anche i soli-manager</small></span><span class="go">›</span></button>
     </div>
 
@@ -2364,9 +2361,18 @@
         <div style="display:flex;gap:8px;margin-bottom:10px"><input class="ob-input" id="invLink" readonly style="flex:1;margin:0;font-size:12px"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invLink')">Copia</button></div>
         <div class="field-lab">Password</div>
         <div style="display:flex;gap:8px"><input class="ob-input" id="invPwd" readonly style="flex:1;margin:0"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invPwd')">Copia</button></div>
-        <button class="save" style="margin-top:14px" onclick="shareInvite()">\ud83d\udce4 Condividi l\u2019invito</button>
-        <p class="setintro" style="margin:9px 0 0">Prepara il messaggio gi\u00e0 pronto: nome della lega, link, password e come aggiungerla alla Home.</p>
+        <button class="save" style="margin-top:14px" onclick="shareInvite()">📤 Condividi l’invito</button>
+        <p class="setintro" style="margin:9px 0 0">Il messaggio già pronto: nome, link, password e come installarla.</p>
       </div>
+    </div>
+
+    <!-- ===== LEGA: CHI RICEVE GLI AVVISI ===== -->
+    <div class="setpage" id="page-avvisi">
+      <button class="subback" onclick="setNav('page-lega')">‹ Gestione lega</button>
+      <div class="section-h"><h2>Chi riceve gli avvisi</h2></div>
+      <p class="setintro">Chi non ha le notifiche si perde l’apertura della giornata e la formazione in scadenza. Non è un problema suo soltanto: la giornata si trascina per tutti.</p>
+      <div class="set-card"><div id="pushList"><p class="setintro" style="margin:0">Carico…</p></div></div>
+      <div id="pushActions"></div>
     </div>
 
     <!-- ===== LEGA: GIOCATORI ===== -->
@@ -2605,7 +2611,7 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v25';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+const APP_VERSION='v26';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -3274,41 +3280,35 @@ function fcIsPhone(){ return /iphone|ipad|ipod|android/i.test(navigator.userAgen
 function fcIsIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent||''); }
 
 function igStepsHTML(){
-  if(fcIsIOS()) return ''
-    +'<li><b>Tocca <span style="font-size:15px">\u2934\ufe0e</span> Condividi</b>'
-    +'<span>Il quadrato con la freccia, in fondo allo schermo (o in alto, se usi Chrome).</span></li>'
-    +'<li><b>Scorri e tocca «Aggiungi a Home»</b><span>La voce con il quadratino e il più.</span></li>'
-    +'<li><b>Tocca «Aggiungi»</b><span>L’icona compare sulla Home come una vera app.</span></li>'
-    +'<li><b>Aprila da lì</b><span>Da adesso in poi usa sempre quell’icona, non il browser.</span></li>';
-  return ''
-    +'<li><b>Tocca ⋮ in alto a destra</b><span>Il menu del browser.</span></li>'
-    +'<li><b>«Installa app» o «Aggiungi a schermata Home»</b><span>A seconda del telefono cambia il nome.</span></li>'
-    +'<li><b>Conferma</b><span>L’icona compare sulla Home come una vera app.</span></li>'
-    +'<li><b>Aprila da lì</b><span>Da adesso in poi usa sempre quell’icona, non il browser.</span></li>';
+  return fcIsIOS()
+    ? '<li>Tocca <b>Condividi</b> \u2934\ufe0e</li>'
+      +'<li>Scegli <b>Aggiungi a Home</b></li>'
+      +'<li>Apri l\u2019app da l\u00ec</li>'
+    : '<li>Tocca il menu <b>\u22ee</b></li>'
+      +'<li>Scegli <b>Installa app</b></li>'
+      +'<li>Apri l\u2019app da l\u00ec</li>';
 }
 function igWhyHTML(){
   return fcIsIOS()
-    ? '\u26a0\ufe0f Su iPhone le notifiche <b>funzionano solo con l’app installata</b>. Dal browser non arrivano: niente avviso quando si apre la giornata, quando scade la formazione o quando escono i voti.'
-    : '\ud83d\udd14 Installata riceve le notifiche di apertura giornata, formazione in scadenza e voti.';
+    ? 'Su iPhone le notifiche arrivano <b>solo</b> con l\u2019app sulla Home.'
+    : 'Installata riceve le notifiche delle giornate.';
 }
 /* quando arrivo dal link d'invito e non ho l'app: si passa di qui */
 function showInstGate(lg){
   hideSplash();
   ['welcome','gate','league','onboard'].forEach(id=>{const e=document.getElementById(id); if(e)e.classList.add('hidden');});
   document.getElementById('igBar').style.display='none';
-  document.getElementById('igEye').textContent='Sei stato invitato';
-  document.getElementById('igTitle').textContent='Prima aggiungila alla Home';
-  const L=document.getElementById('igLega');
-  if(lg && lg.name){
-    L.style.display='inline-block';
-    L.textContent=lg.name;
-    document.getElementById('igDesc').innerHTML='Dopo averla installata scegli <b>«Entra in una lega»</b> e cerca questo nome. Ricordatelo: il link non se lo porta dietro.';
-  } else { L.style.display='none'; }
+  document.getElementById('igTitle').textContent='Aggiungila alla Home';
+  // il nome della lega e' l'unica cosa in piu' che resta: dopo l'installazione
+  // va cercato a mano, perche' il link non sopravvive (iOS installa la start_url)
+  document.getElementById('igLega').innerHTML = (lg && lg.name)
+    ? 'Sei stato invitato in <b>'+esc(lg.name)+'</b><br>Dopo l\u2019installazione cerca questo nome.'
+    : 'Ci vuole un minuto.';
   document.getElementById('igSteps').innerHTML=igStepsHTML();
   document.getElementById('igWhy').innerHTML=igWhyHTML();
-  const esc=document.getElementById('igEsc');
-  esc.textContent='Continua nel browser, senza installare';
-  esc.setAttribute('onclick','instGateSkip()');
+  const e2=document.getElementById('igEsc');
+  e2.textContent='Continua nel browser';
+  e2.setAttribute('onclick','instGateSkip()');
   const g=document.getElementById('instGate'); g.classList.remove('hidden'); g.scrollTop=0;
 }
 /* l'uscita di servizio: la ricordo 24h, o chi molla a metà registrazione
@@ -3328,10 +3328,8 @@ function instGateSkipped(){
 function openInstallHelp(){
   dismissHomeBanner();
   document.getElementById('igBar').style.display='';
-  document.getElementById('igEye').textContent='Installazione';
   document.getElementById('igTitle').textContent='Aggiungila alla Home';
-  document.getElementById('igLega').style.display='none';
-  document.getElementById('igDesc').textContent='Ci vuole un minuto. Poi l\u2019app si apre a schermo intero, con la sua icona, e pu\u00f2 avvisarti.';
+  document.getElementById('igLega').textContent='Ci vuole un minuto: icona sua, schermo intero, notifiche.';
   document.getElementById('igSteps').innerHTML=igStepsHTML();
   document.getElementById('igWhy').innerHTML=igWhyHTML();
   const esc=document.getElementById('igEsc');
@@ -4014,6 +4012,57 @@ async function shareInvite(){
   try{
     if(navigator.share){ await navigator.share({text:t}); return; }
   }catch(_){ return; }   // annullato dall'utente: non \u00e8 un errore
+  try{ await navigator.clipboard.writeText(t); toast('Messaggio copiato \u2705'); }
+  catch(_){ toast('Copia non riuscita'); }
+}
+/* ---- CHI RICEVE GLI AVVISI (solo amministratore) ---------------------------
+   Le notifiche sono un bene collettivo: se cinque su diciotto non ricevono il
+   promemoria, la giornata si trascina per tutti. Ma finora nessuno poteva
+   accorgersene, perche' il dato esisteva solo nella console del super-admin.
+   Un amministratore che vede i NOMI e manda due righe nel gruppo converte
+   incomparabilmente piu' di qualunque banner dentro l'app: la spinta arriva da
+   una persona, non da un software. */
+let pushRows=null;
+async function loadPushStatus(){
+  try{
+    const {data,error}=await sb.rpc('get_push_status');
+    if(error) throw error;
+    pushRows=data||[];
+  }catch(_){ pushRows=null; }
+  renderPushStatus();
+}
+function renderPushStatus(){
+  const box=document.getElementById('pushList'), act=document.getElementById('pushActions');
+  const sub=document.getElementById('avvisiSub');
+  if(!box) return;
+  if(pushRows===null){
+    box.innerHTML='<p class="setintro" style="margin:0">Non riesco a leggere lo stato delle notifiche. Se la SQL nuova non \u00e8 ancora stata eseguita \u00e8 normale.</p>';
+    if(act) act.innerHTML=''; return;
+  }
+  const tot=pushRows.length, ok=pushRows.filter(r=>r.has_push).length, ko=tot-ok;
+  if(sub) sub.textContent = ko ? (ko+(ko===1?' persona non li riceve':' persone non li ricevono')) : 'Li ricevono tutti';
+  if(!ko){
+    box.innerHTML='<p style="color:var(--good,#3ddc97);font-size:14.5px;font-weight:700;margin:0">\u2713 Le ricevono tutti e '+tot+'.</p>';
+    if(act) act.innerHTML=''; return;
+  }
+  box.innerHTML='<p class="setintro" style="margin:0 0 12px"><b style="color:var(--text)">'+ok+' su '+tot+'</b> ricevono gli avvisi. Questi no:</p>'
+    + pushRows.filter(r=>!r.has_push).map(r=>
+        '<div style="display:flex;align-items:center;gap:9px;padding:10px 0;border-bottom:1px solid var(--line)">'
+        +'<span style="opacity:.45;font-size:15px">\ud83d\udd15</span>'
+        +'<span style="flex:1;min-width:0;font-size:14.5px;font-weight:600">'+esc(r.player_name||r.team_name||'\u2014')+'</span>'
+        +'</div>').join('');
+  if(act) act.innerHTML='<button class="save" onclick="sharePushNudge()">\ud83d\udce4 Mandaglielo nel gruppo</button>'
+    +'<p class="setintro" style="margin:9px 0 0">Un messaggio con i nomi e le due mosse da fare. Mandalo dove parlate di solito: da te lo leggono, da un banner nell\u2019app no.</p>';
+}
+async function sharePushNudge(){
+  if(!pushRows) return;
+  const senza=pushRows.filter(r=>!r.has_push).map(r=>r.player_name||r.team_name||'').filter(Boolean);
+  if(!senza.length) return;
+  const t='\u26bd FantaCalcetto \u2014 '+senza.join(', ')+'\n\n'
+    +'Non vi arrivano le notifiche, quindi vi perdete l\u2019apertura della giornata e l\u2019avviso quando scade la formazione. Due cose, un minuto:\n\n'
+    +'1) Aggiungete l\u2019app alla Home (Condividi \u2192 Aggiungi a Home). Su iPhone dal browser le notifiche non arrivano proprio.\n'
+    +'2) Apritela da l\u00ec e in Impostazioni \u203a Notifiche premete \u00abAttiva le notifiche\u00bb.';
+  try{ if(navigator.share){ await navigator.share({text:t}); return; } }catch(_){ return; }
   try{ await navigator.clipboard.writeText(t); toast('Messaggio copiato \u2705'); }
   catch(_){ toast('Copia non riuscita'); }
 }
@@ -7356,6 +7405,8 @@ function closeTeamLineupPage(){
 /* ---------- SETTINGS ---------- */
 function toggleAcc(head){ const a=head.closest('.acc'); if(a)a.classList.toggle('open'); }
 function setNav(id){
+  if(id==='page-avvisi') loadPushStatus();   // il dato si legge solo entrando qui
+
   document.querySelectorAll('#v-settings .setpage').forEach(p=>p.classList.remove('on'));
   const el=document.getElementById(id); if(el)el.classList.add('on');
   toTop();
