@@ -1056,36 +1056,51 @@
      Meno parole possibile: chi legge deve capire in tre secondi cosa cambia,
      non leggere un dépliant. Le spiegazioni lunghe stanno sulla vetrina. */
   .pro-page{z-index:95}
-  .pro-bar{justify-content:flex-end}
-  .pro-x{width:42px;height:42px;padding:0;border-radius:999px;display:grid;place-items:center;font-size:17px;line-height:1}
-  .pro-top{display:flex;align-items:center;gap:14px;padding:14px 0 6px}
-  .pro-logo{width:62px;height:62px;border-radius:999px;flex:none;border:1.5px solid rgba(255,194,61,.55);
-    padding:5px;background:rgba(255,194,61,.06);object-fit:contain}
+  .pro-bar{justify-content:flex-end;padding-bottom:0}
+  .pro-x{width:40px;height:40px;padding:0;border-radius:999px;display:grid;place-items:center;
+    font-size:15px;line-height:1;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--muted)}
+  .pro-page .bch-page-inner{position:relative;padding-top:0}
+  /* alone dorato dietro al marchio: da' profondita' senza aggiungere elementi
+     da guardare. Sta dietro a tutto e non intercetta i tocchi. */
+  .pro-glow{position:absolute;top:-72px;left:-14%;width:128%;height:300px;pointer-events:none;z-index:0;
+    background:radial-gradient(52% 52% at 26% 44%, rgba(255,194,61,.22), rgba(255,194,61,0) 72%)}
+  .pro-page .bch-page-inner>*:not(.pro-glow){position:relative;z-index:1}
+  .pro-top{display:flex;align-items:center;gap:16px;padding:8px 0 0}
+  .pro-logo{width:66px;height:66px;border-radius:999px;flex:none;border:1.5px solid rgba(255,194,61,.5);
+    padding:5px;background:rgba(255,194,61,.07);object-fit:contain;
+    box-shadow:0 10px 30px -12px rgba(255,194,61,.75)}
   .pro-k{display:block;font-size:16px;font-weight:700;color:var(--muted);line-height:1.1}
-  .pro-tit{font-family:'Bricolage Grotesque',sans-serif;font-size:40px;font-weight:800;line-height:1;
-    letter-spacing:.06em;margin:4px 0 0;
+  .pro-tit{font-family:'Bricolage Grotesque',sans-serif;font-size:42px;font-weight:800;line-height:1;
+    letter-spacing:.05em;margin:6px 0 0;
     background:linear-gradient(135deg,var(--gold-soft),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .pro-why{color:var(--muted);font-size:14.5px;line-height:1.5;margin:14px 0 0}
-  .pro-amount{margin:22px 0 20px}
-  .pro-amount b{font-family:'Bricolage Grotesque',sans-serif;font-size:40px;font-weight:800;line-height:1;letter-spacing:-.02em}
-  .pro-amount span{font-size:18px;font-weight:700;color:var(--muted);margin-left:4px}
-  .pro-amount .pro-amount-sub{font-size:13px;color:var(--muted);margin-top:9px}
-  .pro-tab{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:22px}
-  .pt-h{display:flex;align-items:center;padding:13px 16px 10px;font-size:10.5px;font-weight:800;letter-spacing:.1em;color:var(--muted)}
+  .pro-why{color:var(--muted);font-size:14.5px;line-height:1.5;margin:16px 0 0}
+  .pro-amount{margin:24px 0}
+  .pro-amount b{font-family:'Bricolage Grotesque',sans-serif;font-size:42px;font-weight:800;line-height:1;letter-spacing:-.02em}
+  .pro-amount span{font-size:18px;font-weight:700;color:var(--muted);margin-left:5px}
+  .pro-amount .pro-amount-sub{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5}
+  /* Chi Pro ce l'ha gia' non legge un'offerta: legge uno stato. */
+  .pro-on{display:flex;align-items:center;gap:14px;margin:24px 0;padding:16px;border-radius:18px;
+    background:linear-gradient(135deg,rgba(255,194,61,.16),rgba(255,194,61,.03));border:1px solid rgba(255,194,61,.28)}
+  .pro-on .ic{font-size:26px;line-height:1;flex:none}
+  .pro-on b{display:block;font-size:15.5px}
+  .pro-on small{display:block;color:var(--muted);font-size:12.5px;margin-top:3px}
+  .pro-tab{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:24px}
+  .pt-h{display:flex;align-items:center;padding:15px 18px 11px;font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--muted)}
   .pt-h .k{flex:1}
-  .pt-h .a,.pt-h .b{width:62px;text-align:center}
+  .pt-h .a,.pt-h .b{width:60px;text-align:center}
   .pt-h .b{color:var(--gold-soft)}
-  .pt-r{display:flex;align-items:center;padding:14px 16px;border-top:1px solid var(--line);font-size:14.5px}
+  .pt-r{display:flex;align-items:center;padding:15px 18px;border-top:1px solid var(--line);font-size:14.5px}
   .pt-r .k{flex:1;min-width:0}
-  .pt-r .a,.pt-r .b{width:62px;text-align:center;font-size:16px;font-weight:800}
+  .pt-r .a,.pt-r .b{width:60px;text-align:center;font-size:16px;font-weight:800}
   .pt-r .a{color:var(--neutral)}
   .pt-r .b{color:var(--gold)}
+  .pt-r.only{color:var(--gold-soft)}
   .pro-btn{width:100%;background:linear-gradient(135deg,var(--gold-soft),var(--gold));color:#1b1207;
     font-family:inherit;font-weight:800;font-size:17px;border:none;padding:18px;border-radius:999px;cursor:pointer;
-    box-shadow:0 14px 34px -12px rgba(255,194,61,.8);transition:transform .15s}
+    box-shadow:0 16px 38px -14px rgba(255,194,61,.85);transition:transform .15s}
   .pro-btn:active{transform:scale(.98)}
-  .pro-status{font-size:12.5px;color:var(--muted);line-height:1.5;text-align:center;margin-top:14px}
-  .pro-foot{font-size:12px;color:var(--muted);text-align:center;line-height:1.55;margin:16px 0 0}
+  .pro-status{font-size:12.5px;color:var(--muted);line-height:1.5;text-align:center;margin-top:16px}
+  .pro-foot{font-size:12px;color:var(--muted);text-align:center;line-height:1.55;margin:24px 0 0}
   .pro-foot a{color:var(--muted)}
   .plan-seats{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:12px}
   .plan-seats b{display:block;font-size:14.5px;margin-bottom:4px}
@@ -1198,8 +1213,8 @@
   .ls-body{flex:1;overflow-y:auto;padding:6px 18px 14px;max-width:var(--maxw);width:100%;margin:0 auto}
   .ls-foot{padding:12px 18px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(0deg,var(--bg) 72%,transparent);max-width:var(--maxw);width:100%;margin:0 auto}
   .vp-row{display:flex;align-items:center;gap:11px;padding:9px 11px;background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:9px}
-  .vp-av{width:42px;height:42px;border-radius:11px;overflow:hidden;background:var(--bg2);flex:none;display:grid;place-items:center}
-  .vp-av img{width:100%;height:100%;object-fit:cover}
+  .vp-av{width:42px;border-radius:11px;overflow:hidden;background:var(--bg2);flex:none;line-height:0}
+  .vp-av img{width:42px;height:auto;display:block;border-radius:11px}
   .vp-id{flex:1;min-width:0}
   .vp-id b{font-family:'Bricolage Grotesque';font-weight:800;font-size:15px;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .vp-id span{color:var(--muted);font-size:11.5px}
@@ -2063,7 +2078,7 @@
   <div class="ob-brand"><div class="dot"><img src="/icon-512.png?v=3" alt=""></div><b>Fanta<span>Calcetto</span></b></div>
   <div class="ob-eye">La tua lega</div>
   <h1 id="lgTitle">Entra o crea<br>la tua lega</h1>
-  <p id="lgDesc" style="color:var(--muted);font-size:14px;margin-bottom:18px">Ogni gruppo ha la sua lega privata: il vostro campionato. Crea la tua oppure entra in una esistente con la password che ti ha dato l'admin.</p>
+  <p id="lgDesc" style="color:var(--muted);font-size:14px;margin-bottom:18px">Ogni gruppo ha la sua lega privata. Creane una nuova, o entra in una esistente con la password dell'admin.</p>
 
   <div id="lgChoose">
     <button class="ob-btn" onclick="lgMode('join')">🔑 Entra in una lega</button>
@@ -2282,7 +2297,7 @@
         </button>
         <div class="lggrid disc-body" id="setLogoGrid" style="display:none"></div></div>
       <div class="set-card" id="setPwCard"><h3>Password</h3>
-        <p class="vs" style="color:var(--muted);font-size:12.5px;line-height:1.5;margin:0 0 10px">È quella con cui entri nell'app. Puoi cambiarla quando vuoi: vale dal prossimo accesso.</p>
+        <p class="vs" style="color:var(--muted);font-size:12.5px;line-height:1.5;margin:0 0 10px">La nuova password vale dal prossimo accesso.</p>
         <div class="pw-wrap" style="margin-top:0">
           <input class="ob-input" id="setPwInput" type="password" placeholder="Almeno 8 caratteri" autocomplete="new-password">
           <button type="button" class="pw-eye" id="setPwEye" onclick="togglePw('setPwInput','setPwEye')">Mostra</button>
@@ -2381,7 +2396,7 @@
     <div class="setpage" id="page-quando">
       <button class="subback" onclick="setNav('page-regole')">‹ Regole della lega</button>
       <div class="section-h"><h2>Quando giocate di solito</h2></div>
-      <p class="setintro">Giorno e ora abituali. Con l’apertura automatica la giornata parte da sola 72h prima.</p>
+      <p class="setintro">Giorno e ora abituali. La giornata si apre da sola 72h prima.</p>
       <div class="set-card"><div id="schedBox"></div></div>
       <p class="setintro" style="margin-top:12px">Per spostare <b>solo questa</b> giornata: Centro giornata › Modifica orario.</p>
     </div>
@@ -2429,7 +2444,7 @@
         <p class="vs" id="creditModeHint" style="color:var(--muted);font-size:12px;line-height:1.5"></p>
       </div>
       <div class="set-card" id="creditCard" style="margin-top:12px;display:none">
-        <h3>💰 Sondaggio valori <span class="lockpill" style="color:var(--accent-soft)">admin</span></h3>
+        <h3>💰 Valutazione giocatori <span class="lockpill" style="color:var(--accent-soft)">admin</span></h3>
         <div id="creditPollBox"></div>
       </div>
       <div id="creditReopen"></div>
@@ -2438,7 +2453,7 @@
     <!-- ===== GESTIONE LEGA (elenco) =====
          Qui stanno le PERSONE: chi entra, chi è in rosa, chi può fare cosa.
          Se una voce chiede di scegliere delle persone sta qui; se è un
-         interruttore sta in Regole della lega. Il «Sondaggio valori» è andato
+         interruttore sta in Regole della lega. La «Valutazione giocatori» è andata
          via di qui: era una regola, ora vive in Regole → Crediti dei giocatori. -->
     <div class="setpage" id="page-lega">
       <button class="subback" onclick="setNav('page-admin')">‹ Amministra</button>
@@ -2491,7 +2506,7 @@
     <div class="setpage" id="page-vice">
       <button class="subback" onclick="setNav('page-lega')">‹ Le persone</button>
       <div class="section-h"><h2>Vice-admin</h2></div>
-      <p class="setintro">Gestiscono le giornate al posto tuo: aprire, chiudere, bonus, presenze. Non toccano regole né lega.</p>
+      <p class="setintro">Aprono e chiudono le giornate, inseriscono bonus e presenze. Non toccano le regole della lega.</p>
       <div class="set-card"><div id="viceList" class="preschips"></div></div>
     </div>
 
@@ -2594,11 +2609,13 @@
       <button class="bch-back pro-x" onclick="closePro()" aria-label="Chiudi">✕</button>
     </div>
     <div class="bch-page-inner">
+      <div class="pro-glow"></div>
       <div class="pro-top">
         <img class="pro-logo" src="/icon-512.png?v=4" alt="" onerror="this.style.display='none'">
         <div><span class="pro-k">FantaCalcetto</span><h2 class="pro-tit">PRO</h2></div>
       </div>
       <p class="pro-why" id="proWhy">—</p>
+      <div id="proOn"></div>
       <div class="pro-amount" id="proPrice">
         <b>29,90 €</b><span>/stagione</span>
         <div class="pro-amount-sub">Per tutta la lega, non a testa. Nessun rinnovo automatico.</div>
@@ -2647,7 +2664,7 @@
   <div class="ls-open" id="valuePoll">
     <div class="ls-head">
       <button class="ls-back" onclick="closeValuePoll()">✕</button>
-      <div class="ls-ttl"><b>Sondaggio valori</b><small>Da 1 a 10 · anche mezzi voti</small></div>
+      <div class="ls-ttl"><b>Valutazione giocatori</b><small>Quanto vale ogni giocatore, da 1 a 10. Decide il costo in crediti.</small></div>
     </div>
     <div class="ls-body" id="vpBody"></div>
     <div class="ls-foot" id="vpFoot"></div>
@@ -2862,7 +2879,7 @@ function renderModulePicker(){
   if(av.freeRoles){
     if(!info){ info=document.createElement('div'); info.id='modFreeInfo'; info.className='mod-free-info'; box.parentNode.insertBefore(info, box.nextSibling); }
     info.style.display='block';
-    info.innerHTML='⚠️ Manca un reparto tra i presenti: si gioca col <b>1-2-2 a ruoli liberi</b> (chiunque in qualsiasi posizione, nessun bonus/malus di modulo).';
+    info.innerHTML='⚠️ Manca un reparto tra i presenti. Si gioca <b>1-2-2 a ruoli liberi</b>: nessun bonus di modulo.';
   } else if(info){ info.style.display='none'; }
 }
 
@@ -3781,7 +3798,7 @@ function renderSeasonAdmin(){
         <button class="logout" style="margin-top:12px" onclick="cancelEmptySeason()">↩︎ Annulla l'apertura della Stagione ${currentSeason.number}</button>`;
     } else {
       html+=`<button class="save" style="margin-top:0" onclick="openSeasonNow()">▶︎ Inizia la Stagione ${nextSeasonNumber()}</button>
-        <p class="vs" style="${_mut}">Classifica e statistiche di stagione ripartono da zero con la prima giornata. Traguardi, gol in carriera e albo d'oro restano.</p>`;
+        <p class="vs" style="${_mut}">Classifica e statistiche ripartono da zero. Traguardi, carriera e albo d'oro restano.</p>`;
     }
   }
   // Ricalcolo del recap e avviso diagnostico stavano qui sotto: sono MANUTENZIONE,
@@ -4158,7 +4175,7 @@ function renderPushStatus(){
         +'<span style="flex:1;min-width:0;font-size:14.5px;font-weight:600">'+esc(r.player_name||r.team_name||'\u2014')+'</span>'
         +'</div>').join('');
   if(act) act.innerHTML='<button class="save" onclick="sharePushNudge()">\ud83d\udce4 Mandaglielo nel gruppo</button>'
-    +'<p class="setintro" style="margin:9px 0 0">Un messaggio con i nomi e le due mosse da fare. Mandalo dove parlate di solito: da te lo leggono, da un banner nell\u2019app no.</p>';
+    +'<p class="setintro" style="margin:9px 0 0">Un messaggio con i nomi e le due mosse da fare. Mandalo dove parlate di solito.</p>';
 }
 async function sharePushNudge(){
   if(!pushRows) return;
@@ -4249,7 +4266,7 @@ function helpMailto(){
 }
 function renderHelpBox(){
   const box=document.getElementById('helpBox'); if(!box) return;
-  box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12px;line-height:1.5;margin:6px 0 10px">Scrivici: rispondiamo noi. Nel messaggio finiscono gi\u00e0 lega, versione e giornata, cos\u00ec non dobbiamo chiederteli.</p>
+  box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12px;line-height:1.5;margin:6px 0 10px">Scrivici pure. Lega, versione e giornata sono gi\u00e0 nel messaggio.</p>
     <button class="set-btn" onclick="openHelpMail()">\u2709\ufe0f Segnala un problema</button>
     <button class="set-btn" style="margin-top:9px" onclick="copyHelpMail()">Copia l'indirizzo</button>`;
 }
@@ -5108,9 +5125,9 @@ function renderHomeValuePoll(){
   if(!(creditMode==='poll' && valuePollOpen)){ box.style.display='none'; box.innerHTML=''; return; }
   box.style.display='block';
   box.innerHTML=`
-    <div class="hp-top"><span class="hp-dot"></span>Sondaggio valori aperto</div>
-    <div class="hp-q">${valuePollVoted?'Hai votato ✓ — puoi modificare':'Valuta gli altri giocatori'}</div>
-    <div class="hp-sw"><button class="hp-b yes on" onclick="openValuePoll()">${valuePollVoted?'Modifica i voti →':'Vai al sondaggio →'}</button></div>
+    <div class="hp-top"><span class="hp-dot"></span>Valutazione giocatori aperta</div>
+    <div class="hp-q">${valuePollVoted?'Hai votato ✓ — puoi ancora modificare':'Da 1 a 10: decide il costo in crediti'}</div>
+    <div class="hp-sw"><button class="hp-b yes on" onclick="openValuePoll()">${valuePollVoted?'Modifica i voti →':'Vota →'}</button></div>
     <div class="hp-note">Voto da 1 a 10. Determina i crediti dei giocatori.</div>`;
 }
 
@@ -5150,8 +5167,8 @@ function renderValuePoll(){
 function vpUpdateFoot(){
   const n=Object.keys(vpDraft).length, tot=vpSubjects().length;
   document.getElementById('vpFoot').innerHTML=`
-    <div class="vp-prog" style="text-align:center">Hai votato <b>${n}</b> di ${tot} giocatori</div>
-    <button class="save" onclick="submitValuePoll()">Invia i voti</button>`;
+    <div class="vp-prog" style="text-align:center">Valutati <b>${n}</b> di ${tot}</div>
+    <button class="save" onclick="submitValuePoll()">Invia</button>`;
 }
 async function submitValuePoll(){
   if(Object.keys(vpDraft).length===0){ toast('Vota almeno un giocatore'); return; }
@@ -5201,7 +5218,7 @@ function renderCreditRule(){
   const box=document.getElementById('creditReopen');
   if(box) box.innerHTML = (creditMode==='poll' && !valuePollOpen)
     ? `<button class="set-btn" style="margin-top:12px" onclick="askCreditPoll()">\ud83d\udd01 Riapri il sondaggio</button>`
-      +`<p class="vs" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">I membri rivotano dalla Home; chi non rivota tiene il voto della volta scorsa. I crediti restano quelli attuali finch\u00e9 non premi \u00abChiudi e calcola i crediti\u00bb.</p>`
+      +`<p class="vs" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">I membri rivotano dalla Home. Chi non rivota tiene il voto precedente. I crediti cambiano solo alla chiusura.</p>`
     : '';
 }
 async function askCreditPoll(){
@@ -5216,7 +5233,7 @@ async function askCreditManual(){
   await setCreditMode('manual');
 }
 async function closeAndApplyPoll(){
-  if(!confirm('Chiudere il sondaggio e calcolare i crediti di tutti i giocatori? I crediti attuali verranno sovrascritti (potrai poi modificarli a mano).')) return;
+  if(!confirm('Chiudere la valutazione e ricalcolare i crediti?\n\nI valori attuali verranno sovrascritti. Potrai comunque correggerli a mano.')) return;
   try{ await sb.rpc('close_value_poll_and_apply'); }
   catch(e){ toast('Errore nel calcolo'); return; }
   await loadPlayers();
@@ -5330,7 +5347,7 @@ async function setAutoOpen(on){
    Apre ADESSO la giornata programmata qui sopra: kickoff = prossimo giorno+ora impostati.
    Se non c'è ancora una programmazione, ripiega sull'apertura manuale (data/ora a mano). */
 function openNowHintText(){
-  const base="Fa partire la giornata ADESSO, senza aspettare le 72h. Nella scheda scegli se chiedere le presenze ai giocatori o segnarle tu.";
+  const base="Apre la giornata subito, senza aspettare le 72h. Nella scheda scegli chi segna le presenze.";
   if(schedDraft.weekday==null||!schedDraft.time) return base+' Data e ora a tua scelta.';
   const k=nextWeeklyKickoffLocal(schedDraft.weekday,schedDraft.time);
   return base+' Proporrà '+fmtDayTime(k)+', ma puoi cambiare giorno e ora.';
@@ -5367,7 +5384,7 @@ function renderOpenNowChoice(){
   // Lega in modalità admin: il sondaggio non esiste per definizione, niente da scegliere.
   if(!presenceSelf){
     openNowPoll=false;
-    box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12px;margin:12px 2px 0;line-height:1.5">In questa lega le presenze le segni tu: appena aperta la giornata dovrai indicare chi gioca. Per farle segnare ai giocatori, cambia la regola in \u00abRegole della lega \u203a Presenze\u00bb.</p>`;
+    box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12px;margin:12px 2px 0;line-height:1.5">In questa lega le presenze le segni tu, all\u2019apertura della giornata. Per farle segnare ai giocatori: Regole della lega \u203a Presenze.</p>`;
     if(btn) btn.textContent='\u26a1 Apri subito';
     return;
   }
@@ -5557,8 +5574,8 @@ function openMatchdaySheet(now){
   openNowPoll=false;
   document.getElementById('sheetTitle').textContent = q?'Apri subito la giornata':'Apri nuova giornata';
   document.getElementById('sheetHint').textContent = q
-    ? "Conferma quando si gioca (cambialo se giocate in un giorno diverso dal solito), poi scegli come raccogliere le presenze. La giornata parte adesso, senza aspettare le 72h."
-    : 'Quando si gioca? Le formazioni si bloccano 5 min prima del via, i voti aprono ~1h dopo e restano aperti 24h.';
+    ? "Conferma quando si gioca, poi scegli come raccogliere le presenze. La giornata parte subito."
+    : 'Quando si gioca? Formazioni bloccate 5 min prima del via, voti aperti per 24h.';
   // «Apri subito»: precompilo col prossimo orario programmato (se c'è), altrimenti domani alle 20:00
   let val=defaultKickoff();
   if(q && schedDraft.weekday!=null && schedDraft.time) val=toLocalInput(nextWeeklyKickoffLocal(schedDraft.weekday,schedDraft.time));
@@ -5641,10 +5658,10 @@ function closeMdHintText(){
   if(!currentMd) return '';
   const t=mdTimes(currentMd), now=Date.now();
   if(t && t.voteOpen && now<t.voteOpen)
-    return '⚠️ I voti non sono ancora aperti: chiudendo adesso la giornata conta come giocata ma resta senza voti.';
+    return '⚠️ Voti non ancora aperti: chiudendo adesso la giornata resta senza voti.';
   if(t && isFinite(t.voteClose) && now<=t.voteClose)
-    return '⚠️ I voti sono ancora aperti: chi non ha ancora votato non potrà più farlo. Normalmente la giornata si chiude da sola a fine votazioni.';
-  return 'Votazioni finite: chiudi qui se la chiusura automatica non è scattata. Blocca i voti, aggiorna classifica e crediti.';
+    return '⚠️ Voti ancora aperti: chi non ha votato non potrà più farlo. Di norma la giornata si chiude da sola.';
+  return 'Votazioni finite. Chiudi qui se la chiusura automatica non è scattata: aggiorna classifica e crediti.';
 }
 async function closeMatchday(){
   if(!currentMd)return;
@@ -5681,7 +5698,7 @@ function openEditKickoffSheet(){
   if(!currentMd){toast('Nessuna giornata aperta');return;}
   if(currentMd.status==='closed'){toast('Giornata conclusa');return;}
   document.getElementById('sheetTitle').textContent='Modifica orario di questa giornata';
-  document.getElementById('sheetHint').textContent='Sposta data/ora del match: presenze, formazioni e voti si ricalcolano da qui. Meglio farlo almeno 36h prima del via, così resta tempo per il sondaggio presenze.';
+  document.getElementById('sheetHint').textContent='Sposta data e ora: presenze, formazioni e voti si ricalcolano. Meglio almeno 36h prima del via.';
   const cur=currentMd.kickoff?toLocalInput(new Date(currentMd.kickoff)):defaultKickoff();
   document.getElementById('sheetList').innerHTML=`
     <div class="field-lab">Nuova data e ora della partita</div>
@@ -6011,7 +6028,7 @@ function renderMdCenter(){
   // il riquadro di stato viene PRIMA del pulsante: spiega la situazione, poi propone la mossa
   let h='';
   if(key==='open') h+=autoOpenStatusHTML();
-  if(key==='pres') h+=`<div class="mdc-note warn">\u26a0\ufe0f <b>Nessuno risulta presente.</b> Le formazioni sono aperte ma la lista \u00e8 vuota: cos\u00ec nessuno pu\u00f2 schierare. Segna tu chi gioca e tutti potranno andare in campo.</div>`;
+  if(key==='pres') h+=`<div class="mdc-note warn">\u26a0\ufe0f <b>Nessun presente.</b> Le formazioni sono aperte ma nessuno pu\u00f2 schierare. Segna chi gioca.</div>`;
   h+=mdActionHTML(key,14);
   if(key==='open')  h+=`<p class="vs" id="openNowHint" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${openNowHintText()}</p>`
     +`<button class="set-btn" style="margin-top:10px" onclick="setNav('page-quando')">\ud83d\uddd3\ufe0f Quando giocate di solito</button>`;
@@ -6517,19 +6534,24 @@ function renderProPage(reason){
   const foot=document.getElementById('proFoot');
   const price=document.getElementById('proPrice');
   const tab=document.getElementById('proTab');
+  const on=document.getElementById('proOn');
   const owner=!!(profile&&profile.is_admin);
   if(tab) tab.innerHTML=proTabHTML();
 
-  /* Chi e' gia' Pro non deve leggere un'offerta: legge una conferma. */
+  /* Chi e' gia' Pro non deve leggere un'offerta: legge uno stato. */
   if(isPro()){
     if(why) why.textContent = myPlan.founder
-      ? "Lega fondatrice: Pro gratis, per sempre."
-      : "La tua lega \u00e8 Pro.";
+      ? 'Tutto attivo, senza scadenza.'
+      : 'Tutto attivo per la tua lega.';
     if(price) price.style.display='none';
+    if(on) on.innerHTML='<div class="pro-on"><span class="ic">'+(myPlan.founder?'\ud83c\udfc5':'\u2b50')+'</span>'
+      +'<div><b>'+(myPlan.founder?'Lega fondatrice':'Pro attivo')+'</b>'
+      +'<small>'+(myPlan.founder?'Una delle prime 20 leghe. Pro gratis, per sempre.':'Giocatori illimitati e tutte le stagioni.')+'</small></div></div>';
     if(cta) cta.innerHTML='';
-    if(foot) foot.innerHTML = myPlan.founder ? "\ud83c\udfc5 Una delle prime 20 leghe" : '';
+    if(foot) foot.innerHTML='';
     return;
   }
+  if(on) on.innerHTML='';
   if(price) price.style.display='';
   if(why) why.textContent = proWhyText(reason);
 
@@ -6580,7 +6602,7 @@ function renderPlanUI(){
       const n=myPlan.members, cap=myPlan.member_cap, left=myPlan.seats_left, full=(left<=0);
       b.className='plan-seats'+(full?' full':'');
       b.innerHTML='<b>Rosa: '+n+' di '+cap+'</b><span>'
-        +(full ? 'Siete al completo: chi prova a entrare adesso resta fuori. Nessuno di voi viene toccato.'
+        +(full ? 'Numero massimo raggiunto: chi prova a entrare adesso resta fuori.'
                : (left===1?'Resta un posto.':'Restano '+left+' posti.')+' Il piano gratuito arriva a '+cap+' persone.')
         +'</span><button onclick="openPro(\''+(full?'muro':'tetto')+'\')">FantaCalcetto Pro \u203a</button>';
     }
@@ -6602,7 +6624,7 @@ function maybePlanFullNotice(){
   o.innerHTML='<div style="max-width:340px;background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:20px;padding:22px;text-align:center;box-shadow:0 24px 60px -20px rgba(0,0,0,.7)">'
     +'<div style="font-size:34px;margin-bottom:10px">\u26a0\ufe0f</div>'
     +'<div style="font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px;color:#eaf1fb">La lega \u00e8 al completo</div>'
-    +'<p style="color:#8aa3c2;font-size:14px;line-height:1.55;margin:0 0 18px">Siete in <b>'+myPlan.members+'</b>, il massimo del piano gratuito. Nessuno viene toccato e la lega funziona come sempre \u2014 ma il prossimo che prova a entrare rester\u00e0 fuori.</p>'
+    +'<p style="color:#8aa3c2;font-size:14px;line-height:1.55;margin:0 0 18px">Siete <b>'+myPlan.members+'</b>, il massimo del piano gratuito. La lega continua a funzionare, ma il prossimo che prova a entrare resta fuori.</p>'
     +'<button id="pfOk" style="width:100%;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;border:none;padding:14px;border-radius:13px;cursor:pointer">Ho capito</button>'
     +'<button id="pfPro" style="width:100%;margin-top:9px;background:none;border:none;color:#ffc23d;font-weight:700;font-size:13.5px;padding:8px;cursor:pointer">Vedi FantaCalcetto Pro</button></div>';
   document.body.appendChild(o);
@@ -6654,7 +6676,7 @@ function askAccountDeletion(){
     +'<div style="font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:20px;margin-bottom:10px;color:#eaf1fb;text-align:center">Elimina il mio account</div>'
     +'<p style="color:#8aa3c2;font-size:13.5px;line-height:1.55;margin:0 0 12px">La cancellazione rimuove il profilo e <b style="color:#eaf1fb">tutti i dati di gioco</b>: punteggi, voti, presenze e trofei. La classifica della lega cambier\u00e0 per tutti. <b style="color:#eaf1fb">L\'operazione non si pu\u00f2 annullare.</b></p>'
     + (owner
-        ? '<p style="color:#f3e2be;font-size:13px;line-height:1.5;margin:0 0 12px;background:rgba(255,194,61,.1);border-left:3px solid #ffc23d;border-radius:0 10px 10px 0;padding:11px 13px">\u26a0\ufe0f Amministri una lega: prima della cancellazione va deciso a chi passarla, altrimenti gli altri membri restano senza nessuno che apra le giornate. Indicalo nel messaggio.</p>'
+        ? '<p style="color:#f3e2be;font-size:13px;line-height:1.5;margin:0 0 12px;background:rgba(255,194,61,.1);border-left:3px solid #ffc23d;border-radius:0 10px 10px 0;padding:11px 13px">\u26a0\ufe0f Amministri una lega: indica nel messaggio a chi passarla, altrimenti nessuno potr\u00e0 pi\u00f9 aprire le giornate.</p>'
         : '')
     +'<p style="color:#8aa3c2;font-size:13px;line-height:1.55;margin:0 0 18px">Premendo qui sotto si apre un messaggio gi\u00e0 scritto, indirizzato a <b style="color:#eaf1fb">'+LEGAL_MAIL+'</b>. La cancellazione viene eseguita <b style="color:#eaf1fb">entro 30 giorni</b> e riceverai conferma.</p>'
     +'<button id="adMail" style="width:100%;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;border:none;padding:14px;border-radius:13px;cursor:pointer">Scrivi la richiesta</button>'
@@ -7373,7 +7395,7 @@ function renderMarketSortUI(){
 function renderMarket(){
   const grid=document.getElementById('marketGrid'), emp=document.getElementById('marketEmpty');
   renderMarketSortUI();
-  if(!players.length){grid.innerHTML='';emp.innerHTML='<div class="empty-note">Il pool è vuoto. Le persone compaiono qui quando si registrano, oppure aggiungili tu da <b>Impostazioni → Gestione giocatori</b>.</div>';return;}
+  if(!players.length){grid.innerHTML='';emp.innerHTML='<div class="empty-note">Nessun giocatore. Compaiono qui quando si registrano, oppure aggiungili da <b>Impostazioni › Gestione giocatori</b>.</div>';return;}
   emp.innerHTML='';
   const topGol=Math.max(0,...players.map(p=>(playerStats[p.id]||{}).gol||0));
   const topAst=Math.max(0,...players.map(p=>(playerStats[p.id]||{}).assist||0));
@@ -7538,7 +7560,7 @@ function renderVoti(){
   computeLock();
   const active=!!(currentMd&&currentMd.status!=='closed');
   if(!active){
-    const vl=document.getElementById('voteList'); if(vl)vl.innerHTML='<div class="empty-note">Nessuna giornata aperta. I giocatori da votare compariranno appena l\'admin apre la prossima giornata.</div>';
+    const vl=document.getElementById('voteList'); if(vl)vl.innerHTML='<div class="empty-note">Nessuna giornata aperta. I giocatori da votare compaiono all\'apertura della prossima.</div>';
     const vr=document.getElementById('voteReq'); if(vr)vr.style.display='none';
     const sbtn=document.getElementById('submitVotesBtn'); if(sbtn)sbtn.style.display='none';
     if(canOp()) renderLiveOpenBtn();
@@ -7548,7 +7570,7 @@ function renderVoti(){
   const pres=players.filter(isPresent);
   const allowed=canIVote();
   const dis=(votesLocked||!allowed)?'disabled':'';
-  const noteV=(!allowed&&currentMd&&!votesLocked)?'<div class="vs" style="color:#b89a6a;margin:0 0 8px">🔒 Possono votare solo i giocatori che hanno giocato questa giornata. Se fai solo il manager, l\'admin può abilitarti dalle Impostazioni.</div>':'';
+  const noteV=(!allowed&&currentMd&&!votesLocked)?'<div class="vs" style="color:#b89a6a;margin:0 0 8px">🔒 Votano solo i giocatori di questa giornata. Se fai solo il manager, l\'admin può abilitarti.</div>':'';
   const showAvg=false;   // media voti NON visibile durante la votazione (nemmeno all'admin): si vede solo dopo la chiusura
   document.getElementById('voteList').innerHTML=noteV+(pres.length?pres.map(p=>{
     const a=averages[p.id];
@@ -7997,7 +8019,7 @@ async function openTeamLineup(managerId, teamName){
   if(!started && !isMine){
     document.getElementById('tlpTitle').textContent=teamName;
     document.getElementById('tlpHint').textContent='🔒 Formazione nascosta';
-    document.getElementById('tlpList').innerHTML='<div class="empty-note" style="padding:18px;line-height:1.5">Le formazioni avversarie si vedono dall\'inizio della partita, così nessuno può copiare.</div>';
+    document.getElementById('tlpList').innerHTML='<div class="empty-note" style="padding:18px;line-height:1.5">Le formazioni avversarie si vedono dall\'inizio della partita.</div>';
     openTeamLineupPage(); return;
   }
   const {data:lns}=await sb.from('lineups').select('*').eq('matchday_id',md).eq('manager_id',managerId);
