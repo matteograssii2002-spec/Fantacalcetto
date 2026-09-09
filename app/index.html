@@ -466,6 +466,7 @@
   .prescell.on{border-color:rgba(47,217,138,.55);background:rgba(47,217,138,.10)}
   .prescell.on .pc-nm{color:var(--text)}
   .prescell.on .pc-tk{background:var(--green);border-color:var(--green);color:#06251a}
+  .prescell.lock{opacity:.72}
   .prescell.blue.on{border-color:rgba(63,151,255,.55);background:rgba(63,151,255,.12)}
   .prescell.blue.on .pc-tk{background:var(--accent);border-color:var(--accent);color:#05142c}
   .presbar{display:flex;align-items:center;justify-content:space-between;gap:10px;
@@ -2386,6 +2387,13 @@
           </div>
         </div>
       </div>
+      <div class="acc gold" id="voteCard" style="display:none">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🗳️</span><span>Chi può votare</span></span><span class="acc-chev">▾</span></button>
+        <div class="acc-body">
+          <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Chi gioca e chi amministra vota già. Aggiungi chi c'è ma non scende in campo.</p>
+          <div id="voterList"></div>
+        </div>
+      </div>
       <div class="acc gold" id="presCard">
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🟢</span><span id="presTitle">Chi gioca questa giornata</span></span><span class="acc-chev">▾</span></button>
         <div class="acc-body">
@@ -2494,7 +2502,6 @@
       <button class="navrow gold" id="manageCard" onclick="setNav('page-giocatori')"><span class="ic">👥</span><span class="lab">Giocatori<small id="manageSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="viceCard" onclick="setNav('page-vice')" style="display:none"><span class="ic">🛡️</span><span class="lab">Vice-admin<small>Chi gestisce le giornate al posto tuo</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="pushCard" onclick="setNav('page-avvisi')"><span class="ic">🔔</span><span class="lab">Chi riceve gli avvisi<small id="avvisiSub">—</small></span><span class="go">›</span></button>
-      <button class="navrow gold" id="voterCard" onclick="setNav('page-votanti')"><span class="ic">🗳️</span><span class="lab">Chi può votare<small>Abilita anche i soli-manager</small></span><span class="go">›</span></button>
     </div>
 
     <!-- ===== LEGA: INVITA ===== -->
@@ -2538,14 +2545,6 @@
       <div class="section-h"><h2>Vice-admin</h2></div>
       <p class="setintro">Aprono e chiudono le giornate, inseriscono bonus e presenze. Non toccano le regole della lega.</p>
       <div class="set-card"><div id="viceList"></div></div>
-    </div>
-
-    <!-- ===== LEGA: CHI PUÒ VOTARE ===== -->
-    <div class="setpage" id="page-votanti">
-      <button class="subback" onclick="setNav('page-lega')">‹ Le persone</button>
-      <div class="section-h"><h2>Chi può votare</h2></div>
-      <p class="setintro">Votano i giocatori scesi in campo. Qui abiliti anche chi fa solo il manager.</p>
-      <div class="set-card"><div id="voterList"></div></div>
     </div>
 
     <!-- ===== AIUTO E MANUTENZIONE =====
@@ -2789,6 +2788,8 @@ let matchdaysList=[], selStandingsMd='', mdStandings=[];
 let playerStats={}, mdPresent=new Set();
 let _statCardId=null;   // id giocatore della bacheca aperta (anti-race)
 let iAmExtraVoter=false;
+let mdVoters=new Set();      // chi puo' votare QUESTA giornata (oltre a chi gioca e all'admin)
+let _leagueMembers=null;     // elenco membri: cambia di rado, si chiede una volta
 let voteDirty=false;
 let _autoClosing=false;   // guardia: evita doppie chiusure automatiche
 function presentId(id){ return currentMd ? mdPresent.has(id) : false; }
@@ -5003,13 +5004,26 @@ async function loadMdPresent(){
   (data||[]).forEach(r=>mdPresent.add(r.player_id));
 }
 async function loadCanVote(){
-  iAmExtraVoter=false;
-  try{ const {data}=await sb.from('extra_voters').select('profile_id').eq('profile_id',user.id).maybeSingle(); iAmExtraVoter=!!data; }catch(_){}
+  /* Chi puo' votare e' ora un dato della GIORNATA, non della lega.
+     Se `voti_giornata.sql` non e' ancora passata la RPC non esiste: si ripiega
+     sul vecchio elenco permanente, cosi' nessuno resta muto nel frattempo. */
+  mdVoters=new Set(); iAmExtraVoter=false;
+  if(!currentMd) return;
+  let ok=false;
+  try{
+    const r=await sb.rpc('get_matchday_voters',{p_md:currentMd.id});
+    if(!r.error){ ok=true; (r.data||[]).forEach(x=>mdVoters.add(x&&x.profile_id?x.profile_id:x)); }
+  }catch(_){ }
+  if(!ok){
+    try{ const {data}=await sb.from('extra_voters').select('profile_id');
+         (data||[]).forEach(r=>mdVoters.add(r.profile_id)); }catch(_){ }
+  }
+  iAmExtraVoter=mdVoters.has(user.id);
 }
 function canIVote(){
   if(!currentMd)return false;
   if(canOp())return true;          // proprietario/vice puo' sempre votare
-  if(iAmExtraVoter)return true;                       // manager-solo abilitato
+  if(iAmExtraVoter)return true;                       // aggiunto a mano per questa giornata
   return players.some(p=>p.owner_id===user.id&&presentId(p.id)); // ha giocato (suo personaggio presente)
 }
 
@@ -6253,7 +6267,7 @@ function applyProfile(){
   ['gkCard','presModeCard','schedCard','creditRow','seasonCard'].forEach(id=>{const e=document.getElementById(id); if(e)e.style.display=profile.is_admin?'':'none';});   // regole: solo proprietario
   renderRuleRows();
 }
-function renderAll(){renderHero();renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderSeasonRecapButton();renderHomeBcards();renderCampoTeam();renderPlanUI();}
+function renderAll(){renderHero();renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderVoters();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderSeasonRecapButton();renderHomeBcards();renderCampoTeam();renderPlanUI();}
 /* striscia squadra (logo + nome) sopra il campo verde */
 function renderCampoTeam(){
   const el=document.getElementById('campoTeam'); if(!el)return;
@@ -7238,24 +7252,54 @@ function closeTeamModal(){ closeBacheca(); }
 function openMyPlayerBacheca(){ const mp=(typeof myPlayer==='function')?myPlayer():null; if(mp) openPlayerStats(mp.id); }
 function openMyTeamBacheca(){ if(user) openTeamCard(user.id); }
 /* ---------- ABILITA AL VOTO (manager-solo) ---------- */
+/* CHI PUO' VOTARE — una riga per ogni membro della lega.
+   Due stati soli:
+     · bloccato acceso  = gioca in campo, oppure amministra. Vota di suo e non
+       ha senso poterglielo togliere.
+     · libero           = tutti gli altri. Un tocco lo aggiunge o lo toglie,
+       e vale SOLO per questa giornata.
+   Anche chi fa solo il manager e' libero: non e' detto che sia venuto a
+   vedere la partita, e chi non c'era non dovrebbe dare i voti. */
 async function renderVoters(){
-  const box=document.getElementById('voterList'); if(!box)return;
-  box.innerHTML='<div class="vs" style="color:var(--muted)">Carico…</div>';
-  const {data,error}=await sb.rpc('list_solo_managers');
-  if(error){box.innerHTML='<div class="vs" style="color:var(--muted)">'+(String(error.message).includes('forbidden')?'Solo admin.':(errText(error)))+'</div>';return;}
-  if(!data||!data.length){box.innerHTML='<div class="vs" style="color:var(--muted)">Nessun manager-solo registrato.</div>';return;}
-  box.innerHTML='<div class="presgrid">'+data.map(m=>`<div class="prescell${m.can_vote?' on':''}" onclick="toggleVoter('${m.id}',${m.can_vote?1:0})">`
-    +`<span class="pc-av">${teamLogoHTML(m.id,26)}</span>`
-    +`<span class="pc-nm">${esc(m.team_name||m.player_name||'Manager')}</span>`
-    +`<span class="pc-tk">\u2713</span></div>`).join('')+'</div>';
+  const card=document.getElementById('voteCard'), box=document.getElementById('voterList');
+  if(!box) return;
+  const show = canOp() && currentMd && currentMd.status!=='closed';
+  if(card) card.style.display = show?'':'none';
+  if(!show){ box.innerHTML=''; return; }
+  if(_leagueMembers==null){
+    box.innerHTML='<div class="vs" style="color:var(--muted)">Carico\u2026</div>';
+    try{ const {data,error}=await sb.rpc('list_league_members'); if(error) throw error; _leagueMembers=data||[]; }
+    catch(e){ box.innerHTML='<div class="vs" style="color:var(--muted)">Elenco non disponibile.</div>'; return; }
+  }
+  const rows=_leagueMembers;
+  if(!rows.length){ box.innerHTML='<div class="vs" style="color:var(--muted)">Nessun membro.</div>'; return; }
+  const nameOf=m=>String(m.player_name||m.team_name||'Membro');
+  const plays=id=>players.some(p=>p.owner_id===id && presentId(p.id));
+  const auto =m=>plays(m.id) || !!m.is_owner || !!m.is_vice;
+  const list=rows.slice().sort((a,b)=>nameOf(a).localeCompare(nameOf(b),'it',{sensitivity:'base'}));
+  const n=list.filter(m=>auto(m)||mdVoters.has(m.id)).length;
+  box.innerHTML=`<div class="presbar"><span>Votano <b>${n}</b> di ${list.length}</span></div><div class="presgrid">`
+    +list.map(m=>{
+      const a=auto(m), on=a||mdVoters.has(m.id);
+      const why=plays(m.id)?'Gioca questa giornata: vota gi\u00e0.':'Amministra la lega: vota sempre.';
+      const click=a ? `onclick="toast('${why}')"`
+                    : `onclick="toggleMdVoter('${m.id}',${mdVoters.has(m.id)?1:0})"`;
+      return `<div class="prescell${on?' on':''}${a?' lock':''}" ${click}>`
+        +`<span class="pc-av">${teamLogoHTML(m.id,26)}</span>`
+        +`<span class="pc-nm">${esc(nameOf(m))}</span>`
+        +`<span class="pc-tk">\u2713</span></div>`;
+    }).join('')+'</div>';
 }
-async function toggleVoter(id,now){
-  let error;
-  if(now){ ({error}=await sb.from('extra_voters').delete().eq('profile_id',id)); }
-  else { ({error}=await sb.from('extra_voters').insert({profile_id:id})); }
-  if(error){toast(errText(error));return;}
-  if(id===user.id) iAmExtraVoter=!now;
-  renderVoters(); renderVoti();
+async function toggleMdVoter(uid, now){
+  if(!currentMd) return;
+  try{
+    const {error}=await sb.rpc('set_matchday_voter',{p_md:currentMd.id,p_profile:uid,p_on:!now});
+    if(error) throw error;
+  }catch(e){ toast(errText(e)); return; }
+  if(now) mdVoters.delete(uid); else mdVoters.add(uid);
+  if(uid===user.id){ iAmExtraVoter=mdVoters.has(user.id); renderVoti(); }
+  if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){ } }
+  renderVoters();
 }
 async function renderVices(){
   const box=document.getElementById('viceList'); if(!box) return;
@@ -7328,7 +7372,7 @@ async function togglePresence(id){
   if(liveMd){
     if(mdPresent.has(id)){ await sb.from('matchday_players').delete().eq('matchday_id',currentMd.id).eq('player_id',id); mdPresent.delete(id); }
     else { await sb.from('matchday_players').insert({matchday_id:currentMd.id,player_id:id}); mdPresent.add(id); }
-    renderPresence(); renderMarket(); renderVoti(); renderPitch();
+    renderPresence(); renderVoters(); renderMarket(); renderVoti(); renderPitch();
   }else{
     const want=!plannedPresent.has(id);
     const {error}=await sb.rpc('set_planned_presence',{p_player:id,p_present:want});
@@ -8213,7 +8257,7 @@ function openSettings(){
   document.getElementById('setGrid').innerHTML=avatars.map(a=>`<div class="avopt ${a.name===setAvatarDraft?'on':''}" onclick="pickSet('${a.name}')"><img src="${a.url}"></div>`).join('');
   renderSetLogo();
   renderAvCur(); collapseDisc('av'); collapseDisc('logo');
-  if(canOp()){ renderVoters(); loadInvite(); }
+  if(canOp()){ loadInvite(); }
   if(profile.is_admin){ renderManage(); loadSchedule(); loadCreditConfig(); renderVices(); }
   renderNotifBtn(); renderMaintBtn(); renderMaintBox(); renderHelpBox(); renderRuleRows();
 }
