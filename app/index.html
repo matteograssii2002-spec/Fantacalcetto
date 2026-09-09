@@ -946,15 +946,19 @@
      governa, cosi' non si legge mai una statistica senza sapere a cosa si
      riferisce. Scorre invece di andare a capo: con dieci stagioni una griglia
      mangerebbe mezzo schermo prima ancora dei dati. */
-  .sfilter{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:1px 2px 11px;scrollbar-width:none}
+  .sfilter{display:flex;gap:4px;padding:4px;margin-bottom:12px;border-radius:15px;
+    background:rgba(255,255,255,.05);border:1px solid var(--line);
+    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .sfilter::-webkit-scrollbar{display:none}
-  .sfilter button{flex:none;font-size:11.5px;font-weight:800;letter-spacing:.03em;min-height:34px;padding:8px 14px;
-    border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);color:var(--muted);cursor:pointer;white-space:nowrap}
-  .sfilter button:active{transform:scale(.96)}
-  .sfilter button.on{background:rgba(255,194,61,.16);border-color:rgba(255,194,61,.42);color:var(--gold-soft)}
-  .sfilter button.all{border-style:dashed}
-  .sfilter button.all.on{background:rgba(126,194,255,.16);border-color:rgba(126,194,255,.42);color:var(--accent-soft);border-style:solid}
-  .sfilter button.lk{opacity:.5}
+  .sfilter button{flex:1 0 auto;min-height:36px;padding:9px 14px;border:none;border-radius:11px;background:transparent;
+    color:var(--muted);font-family:inherit;font-size:12.5px;font-weight:800;letter-spacing:.01em;
+    white-space:nowrap;cursor:pointer;transition:background .16s ease,color .16s ease,transform .09s ease}
+  .sfilter button:active{transform:scale(.97)}
+  .sfilter button.on{background:linear-gradient(135deg,var(--gold),#f0b943);color:#1b1207;
+    box-shadow:0 6px 16px -8px rgba(255,194,61,.9)}
+  .sfilter button.all.on{background:linear-gradient(135deg,var(--accent-soft),var(--accent));color:#05142c;
+    box-shadow:0 6px 16px -8px rgba(63,151,255,.9)}
+  .sfilter button.lk{opacity:.45}
 
   /* ---- TESTA DELLE CLASSIFICHE MARCATORI / ASSIST ------------------------
      Il capocannoniere non e' "la prima riga di un elenco": e' il titolo che
@@ -1046,27 +1050,43 @@
   .bch-empty{font-size:12.5px;color:var(--muted);text-align:center;padding:6px 0}
   /* ---- PAGINA BACHECA (full screen, niente sfondo che balla) ---- */
   /* ===== PIANI — FantaCalcetto Pro (sessione 56) ===== */
+  /* ---- PAGINA PRO ---------------------------------------------------------
+     Riscritta sul modello delle schermate di abbonamento fatte bene: logo,
+     nome del piano, prezzo, una tabella GRATIS/PRO con le spunte, un pulsante.
+     Meno parole possibile: chi legge deve capire in tre secondi cosa cambia,
+     non leggere un dépliant. Le spiegazioni lunghe stanno sulla vetrina. */
   .pro-page{z-index:95}
-  .pro-hero{text-align:center;padding:4px 0 16px}
-  .pro-badge{display:inline-block;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:11px;line-height:1;
-    letter-spacing:.18em;color:#3a2a00;background:linear-gradient(135deg,var(--gold),var(--gold-soft));
-    padding:7px 12px;border-radius:8px;margin-bottom:12px}
-  .pro-tit{font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:800;margin:0 0 10px}
-  .pro-tit span{background:linear-gradient(135deg,var(--gold),var(--gold-soft));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .pro-why{color:var(--muted);font-size:14px;line-height:1.55;margin:0 auto;max-width:340px}
-  .pro-list{display:flex;flex-direction:column;gap:10px;margin:16px 0 18px}
-  .pro-it{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px}
-  .pro-it .tk{color:var(--gold);font-weight:800;font-size:15px;line-height:1.35;flex:none}
-  .pro-it b{display:block;font-size:14.5px;margin-bottom:3px}
-  .pro-it small{display:block;color:var(--muted);font-size:12.5px;line-height:1.45}
-  .pro-it.off .tk{color:var(--muted)}
-  .pro-price{text-align:center;background:linear-gradient(160deg,var(--surface2),var(--surface));
-    border:1px solid var(--line-strong);border-radius:18px;padding:20px 16px;margin-bottom:16px}
-  .pro-price .pp-big{font-family:'Bricolage Grotesque',sans-serif;font-size:38px;font-weight:800;color:var(--gold);line-height:1}
-  .pro-price .pp-sub{font-size:13.5px;margin-top:8px}
-  .pro-price .pp-note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
-  .pro-status{font-size:12.5px;color:var(--muted);line-height:1.5;text-align:center;margin-top:12px}
-  .pro-foot{font-size:11.5px;color:var(--muted);text-align:center;line-height:1.55;margin:20px 0 0}
+  .pro-bar{justify-content:flex-end}
+  .pro-x{width:42px;height:42px;padding:0;border-radius:999px;display:grid;place-items:center;font-size:17px;line-height:1}
+  .pro-top{display:flex;align-items:center;gap:14px;padding:14px 0 6px}
+  .pro-logo{width:62px;height:62px;border-radius:999px;flex:none;border:1.5px solid rgba(255,194,61,.55);
+    padding:5px;background:rgba(255,194,61,.06);object-fit:contain}
+  .pro-k{display:block;font-size:16px;font-weight:700;color:var(--muted);line-height:1.1}
+  .pro-tit{font-family:'Bricolage Grotesque',sans-serif;font-size:40px;font-weight:800;line-height:1;
+    letter-spacing:.06em;margin:4px 0 0;
+    background:linear-gradient(135deg,var(--gold-soft),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .pro-why{color:var(--muted);font-size:14.5px;line-height:1.5;margin:14px 0 0}
+  .pro-amount{margin:22px 0 20px}
+  .pro-amount b{font-family:'Bricolage Grotesque',sans-serif;font-size:40px;font-weight:800;line-height:1;letter-spacing:-.02em}
+  .pro-amount span{font-size:18px;font-weight:700;color:var(--muted);margin-left:4px}
+  .pro-amount .pro-amount-sub{font-size:13px;color:var(--muted);margin-top:9px}
+  .pro-tab{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:22px}
+  .pt-h{display:flex;align-items:center;padding:13px 16px 10px;font-size:10.5px;font-weight:800;letter-spacing:.1em;color:var(--muted)}
+  .pt-h .k{flex:1}
+  .pt-h .a,.pt-h .b{width:62px;text-align:center}
+  .pt-h .b{color:var(--gold-soft)}
+  .pt-r{display:flex;align-items:center;padding:14px 16px;border-top:1px solid var(--line);font-size:14.5px}
+  .pt-r .k{flex:1;min-width:0}
+  .pt-r .a,.pt-r .b{width:62px;text-align:center;font-size:16px;font-weight:800}
+  .pt-r .a{color:var(--neutral)}
+  .pt-r .b{color:var(--gold)}
+  .pro-btn{width:100%;background:linear-gradient(135deg,var(--gold-soft),var(--gold));color:#1b1207;
+    font-family:inherit;font-weight:800;font-size:17px;border:none;padding:18px;border-radius:999px;cursor:pointer;
+    box-shadow:0 14px 34px -12px rgba(255,194,61,.8);transition:transform .15s}
+  .pro-btn:active{transform:scale(.98)}
+  .pro-status{font-size:12.5px;color:var(--muted);line-height:1.5;text-align:center;margin-top:14px}
+  .pro-foot{font-size:12px;color:var(--muted);text-align:center;line-height:1.55;margin:16px 0 0}
+  .pro-foot a{color:var(--muted)}
   .plan-seats{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:12px}
   .plan-seats b{display:block;font-size:14.5px;margin-bottom:4px}
   .plan-seats span{display:block;color:var(--muted);font-size:12.5px;line-height:1.45}
@@ -2180,11 +2200,10 @@
 
   <section class="view" id="v-classifica">
     <div class="section-h"><h2>Classifica</h2></div>
-    <div class="lega-head"><div class="league-badge" id="legaLeague"></div><button class="hh-season pick" id="legaSeason" onclick="openSeasonPicker('lb')">Stagione 1</button></div>
-    <div id="lbBack"></div>
+    <div class="lega-head"><div class="league-badge" id="legaLeague"></div></div>
+    <div class="sfilter" id="lbScopeBar" style="display:none"></div>
     <select class="vselect" id="mdSelect" onchange="onSelectStandingsMd()" style="width:100%;margin-bottom:6px"></select>
     <p class="vs" id="lbHint" style="color:var(--muted);margin:0 2px 12px;font-size:12.5px"></p>
-    <div class="sfilter" id="lbScopeBar" style="display:none"></div>
     <div id="lbTop"></div>
     <div class="lb" id="lbList"></div>
     <div id="legaRecapWrap" style="margin-top:14px"></div>
@@ -2567,26 +2586,20 @@
        (proWhy), il resto no: chi ci arriva due volte da due strade diverse
        deve riconoscere la stessa pagina. -->
   <div class="overlay hidden bch-page pro-page" id="proPage">
-    <div class="bch-page-bar">
-      <button class="bch-back" onclick="closePro()" aria-label="Indietro">‹ Indietro</button>
+    <div class="bch-page-bar pro-bar">
+      <button class="bch-back pro-x" onclick="closePro()" aria-label="Chiudi">✕</button>
     </div>
     <div class="bch-page-inner">
-      <div class="pro-hero">
-        <div class="pro-badge">PRO</div>
-        <h2 class="pro-tit">FantaCalcetto <span>Pro</span></h2>
-        <p class="pro-why" id="proWhy">—</p>
+      <div class="pro-top">
+        <img class="pro-logo" src="/icon-512.png?v=4" alt="" onerror="this.style.display='none'">
+        <div><span class="pro-k">FantaCalcetto</span><h2 class="pro-tit">PRO</h2></div>
       </div>
-      <div class="pro-list">
-        <div class="pro-it"><span class="tk">✓</span><div><b>Giocatori illimitati</b><small>Nessun tetto: nella lega entra chi volete, quando volete.</small></div></div>
-        <div class="pro-it"><span class="tk">✓</span><div><b>Tutte le stagioni</b><small>Classifiche, schede e bacheca di ogni annata restano consultabili per sempre.</small></div></div>
-        <div class="pro-it"><span class="tk">✓</span><div><b>Albo d'oro completo</b><small>Il recap di fine stagione di ogni annata, riapribile quando volete.</small></div></div>
-        <div class="pro-it off"><span class="tk">·</span><div><b>Tutto quello che avete già</b><small>Gioco, pagellone, classifica e bacheca non cambiano: sono completi anche senza Pro. E niente pubblicità, in nessuno dei due.</small></div></div>
+      <p class="pro-why" id="proWhy">—</p>
+      <div class="pro-amount" id="proPrice">
+        <b>29,90 €</b><span>/stagione</span>
+        <div class="pro-amount-sub">Per tutta la lega, non a testa. Nessun rinnovo automatico.</div>
       </div>
-      <div class="pro-price" id="proPrice">
-        <div class="pp-big">€29,90</div>
-        <div class="pp-sub">a stagione, per <u>tutta la lega</u> — non a testa</div>
-        <div class="pp-note">Si paga una volta sola, <b>senza rinnovo automatico</b>. Una stagione intera, fino a 38 giornate.</div>
-      </div>
+      <div class="pro-tab" id="proTab"></div>
       <div id="proCta"></div>
       <p class="pro-foot" id="proFoot"></p>
     </div>
@@ -4648,6 +4661,8 @@ const ALLTIME='all';
 let lbScope=null;      // periodo di marcatori/assist: id stagione oppure 'all'
 let cardScope=null;    // periodo delle schede: id stagione oppure 'all'
 let _bestVoteTxt='\u2014';   // miglior voto del periodo (lo riempie loadVoteTrend)
+let _avgVote=null;           // voto medio del periodo, dalle stesse giornate
+let _lastPlayerCard=null;    // ultima scheda ricevuta, per ridisegnare senza richiederla
 
 async function loadSeasonsList(){
   try{
@@ -4674,7 +4689,27 @@ function seasonById(id){ return allSeasons.find(s=>s.id===Number(id))||null; }
 function viewingMainSeason(){ return viewSeasonId==null || viewSeasonId===displaySeasonId; }
 /* righe da mostrare in Classifica: la stagione di riferimento riusa `standings`
    (già caricata), le altre hanno il loro elenco a parte. */
-function lbRows(){ return viewingMainSeason() ? standings : (lbStandings||[]); }
+function lbRows(){
+  if(lbScope===ALLTIME) return allTimeStandings||[];
+  return viewingMainSeason() ? standings : (lbStandings||[]);
+}
+/* Classifica di SEMPRE: non esiste una RPC che la faccia, perche' la classifica
+   nasce di stagione. Si chiede una stagione alla volta e si sommano i punti
+   per manager. Due o tre chiamate, una volta sola: il risultato resta in
+   memoria finche' non cambia qualcosa (loadStandings lo butta). */
+let allTimeStandings=null;
+async function loadAllTimeStandings(){
+  const res=await Promise.all(allSeasons.map(s=>
+    sb.rpc('get_standings_season',{p_season:s.id}).then(r=>r.data||[]).catch(()=>[]) ));
+  const agg={};
+  res.forEach(rows=>(rows||[]).forEach(r=>{
+    const a=agg[r.manager_id]||(agg[r.manager_id]={manager_id:r.manager_id,team_name:r.team_name,player_name:r.player_name,points:0,delta:0});
+    a.points+=Number(r.points)||0;
+    if(r.team_name) a.team_name=r.team_name;
+    if(r.player_name) a.player_name=r.player_name;
+  }));
+  allTimeStandings=Object.values(agg).sort((a,b)=>b.points-a.points);
+}
 
 async function loadStandings(){
   let data=null,error=null;
@@ -4687,6 +4722,7 @@ async function loadStandings(){
   if(error||!data){ const r=await sb.rpc('get_standings'); data=r.data; error=r.error; }  // fallback: SQL stagioni non ancora applicata
   if(error||!data){standings=[];standingsLoaded=true;return;}
   standings=data.map(r=>({manager_id:r.manager_id,team_name:r.team_name,player_name:r.player_name,points:Number(r.points),delta:r.delta||0}));
+  allTimeStandings=null;        // i punti sono cambiati: il totale di sempre va rifatto
   standingsLoaded=true;
 }
 /* classifica di una stagione archiviata */
@@ -4719,24 +4755,15 @@ async function setViewSeason(id){
 }
 /* Testata della pagina Lega: il titolo È il selettore. Con una sola stagione
    resta un'etichetta muta, così non si offre un controllo che non fa niente. */
+/* La testata della pagina Classifica E' il filtro: una riga sola, sempre
+   visibile, che dice di quale periodo sono TUTTI i numeri sotto — generale,
+   marcatori, assist, giornate. Prima erano due controlli separati (un bottone
+   dorato per la stagione e una fila di pillole per i marcatori) che potevano
+   dire due cose diverse nello stesso momento. */
 function renderLegaSeasonHead(){
-  const btn=document.getElementById('legaSeason');
-  const many=allSeasons.length>1;
-  if(btn){
-    const sn=seasonById(viewSeasonId);
-    btn.textContent='Stagione '+(sn?sn.number:(displaySeason?displaySeason.number:1));
-    btn.classList.toggle('pick',many);
-    btn.disabled=!many;
-  }
-  const back=document.getElementById('lbBack');
-  if(back){
-    if(viewingMainSeason()){ back.innerHTML=''; }
-    else{
-      const sn=seasonById(viewSeasonId), main=displaySeason?displaySeason.number:'';
-      back.innerHTML=`<div class="lb-back"><span>📁 Stai guardando la <b>Stagione ${sn?sn.number:''}</b>, archiviata.</span>`
-        +`<button onclick="setViewSeason(${displaySeasonId})">Stagione ${main}</button></div>`;
-    }
-  }
+  const bar=document.getElementById('lbScopeBar'); if(!bar) return;
+  bar.innerHTML=scopeBarHTML(lbScopeNow(),'setLbScope');
+  bar.style.display=bar.innerHTML?'flex':'none';
 }
 /* Elenco stagioni in un foglio a comparsa: scala a 20 stagioni senza diventare
    una fila di pillole illeggibile. */
@@ -4779,9 +4806,9 @@ function bindSeasonSwipe(){
     const dx=e.touches[0].clientX-x0, dy=e.touches[0].clientY-y0;
     if(Math.abs(dx)<64 || Math.abs(dx)<Math.abs(dy)*1.5) return;   // scroll verticale: non intercettare
     done=true;
-    const i=allSeasons.findIndex(s=>s.id===viewSeasonId);
-    const j=(dx<0)?i+1:i-1;                                        // l'elenco è dal più recente al più vecchio
-    if(j>=0 && j<allSeasons.length) setViewSeason(allSeasons[j].id);
+    const list=cardScopeList();                                    // stagioni + «Sempre»
+    const i=list.findIndex(v=>String(v)===String(lbScopeNow())), j=(dx<0)?i+1:i-1;
+    if(i>=0 && j>=0 && j<list.length) setLbScope(list[j]);
   },{passive:true});
   el.addEventListener('touchend',()=>{ x0=y0=null; },{passive:true});
 }
@@ -4853,7 +4880,7 @@ function scopeStats(scope){
 }
 /* etichetta leggibile del periodo */
 function scopeLabel(scope){
-  if(scope===ALLTIME) return 'Sempre';
+  if(scope===ALLTIME) return 'All time';
   const sn=seasonById(scope);
   return 'Stagione '+(sn?sn.number:(displaySeason?displaySeason.number:1));
 }
@@ -4873,7 +4900,7 @@ function scopeBarHTML(cur,fn){
   }).join('');
   const lka=scopeLocked(ALLTIME);
   h+=`<button class="all ${cur===ALLTIME?'on':''}${lka?' lk':''}" onclick="${fn}('${ALLTIME}')">`
-    +`${lka?'\ud83d\udd12 ':''}\ud83c\udfdb\ufe0f Sempre</button>`;
+    +`${lka?'\ud83d\udd12 ':''}All time</button>`;
   return h;
 }
 
@@ -6428,12 +6455,29 @@ function seasonLocked(id){
 }
 
 /* ---------- LA PAGINA PRO ---------- */
+/* Una riga sola per ogni motivo. Chi apre questa pagina sa gia' perche' c'e'
+   finito: non gli si spiega il prodotto, gli si dice cosa gli manca. */
 const PRO_WHY={
-  muro:   "Siete al completo. Nella versione gratuita una lega arriva a 15 persone: chi prova a entrare adesso resta fuori. Con Pro il tetto non c'\u00e8.",
-  tetto:  "La rosa si sta riempiendo. Nella versione gratuita una lega arriva a 15 persone; da l\u00ec in poi chi prova a entrare resta fuori. Con Pro il tetto non c'\u00e8.",
-  storico:"Senza Pro si consulta la stagione in corso. Le stagioni archiviate non spariscono \u2014 restano dov'erano, e con Pro tornano consultabili per sempre.",
-  info:   "Il gioco \u00e8 tutto qui, anche senza pagare niente. Pro serve in due casi soli: quando siete pi\u00f9 di 15, o quando le stagioni cominciano a essere pi\u00f9 di una."
+  muro:   "Siete 15: senza Pro nessun altro pu\u00f2 entrare.",
+  tetto:  "La rosa \u00e8 quasi piena. Senza Pro il tetto \u00e8 15.",
+  storico:"Le stagioni archiviate si consultano con Pro.",
+  info:   "Serve solo se siete pi\u00f9 di 15, o avete pi\u00f9 di una stagione."
 };
+/* La tabella e' la pagina: si legge in tre secondi. */
+const PRO_TAB=[
+  ['Gioco completo',      1,1],
+  ['Pagellone e bacheca', 1,1],
+  ['Notifiche',           1,1],
+  ['Fino a 15 giocatori', 1,1],
+  ['Giocatori illimitati',0,1],
+  ['Tutte le stagioni',   0,1],
+  ['Albo d\u2019oro',        0,1]
+];
+function proTabHTML(){
+  return '<div class="pt-h"><span class="k"></span><span class="a">GRATIS</span><span class="b">PRO</span></div>'
+    + PRO_TAB.map(r=>`<div class="pt-r"><span class="k">${esc(r[0])}</span>`
+        +`<span class="a">${r[1]?'\u2713':''}</span><span class="b">${r[2]?'\u2713':''}</span></div>`).join('');
+}
 function openPro(reason){
   const pg=document.getElementById('proPage'); if(!pg) return;
   renderProPage(reason||'info');
@@ -6461,16 +6505,18 @@ function renderProPage(reason){
   const cta=document.getElementById('proCta');
   const foot=document.getElementById('proFoot');
   const price=document.getElementById('proPrice');
+  const tab=document.getElementById('proTab');
   const owner=!!(profile&&profile.is_admin);
+  if(tab) tab.innerHTML=proTabHTML();
 
   /* Chi e' gia' Pro non deve leggere un'offerta: legge una conferma. */
   if(isPro()){
     if(why) why.textContent = myPlan.founder
-      ? "La tua lega \u00e8 una delle prime 20: Pro gratis, per sempre. Non pagherai mai niente, n\u00e9 adesso n\u00e9 in futuro."
-      : "La tua lega \u00e8 Pro: giocatori illimitati e tutte le stagioni consultabili.";
+      ? "Lega fondatrice: Pro gratis, per sempre."
+      : "La tua lega \u00e8 Pro.";
     if(price) price.style.display='none';
     if(cta) cta.innerHTML='';
-    if(foot) foot.textContent = myPlan.founder ? "\ud83c\udfc5 Lega fondatrice \u00b7 numero riservato" : '';
+    if(foot) foot.innerHTML = myPlan.founder ? "\ud83c\udfc5 Una delle prime 20 leghe" : '';
     return;
   }
   if(price) price.style.display='';
@@ -6478,26 +6524,26 @@ function renderProPage(reason){
 
   if(owner){
     /* L'admin e' l'unico che puo' pagare: a lui il pulsante. */
-    if(cta) cta.innerHTML='<button class="ob-btn" style="margin-top:0" onclick="proCheckout()">Passa a Pro</button>'
-      +'<div class="pro-status" id="proStatus">Paghi tu una volta sola e vale per tutta la lega.</div>';
-    if(foot) foot.textContent='';
+    if(cta) cta.innerHTML='<button class="pro-btn" onclick="proCheckout()">Passa a Pro</button>'
+      +'<div class="pro-status" id="proStatus"></div>';
+    if(foot) foot.innerHTML='Continuando accetti i <a href="/termini.html" target="_blank" rel="noopener">termini</a>.';
   }else{
     /* Un membro che preme «Passa a Pro» e scopre di non poter fare niente e'
        un'occasione buttata: gli si da' una cosa che puo' fare davvero. */
-    if(cta) cta.innerHTML='<button class="ob-btn" style="margin-top:0" onclick="proTellAdmin()">Dillo al tuo admin</button>'
-      +'<div class="pro-status">Il passaggio lo fa chi amministra la lega: vale per tutti e si paga una volta sola.</div>';
-    if(foot) foot.textContent='';
+    if(cta) cta.innerHTML='<button class="pro-btn" onclick="proTellAdmin()">Dillo al tuo admin</button>'
+      +'<div class="pro-status">Il passaggio lo fa chi amministra la lega.</div>';
+    if(foot) foot.innerHTML='';
   }
 }
 /* Il checkout non c'\u00e8 ancora: il pulsante dice la verita' e non finge. */
 function proCheckout(){
   const st=document.getElementById('proStatus');
-  if(st) st.innerHTML="<b style=\"color:var(--gold)\">Il pagamento apre a breve.</b><br>Sto sistemando gli ultimi dettagli: appena si pu\u00f2, lo trovi qui. Nel frattempo non serve fare niente e la lega continua a funzionare come adesso.";
+  if(st) st.innerHTML="<b style=\"color:var(--gold)\">Il pagamento apre a breve.</b><br>Non serve fare niente: la lega continua a funzionare.";
   if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){ } }
 }
 function proTellAdmin(){
   const nm=(myLeague&&myLeague.name)?(' della lega '+myLeague.name):'';
-  const tx="Ho visto che con FantaCalcetto Pro"+nm+" non c'\u00e8 il tetto dei 15 giocatori e restano tutte le stagioni. Costa 29,90\u20ac a stagione per tutta la lega, non a testa. Ci passiamo? www.fantacalcettoitalia.it/#prezzi";
+  const tx="FantaCalcetto Pro"+nm+": giocatori illimitati e tutte le stagioni. 29,90\u20ac a stagione per tutta la lega, non a testa. Ci passiamo? www.fantacalcettoitalia.it/#prezzi";
   if(navigator.share){
     navigator.share({text:tx}).catch(()=>{});
     return;
@@ -6731,7 +6777,7 @@ function openPlayerStats(id){
   // il periodo parte dalla stagione che si sta sfogliando: aprire una scheda
   // non deve cambiare il punto di vista sotto i piedi
   cardScope=(cardScope===ALLTIME)?ALLTIME:((viewSeasonId!=null)?viewSeasonId:displaySeasonId);
-  _bestVoteTxt='\u2014';
+  _bestVoteTxt='\u2014'; _avgVote=null; _lastPlayerCard=null;
   document.getElementById('statAv').innerHTML=avatarImg(p.avatar,50);
   document.getElementById('statName').textContent=p.name;
   document.getElementById('statRole').textContent=roleLabel(p.role)+' \u00b7 '+s.forma;
@@ -6749,6 +6795,7 @@ function openPlayerStats(id){
    arriva dalla scheda e finche' non c'e' resta quello di carriera. */
 function paintPlayerGrid(id,card){
   const g=document.getElementById('statGrid'); if(!g) return;
+  if(card) _lastPlayerCard=card;
   const s=localPlayerScope(id,cardScope);
   if(card && !card.error){
     const v=pickStat(card,'voto'); if(v!=null) s.voto=Number(v);
@@ -6757,6 +6804,7 @@ function paintPlayerGrid(id,card){
       if(gg!=null)s.gol=Number(gg); if(aa!=null)s.assist=Number(aa); if(pp!=null)s.presences=Number(pp);
     }
   }
+  if(_avgVote!=null) s.voto=_avgVote;      // il periodo vince sempre sulla carriera
   g.innerHTML=playerStatsGridHTML(s,scopeMaxes(cardScope));
   applyBestVote();
 }
@@ -6784,7 +6832,7 @@ function mdShortLabel(lab,i){ const m=/(\d+)/.exec(lab||''); return m?('G'+m[1])
    Non sparisce più in silenzio: senza dati dice perché. */
 async function loadVoteTrend(id, seasonId){
   const box=document.getElementById('statChart'); if(!box) return;
-  _bestVoteTxt='\u2014'; applyBestVote();
+  _bestVoteTxt='\u2014'; _avgVote=null; applyBestVote();
   box.style.display='block';
   box.innerHTML='<div class="bch-empty">Carico i voti\u2026</div>';
   let data=null, err=null;
@@ -6804,13 +6852,19 @@ async function loadVoteTrend(id, seasonId){
   if(err){ box.style.display='none'; box.innerHTML=''; return; }   // RPC assente: niente grafico, nessun crash
   const pts=(data||[]).map((r,i)=>({lab:mdShortLabel(r.md_label,i), v:Number(r.voto)}))
                       .filter(p=>isFinite(p.v));
-  /* miglior voto: il valore vive in una variabile, non nel riquadro. La
+  /* Miglior voto E voto medio: vivono in due variabili, non nel riquadro. La
      griglia si ridisegna quando arriva la scheda, e una scrittura diretta
-     sarebbe stata cancellata a seconda di chi arriva prima. */
+     sarebbe stata cancellata a seconda di chi arriva prima.
+     ⚠️ Il voto medio viene DA QUI e non dalla scheda: la scheda per stagione
+     restituiva sempre la media di carriera, e cambiando periodo non si
+     muoveva. Queste sono le giornate del periodo, quindi la media e' quella
+     giusta per definizione. */
   _bestVoteTxt = pts.length
     ? String(Math.round(Math.max(...pts.map(p=>p.v))*100)/100).replace('.',',')   // virgola, non punto
     : '\u2014';
+  _avgVote = pts.length ? (pts.reduce((a,p)=>a+p.v,0)/pts.length) : null;
   applyBestVote();
+  if(_statCardId===id) paintPlayerGrid(id,_lastPlayerCard);
   if(!pts.length){
     const sn=seasonById(seasonId);
     box.innerHTML='<div class="bch-empty">Nessun voto'+(sn?(' nella Stagione '+sn.number):'')+'.</div>';
@@ -7636,19 +7690,26 @@ async function submitVotes(){
     }
   }catch(_){}
 }
+/* etichetta di una giornata nella tendina. Guardando TUTTE le stagioni ci
+   sarebbero due «Giornata 3»: davanti va il numero di stagione. */
+function mdOptLabel(m,period){
+  if(period!==ALLTIME) return m.label;
+  const sn=seasonById(m.season_id);
+  return (sn?('S'+sn.number+' \u00b7 '):'')+m.label;
+}
 function renderLB(){
+  const period=lbScopeNow();
   renderLegaSeasonHead(); bindSeasonSwipe();
-  const seasonForList = (viewSeasonId!=null) ? viewSeasonId : displaySeasonId;
   const sel=document.getElementById('mdSelect');
   if(sel){
     const cur=sel.value;
     const now=Date.now();
     const visMds=matchdaysList.filter(m=> (m.status==='closed' || m.status==='open' || (m.kickoff && now>=new Date(m.kickoff).getTime()))
-        && (seasonForList==null || m.season_id==null || m.season_id===seasonForList) ).slice().sort((a,b)=>a.id-b.id);
+        && (period===ALLTIME || period==null || m.season_id==null || m.season_id===period) ).slice().sort((a,b)=>a.id-b.id);
     sel.innerHTML='<option value="">\ud83c\udfc6 Classifica generale</option>'
       +'<option value="scorers">\u26bd Classifica marcatori</option>'
       +'<option value="assists">\ud83c\udd70\ufe0f Classifica assist</option>'
-      +visMds.map(m=>`<option value="${m.id}">${m.label}</option>`).join('');
+      +visMds.map(m=>`<option value="${m.id}">${esc(mdOptLabel(m,period))}</option>`).join('');
     sel.value=cur||selStandingsMd||'';
   }
   const el=document.getElementById('lbList'), hint=document.getElementById('lbHint');
@@ -7661,25 +7722,29 @@ function renderLB(){
       : '';
   }
   const isTop = (selStandingsMd==='scorers' || selStandingsMd==='assists');
-  const scopeBar=document.getElementById('lbScopeBar'), lbTop=document.getElementById('lbTop');
-  if(scopeBar){
-    if(isTop){ scopeBar.innerHTML=scopeBarHTML(lbScopeNow(),'setLbScope'); scopeBar.style.display=scopeBar.innerHTML?'flex':'none'; }
-    else { scopeBar.innerHTML=''; scopeBar.style.display='none'; }
-  }
+  const lbTop=document.getElementById('lbTop');
   if(lbTop && !isTop) lbTop.innerHTML='';
   if(isTop){ renderTopList(selStandingsMd==='assists'?'assists':'scorers'); return; }
   if(!selStandingsMd){
-    const rows=lbRows(), past=!viewingMainSeason(), sn=seasonById(viewSeasonId);
+    const allT=(period===ALLTIME);
+    if(allT && allTimeStandings==null){
+      if(hint){ hint.textContent='Punti di tutte le stagioni sommati.'; hint.style.display=''; }
+      el.innerHTML=skeletonRows('lb',5);
+      loadAllTimeStandings().then(()=>{ if(lbScope===ALLTIME) renderLB(); });
+      return;
+    }
+    const rows=lbRows(), past=!allT&&!viewingMainSeason(), sn=seasonById(viewSeasonId);
     if(hint){
       // in pausa fra due stagioni la classifica è già definitiva: va detto,
-      // altrimenti sembra ancora in gioco. Se sto sfogliando un'altra stagione
-      // lo dice già la fascia qui sopra, quindi qui non ripeto.
-      if(!past && seasonBreak() && displaySeason){ hint.textContent='Classifica finale della Stagione '+displaySeason.number+'.'; hint.style.display=''; }
-      else if(past && sn){ hint.textContent='Classifica finale della Stagione '+sn.number+' · archiviata.'; hint.style.display=''; }
+      // altrimenti sembra ancora in gioco. Il periodo lo dice gia' il filtro
+      // qui sopra, quindi qui non si ripete.
+      if(allT){ hint.textContent='Punti di tutte le stagioni sommati.'; hint.style.display=''; }
+      else if(!past && seasonBreak() && displaySeason){ hint.textContent='Classifica finale della Stagione '+displaySeason.number+'.'; hint.style.display=''; }
+      else if(past && sn){ hint.textContent='Classifica finale \u00b7 archiviata.'; hint.style.display=''; }
       else { hint.textContent=''; hint.style.display='none'; }
     }
-    if(!rows.length){ el.innerHTML = (standingsLoaded||past) ? '<div class="empty-note">Nessuna squadra in questa stagione.</div>' : skeletonRows('lb',5); return; }
-    el.innerHTML=rows.map((t,i)=>lbRowHTML(t,i,(t.points||0),past?false:lbFresh())).join('');
+    if(!rows.length){ el.innerHTML = (standingsLoaded||past||allT) ? '<div class="empty-note">Nessuna squadra in questo periodo.</div>' : skeletonRows('lb',5); return; }
+    el.innerHTML=rows.map((t,i)=>lbRowHTML(t,i,(t.points||0),(past||allT)?false:lbFresh())).join('');
   } else {
     if(hint){hint.textContent='Tocca una squadra per vedere la formazione.';hint.style.display='';}
     if(!mdStandings.length){el.innerHTML='<div class="empty-note">Nessuna squadra per questa giornata.</div>';return;}
@@ -7703,8 +7768,18 @@ function lbScopeNow(){
 function setLbScope(v){
   const n=(v===ALLTIME)?ALLTIME:Number(v);
   if(scopeLocked(n)){ openPro('storico'); return; }
+  if(String(n)===String(lbScopeNow())) return;
   if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){ } }
-  if(n===ALLTIME){ lbScope=ALLTIME; renderLB(); return; }
+  // marcatori e assist sopravvivono al cambio periodo; una singola giornata no,
+  // perche' appartiene alla stagione che si sta lasciando
+  selStandingsMd=(selStandingsMd==='scorers'||selStandingsMd==='assists')?selStandingsMd:'';
+  mdStandings=[];
+  if(n===ALLTIME){
+    lbScope=ALLTIME;
+    renderLB();
+    if(allTimeStandings==null) loadAllTimeStandings().then(()=>{ if(lbScope===ALLTIME) renderLB(); });
+    return;
+  }
   lbScope=null;
   if(n!==viewSeasonId) setViewSeason(n); else renderLB();
 }
