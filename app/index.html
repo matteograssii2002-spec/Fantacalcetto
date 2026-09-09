@@ -3982,13 +3982,19 @@ function heroState(){
             fn:"heroScrollTo('homePresence')", note:'Chi non risponde non entra in campo.'};
 
   // 2. valutazione giocatori: finche' e' aperta i crediti di tutti restano fermi
-  if(typeof valuePollOpen!=='undefined' && valuePollOpen && !valuePollVoted)
+  if(typeof creditMode!=='undefined' && creditMode==='poll' && valuePollOpen && !valuePollVoted)
     return {ttl:'Quanto <span class="hot">valgono?</span>', cta:'Valuta i giocatori \u2192',
             fn:'openValuePoll()', note:'I tuoi voti decidono quanto costa ognuno in crediti.'};
 
-  if(md && ph===1)
-    return {ttl:'Ci sei \u2014 <span class="hot">ci vediamo l\u00ec</span>', cta:'Guarda chi ha risposto \u2192',
-            fn:"heroScrollTo('homePresence')", note:'Le formazioni aprono a sondaggio chiuso.'};
+  if(md && ph===1){
+    // solo a chi il sondaggio riguarda davvero: ha risposto «ci sono» ed e' un giocatore
+    if(presencePollOpen() && iPlay)
+      return {ttl:'Ci sei \u2014 <span class="hot">ci vediamo l\u00ec</span>', cta:'Guarda chi ha risposto \u2192',
+              fn:"heroScrollTo('homePresence')", note:'Le formazioni aprono a sondaggio chiuso.'};
+    // manager senza personaggio, o sondaggio spento: per lui adesso non c'e' niente da fare
+    return {ttl:'Si raccolgono le <span class="hot">presenze</span>', cta:'Vedi la classifica \u2192',
+            fn:"go('classifica')", note:'Le formazioni aprono quando si sa chi gioca.'};
+  }
 
   if(md && ph===2){
     const n=Object.keys(lineup||{}).length;
@@ -7714,8 +7720,8 @@ function statIcons(r){
 function evsStyle(html){
   const n=(String(html||'').match(/<i>/g)||[]).length;
   if(!n) return '';
-  const cols=Math.max(1,Math.min(9,Math.ceil(n/2)));
-  const sz=cols<=4?12:(cols<=6?10.5:9);
+  const cols = n<=4 ? n : Math.min(9, Math.ceil(n/2));
+  const sz = cols<=4 ? 12 : (cols<=6 ? 10.5 : 9);
   return `--cols:${cols};--esz:${sz}px`;
 }
 const PITCH_MARKS='<div class="mark m-box top"></div><div class="mark m-box bot"></div><div class="mark m-goal top"></div><div class="mark m-goal bot"></div><div class="mark m-arc top"></div><div class="mark m-arc bot"></div><div class="mark m-halfway"></div><div class="mark m-circle"></div><div class="mark m-spot"></div>';
