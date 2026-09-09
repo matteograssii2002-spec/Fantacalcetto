@@ -50,7 +50,8 @@
      Quindi: né dvh né bottom:0 bastano (finiscono entrambi a 793). L'altezza vera la calcola
      realHeight() in JS (--app-h), che usa screen.height SOLO in PWA standalone, in verticale e
      solo se lo scarto è da safe-area (<=90px): mai in Safari/Android/landscape (lì taglierebbe). */
-  .app{max-width:var(--maxw);margin:0 auto;position:fixed;top:0;left:0;right:0;height:var(--app-h,100dvh);display:flex;flex-direction:column}
+  .app{max-width:var(--maxw);margin:0 auto;position:fixed;top:0;left:0;right:0;
+    height:100vh;height:var(--app-h,100dvh);display:flex;flex-direction:column}
   .scrollwrap{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
     padding:6px 0 16px}
   .num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
@@ -531,13 +532,14 @@
   .slot.captain .pawn{filter:drop-shadow(0 0 7px rgba(255,194,61,.95))}
   .slot .tag{font-size:12px;font-weight:700;text-align:center;line-height:1.1;color:#fff;background:rgba(0,0,0,.45);padding:2px 8px;border-radius:7px;max-width:96px;margin-top:2px;white-space:normal;word-break:keep-all;overflow-wrap:normal;hyphens:none;text-shadow:0 1px 2px rgba(0,0,0,.4)}
   .slot .tag.empty{color:rgba(255,255,255,.92);font-weight:600}
-  .slot .cap{position:absolute;top:-4px;right:-4px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#1b1207;display:none;place-items:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:12px;border:2px solid #2c7a39}
+  .slot .cap{position:absolute;top:-4px;left:-4px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#1b1207;display:none;place-items:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:12px;border:2px solid #2c7a39}
   .slot.captain .cap{display:grid}
   .scoreline{display:flex;align-items:center;justify-content:center}
   .voto{font-family:'JetBrains Mono';font-weight:700;font-size:11px;padding:1px 6px;border-radius:6px;background:rgba(0,0,0,.55);color:#fff}
   .voto.hi{color:#7ce6aa} .voto.lo{color:#ff9a9a}
-  .evs{margin-top:3px;display:flex;flex-wrap:wrap;justify-content:flex-start;align-content:flex-start;gap:2px;max-width:84px;background:rgba(0,0,0,.45);padding:2px 5px;border-radius:8px;line-height:1}
-  .evs i{font-size:12px;font-style:normal;line-height:1}
+  .evs{margin-top:3px;display:grid;grid-template-columns:repeat(var(--cols,4),auto);justify-items:center;
+    gap:2px;width:max-content;max-width:none;background:rgba(0,0,0,.45);padding:2px 5px;border-radius:8px;line-height:1}
+  .evs i{font-size:var(--esz,12px);font-style:normal;line-height:1}
   .evs:empty{display:none}
 
   .hint{text-align:center;color:var(--muted);font-size:12.5px;margin-top:16px;line-height:1.5}
@@ -1297,8 +1299,8 @@
   .ls-prow{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--line)}
   .ls-tap{display:flex;align-items:center;gap:12px;flex:1;min-width:0;cursor:pointer;padding:4px 2px;border-radius:12px}
   .ls-tap:active{background:rgba(63,151,255,.08)}
-  .ls-tap .lpav{width:40px;height:40px;border-radius:10px;overflow:hidden;background:var(--surface2);display:grid;place-items:center;flex:none}
-  .ls-tap .lpav img{width:40px;height:auto;display:block}
+  .ls-tap .lpav{width:40px;border-radius:10px;overflow:hidden;background:var(--surface2);flex:none;line-height:0}
+  .ls-tap .lpav img{width:40px;height:auto;display:block;border-radius:10px}
   .ls-tap .lpn{flex:1;min-width:0;font-weight:700;font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .ls-tap .lpc{font-family:'JetBrains Mono';font-weight:800;font-size:19px;min-width:24px;text-align:center;color:var(--gold)}
   .ls-tap .lpc.zero{color:var(--muted)}
@@ -1311,8 +1313,8 @@
   .ls-note{color:#b89a6a;font-size:13px;line-height:1.55;text-align:center;padding:34px 16px}
   .ls-wrow{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1.5px solid var(--line-strong);border-radius:14px;margin-bottom:9px;cursor:pointer;background:var(--bg2);transition:border-color .15s,background .15s,transform .08s}
   .ls-wrow:active{transform:scale(.99)}
-  .ls-wrow .lpav{width:40px;height:40px;border-radius:10px;overflow:hidden;background:var(--surface2);display:grid;place-items:center;flex:none}
-  .ls-wrow .lpav img{width:40px;height:auto;display:block}
+  .ls-wrow .lpav{width:40px;border-radius:10px;overflow:hidden;background:var(--surface2);flex:none;line-height:0}
+  .ls-wrow .lpav img{width:40px;height:auto;display:block;border-radius:10px}
   .ls-wrow .lpn{flex:1;min-width:0;font-weight:700;font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .ls-wpill{font-family:'Hanken Grotesk';font-weight:800;font-size:13px;color:var(--muted);flex:none}
   .ls-wrow.win{border-color:var(--green);background:rgba(55,201,126,.14)} .ls-wrow.win .ls-wpill{color:#bff0d6}
@@ -1767,8 +1769,26 @@
       return !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
     }catch(_){ return false; }
   }
+  // iOS (iPhone/iPad, incluso iPadOS che si spaccia per Mac)
+  var IOS=(function(){
+    try{
+      var ua=navigator.userAgent||'', pf=navigator.platform||'';
+      if(/iPhone|iPad|iPod/.test(ua)||/iPhone|iPad|iPod/.test(pf)) return true;
+      return /Mac/.test(pf) && (('ontouchend' in document) || (navigator.maxTouchPoints||0)>1);
+    }catch(_){ return false; }
+  })();
   function sync(){
     var vv=window.visualViewport;
+    if(!IOS){
+      /* Android e desktop: l'altezza VISIBILE e' innerHeight. `clientHeight`
+         e' il viewport grande (senza barra indirizzi): usarlo spingeva la
+         barra di navigazione sotto la UI del browser. */
+      var av=window.innerHeight||de.clientHeight||(vv&&vv.height)||0;
+      if(av) de.style.setProperty('--app-h', Math.round(av)+'px');
+      de.style.setProperty('--vp-gap','0px');
+      de.classList.remove('vp-lie');
+      return;
+    }
     var m=Math.max(window.innerHeight||0,(vv&&vv.height)||0,de.clientHeight||0);
     var sh=0, portrait=false;
     try{ sh=(window.screen&&window.screen.height)||0; portrait=(window.innerWidth||0)<(window.innerHeight||0); }catch(_){}
@@ -2355,7 +2375,7 @@
       <div class="set-card">
         <div class="rules" style="margin-top:0">
           <div class="rule"><div class="ic">⚽</div><div class="tx">Gol</div><div class="pt pos">+3</div></div>
-          <div class="rule"><div class="ic">🅰️</div><div class="tx">Assist</div><div class="pt pos">+2</div></div>
+          <div class="rule"><div class="ic">👟</div><div class="tx">Assist</div><div class="pt pos">+2</div></div>
           <div class="rule"><div class="ic">😵</div><div class="tx">Autogol</div><div class="pt neg">−3</div></div>
           <div class="rule"><div class="ic">🚫</div><div class="tx">Rigore sbagliato</div><div class="pt neg">−3</div></div>
           <div class="rule"><div class="ic">🙌</div><div class="tx">Rigore parato</div><div class="pt pos">+3</div></div>
@@ -6337,7 +6357,7 @@ function nextIcon(n){
   if(!n) return '🎯';
   if(n.icon) return n.icon;
   const k=(n.key||'').toLowerCase(), L=(n.label||'').toLowerCase();
-  const M={cecchino:'🎯',rifinitore:'🅰️',copertina:'⭐',presenze:'🚩',profeta:'🔮',capitano:'🧢',re_giornata:'👑',al_comando:'🚩',scalatore:'🧗',saracinesca:'🧤',tripletta:'⚽',poker:'⚽',manita:'🖐️'};
+  const M={cecchino:'🎯',rifinitore:'👟',copertina:'⭐',presenze:'🚩',profeta:'🔮',capitano:'🧢',re_giornata:'👑',al_comando:'🚩',scalatore:'🧗',saracinesca:'🧤',tripletta:'⚽',poker:'⚽',manita:'🖐️'};
   if(M[k]) return M[k];
   for(const key in M){ if(L.indexOf(key)>=0) return M[key]; }
   return '🎯';
@@ -7536,7 +7556,7 @@ function renderMarket(){
     const capo=topGol>0&&((s.gol||0)===topGol);
     const aman=topAst>0&&((s.assist||0)===topAst);
     const tags=(capo?'<span class="fc-tag gold">👑 Capocannoniere</span>':'')
-             +(aman?'<span class="fc-tag accent">🅰️ Assist-man</span>':'')
+             +(aman?'<span class="fc-tag accent">👟 Assist-man</span>':'')
              +(p.injured?'<span class="fc-tag red">🚑 Infortunato</span>':'');
     return `<div class="pcard-fc ${dim?'absent':''}" onclick="openPlayerStats(${p.id})">
       <div class="fc-top"><div class="fc-tags">${tags}</div>${isOwnChar(p)?'<span class="fc-tag me">Tu</span>':''}</div>
@@ -7589,16 +7609,26 @@ function scoreOf(pid,slot,isCaptain,avgMap,statsMap,mvp){
 function computeScore(pid,slotKey,mvp){
   return scoreOf(pid,slotKey,captain===slotKey,averages,adminStats,mvp);
 }
-// Icone evento sul campo: ⚽ gol · 🅰️ assist · 💀 autogol · 🚫 rigore sbagliato · 🙌 rigore parato · 🧤 imbattuto / 🔴 gol subiti (solo portiere)
+// Icone evento sul campo: ⚽ gol · 👟 assist · 🅰️ autogol · 🚫 rigore sbagliato · 🙌 rigore parato · 🧤 imbattuto / 🔴 gol subiti (solo portiere)
 function statIcons(r){
   const a=[];
   for(let i=0;i<(r.gol||0);i++)a.push('⚽');
-  for(let i=0;i<(r.assist||0);i++)a.push('🅰️');
-  for(let i=0;i<(r.og||0);i++)a.push('💀');
+  for(let i=0;i<(r.assist||0);i++)a.push('👟');
+  for(let i=0;i<(r.og||0);i++)a.push('🅰️');
   for(let i=0;i<(r.rs||0);i++)a.push('🚫');
   for(let i=0;i<(r.rp||0);i++)a.push('🙌');
   if(r.isPor){ if((r.gs||0)===0)a.push('🧤'); else for(let i=0;i<(r.gs||0);i++)a.push('🔴'); }
   return a.length?a.map(e=>`<i>${e}</i>`).join(''):'';
+}
+/* Colonne del riquadro eventi: sempre due righe esatte, mai tre.
+   Piu' eventi ci sono, piu' stretta la emoji — meglio piccole che fuori
+   dallo schermo, come succedeva al portiere in fondo al campo. */
+function evsStyle(html){
+  const n=(String(html||'').match(/<i>/g)||[]).length;
+  if(!n) return '';
+  const cols=Math.max(1,Math.min(9,Math.ceil(n/2)));
+  const sz=cols<=4?12:(cols<=6?10.5:9);
+  return `--cols:${cols};--esz:${sz}px`;
 }
 const PITCH_MARKS='<div class="mark m-box top"></div><div class="mark m-box bot"></div><div class="mark m-goal top"></div><div class="mark m-goal bot"></div><div class="mark m-arc top"></div><div class="mark m-arc bot"></div><div class="mark m-halfway"></div><div class="mark m-circle"></div><div class="mark m-spot"></div>';
 // Costruisce gli slot di un campo (sola lettura) per un modulo dato. getp(slot)->{p,sc,cap,mvp} o null.
@@ -7612,7 +7642,7 @@ function pitchSlotsHTML(mod,getp){
       <div class="pawn">${avatarImg(o.p?o.p.avatar:'',104)}${o.cap?'<span class="cap">C</span>':''}</div>
       <div class="tag">${o.p?o.p.name:'?'}${o.mvp?' 🏆':''}</div>
       <div class="scoreline"><span class="voto ${cls}">${o.sc.voto.toFixed(1)}</span></div>
-      ${icons?`<div class="evs">${icons}</div>`:''}</div>`;
+      ${icons?`<div class="evs" style="${evsStyle(icons)}">${icons}</div>`:''}</div>`;
   }).join('');
 }
 function updateScores(){
@@ -7627,7 +7657,7 @@ function updateScores(){
     const evs=statIcons(r);
     const cls=r.voto>=6?'hi':'lo';
     el.innerHTML=`<span class="voto ${cls}">${r.voto.toFixed(1)}</span>`;
-    if(ev)ev.innerHTML=evs;});
+    if(ev){ ev.innerHTML=evs; ev.style.cssText=evsStyle(evs); }});
   document.getElementById('ptTotal').textContent=total.toFixed(1);
 }
 function slotTap(key){
@@ -7732,9 +7762,9 @@ function matchOpenable(){
 }
 const LIVE_FIELDS={
   gol:   {key:'gol',    emoji:'⚽', label:'Gol',      sub:'+3 a chi segna',          cls:'gol'},
-  assist:{key:'assist', emoji:'🅰️', label:'Assist',   sub:'+2 a chi serve l\'assist', cls:'ass'},
+  assist:{key:'assist', emoji:'👟', label:'Assist',   sub:'+2 a chi serve l\'assist', cls:'ass'},
   gs:    {key:'gs',     emoji:'🧤', label:'Portiere', sub:'gol subìto dal portiere', cls:'por'},
-  og:    {key:'og',     emoji:'💀', label:'Autogol',        sub:'−3 a chi lo segna',     tone:'neg'},
+  og:    {key:'og',     emoji:'🅰️', label:'Autogol',        sub:'−3 a chi lo segna',     tone:'neg'},
   rs:    {key:'rs',     emoji:'🚫', label:'Rig. sbagliato', sub:'−3 a chi lo sbaglia',   tone:'neg'},
   rp:    {key:'rp',     emoji:'🙌', label:'Rig. parato',    sub:'+3 a chi lo para',      tone:'pos'}
 };
@@ -7999,7 +8029,7 @@ function renderLB(){
         && (period===ALLTIME || period==null || m.season_id==null || m.season_id===period) ).slice().sort((a,b)=>a.id-b.id);
     sel.innerHTML='<option value="">\ud83c\udfc6 Classifica generale</option>'
       +'<option value="scorers">\u26bd Classifica marcatori</option>'
-      +'<option value="assists">\ud83c\udd70\ufe0f Classifica assist</option>'
+      +'<option value="assists">\ud83d\udc5f Classifica assist</option>'
       +visMds.map(m=>`<option value="${m.id}">${esc(mdOptLabel(m,period))}</option>`).join('');
     sel.value=cur||selStandingsMd||'';
   }
@@ -8086,7 +8116,7 @@ function topRowHTML(t,i,emo){
 function renderTopList(kind){
   const el=document.getElementById('lbList'), hint=document.getElementById('lbHint'), top=document.getElementById('lbTop');
   const ass=(kind==='assists');
-  const scope=lbScopeNow(), key=ass?'assist':'gol', emo=ass?'\ud83c\udd70\ufe0f':'\u26bd';
+  const scope=lbScopeNow(), key=ass?'assist':'gol', emo=ass?'\ud83d\udc5f':'\u26bd';
   if(hint){
     hint.textContent = (scope===ALLTIME)
       ? (ass?'Assist di tutte le stagioni messe insieme.':'Gol di tutte le stagioni messe insieme.')
@@ -8117,7 +8147,7 @@ function renderTopList(kind){
   if(top) top.innerHTML=`<div class="tp-hero${ass?' ass':''}" onclick="openPlayerStats(${k.id})" style="cursor:pointer">
       <div class="tp-av">${avatarImg(k.avatar,52)}</div>
       <div class="tp-in">
-        <div class="tp-k">${ass?'\ud83c\udfaf Re degli assist':'\ud83d\udc51 Capocannoniere'} \u00b7 ${esc(scopeLabel(scope))}</div>
+        <div class="tp-k">${ass?'\ud83d\udc5f Re degli assist':'\ud83d\udc51 Capocannoniere'} \u00b7 ${esc(scopeLabel(scope))}</div>
         <div class="tp-n">${esc(k.name)}</div>
         <div class="tp-s">${exaequo>1?('a pari merito con altri '+(exaequo-1)):(k.pres+(k.pres===1?' presenza':' presenze'))}</div>
       </div>
@@ -9803,7 +9833,7 @@ function renderSeasonHTML(card){
       return `<div class="pag-eyebrow gold">I premi della stagione</div>
         <div class="pag-awd">
           ${sAwd('👟','Capocannoniere',a.capocannoniere,(a.capocannoniere?a.capocannoniere.val+' ⚽':''),sIsMe(a.capocannoniere)?'me':'gold')}
-          ${sAwd('🎯','Re degli assist',a.assistman,(a.assistman?a.assistman.val+' 🅰️':''),sIsMe(a.assistman)?'me':'')}
+          ${sAwd('👟','Re degli assist',a.assistman,(a.assistman?a.assistman.val+' 👟':''),sIsMe(a.assistman)?'me':'')}
           ${sAwd('🏅','Pallone d\'oro',a.goldenball,(a.goldenball?Number(a.goldenball.val).toFixed(2):''),sIsMe(a.goldenball)?'me':'')}
         </div>`;
 
