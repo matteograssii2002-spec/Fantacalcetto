@@ -4845,6 +4845,7 @@ let lbScope=null;      // periodo di marcatori/assist: id stagione oppure 'all'
 let cardScope=null;    // periodo delle schede: id stagione oppure 'all'
 let _bestVoteTxt='\u2014';   // miglior voto del periodo (lo riempie loadVoteTrend)
 let _avgVote=null;           // voto medio del periodo, dalle stesse giornate
+let _avgVoteReady=false;     // la risposta è arrivata? (null + ready = nessun voto nel periodo)
 let _lastPlayerCard=null;    // ultima scheda ricevuta, per ridisegnare senza richiederla
 
 async function loadSeasonsList(){
@@ -5061,6 +5062,12 @@ function scopeStats(scope){
     const o=row(r.player_id); o.gol+=Number(r.gol)||0; o.assist+=Number(r.assist)||0; });
   (allPresRows||[]).forEach(r=>{ if(!prIds.has(r.matchday_id))return; row(r.player_id).pres+=1; });
   return out;
+}
+/* Una stagione ha una classifica solo dopo la prima giornata chiusa: prima
+   sono tutti a zero e la posizione non significa niente. */
+function seasonHasClosed(scope){
+  if(scope===ALLTIME) return matchdaysList.some(m=>m.status==='closed');
+  return matchdaysList.some(m=>m.status==='closed' && String(m.season_id)===String(scope));
 }
 /* etichetta leggibile del periodo */
 function scopeLabel(scope){
@@ -5704,16 +5711,19 @@ function renderHomeBcards(force){
       const st=card.stats||{};
       // due dati, sempre due: se i record sono ancora a zero non ha senso
       // mostrarli («×0» non è un traguardo), meglio i punti della stagione
+      const started=seasonHasClosed(displaySeasonId);
       const facts=[];
-      if(st.pos) facts.push(rvFactHTML('🏆',st.pos+'°','In classifica'));
+      // niente posizione prima della prima giornata chiusa: sarebbe l'ordine
+      // alfabetico travestito da classifica
+      if(st.pos && started) facts.push(rvFactHTML('🏆',st.pos+'°','In classifica'));
       if(st.wins)             facts.push(rvFactHTML('👑','×'+st.wins,'Re della giornata'));
       else if(st.leader_days) facts.push(rvFactHTML('🚩','×'+st.leader_days,'Giornate da leader'));
       else                    facts.push(rvFactHTML('📊',fmtPts(st.points||0),'Punti stagione'));
       mc.innerHTML=hcardHTML({
         wm: card.headline?card.headline.icon:'👔',
         eye:'Da manager',
-        ttl: card.headline?card.headline.text:'Manager',
-        sub: card.headline?card.headline.sub:'',
+        ttl: started?(card.headline?card.headline.text:'Manager'):'Manager',
+        sub: started?(card.headline?card.headline.sub:''):'La classifica parte dalla prima giornata chiusa',
         facts: facts,
         prog: nextBarHTML(card.next),
         go:'Vedi la tua squadra'
@@ -7002,7 +7012,7 @@ function openPlayerStats(id){
   // il periodo parte dalla stagione che si sta sfogliando: aprire una scheda
   // non deve cambiare il punto di vista sotto i piedi
   cardScope=(cardScope===ALLTIME)?ALLTIME:((viewSeasonId!=null)?viewSeasonId:displaySeasonId);
-  _bestVoteTxt='\u2014'; _avgVote=null; _lastPlayerCard=null;
+  _bestVoteTxt='\u2014'; _avgVote=null; _avgVoteReady=false; _lastPlayerCard=null;
   document.getElementById('statAv').innerHTML=avatarImg(p.avatar,50);
   document.getElementById('statName').textContent=p.name;
   document.getElementById('statRole').textContent=roleLabel(p.role)+' \u00b7 '+s.forma;
@@ -7030,7 +7040,9 @@ function paintPlayerGrid(id,card){
       if(gg!=null)s.gol=Number(gg); if(aa!=null)s.assist=Number(aa); if(pp!=null)s.presences=Number(pp);
     }
   }
-  if(_avgVote!=null) s.voto=_avgVote;      // il periodo vince sempre sulla carriera
+  // il periodo vince sempre sulla carriera: appena si sa, si scrive quello —
+  // e se nel periodo non c'è nessun voto si scrive «—», non la media di sempre
+  if(_avgVoteReady) s.voto=(_avgVote!=null)?_avgVote:0;
   g.innerHTML=playerStatsGridHTML(s,scopeMaxes(cardScope));
   applyBestVote();
 }
@@ -7075,7 +7087,7 @@ async function voteRows(id, seasonId){
    di anno in anno?». Stessa regola per il grafico della squadra. */
 async function loadVoteTrend(id, scope){
   const box=document.getElementById('statChart'); if(!box) return;
-  _bestVoteTxt='\u2014'; _avgVote=null; applyBestVote();
+  _bestVoteTxt='\u2014'; _avgVote=null; _avgVoteReady=false; applyBestVote();
   box.style.display='block';
   box.innerHTML=chartHeadHTML('\ud83d\udcc8 Andamento voti','')+emptyChartSVG('Carico\u2026');
   const perSeason = (scope===ALLTIME && allSeasons.length>1);
@@ -7106,6 +7118,7 @@ async function loadVoteTrend(id, scope){
     ? String(Math.round(Math.max(...pts.map(p=>p.v))*100)/100).replace('.',',')   // virgola, non punto
     : '\u2014';
   _avgVote = pts.length ? (pts.reduce((a,p)=>a+p.v,0)/pts.length) : null;
+  _avgVoteReady = true;
   applyBestVote();
   if(_statCardId===id) paintPlayerGrid(id,_lastPlayerCard);
   box.innerHTML=voteTrendHTML(pts, perSeason?'media per stagione':'');
@@ -7191,11 +7204,12 @@ function teamStatsGridHTML(card){
   } else {
     // 1) La posizione è l'unica cosa che un manager cerca davvero: si legge subito,
     //    con la barra che dice quanto sei in alto senza dover contare le squadre.
+    const started=seasonHasClosed(cardScope);
     h=`<div class="tm-hero"><div class="tm-top">
-      <div class="tm-pos">${pos||'—'}${pos?'<u>°</u>':''}<s>${tot?('su '+tot+' squadre'):'in classifica'}</s></div>
+      <div class="tm-pos">${(started&&pos)?pos:'—'}${(started&&pos)?'<u>°</u>':''}<s>${started?(tot?('su '+tot+' squadre'):'in classifica'):'nessuna giornata chiusa'}</s></div>
       <div class="tm-pts"><b>${fmtPts(st.points||0)}</b><span>punti${card.season_no?' · Stagione '+card.season_no:''}</span></div>
     </div>`;
-    if(pos && tot>1){
+    if(started && pos && tot>1){
       const pct=Math.round(((tot-pos)/(tot-1))*100);
       h+=`<div class="tm-track"><i style="width:${Math.max(5,pct)}%"></i></div>`;
     }
