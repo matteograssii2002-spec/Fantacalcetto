@@ -458,6 +458,7 @@
   .prescell:active{transform:scale(.97)}
   .prescell .pc-av{width:26px;flex:none;border-radius:7px;overflow:hidden;line-height:0}
   .prescell .pc-av img{width:26px;height:auto;display:block;border-radius:7px}
+  .prescell .pc-av .tlogo{width:26px;height:26px}
   .prescell .pc-nm{flex:1;min-width:0;font-size:13.5px;font-weight:700;color:var(--muted);
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .prescell .pc-tk{width:21px;height:21px;flex:none;border-radius:999px;border:1.5px solid var(--line-strong);
@@ -1097,9 +1098,9 @@
   .pro-amount b{font-family:'Bricolage Grotesque',sans-serif;font-size:42px;font-weight:800;line-height:1;letter-spacing:-.02em}
   .pro-amount span{font-size:18px;font-weight:700;color:var(--muted);margin-left:5px}
   .pro-amount .pro-amount-sub{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5}
-  .pro-ribbon{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;
-    color:#1b1207;background:linear-gradient(135deg,var(--gold-soft),var(--gold));
-    padding:5px 10px;border-radius:8px;margin-bottom:13px}
+  .pro-ribbon{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+    color:#0d0900;background:linear-gradient(135deg,var(--gold-soft),var(--gold));
+    padding:6px 11px;border-radius:8px;margin-bottom:13px}
   .pro-row{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
   .pro-row s{font-family:'Bricolage Grotesque',sans-serif;font-size:21px;font-weight:800;
     color:var(--muted);opacity:.6;text-decoration-thickness:2px}
@@ -7244,6 +7245,7 @@ async function renderVoters(){
   if(error){box.innerHTML='<div class="vs" style="color:var(--muted)">'+(String(error.message).includes('forbidden')?'Solo admin.':(errText(error)))+'</div>';return;}
   if(!data||!data.length){box.innerHTML='<div class="vs" style="color:var(--muted)">Nessun manager-solo registrato.</div>';return;}
   box.innerHTML='<div class="presgrid">'+data.map(m=>`<div class="prescell${m.can_vote?' on':''}" onclick="toggleVoter('${m.id}',${m.can_vote?1:0})">`
+    +`<span class="pc-av">${teamLogoHTML(m.id,26)}</span>`
     +`<span class="pc-nm">${esc(m.team_name||m.player_name||'Manager')}</span>`
     +`<span class="pc-tk">\u2713</span></div>`).join('')+'</div>';
 }
@@ -7267,6 +7269,7 @@ async function renderVices(){
     box.innerHTML='<div class="presgrid">'+rows.map(m=>{
       const nm=esc(m.player_name||m.team_name||'Membro');
       return `<div class="prescell blue${m.is_vice?' on':''}" onclick="toggleVice('${m.id}',${m.is_vice?1:0})">`
+        +`<span class="pc-av">${teamLogoHTML(m.id,26)}</span>`
         +`<span class="pc-nm">${nm}</span><span class="pc-tk">\u2713</span></div>`;
     }).join('')+'</div>';
   }catch(e){ box.innerHTML='<div class="vs" style="color:var(--red)">Errore nel caricamento.</div>'; }
