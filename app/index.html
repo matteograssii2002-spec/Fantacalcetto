@@ -534,6 +534,10 @@
   .slot .tag.empty{color:rgba(255,255,255,.92);font-weight:600}
   .slot .cap{position:absolute;top:-4px;left:-4px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#1b1207;display:none;place-items:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:12px;border:2px solid #2c7a39}
   .slot.captain .cap{display:grid}
+  .slot .yc{position:absolute;top:-3px;right:-3px;min-width:15px;height:20px;border-radius:3px;
+    background:linear-gradient(160deg,#ffe14d,#f0b400);border:1.5px solid rgba(0,0,0,.45);
+    display:grid;place-items:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:11px;
+    color:#3a2a00;box-shadow:0 2px 5px rgba(0,0,0,.5);padding:0 2px}
   .scoreline{display:flex;align-items:center;justify-content:center}
   .voto{font-family:'JetBrains Mono';font-weight:700;font-size:11px;padding:1px 6px;border-radius:6px;background:rgba(0,0,0,.55);color:#fff}
   .voto.hi{color:#7ce6aa} .voto.lo{color:#ff9a9a}
@@ -1286,7 +1290,10 @@
   .ls-home .ls-block.small .lsl b{font-size:17px}
   .ls-home .ls-block.small .lsn{font-size:22px}
   /* riga piccola in basso: autogol + rigore sbagliato + rigore parato (eventi rari) */
-  .ls-srow{display:flex;gap:9px;flex:0 0 auto}
+  .ls-srow{display:flex;gap:7px;flex:0 0 auto}
+  .ls-srow .ls-mini{padding-left:3px;padding-right:3px}
+  .ls-srow .ls-mini .lse{font-size:21px}
+  .ls-srow .ls-mini .lsl{font-size:10px}
   .ls-srow .ls-mini{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
     border:1.5px solid var(--line-strong);border-radius:18px;padding:12px 6px;cursor:pointer;
     background:linear-gradient(160deg,#10294d,#0a1830);transition:transform .1s}
@@ -2376,6 +2383,7 @@
         <div class="rules" style="margin-top:0">
           <div class="rule"><div class="ic">⚽</div><div class="tx">Gol</div><div class="pt pos">+3</div></div>
           <div class="rule"><div class="ic">👟</div><div class="tx">Assist</div><div class="pt pos">+2</div></div>
+          <div class="rule"><div class="ic">🟨</div><div class="tx">Cartellino giallo</div><div class="pt neg">−0,5</div></div>
           <div class="rule"><div class="ic">😵</div><div class="tx">Autogol</div><div class="pt neg">−3</div></div>
           <div class="rule"><div class="ic">🚫</div><div class="tx">Rigore sbagliato</div><div class="pt neg">−3</div></div>
           <div class="rule"><div class="ic">🙌</div><div class="tx">Rigore parato</div><div class="pt pos">+3</div></div>
@@ -3941,6 +3949,84 @@ async function cancelEmptySeason(){
 }
 /* HOME — la testata cambia faccia nell'intervallo fra due stagioni: senza questo
    l'app inviterebbe a schierare una formazione per una giornata che non esiste. */
+/* ==========================================================================
+   LA HOME DICE COSA FARE ADESSO
+
+   Prima il titolo era sempre lo stesso — «Pronto a schierare?» — anche a
+   formazioni chiuse, anche a votazioni aperte, anche a stagione ferma. Chi
+   apriva l'app doveva capire da solo a che punto della settimana era.
+
+   Ora il riquadro in alto sceglie UNA cosa sola: quella che tocca a te
+   adesso, e il pulsante ci porta. Una sola, non un elenco: se ce ne fossero
+   tre non se ne farebbe nessuna. L'ordine e' quello della settimana —
+   presenze, valutazione, formazione, partita, voti, pagellone — perche' e'
+   l'ordine in cui le cose diventano urgenti.
+
+   Chi amministra ha comunque la precedenza quando ha un compito bloccante
+   (heroAdminTodo con solo=true): se la giornata non si apre, non ha senso
+   dire a nessuno di schierare.
+   ========================================================================== */
+function heroScrollTo(id){
+  go('home');
+  const e=document.getElementById(id); if(!e) return;
+  setTimeout(()=>{ try{ e.scrollIntoView({behavior:'smooth',block:'center'}); }
+                   catch(_){ try{ e.scrollIntoView(); }catch(__){ } } }, 140);
+}
+function heroState(){
+  const md=currentMd, ph=mdPhaseIdx(), mp=myPlayer();
+  const iPlay=!!(mp && profile && profile.is_player!==false);
+
+  // 1. presenze: e' la prima porta della settimana, senza quella non si entra in campo
+  if(presencePollOpen() && iPlay && !mdPresent.has(mp.id))
+    return {ttl:'Ci sei alla <span class="hot">prossima?</span>', cta:'Rispondi al sondaggio \u2192',
+            fn:"heroScrollTo('homePresence')", note:'Chi non risponde non entra in campo.'};
+
+  // 2. valutazione giocatori: finche' e' aperta i crediti di tutti restano fermi
+  if(typeof valuePollOpen!=='undefined' && valuePollOpen && !valuePollVoted)
+    return {ttl:'Quanto <span class="hot">valgono?</span>', cta:'Valuta i giocatori \u2192',
+            fn:'openValuePoll()', note:'I tuoi voti decidono quanto costa ognuno in crediti.'};
+
+  if(md && ph===1)
+    return {ttl:'Ci sei \u2014 <span class="hot">ci vediamo l\u00ec</span>', cta:'Guarda chi ha risposto \u2192',
+            fn:"heroScrollTo('homePresence')", note:'Le formazioni aprono a sondaggio chiuso.'};
+
+  if(md && ph===2){
+    const n=Object.keys(lineup||{}).length;
+    if(n<5)
+      return {ttl:'Pronto a <span class="hot">schierare?</span>', cta:'Schiera la formazione \u2192',
+              fn:"go('formazione')", note:n?('Ti mancano '+(5-n)+(n===4?' giocatore.':' giocatori.')):''};
+    return {ttl:'Formazione <span class="hot">pronta</span>', cta:'Rivedi il campo \u2192',
+            fn:"go('formazione')", note:'Puoi cambiarla fino a 5 minuti prima del via.'};
+  }
+
+  if(md && ph===3)
+    return {ttl:'Si <span class="hot">gioca</span>', cta:'Guarda il campo \u2192',
+            fn:"go('formazione')", note:'I voti aprono a fine partita.'};
+
+  if(md && ph===4){
+    const voted=Object.keys(myVotes||{}).length>0;
+    if(canIVote() && !voted)
+      return {ttl:'Tocca a te: <span class="hot">i voti</span>', cta:'Vota i giocatori \u2192',
+              fn:"go('voti')", note:'Da 1 a 10, pi\u00f9 l\u2019MVP. Si chiude 24h dopo la partita.'};
+    if(canIVote())
+      return {ttl:'Voti <span class="hot">inviati</span>', cta:'Modifica i voti \u2192',
+              fn:"go('voti')", note:'Puoi correggerli finch\u00e9 la votazione \u00e8 aperta.'};
+    return {ttl:'Votazioni <span class="hot">aperte</span>', cta:'Vedi la classifica \u2192',
+            fn:"go('classifica')", note:'Votano i giocatori scesi in campo.'};
+  }
+
+  if(md && ph===5)
+    return {ttl:'Votazioni <span class="hot">chiuse</span>', cta:'Vedi la classifica \u2192',
+            fn:"go('classifica')", note:'Il pagellone arriva alla chiusura della giornata.'};
+
+  // niente in corso: si guarda indietro, all'ultima cosa successa
+  const last=(typeof latestClosedMd==='function')?latestClosedMd():null;
+  if(last)
+    return {ttl:'\u00c8 uscito il <span class="hot">pagellone</span>', cta:'Rivivi '+esc(last.label)+' \u2192',
+            fn:'openRecapLatest()', note:'Voti, formazioni e chi ha vinto.'};
+  return {ttl:'La <span class="hot">classifica</span>', cta:'Vedi la classifica \u2192',
+          fn:"go('classifica')", note:'La prossima giornata si apre da sola.'};
+}
 function renderHero(){
   const t=document.getElementById('heroTitle'), c=document.getElementById('heroCta'), x=document.getElementById('heroExtra');
   if(!t||!c) return;
@@ -3966,12 +4052,14 @@ function renderHero(){
       c.setAttribute('onclick',todo.fn);
       if(x) x.innerHTML=`<p class="hero-note">${todo.note}</p>`;
     } else {
-      t.innerHTML='Pronto a <span class="hot">schierare?</span>';
-      c.textContent='Schiera la formazione →';
-      c.setAttribute('onclick',"go('formazione')");
+      const st=heroState();
+      t.innerHTML=st.ttl;
+      c.textContent=st.cta;
+      c.setAttribute('onclick',st.fn);
+      // il compito admin non bloccante resta come seconda riga, sotto
       if(x) x.innerHTML = todo
         ? `<button class="hero-2nd" onclick="${todo.fn}">${todo.cta}</button><p class="hero-note">${todo.note}</p>`
-        : '';
+        : (st.note?`<p class="hero-note">${st.note}</p>`:'');
     }
   }
 }
@@ -4909,7 +4997,7 @@ function moveArrow(d){
 /* punti classifica: arrotonda al mezzo punto (es. 180,5) e mostra con la virgola */
 function roundHalf(n){ return Math.round((Number(n)||0)*2)/2; }
 function fmtPts(n){ const r=roundHalf(n); return Number.isInteger(r)?String(r):r.toFixed(1).replace('.',','); }
-function ensureStats(){players.filter(isPresent).forEach(p=>{if(!adminStats[p.id])adminStats[p.id]={gol:0,assist:0,og:0,gs:0,rs:0,rp:0,esito:''};});}
+function ensureStats(){players.filter(isPresent).forEach(p=>{if(!adminStats[p.id])adminStats[p.id]={gol:0,assist:0,og:0,gs:0,rs:0,rp:0,gi:0,esito:''};});}
 async function loadPlayerStats(){
   // i dati di gioco sono cambiati: le righe grezze di gol/assist/presenze
   // vanno riprese, altrimenti marcatori e schede restano indietro di una giornata
@@ -5108,7 +5196,7 @@ async function loadMatchStats(){
   adminStats={}; mdResultsSaved=false;
   if(!currentMd)return;
   const {data}=await sb.from('match_stats').select('*').eq('matchday_id',currentMd.id);
-  (data||[]).forEach(r=>{adminStats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,esito:r.esito||''};});
+  (data||[]).forEach(r=>{adminStats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,gi:r.gialli||0,esito:r.esito||''};});
   // l'esito è il segnale giusto: gol e assist possono essere legittimamente zero,
   // «chi ha vinto» no. Se non c'è, la partita non è ancora stata registrata.
   mdResultsSaved=(data||[]).some(r=>r.esito==='V'||r.esito==='S');
@@ -7597,14 +7685,14 @@ function updateBudget(){
 }
 function avgFor(id){return averages[id]?averages[id].v:6;}
 function scoreOf(pid,slot,isCaptain,avgMap,statsMap,mvp){
-  const st=statsMap[pid]||{gol:0,assist:0,og:0,gs:0,rs:0,rp:0,esito:''},isPor=slot==='g1';
+  const st=statsMap[pid]||{gol:0,assist:0,og:0,gs:0,rs:0,rp:0,gi:0,esito:''},isPor=slot==='g1';
   const voto=avgMap[pid]?avgMap[pid].v:6;
   const mult=(mvp===pid?2:1)*(isCaptain?2:1);   // capitano e MVP raddoppiano SOLO il voto
-  let bonus=st.gol*3+st.assist*2-st.og*3-(st.rs||0)*3+(st.rp||0)*3,gs=st.gs||0;
+  let bonus=st.gol*3+st.assist*2-st.og*3-(st.rs||0)*3+(st.rp||0)*3-(st.gi||0)*0.5,gs=st.gs||0;
   if(st.esito==='V')bonus+=2; else if(st.esito==='S')bonus-=1;
   if(isPor)bonus+=(gs===0?3:-gs);
   const s=voto*mult+bonus;
-  return {score:s,voto,gol:st.gol,assist:st.assist,og:st.og,rs:st.rs||0,rp:st.rp||0,gs,isPor};
+  return {score:s,voto,gol:st.gol,assist:st.assist,og:st.og,rs:st.rs||0,rp:st.rp||0,gi:st.gi||0,gs,isPor};
 }
 function computeScore(pid,slotKey,mvp){
   return scoreOf(pid,slotKey,captain===slotKey,averages,adminStats,mvp);
@@ -7639,7 +7727,7 @@ function pitchSlotsHTML(mod,getp){
     if(!o||!o.p) return `<div class="slot ${isPor?'por':''}" style="left:${s.x}%;top:${s.y}%"><div class="disc"></div><div class="tag empty">${isPor?'POR':s.label}</div></div>`;
     const icons=statIcons(o.sc), cls=o.sc.voto>=6?'hi':'lo';
     return `<div class="slot ${o.cap?'captain':''} ${isPor?'por':''}" style="left:${s.x}%;top:${s.y}%">
-      <div class="pawn">${avatarImg(o.p?o.p.avatar:'',104)}${o.cap?'<span class="cap">C</span>':''}</div>
+      <div class="pawn">${avatarImg(o.p?o.p.avatar:'',104)}${o.cap?'<span class="cap">C</span>':''}${(o.sc.gi||0)?`<span class="yc">${o.sc.gi>1?o.sc.gi:''}</span>`:''}</div>
       <div class="tag">${o.p?o.p.name:'?'}${o.mvp?' 🏆':''}</div>
       <div class="scoreline"><span class="voto ${cls}">${o.sc.voto.toFixed(1)}</span></div>
       ${icons?`<div class="evs" style="${evsStyle(icons)}">${icons}</div>`:''}</div>`;
@@ -7766,7 +7854,8 @@ const LIVE_FIELDS={
   gs:    {key:'gs',     emoji:'🧤', label:'Portiere', sub:'gol subìto dal portiere', cls:'por'},
   og:    {key:'og',     emoji:'🅰️', label:'Autogol',        sub:'−3 a chi lo segna',     tone:'neg'},
   rs:    {key:'rs',     emoji:'🚫', label:'Rig. sbagliato', sub:'−3 a chi lo sbaglia',   tone:'neg'},
-  rp:    {key:'rp',     emoji:'🙌', label:'Rig. parato',    sub:'+3 a chi lo para',      tone:'pos'}
+  rp:    {key:'rp',     emoji:'🙌', label:'Rig. parato',    sub:'+3 a chi lo para',      tone:'pos'},
+  gi:    {key:'gi',     emoji:'🟨', label:'Giallo',          sub:'−0,5 a chi lo prende',  tone:'neg'}
 };
 let liveView='home', livePickField='gol';
 function LS(){ return adminStats; }
@@ -7787,7 +7876,7 @@ function renderLiveOpenBtn(){
 
 function liveDraftKey(){ return currentMd?('fc_live_'+currentMd.id):null; }
 function saveLiveDraft(){ const k=liveDraftKey(); if(!k)return; try{ const d={}; players.filter(isPresent).forEach(p=>{ if(adminStats[p.id])d[p.id]=adminStats[p.id]; }); localStorage.setItem(k,JSON.stringify(d)); }catch(_){} }
-function loadLiveDraft(){ const k=liveDraftKey(); if(!k)return; try{ const raw=localStorage.getItem(k); if(!raw)return; const d=JSON.parse(raw); for(const pid in d){ adminStats[pid]=Object.assign({gol:0,assist:0,og:0,gs:0,rs:0,rp:0,esito:''}, adminStats[pid]||{}, d[pid]); } }catch(_){} }
+function loadLiveDraft(){ const k=liveDraftKey(); if(!k)return; try{ const raw=localStorage.getItem(k); if(!raw)return; const d=JSON.parse(raw); for(const pid in d){ adminStats[pid]=Object.assign({gol:0,assist:0,og:0,gs:0,rs:0,rp:0,gi:0,esito:''}, adminStats[pid]||{}, d[pid]); } }catch(_){} }
 function clearLiveDraft(){ const k=liveDraftKey(); if(k){ try{ localStorage.removeItem(k); }catch(_){} } }
 
 function openLiveStats(){
@@ -7833,7 +7922,7 @@ function renderLive(){
         <div class="lsl">${m.label}</div>
         <div class="lsn">${liveTotal(m.key)}</div></div>`; };
     body.innerHTML=`<div class="ls-home">${blk('gol')}${blk('assist')}${blk('gs')}`
-      +`<div class="ls-srow">${mini('og')}${mini('rs')}${mini('rp')}</div></div>`;
+      +`<div class="ls-srow">${mini('og')}${mini('rs')}${mini('rp')}${mini('gi')}</div></div>`;
     foot.innerHTML=`<button class="ls-cta" onclick="liveGo('result')">Risultato e salva →</button>`;
 
   } else if(liveView==='pick'){
@@ -7909,7 +7998,7 @@ async function liveConfirmSave(){
   if(!pres.length){ toast('Nessun giocatore presente'); return; }
   if(!confirm('Salvare e caricare tutti i dati della partita?\nVerranno aggiornati gol, assist, gol del portiere, autogol, rigori e il risultato di ogni giocatore.'))return;
   const rows=pres.map(p=>{ const a=adminStats[p.id]||{gol:0,assist:0,og:0,gs:0,rs:0,rp:0,esito:''};
-    return {matchday_id:currentMd.id,player_id:p.id,gol:a.gol||0,assist:a.assist||0,autogol:a.og||0,gol_subiti:a.gs||0,rigore_sbagliato:a.rs||0,rigore_parato:a.rp||0,esito:a.esito||null}; });
+    return {matchday_id:currentMd.id,player_id:p.id,gol:a.gol||0,assist:a.assist||0,autogol:a.og||0,gol_subiti:a.gs||0,rigore_sbagliato:a.rs||0,rigore_parato:a.rp||0,gialli:a.gi||0,esito:a.esito||null}; });
   const btn=document.getElementById('lsSaveBtn'); if(btn){btn.disabled=true;btn.textContent='Salvataggio…';}
   const {error}=await sb.from('match_stats').upsert(rows,{onConflict:'matchday_id,player_id'});
   if(error){ toast(errText(error)); if(btn){btn.disabled=false;btn.textContent='✓ Conferma e salva tutto';} return; }
@@ -8185,7 +8274,7 @@ async function openTeamLineup(managerId, teamName){
   }
   const {data:lns}=await sb.from('lineups').select('*').eq('matchday_id',md).eq('manager_id',managerId);
   const avg={}; const {data:av}=await sb.rpc('get_averages',{md}); (av||[]).forEach(r=>avg[r.player_id]={v:Number(r.v)});
-  const stats={}; const {data:msd}=await sb.from('match_stats').select('*').eq('matchday_id',md); (msd||[]).forEach(r=>stats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,esito:r.esito||''});
+  const stats={}; const {data:msd}=await sb.from('match_stats').select('*').eq('matchday_id',md); (msd||[]).forEach(r=>stats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,gi:r.gialli||0,esito:r.esito||''});
   let mvp=0; const {data:msx}=await sb.rpc('get_mvp_sega',{md}); if(msx&&msx[0]){mvp=msx[0].mvp||0;}
   let mod='1-2-2'; const {data:lm}=await sb.from('lineup_modules').select('module').eq('matchday_id',md).eq('manager_id',managerId).maybeSingle(); if(lm&&MODULES[lm.module])mod=lm.module;
   document.getElementById('tlpTitle').textContent=teamName;
@@ -8838,7 +8927,7 @@ async function loadRecapExtra(md){
     ]);
     const lns=lnsR.data||[];
     const avg={}; (avdR.data||[]).forEach(r=>avg[r.player_id]={v:Number(r.v)});
-    const stats={}; (msdR.data||[]).forEach(r=>stats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,esito:r.esito||''});
+    const stats={}; (msdR.data||[]).forEach(r=>stats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,gi:r.gialli||0,esito:r.esito||''});
     const mvp=(msxR.data&&msxR.data[0]&&msxR.data[0].mvp)||0;
     const modBy={}; (lmdR.data||[]).forEach(r=>modBy[r.manager_id]=r.module);
     ex.mvpPodium=(podR.data||[]).map(r=>({name:r.name,avatar:r.avatar,votes:r.votes}));   // [1º,2º,3º] per nomination
