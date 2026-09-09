@@ -6587,6 +6587,8 @@ function setCardScope(kind,ref,v){
   if(scopeLocked(n)){ openPro('storico'); return; }
   if(String(n)===String(cardScope)) return;
   cardScope=n;
+  // la scheda vecchia non deve piu' essere usata come ripiego per il periodo nuovo
+  _lastPlayerCard=null; _avgVote=null; _avgVoteReady=false; _bestVoteTxt='\u2014';
   if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){ } }
   renderCardScopeBar(kind);
   const box=document.getElementById(kind==='player'?'statBacheca':'teamBacheca');
@@ -7040,9 +7042,9 @@ function paintPlayerGrid(id,card){
       if(gg!=null)s.gol=Number(gg); if(aa!=null)s.assist=Number(aa); if(pp!=null)s.presences=Number(pp);
     }
   }
-  // il periodo vince sempre sulla carriera: appena si sa, si scrive quello —
-  // e se nel periodo non c'è nessun voto si scrive «—», non la media di sempre
-  if(_avgVoteReady) s.voto=(_avgVote!=null)?_avgVote:0;
+  // il periodo vince sempre sulla carriera. Finche' non si sa, «—»: mai un
+  // numero preso in prestito da un altro periodo, nemmeno per un istante
+  s.voto = _avgVoteReady ? ((_avgVote!=null)?_avgVote:0) : 0;
   g.innerHTML=playerStatsGridHTML(s,scopeMaxes(cardScope));
   applyBestVote();
 }
@@ -7091,14 +7093,17 @@ async function loadVoteTrend(id, scope){
   box.style.display='block';
   box.innerHTML=chartHeadHTML('\ud83d\udcc8 Andamento voti','')+emptyChartSVG('Carico\u2026');
   const perSeason = (scope===ALLTIME && allSeasons.length>1);
-  let pts=[];
+  let pts=[], best=null;      // `best` = record vero, separato dai punti del grafico
   try{
     if(perSeason){
       const ord=allSeasons.slice().sort((a,b)=>a.number-b.number);
       const res=await Promise.all(ord.map(s=>voteRows(id,s.id)));
       res.forEach((rows,i)=>{
         const v=(rows||[]).map(r=>Number(r.voto)).filter(x=>isFinite(x));
-        if(v.length) pts.push({lab:'S'+ord[i].number, v:v.reduce((a,b)=>a+b,0)/v.length});
+        if(!v.length) return;
+        pts.push({lab:'S'+ord[i].number, v:v.reduce((a,b)=>a+b,0)/v.length});   // il grafico: medie
+        const m=Math.max(...v);                                                 // il record: giornate vere
+        if(best==null || m>best) best=m;
       });
     }else{
       const rows=await voteRows(id, (scope===ALLTIME)?null:scope);
@@ -7114,8 +7119,9 @@ async function loadVoteTrend(id, scope){
      restituiva sempre la media di carriera, e cambiando periodo non si
      muoveva. Queste sono le giornate del periodo, quindi la media e' quella
      giusta per definizione. */
-  _bestVoteTxt = pts.length
-    ? String(Math.round(Math.max(...pts.map(p=>p.v))*100)/100).replace('.',',')   // virgola, non punto
+  if(best==null && pts.length) best=Math.max(...pts.map(p=>p.v));
+  _bestVoteTxt = (best!=null)
+    ? String(Math.round(best*100)/100).replace('.',',')   // virgola, non punto
     : '\u2014';
   _avgVote = pts.length ? (pts.reduce((a,p)=>a+p.v,0)/pts.length) : null;
   _avgVoteReady = true;
@@ -7198,8 +7204,8 @@ function teamStatsGridHTML(card){
     /* Di sempre non esiste «la posizione»: esistono i punti totali e il posto
        piu' alto mai raggiunto. Quelli comandano il riquadro. */
     h=`<div class="tm-hero"><div class="tm-top">
-        <div class="tm-pos" style="font-size:31px">${fmtPts(st.points||0)}<s>punti in ${card.seasons_n||allSeasons.length} stagioni</s></div>
-        <div class="tm-pts"><b>${st.best_pos?(st.best_pos+'\u00b0'):'\u2014'}</b><span>miglior posizione</span></div>
+        <div class="tm-pos">${st.best_pos||'\u2014'}${st.best_pos?'<u>\u00b0</u>':''}<s>miglior posizione</s></div>
+        <div class="tm-pts"><b>${fmtPts(st.points||0)}</b><span>punti in ${card.seasons_n||allSeasons.length} stagioni</span></div>
       </div></div>`;
   } else {
     // 1) La posizione è l'unica cosa che un manager cerca davvero: si legge subito,
