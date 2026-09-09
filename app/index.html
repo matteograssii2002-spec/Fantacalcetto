@@ -2952,6 +2952,21 @@ function gateStatus(msg,bad){
 const TUT_KEY='fc_tut_done';
 let TUT=null, _tutSnap=null, _sbReal=null, _tutRaf=null, _tutLastBox='';
 
+/* La card «Chi puo' votare» si riempie da una RPC, che durante il tutorial
+   non risponde. Qui dentro si disegna una versione finta con i nomi della
+   giornata di prova: tre righe bloccate (giocano) e tre libere. */
+function tutVoteDemo(){
+  const c=document.getElementById('voteCard'); if(!c) return;
+  c.style.display='block'; c.classList.add('open');
+  const box=document.getElementById('voterList'); if(!box) return;
+  const nm=(players||[]).slice(0,6).map(p=>p.name);
+  if(!nm.length) return;
+  box.innerHTML='<div class="presbar"><span>Votano <b>'+Math.min(4,nm.length)+'</b> di '+nm.length+'</span></div>'
+    +'<div class="presgrid">'
+    +nm.map((n,i)=>`<div class="prescell${i<4?' on':''}${i<3?' lock':''}">`
+        +`<span class="pc-nm">${esc(n)}</span><span class="pc-tk">\u2713</span></div>`).join('')
+    +'</div>';
+}
 function tutSbGuard(){
   if(_sbReal) return;
   _sbReal=sb;
@@ -3141,7 +3156,11 @@ function tutStepsAdmin(){ return [
  {v:'settings', nav:'page-giornata', el:'#presCard',
   before:()=>{ const c=document.getElementById('presCard'); if(c){ c.style.display='block'; c.classList.add('open'); } },
   ttl:'Chi gioca',
-  tx:"Segni tu chi c\u2019\u00e8, se qualcuno non risponde."},
+  tx:"Segni tu chi c\u2019\u00e8, se qualcuno non ha risposto. Puoi correggere fino al blocco formazioni."},
+ {v:'settings', nav:'page-giornata', el:'#voteCard',
+  before:()=>tutVoteDemo(),
+  ttl:'Chi pu\u00f2 votare',
+  tx:"Votano chi gioca e chi amministra. Se qualcuno viene solo a guardare, aggiungilo qui: vale <b>solo per questa giornata</b>."},
  {v:'voti', el:'#adminCard', before:()=>tutKick(-3),
   ttl:'I risultati',
   tx:"Gol, assist e chi ha vinto. \u00c8 l\u2019unica cosa da fare ogni settimana."},
@@ -7268,11 +7287,14 @@ async function renderVoters(){
   if(!show){ box.innerHTML=''; return; }
   if(_leagueMembers==null){
     box.innerHTML='<div class="vs" style="color:var(--muted)">Carico\u2026</div>';
-    try{ const {data,error}=await sb.rpc('list_league_members'); if(error) throw error; _leagueMembers=data||[]; }
+    try{
+      const {data,error}=await sb.rpc('list_league_members'); if(error) throw error;
+      if(!data || !data.length){ box.innerHTML='<div class="vs" style="color:var(--muted)">Nessun membro.</div>'; return; }
+      _leagueMembers=data;
+    }
     catch(e){ box.innerHTML='<div class="vs" style="color:var(--muted)">Elenco non disponibile.</div>'; return; }
   }
   const rows=_leagueMembers;
-  if(!rows.length){ box.innerHTML='<div class="vs" style="color:var(--muted)">Nessun membro.</div>'; return; }
   const nameOf=m=>String(m.player_name||m.team_name||'Membro');
   const plays=id=>players.some(p=>p.owner_id===id && presentId(p.id));
   const auto =m=>plays(m.id) || !!m.is_owner || !!m.is_vice;
@@ -7339,15 +7361,15 @@ function renderPresence(){
   const liveMd = currentMd && currentMd.status!=='closed';   // giornata aperta -> presenze della giornata; altrimenti rosa prevista
   if(liveMd){
     if(presenceSelf){
-      if(ttl)ttl.innerHTML='Presenze — correggi (admin) <span class="lockpill" style="color:var(--gold)">admin</span>';
+      if(ttl)ttl.textContent='Presenze — correggi';
       if(hint)hint.textContent='Correggi chi c\'è fino al blocco formazioni, anche chi non ha votato.';
     }else{
-      if(ttl)ttl.innerHTML='Chi gioca questa giornata <span class="lockpill" style="color:var(--gold)">admin</span>';
+      if(ttl)ttl.textContent='Chi gioca questa giornata';
       if(hint)hint.textContent='Tocca per segnare presente/assente.';
     }
     box.innerHTML=presGridHTML(players, id=>!!presentId(id));
   }else{
-    if(ttl)ttl.innerHTML='Presenze previste (prossima giornata) <span class="lockpill" style="color:var(--gold)">admin</span>';
+    if(ttl)ttl.textContent='Presenze previste (prossima giornata)';
     if(hint)hint.textContent='Imposta chi giocherà di solito: all\'apertura della prossima giornata i presenti vengono precompilati da qui (poi li potrai ritoccare).';
     box.innerHTML=presGridHTML(players, id=>plannedPresent.has(id));
   }
