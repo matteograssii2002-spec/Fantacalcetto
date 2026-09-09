@@ -451,6 +451,25 @@
   .forma.flat{background:var(--surface2);color:var(--muted)}
   .price{font-family:'JetBrains Mono';font-weight:700;font-size:14px;color:var(--gold)}
   .pc-me{font-size:10.5px;color:var(--accent-soft);font-weight:700;margin:6px 1px 0}
+  .presgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .prescell{display:flex;align-items:center;gap:9px;min-height:50px;padding:8px 11px;border-radius:13px;
+    border:1.5px solid var(--line);background:var(--surface);cursor:pointer;
+    transition:transform .09s,background .15s,border-color .15s}
+  .prescell:active{transform:scale(.97)}
+  .prescell .pc-av{width:26px;flex:none;border-radius:7px;overflow:hidden;line-height:0}
+  .prescell .pc-av img{width:26px;height:auto;display:block;border-radius:7px}
+  .prescell .pc-nm{flex:1;min-width:0;font-size:13.5px;font-weight:700;color:var(--muted);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prescell .pc-tk{width:21px;height:21px;flex:none;border-radius:999px;border:1.5px solid var(--line-strong);
+    display:grid;place-items:center;font-size:11px;font-weight:800;color:transparent;line-height:1}
+  .prescell.on{border-color:rgba(47,217,138,.55);background:rgba(47,217,138,.10)}
+  .prescell.on .pc-nm{color:var(--text)}
+  .prescell.on .pc-tk{background:var(--green);border-color:var(--green);color:#06251a}
+  .prescell.blue.on{border-color:rgba(63,151,255,.55);background:rgba(63,151,255,.12)}
+  .prescell.blue.on .pc-tk{background:var(--accent);border-color:var(--accent);color:#05142c}
+  .presbar{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    margin:0 2px 10px;font-size:12.5px;color:var(--muted);font-weight:600}
+  .presbar b{color:var(--green);font-family:'JetBrains Mono';font-weight:700;font-size:13.5px}
   .preschips{display:flex;flex-wrap:wrap;gap:8px}
   .preschip{padding:8px 11px;border-radius:11px;border:1.5px solid var(--line-strong);background:var(--bg2);font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);transition:transform .09s,background .15s,border-color .15s}
   .preschip.on{border-color:var(--green);color:var(--text);background:rgba(46,196,128,.12)}
@@ -1078,6 +1097,16 @@
   .pro-amount b{font-family:'Bricolage Grotesque',sans-serif;font-size:42px;font-weight:800;line-height:1;letter-spacing:-.02em}
   .pro-amount span{font-size:18px;font-weight:700;color:var(--muted);margin-left:5px}
   .pro-amount .pro-amount-sub{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5}
+  .pro-ribbon{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;
+    color:#1b1207;background:linear-gradient(135deg,var(--gold-soft),var(--gold));
+    padding:5px 10px;border-radius:8px;margin-bottom:13px}
+  .pro-row{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
+  .pro-row s{font-family:'Bricolage Grotesque',sans-serif;font-size:21px;font-weight:800;
+    color:var(--muted);opacity:.6;text-decoration-thickness:2px}
+  .pro-each{margin-top:16px;padding-top:16px;border-top:1px solid var(--line);
+    display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  .pro-each b{font-family:'Bricolage Grotesque',sans-serif;font-size:25px;font-weight:800;color:var(--gold);line-height:1}
+  .pro-each span{font-size:12.5px;color:var(--muted);font-weight:600}
   /* Chi Pro ce l'ha gia' non legge un'offerta: legge uno stato. */
   .pro-on{display:flex;align-items:center;gap:14px;margin:24px 0;padding:16px;border-radius:18px;
     background:linear-gradient(135deg,rgba(255,194,61,.16),rgba(255,194,61,.03));border:1px solid rgba(255,194,61,.28)}
@@ -2360,7 +2389,7 @@
         <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🟢</span><span id="presTitle">Chi gioca questa giornata</span></span><span class="acc-chev">▾</span></button>
         <div class="acc-body">
           <p class="vs" id="presHint" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Tocca per segnare presente/assente.</p>
-          <div id="presList" class="preschips"></div>
+          <div id="presList"></div>
         </div>
       </div>
     </div>
@@ -2507,7 +2536,7 @@
       <button class="subback" onclick="setNav('page-lega')">‹ Le persone</button>
       <div class="section-h"><h2>Vice-admin</h2></div>
       <p class="setintro">Aprono e chiudono le giornate, inseriscono bonus e presenze. Non toccano le regole della lega.</p>
-      <div class="set-card"><div id="viceList" class="preschips"></div></div>
+      <div class="set-card"><div id="viceList"></div></div>
     </div>
 
     <!-- ===== LEGA: CHI PUÒ VOTARE ===== -->
@@ -2515,7 +2544,7 @@
       <button class="subback" onclick="setNav('page-lega')">‹ Le persone</button>
       <div class="section-h"><h2>Chi può votare</h2></div>
       <p class="setintro">Votano i giocatori scesi in campo. Qui abiliti anche chi fa solo il manager.</p>
-      <div class="set-card"><div id="voterList" class="preschips"></div></div>
+      <div class="set-card"><div id="voterList"></div></div>
     </div>
 
     <!-- ===== AIUTO E MANUTENZIONE =====
@@ -2616,10 +2645,7 @@
       </div>
       <p class="pro-why" id="proWhy">—</p>
       <div id="proOn"></div>
-      <div class="pro-amount" id="proPrice">
-        <b>29,90 €</b><span>/stagione</span>
-        <div class="pro-amount-sub">Per tutta la lega, non a testa. Nessun rinnovo automatico.</div>
-      </div>
+      <div class="pro-amount" id="proPrice"></div>
       <div class="pro-tab" id="proTab"></div>
       <div id="proCta"></div>
       <p class="pro-foot" id="proFoot"></p>
@@ -6501,6 +6527,19 @@ const PRO_TAB=[
   ['Tutte le stagioni',   0,1],
   ['Albo d\u2019oro',        0,1]
 ];
+const PRO_FULL=39.90, PRO_NOW=29.90;
+function eur(v){ return v.toFixed(2).replace('.',',')+'\u00a0\u20ac'; }
+function proPriceHTML(){
+  const n=Number(myPlan.members)||0;
+  // per eccesso ai centesimi: la somma delle quote non deve stare SOTTO il totale
+  const each=n>0 ? Math.ceil(PRO_NOW*100/n)/100 : null;
+  return '<span class="pro-ribbon">Prezzo di lancio</span>'
+    +'<div class="pro-row"><s>'+eur(PRO_FULL)+'</s><b>'+eur(PRO_NOW)+'</b><span>/stagione</span></div>'
+    +'<div class="pro-amount-sub">Per tutta la lega, non a testa. Nessun rinnovo automatico.</div>'
+    +(each!=null
+      ? '<div class="pro-each"><b>'+eur(each)+'</b><span>a testa \u00b7 siete in '+n+'</span></div>'
+      : '');
+}
 function proTabHTML(){
   return '<div class="pt-h"><span class="k"></span><span class="a">GRATIS</span><span class="b">PRO</span></div>'
     + PRO_TAB.map(r=>`<div class="pt-r"><span class="k">${esc(r[0])}</span>`
@@ -6537,6 +6576,7 @@ function renderProPage(reason){
   const on=document.getElementById('proOn');
   const owner=!!(profile&&profile.is_admin);
   if(tab) tab.innerHTML=proTabHTML();
+  if(price) price.innerHTML=proPriceHTML();
 
   /* Chi e' gia' Pro non deve leggere un'offerta: legge uno stato. */
   if(isPro()){
@@ -7203,7 +7243,9 @@ async function renderVoters(){
   const {data,error}=await sb.rpc('list_solo_managers');
   if(error){box.innerHTML='<div class="vs" style="color:var(--muted)">'+(String(error.message).includes('forbidden')?'Solo admin.':(errText(error)))+'</div>';return;}
   if(!data||!data.length){box.innerHTML='<div class="vs" style="color:var(--muted)">Nessun manager-solo registrato.</div>';return;}
-  box.innerHTML=data.map(m=>`<div class="preschip ${m.can_vote?'on':''}" onclick="toggleVoter('${m.id}',${m.can_vote?1:0})">${m.can_vote?'✓':'○'} ${m.team_name||m.player_name||'Manager'}</div>`).join('');
+  box.innerHTML='<div class="presgrid">'+data.map(m=>`<div class="prescell${m.can_vote?' on':''}" onclick="toggleVoter('${m.id}',${m.can_vote?1:0})">`
+    +`<span class="pc-nm">${esc(m.team_name||m.player_name||'Manager')}</span>`
+    +`<span class="pc-tk">\u2713</span></div>`).join('')+'</div>';
 }
 async function toggleVoter(id,now){
   let error;
@@ -7222,10 +7264,11 @@ async function renderVices(){
     if(error) throw error;
     const rows=(data||[]).filter(m=>!m.is_owner);   // il proprietario non e' un vice
     if(!rows.length){ box.innerHTML='<div class="vs" style="color:var(--muted)">Nessun altro membro nella lega.</div>'; return; }
-    box.innerHTML=rows.map(m=>{
+    box.innerHTML='<div class="presgrid">'+rows.map(m=>{
       const nm=esc(m.player_name||m.team_name||'Membro');
-      return `<div class="preschip ${m.is_vice?'on':''}" onclick="toggleVice('${m.id}',${m.is_vice?1:0})">${m.is_vice?'🛡️':'○'} ${nm}</div>`;
-    }).join('');
+      return `<div class="prescell blue${m.is_vice?' on':''}" onclick="toggleVice('${m.id}',${m.is_vice?1:0})">`
+        +`<span class="pc-nm">${nm}</span><span class="pc-tk">\u2713</span></div>`;
+    }).join('')+'</div>';
   }catch(e){ box.innerHTML='<div class="vs" style="color:var(--red)">Errore nel caricamento.</div>'; }
 }
 async function toggleVice(uid, isVice){
@@ -7255,12 +7298,27 @@ function renderPresence(){
       if(ttl)ttl.innerHTML='Chi gioca questa giornata <span class="lockpill" style="color:var(--gold)">admin</span>';
       if(hint)hint.textContent='Tocca per segnare presente/assente.';
     }
-    box.innerHTML=players.length?players.map(p=>`<div class="preschip ${presentId(p.id)?'on':''}" onclick="togglePresence(${p.id})">${presentId(p.id)?'✓':'○'} ${p.name}</div>`).join(''):'<div class="vs" style="color:var(--muted)">Nessun giocatore.</div>';
+    box.innerHTML=presGridHTML(players, id=>!!presentId(id));
   }else{
     if(ttl)ttl.innerHTML='Presenze previste (prossima giornata) <span class="lockpill" style="color:var(--gold)">admin</span>';
     if(hint)hint.textContent='Imposta chi giocherà di solito: all\'apertura della prossima giornata i presenti vengono precompilati da qui (poi li potrai ritoccare).';
-    box.innerHTML=players.length?players.map(p=>`<div class="preschip ${plannedPresent.has(p.id)?'on':''}" onclick="togglePresence(${p.id})">${plannedPresent.has(p.id)?'✓':'○'} ${p.name}</div>`).join(''):'<div class="vs" style="color:var(--muted)">Nessun giocatore.</div>';
+    box.innerHTML=presGridHTML(players, id=>plannedPresent.has(id));
   }
+}
+/* Griglia delle presenze. L'ordine e' ALFABETICO, non per id: chi cerca una
+   persona la cerca per nome, e l'ordine di inserimento nel database non
+   significa niente per chi guarda. */
+function presGridHTML(list, isOn){
+  if(!list.length) return '<div class="vs" style="color:var(--muted)">Nessun giocatore.</div>';
+  const rows=list.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'it',{sensitivity:'base'}));
+  const n=rows.filter(p=>isOn(p.id)).length;
+  return `<div class="presbar"><span>Presenti <b>${n}</b> di ${rows.length}</span></div>`
+    +'<div class="presgrid">'
+    +rows.map(p=>`<div class="prescell${isOn(p.id)?' on':''}" onclick="togglePresence(${p.id})">`
+        +`<span class="pc-av">${avatarImg(p.avatar,26)}</span>`
+        +`<span class="pc-nm">${esc(p.name)}</span>`
+        +`<span class="pc-tk">\u2713</span></div>`).join('')
+    +'</div>';
 }
 async function togglePresence(id){
   const liveMd = currentMd && currentMd.status!=='closed';
