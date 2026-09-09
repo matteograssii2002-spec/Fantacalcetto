@@ -2159,9 +2159,9 @@
       <div class="section-h"><h2>Impostazioni</h2></div>
       <button class="prof" onclick="setNav('page-profilo')"><div id="setPreview"></div><div class="pinfo"><b id="setTeamName">La tua squadra</b><span id="setPlayerName">Giocatore</span></div><span class="pgo">›</span></button>
       <button class="navrow" onclick="setNav('page-notifiche')"><span class="ic">🔔</span><span class="lab">Notifiche<small id="notifRowSub">Avvisi delle giornate</small></span><span class="go">›</span></button>
-      <button class="navrow" onclick="setNav('page-regolamento')"><span class="ic">📖</span><span class="lab">Regolamento<small>Come si fanno i punti</small></span><span class="go">›</span></button>
       <button class="navrow" id="rowTut" onclick="tutFromSettings()"><span class="ic">🎓</span><span class="lab">Tutorial<small>Rivedi le funzioni principali dell’app</small></span><span class="go">›</span></button>
       <button class="navrow" id="alboRow" onclick="openAlboSheet()" style="display:none"><span class="ic">🏆</span><span class="lab">Albo d'oro<small id="alboSub">Le stagioni archiviate</small></span><span class="go">›</span></button>
+      <button class="navrow" onclick="setNav('page-regolamento')"><span class="ic">📖</span><span class="lab">Regolamento<small>Come si fanno i punti</small></span><span class="go">›</span></button>
       <button class="navrow" id="rowPro" onclick="openPro('info')" style="display:none"><span class="ic">⭐</span><span class="lab">FantaCalcetto Pro<small id="proRowSub">—</small></span><span class="go">›</span></button>
       <div class="setgrp" id="admGrp" style="display:none">Amministrazione</div>
       <!-- La giornata resta FUORI dall'hub: e' la cosa che un amministratore apre
@@ -2185,7 +2185,7 @@
     <div class="setpage" id="page-admin">
       <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
       <div class="section-h"><h2>Amministra la lega</h2></div>
-      <p class="setintro">Tutto quello che gestisci tu. Gli altri membri non vedono questa pagina.</p>
+      <p class="setintro">Solo tu vedi questa pagina.</p>
       <button class="navrow gold adminRow" id="rowLeague" onclick="setNav('page-lega')"><span class="ic">👥</span><span class="lab">Le persone<small id="admPeopleSub">Inviti, giocatori, avvisi, permessi</small></span><span class="go">›</span></button>
       <button class="navrow gold ownerRow" id="rowRules" onclick="setNav('page-regole')"><span class="ic">⚙️</span><span class="lab">Le regole del gioco<small>Quando giocate, presenze, portiere, crediti</small></span><span class="go">›</span></button>
       <button class="navrow gold ownerRow" onclick="setNav('page-stagione')"><span class="ic">📅</span><span class="lab">Stagione<small id="admSeaSub">—</small></span><span class="go">›</span></button>
@@ -2196,7 +2196,7 @@
     <div class="setpage" id="page-privacy">
       <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
       <div class="section-h"><h2>Privacy e dati</h2></div>
-      <p class="setintro">Tre pagine che si aprono una volta nella vita. Stavano nel menu principale accanto a quelle di ogni giorno.</p>
+      <p class="setintro">Documenti e cancellazione dei dati.</p>
       <button class="navrow" onclick="openLegal('/privacy.html')"><span class="ic">🔒</span><span class="lab">Informativa privacy<small>Quali dati sono trattati e come</small></span><span class="go">›</span></button>
       <button class="navrow" onclick="openLegal('/termini.html')"><span class="ic">📄</span><span class="lab">Termini di servizio<small>Le condizioni d'uso</small></span><span class="go">›</span></button>
       <button class="navrow" onclick="askAccountDeletion()"><span class="ic">🗑️</span><span class="lab">Elimina il mio account<small>Cancellazione dei dati</small></span><span class="go">›</span></button>
@@ -2307,7 +2307,7 @@
     <div class="setpage" id="page-regole">
       <button class="subback" onclick="setNav('page-admin')">‹ Amministra</button>
       <div class="section-h"><h2>Regole della lega</h2></div>
-      <p class="setintro">Si impostano una volta e valgono per tutte le giornate. Quello che riguarda la giornata in corso sta nel <b>Centro giornata</b>.</p>
+      <p class="setintro">Valgono per tutte le giornate. Per quella in corso vai nel <b>Centro giornata</b>.</p>
       <button class="navrow gold" id="schedCard" onclick="setNav('page-quando')"><span class="ic">🗓️</span><span class="lab">Quando giocate di solito<small id="schedSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="presModeCard" onclick="setNav('page-presenze')"><span class="ic">🙋</span><span class="lab">Presenze<small id="presModeSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="gkCard" onclick="setNav('page-portiere')"><span class="ic">🧤</span><span class="lab">Modalità portiere<small id="gkSub">—</small></span><span class="go">›</span></button>
@@ -2320,9 +2320,9 @@
     <div class="setpage" id="page-quando">
       <button class="subback" onclick="setNav('page-regole')">‹ Regole della lega</button>
       <div class="section-h"><h2>Quando giocate di solito</h2></div>
-      <p class="setintro">Giorno e ora abituali del match. Con l'apertura automatica la giornata parte da sola <b>72h prima</b> del fischio d'inizio: non devi fare niente.</p>
+      <p class="setintro">Giorno e ora abituali. Con l’apertura automatica la giornata parte da sola 72h prima.</p>
       <div class="set-card"><div id="schedBox"></div></div>
-      <p class="setintro" style="margin-top:12px">Serve spostare <b>solo questa</b> giornata? Si fa dal Centro giornata, con «🕑 Modifica orario di questa giornata».</p>
+      <p class="setintro" style="margin-top:12px">Per spostare <b>solo questa</b> giornata: Centro giornata › Modifica orario.</p>
     </div>
 
     <!-- ===== REGOLA: PRESENZE ===== -->
@@ -2359,7 +2359,7 @@
     <div class="setpage" id="page-crediti">
       <button class="subback" onclick="setNav('page-regole')">‹ Regole della lega</button>
       <div class="section-h"><h2>Crediti dei giocatori</h2></div>
-      <p class="setintro">Quanto costa ogni giocatore al mercato. Ogni squadra ha 100 crediti da spendere.</p>
+      <p class="setintro">Quanto costa ogni giocatore. Ogni squadra ha 100 crediti.</p>
       <div class="set-card">
         <div class="ed-sw" id="creditModeSw" style="margin:2px 0 8px">
           <button class="styb" data-mode="manual" onclick="askCreditManual()">✏️ Manuale</button>
@@ -2382,7 +2382,7 @@
     <div class="setpage" id="page-lega">
       <button class="subback" onclick="setNav('page-admin')">‹ Amministra</button>
       <div class="section-h"><h2>Le persone</h2></div>
-      <p class="setintro">Chi c'è nella lega e cosa può fare. Le regole del gioco stanno in <b>Le regole del gioco</b>.</p>
+      <p class="setintro">Chi c’è nella lega e cosa può fare.</p>
       <div id="planSeats" style="display:none"></div>
       <button class="navrow gold" id="inviteCard" onclick="setNav('page-invita')"><span class="ic">✉️</span><span class="lab">Invita nella lega<small>Link d'invito e password</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="manageCard" onclick="setNav('page-giocatori')"><span class="ic">👥</span><span class="lab">Giocatori<small id="manageSub">—</small></span><span class="go">›</span></button>
@@ -2395,7 +2395,7 @@
     <div class="setpage" id="page-invita">
       <button class="subback" onclick="setNav('page-lega')">‹ Le persone</button>
       <div class="section-h"><h2>Invita nella lega</h2></div>
-      <p class="setintro">Condividi link e password con i tuoi amici: con questi due entrano da soli.</p>
+      <p class="setintro">Con link e password entrano da soli.</p>
       <div class="set-card">
         <div class="field-lab">Link d'invito</div>
         <div style="display:flex;gap:8px;margin-bottom:10px"><input class="ob-input" id="invLink" readonly style="flex:1;margin:0;font-size:12px"><button class="set-btn" style="width:auto;padding:0 16px;margin:0" onclick="copyInvite('invLink')">Copia</button></div>
@@ -2410,7 +2410,7 @@
     <div class="setpage" id="page-avvisi">
       <button class="subback" onclick="setNav('page-lega')">‹ Le persone</button>
       <div class="section-h"><h2>Chi riceve gli avvisi</h2></div>
-      <p class="setintro">Chi non ha le notifiche si perde l’apertura della giornata e la formazione in scadenza. Non è un problema suo soltanto: la giornata si trascina per tutti.</p>
+      <p class="setintro">Chi non le ha si perde l’apertura della giornata e la formazione in scadenza.</p>
       <div class="set-card"><div id="pushList"><p class="setintro" style="margin:0">Carico…</p></div></div>
       <div id="pushActions"></div>
     </div>
@@ -2419,7 +2419,7 @@
     <div class="setpage" id="page-giocatori">
       <button class="subback" onclick="setNav('page-lega')">‹ Le persone</button>
       <div class="section-h"><h2>Giocatori</h2></div>
-      <p class="setintro">Il listone della lega: modifica, elimina o aggiungi giocatori. I <b>crediti</b> di un giocatore si cambiano dalla sua ✏️.</p>
+      <p class="setintro">Il listone della lega. I <b>crediti</b> si cambiano dalla ✏️ di ogni giocatore.</p>
       <div class="set-card">
         <div id="manageList"></div>
         <button class="addbtn" onclick="openEditPlayer(null)">＋ Nuovo giocatore</button>
@@ -2430,7 +2430,7 @@
     <div class="setpage" id="page-vice">
       <button class="subback" onclick="setNav('page-lega')">‹ Le persone</button>
       <div class="section-h"><h2>Vice-admin</h2></div>
-      <p class="setintro">Chi può gestire partite e giornate al posto tuo: aprire e chiudere, bonus ed esito, presenze, reset. Non potrà cambiare le regole né la lega. Tocca un nome per nominarlo o rimuoverlo.</p>
+      <p class="setintro">Gestiscono le giornate al posto tuo: aprire, chiudere, bonus, presenze. Non toccano regole né lega.</p>
       <div class="set-card"><div id="viceList" class="preschips"></div></div>
     </div>
 
@@ -2438,7 +2438,7 @@
     <div class="setpage" id="page-votanti">
       <button class="subback" onclick="setNav('page-lega')">‹ Le persone</button>
       <div class="section-h"><h2>Chi può votare</h2></div>
-      <p class="setintro">Di norma votano i giocatori scesi in campo. Da qui abiliti al voto anche chi fa <b>solo il manager</b>. Tocca un nome per abilitarlo o toglierlo.</p>
+      <p class="setintro">Votano i giocatori scesi in campo. Qui abiliti anche chi fa solo il manager.</p>
       <div class="set-card"><div id="voterList" class="preschips"></div></div>
     </div>
 
@@ -2454,7 +2454,7 @@
     <div class="setpage" id="page-manutenzione">
       <button class="subback" onclick="setNav('page-admin')">‹ Amministra</button>
       <div class="section-h"><h2>Aiuto e manutenzione</h2></div>
-      <p class="setintro">Roba che serve di rado. In condizioni normali qui non devi entrare.</p>
+      <p class="setintro">Serve di rado: in condizioni normali qui non entri.</p>
       <div class="set-card">
         <h3>Qualcosa non va?</h3>
         <div id="helpBox"></div>
@@ -2651,7 +2651,12 @@ try{
 
 const PRICE=20;
 const BUDGET=100;
-const APP_VERSION='v27';   // ⬅️ cambia a ogni deploy: in fondo alle Impostazioni vedi quale codice è online
+/* VERSIONE: si scrive maggiore.minore. La minore arriva a 9, poi si passa alla
+   maggiore successiva — 2.7, 2.8, 2.9, 3.0, 3.1. Il numero interno di build
+   restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
+   ventisettesimo tentativo invece di una versione.
+   ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
+const APP_VERSION='2.7';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -3018,10 +3023,13 @@ function tutStepsPlayer(){ return [
 function tutStepsAdmin(){ return [
  {ttl:'Tutorial \u00b7 da amministratore',
   tx:"Seconda parte: le funzioni che vedi <b>solo tu</b>, perch\u00e9 sei l\u2019amministratore della lega."},
- {v:'settings', nav:'setMenu', el:'#rowLeague',
+ {v:'settings', nav:'setMenu', el:'#rowAdminHub',
+  ttl:'Amministra la lega',
+  tx:"Da qui passa tutto quello che gestisci tu."},
+ {v:'settings', nav:'page-admin', el:'#rowLeague',
   ttl:'Invita',
   tx:"Qui c\u2019\u00e8 il link da mandare nel gruppo. Fallo per primo."},
- {v:'settings', nav:'setMenu', el:'#rowRules',
+ {v:'settings', nav:'page-admin', el:'#rowRules',
   ttl:'Quando giocate',
   tx:"Imposta giorno e ora. Da l\u00ec le giornate si aprono da sole."},
  {v:'settings', nav:'page-giornata', el:'#mdcSteps',
@@ -4710,7 +4718,10 @@ function openSeasonPicker(ctx,kind,ref){
 function bindSeasonSwipe(){
   const el=document.getElementById('lbList'); if(!el||el._sw) return; el._sw=1;
   let x0=null,y0=null,done=false;
-  el.addEventListener('touchstart',e=>{ x0=e.touches[0].clientX; y0=e.touches[0].clientY; done=false; },{passive:true});
+  el.addEventListener('touchstart',e=>{
+    x0=e.touches[0].clientX; y0=e.touches[0].clientY; done=false;
+    if(x0<=EDGE_ZONE) x0=null;   // partenza dal bordo: e' il gesto \u00abindietro\u00bb, non il cambio stagione
+  },{passive:true});
   el.addEventListener('touchmove',e=>{
     if(x0==null||done||allSeasons.length<2) return;
     const dx=e.touches[0].clientX-x0, dy=e.touches[0].clientY-y0;
@@ -6168,7 +6179,10 @@ function setCardSeason(kind,ref,id){
 function bindCardSeasonSwipe(boxId,kind,ref){
   const el=document.getElementById(boxId); if(!el||el._sw) return; el._sw=1;
   let x0=null,y0=null,done=false;
-  el.addEventListener('touchstart',e=>{ x0=e.touches[0].clientX; y0=e.touches[0].clientY; done=false; },{passive:true});
+  el.addEventListener('touchstart',e=>{
+    x0=e.touches[0].clientX; y0=e.touches[0].clientY; done=false;
+    if(x0<=EDGE_ZONE) x0=null;   // partenza dal bordo: e' il gesto \u00abindietro\u00bb, non il cambio stagione
+  },{passive:true});
   el.addEventListener('touchmove',e=>{
     if(x0==null||done||cardSeasonAware!==true||allSeasons.length<2) return;
     const dx=e.touches[0].clientX-x0, dy=e.touches[0].clientY-y0;
@@ -7512,6 +7526,45 @@ function closeTeamLineupPage(){
 
 /* ---------- SETTINGS ---------- */
 function toggleAcc(head){ const a=head.closest('.acc'); if(a)a.classList.toggle('open'); }
+/* SWIPE DAL BORDO PER TORNARE INDIETRO.
+   L'unica gesture che ha senso aggiungere: e' quella che ogni iPhone fa in ogni
+   app, quindi non va scoperta — si sa gia'. E resta IN AGGIUNTA al pulsante
+   «‹ Indietro», non al posto suo: chi non la conosce non perde niente.
+   Parte solo dai primi 26px del bordo sinistro, cosi' non ruba i gesti orizzontali
+   che vivono dentro il contenuto (caroselli, scelta stagione, campo/punti). */
+const EDGE_ZONE=26, EDGE_MIN=64;
+let _edgeX=null,_edgeY=null;
+function edgeBackTarget(){
+  // 1) una pagina a schermo intero aperta ha la precedenza
+  const overlays=[['teamLineupPage','.bch-back'],['bachecaPage','.bch-back'],['proPage','.bch-back']];
+  for(const [id,sel] of overlays){
+    const p=document.getElementById(id);
+    if(p && !p.classList.contains('hidden')){ const b=p.querySelector(sel); if(b) return b; }
+  }
+  // 2) altrimenti la sotto-pagina delle Impostazioni, se non siamo gia' alla radice
+  const wrap=document.getElementById('v-settings');
+  if(wrap && wrap.classList.contains('active')){
+    const cur=document.querySelector('.setpage.on');
+    if(cur && cur.id!=='setMenu'){ const b=cur.querySelector('.subback'); if(b) return b; }
+  }
+  return null;
+}
+document.addEventListener('touchstart',e=>{
+  if(e.touches.length!==1){ _edgeX=null; return; }
+  const t=e.touches[0];
+  _edgeX = (t.clientX<=EDGE_ZONE) ? t.clientX : null;
+  _edgeY = t.clientY;
+},{passive:true});
+document.addEventListener('touchend',e=>{
+  if(_edgeX==null) return;
+  const t=(e.changedTouches&&e.changedTouches[0]); const x0=_edgeX,y0=_edgeY; _edgeX=null;
+  if(!t) return;
+  const dx=t.clientX-x0, dy=t.clientY-y0;
+  if(dx<EDGE_MIN || Math.abs(dy)>Math.abs(dx)*0.7) return;   // dev'essere orizzontale e deciso
+  const b=edgeBackTarget();
+  if(b){ try{ b.click(); }catch(_){ } }
+},{passive:true});
+
 function setNav(id){
   if(id==='page-avvisi') loadPushStatus();   // il dato si legge solo entrando qui
 
