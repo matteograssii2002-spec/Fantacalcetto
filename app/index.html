@@ -3509,7 +3509,7 @@ function openInstallHelp(){
 }
 function closeInstallHelp(){ document.getElementById('instGate').classList.add('hidden'); }
 
-/* BANNER «aggiungila alla Home»: una volta al mese, solo a chi gioca dal
+/* BANNER «aggiungila alla Home»: ogni 20 giorni, solo a chi gioca dal
    browser. Prima non esisteva, e su iPhone il buco era doppio: senza l'app
    installata `PushManager` non c'è, quindi pushSupported() è falso e
    nemmeno il banner delle notifiche usciva mai. Si poteva giocare per mesi
@@ -3523,7 +3523,7 @@ function maybeShowHomeBanner(){
     if(fcIsStandalone() || !fcIsPhone()) return false;      // già installata, o non è un telefono
     if(document.getElementById('lnOk') || _recapPending || document.getElementById('pag').classList.contains('open')) return false;
     const last=parseInt(localStorage.getItem('fc_home_banner')||'0');
-    if(Date.now()-last < 30*24*3600*1000) return false;
+    if(Date.now()-last < 20*24*3600*1000) return false;      // ogni 20 giorni
     const b=document.getElementById('homeBanner'); if(!b) return false;
     b.classList.add('on');
     localStorage.setItem('fc_home_banner', String(Date.now()));
@@ -6471,12 +6471,14 @@ function setCardScope(kind,ref,v){
 }
 /* alias storico: openSeasonPicker('card',...) passava di qui */
 function setCardSeason(kind,ref,id){ setCardScope(kind,ref,id); }
-function bindCardSeasonSwipe(boxId,kind,ref){
+function bindCardSeasonSwipe(boxId,kind){
   const el=document.getElementById(boxId); if(!el||el._sw) return; el._sw=1;
   let x0=null,y0=null,done=false;
   el.addEventListener('touchstart',e=>{
     x0=e.touches[0].clientX; y0=e.touches[0].clientY; done=false;
     if(x0<=EDGE_ZONE) x0=null;   // partenza dal bordo: e' il gesto \u00abindietro\u00bb, non il cambio periodo
+    // partenza sulle pillole: li' il dito serve a farle scorrere
+    try{ if(e.target && e.target.closest && e.target.closest('.sfilter')) x0=null; }catch(_){ }
   },{passive:true});
   el.addEventListener('touchmove',e=>{
     if(x0==null||done||allSeasons.length<2) return;
@@ -6485,7 +6487,9 @@ function bindCardSeasonSwipe(boxId,kind,ref){
     done=true;
     const list=cardScopeList();
     const i=list.findIndex(v=>String(v)===String(cardScope)), j=(dx<0)?i+1:i-1;
-    if(i>=0 && j>=0 && j<list.length) setCardScope(kind,ref,list[j]);
+    if(i<0 || j<0 || j>=list.length) return;
+    // l'id si legge ADESSO: la scheda aperta puo' non essere quella dell'aggancio
+    if(kind==='player') setPlayerScope(list[j]); else setTeamScope(list[j]);
   },{passive:true});
   el.addEventListener('touchend',()=>{ x0=y0=null; },{passive:true});
 }
@@ -6895,6 +6899,7 @@ function openPlayerStats(id){
   const bch=document.getElementById('statBacheca');
   if(bch) bch.innerHTML='<div class="bch-empty">Carico la bacheca\u2026</div>';
   openBacheca('player');
+  bindCardSeasonSwipe('pgPlayer','player');   // il gesto vale su tutta la scheda
   refreshPlayerCard(id);
 }
 /* Disegna la griglia. Gol/assist/presenze li conta l'app dalle righe grezze
@@ -6925,7 +6930,6 @@ function refreshPlayerCard(id){
     if(_statCardId!==id || cardScope!==scope) return;
     paintPlayerGrid(id,card);
     bch.innerHTML=bachecaHTML(card,{includeManager:false});
-    bindCardSeasonSwipe('statBacheca','player',id);
   });
 }
 function closeStatModal(){ closeBacheca(); }
@@ -7108,6 +7112,7 @@ function openTeamCard(managerId){
   cardScope=(cardScope===ALLTIME)?ALLTIME:((viewSeasonId!=null)?viewSeasonId:displaySeasonId);
   renderCardScopeBar('team');
   openBacheca('team');
+  bindCardSeasonSwipe('pgTeam','team');       // il gesto vale su tutta la scheda
   refreshTeamCard(managerId);
 }
 /* TOTALE DI SEMPRE per una squadra.
@@ -7166,7 +7171,6 @@ function refreshTeamCard(managerId){
       ? Object.assign({}, card, {badges:allCard.badges})
       : card;
     document.getElementById('teamBacheca').innerHTML=bachecaHTML(shown,{includeManager:false});
-    bindCardSeasonSwipe('teamBacheca','team',managerId);
   });
 }
 /* ==========================================================================
@@ -8486,8 +8490,8 @@ function maybeAskPush(){
     openPushPrompt();
   }catch(_){ }
 }
-// Banner mensile: invita ad attivare le notifiche, SOLO a chi non le ha ancora attivate.
-// Riappare al massimo una volta ogni 30 giorni. La prima volta in assoluto ci pensa il modale qui sopra.
+// Banner: invita ad attivare le notifiche, SOLO a chi non le ha ancora attivate.
+// Riappare al massimo una volta ogni 20 giorni. La prima volta in assoluto ci pensa il modale qui sopra.
 function bannerEnable(){ dismissNotifBanner(); enablePush(); }
 function dismissNotifBanner(){
   const b=document.getElementById('notifBanner'); if(b)b.classList.remove('on');
@@ -8499,7 +8503,7 @@ function maybeShowNotifBanner(){
     if(!localStorage.getItem('fc_push_asked')) return;                     // primissima volta: lo gestisce il modale
     if(document.getElementById('lnOk') || _recapPending || document.getElementById('pag').classList.contains('open')) return;
     const last=parseInt(localStorage.getItem('fc_notif_banner')||'0');
-    if(Date.now()-last < 30*24*3600*1000) return;                          // non più di una volta al mese
+    if(Date.now()-last < 20*24*3600*1000) return;                          // non più di una volta ogni 20 giorni
     const b=document.getElementById('notifBanner'); if(!b) return;
     b.classList.add('on');
     localStorage.setItem('fc_notif_banner', String(Date.now()));
