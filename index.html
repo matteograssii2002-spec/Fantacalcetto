@@ -56,7 +56,60 @@
      La regola sta QUI e non in sito.css apposta: sito.css e' condiviso con
      regolamento/privacy/termini, e cambiarlo vorrebbe dire alzare ?v= su
      quattro file invece che caricarne uno. */
-  @media (max-width:1240px){ .topnav{display:none} .topbar .btn{margin-left:auto} }
+  @media (max-width:1240px){ .topnav{display:none} .topbar .btn{margin-left:auto} .burger{display:flex} }
+  /* Barra su computer (sessione 68): le voci non vanno MAI a capo. Prima, fra
+     1240 e ~1400px, «Come funziona», «Punteggi e Regolamento» e «Gioca ora» si
+     spezzavano su due righe. Fra 1120 e 1240px sparivano le voci ma non
+     compariva il menu: ora compare. Sotto i 1120px non cambia niente. */
+  .topbar .brand,.topnav a,.topbar .btn{white-space:nowrap}
+  .topbar .brand,.topbar .btn{flex:none}
+  .topnav{flex-wrap:nowrap}
+  /* con «Punteggi e Regolamento» le voci non stanno nei 1080px del contenuto:
+     solo la barra si allarga un po', il resto della pagina resta com'e'. */
+  @media (min-width:1241px){ .topbar .wrap{max-width:1300px} }
+  @media (min-width:1241px) and (max-width:1420px){ .topnav{gap:19px;font-size:14.5px} }
+
+  /* Cosa contiene l'app (sessione 68): da sei schede alte a un elenco compatto,
+     come le righe dell'app. Una colonna sul telefono, due o tre su schermi larghi. */
+  .feat{display:grid;grid-template-columns:1fr;border:1px solid var(--line);border-radius:18px;overflow:hidden;
+    background:linear-gradient(180deg,rgba(31,58,108,.30),rgba(13,26,47,.40))}
+  .feat .fi{display:flex;align-items:center;gap:13px;padding:13px 16px;border-top:1px solid var(--line)}
+  .feat .fi:first-child{border-top:0}
+  .feat .ic{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:18px;
+    background:var(--chip,rgba(63,151,255,.14))}
+  .feat .tx{min-width:0}
+  .feat .tx b{display:block;font-size:15px;font-weight:700;color:var(--text);line-height:1.3}
+  .feat .tx span{display:block;font-size:13.5px;color:var(--muted);line-height:1.4;margin-top:2px}
+  @media (min-width:760px){
+    .feat{grid-template-columns:repeat(2,1fr)}
+    .feat .fi{padding:16px 18px}
+    .feat .fi:nth-child(2){border-top:0}
+    .feat .fi:nth-child(odd){border-right:1px solid var(--line)}
+  }
+  @media (min-width:1000px){
+    .feat{grid-template-columns:repeat(3,1fr)}
+    .feat .fi:nth-child(3){border-top:0}
+    .feat .fi:nth-child(odd){border-right:0}
+    .feat .fi:not(:nth-child(3n)){border-right:1px solid var(--line)}
+  }
+
+  /* Le prime 20 leghe (sessione 68): una targa pulita e centrata, al posto
+     della riga lunga con la medaglia a lato. */
+  .pfound{display:block;text-align:center;margin-top:14px;padding:20px 18px 18px;
+    border:1px solid rgba(255,194,61,.32);border-radius:18px;color:var(--text);
+    background:radial-gradient(120% 95% at 50% 0%,rgba(255,194,61,.15),rgba(13,26,47,.38) 72%)}
+  .pfound .pf-k{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--gold-soft);background:rgba(255,194,61,.12);border:1px solid rgba(255,194,61,.28);
+    padding:5px 11px;border-radius:999px}
+  .pfound .pf-t{font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(19px,2.3vw,23px);line-height:1.25;
+    letter-spacing:-.015em;margin:12px auto 12px;max-width:440px;color:#fff}
+  .pfound .pf-t em{font-style:normal;color:var(--gold-soft)}
+  .pfound .pf-l{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:440px;margin:0 auto}
+  .pfound .pf-l span{display:flex;flex-direction:column;align-items:center;gap:7px;padding:11px 6px 10px;border-radius:12px;
+    background:rgba(10,22,38,.45);border:1px solid rgba(255,194,61,.16);font-size:12.5px;font-weight:600;line-height:1.3;color:#e3e9f3}
+  .pfound .pf-l i{font-style:normal;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+    background:rgba(255,194,61,.16);color:var(--gold);font-size:12px;font-weight:800}
+  @media (max-width:360px){ .pfound{padding:18px 12px 14px} .pfound .pf-l{gap:6px} .pfound .pf-l span{font-size:11.5px;padding:10px 2px 9px} }
   /* Sessione 68: il pulsante Pro esce dalla vetrina. Da qui non si sa di che
      lega sei, quindi il passaggio si fa solo dentro l'app. Stili qui e non in
      sito.css per lo stesso motivo della regola sopra. */
@@ -93,7 +146,7 @@
     {"@type":"Question","name":"Quante persone servono per giocare?","acceptedAnswer":{"@type":"Answer","text":"Da dieci in su, così le formazioni possono essere diverse tra loro. Con quindici è perfetto. La versione gratuita arriva fino a 15 giocatori; oltre serve Pro, che non ha nessun tetto. Chi è già nella lega non viene mai tolto."}},
     {"@type":"Question","name":"Si può giocare senza scendere in campo?","acceptedAnswer":{"@type":"Answer","text":"Sì. Chi non gioca a calcetto entra come solo manager: ha la sua squadra, schiera la formazione e sta in classifica. Non prende voti e non compare nel sondaggio delle presenze."}},
     {"@type":"Question","name":"Bisogna scaricare l'app da App Store o Play Store?","acceptedAnswer":{"@type":"Answer","text":"No, è una PWA. È un sito che si aggiunge alla schermata Home e da lì funziona come un'app: icona sua, schermo intero e notifiche. Gli aggiornamenti arrivano da soli, senza passare dagli store."}},
-    {"@type":"Question","name":"Chi assegna i voti ai giocatori?","acceptedAnswer":{"@type":"Answer","text":"I giocatori stessi: a fine partita ognuno vota gli altri e la media è il voto di giornata. L'organizzatore inserisce solo gol, assist, rigori e risultato."}},
+    {"@type":"Question","name":"Chi assegna i voti ai giocatori?","acceptedAnswer":{"@type":"Answer","text":"I giocatori stessi: a fine partita ognuno vota gli altri e la media è il voto di giornata. L'organizzatore inserisce solo gol, assist, rigori, cartellini e risultato."}},
     {"@type":"Question","name":"L'organizzatore deve mandare avanti tutto a mano?","acceptedAnswer":{"@type":"Answer","text":"No. La giornata si apre da sola, i promemoria partono da soli e la giornata si chiude quando arrivano i voti. Resta solo da segnare com'è finita la partita."}},
     {"@type":"Question","name":"Che dati raccoglie FantaCalcetto?","acceptedAnswer":{"@type":"Answer","text":"Il minimo per far funzionare il gioco: email, nome, soprannome, nome squadra e presenze. Niente pubblicità e nessuna rivendita di dati."}}
   ]
@@ -202,11 +255,11 @@
       </div></div><p class="crsl-cap">Le statistiche</p></div>
 
       <div class="crsl-item shot"><div class="phone"><div class="phone-screen">
-        <img src="sito/09-scheda.webp" alt="La scheda di un giocatore con voto medio, gol e andamento" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
+        <img src="sito/09-scheda.webp?v=2" alt="La scheda di un giocatore con voto medio, gol e andamento" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
       </div></div><p class="crsl-cap">La scheda</p></div>
 
       <div class="crsl-item shot"><div class="phone"><div class="phone-screen">
-        <img src="sito/05-bacheca.webp" alt="La bacheca dei trofei di una squadra" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
+        <img src="sito/05-bacheca.webp?v=2" alt="La scheda di una squadra con posizione, record e andamento" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
       </div></div><p class="crsl-cap">La bacheca</p></div>
 
       <div class="crsl-item shot"><div class="phone"><div class="phone-screen">
@@ -218,7 +271,7 @@
       </div></div><p class="crsl-cap">Il pagellone</p></div>
 
       <div class="crsl-item shot"><div class="phone"><div class="phone-screen">
-        <img src="sito/02-campo.webp" alt="La formazione schierata sul campo di calcetto a 5" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
+        <img src="sito/02-campo.webp?v=2" alt="La formazione schierata sul campo di calcetto a 5" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
       </div></div><p class="crsl-cap">Il campo</p></div>
 
       <div class="crsl-item shot"><div class="phone"><div class="phone-screen">
@@ -291,7 +344,7 @@
 
         <div class="crsl-item stepcard">
           <div class="phone"><div class="phone-screen">
-            <img src="sito/02-campo.webp" alt="La formazione schierata sul campo di calcetto a 5" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
+            <img src="sito/02-campo.webp?v=2" alt="La formazione schierata sul campo di calcetto a 5" loading="lazy" width="640" height="1306" onerror="this.classList.add('missing')">
             <div class="slot-ph"><span class="ic">🥅</span><span class="nm">sito/02-campo.webp</span><span class="ds">Schiera la formazione</span></div>
           </div></div>
           <div class="n">5</div>
@@ -307,7 +360,7 @@
           </div></div>
           <div class="n">6</div>
           <h3>Inserisci bonus e malus</h3>
-          <p>A fine partita l'organizzatore segna gol, assist, rigori e risultato. Trenta secondi.</p>
+          <p>A fine partita l'organizzatore segna gol, assist, rigori, cartellini e risultato. Trenta secondi.</p>
           <div class="tags"><span class="tag">L'unico passaggio a mano</span></div>
         </div>
 
@@ -539,8 +592,9 @@
     </div>
 
     <div class="pfound rise">
-      <span class="ic">🏅</span>
-      <div><b>Le prime 20 leghe sono Pro gratis, per sempre.</b> Giocatori illimitati e storico di tutte le stagioni, senza pagare mai — né adesso né in futuro.</div>
+      <span class="pf-k">🏅 Leghe fondatrici</span>
+      <p class="pf-t">Le prime 20 leghe hanno <em>Pro gratis, per sempre</em>.</p>
+      <div class="pf-l"><span><i>✓</i>Giocatori illimitati</span><span><i>✓</i>Tutte le stagioni</span><span><i>✓</i>Mai a pagamento</span></div>
     </div>
   </div>
 </section>
@@ -554,13 +608,13 @@
       <span class="eyebrow">Funzioni</span>
       <h2>Cosa contiene l'app</h2>
     </div>
-    <div class="grid rise">
-      <div class="card" style="--acc:rgba(255,194,61,.9);--chip:rgba(255,194,61,.14)"><span class="ic">💰</span><h3>Crediti che si muovono</h3><p>Chi rende più di quanto costa sale, chi delude scende.</p></div>
-      <div class="card" style="--acc:rgba(63,151,255,.9);--chip:rgba(63,151,255,.14)"><span class="ic">🃏</span><h3>Card dei giocatori</h3><p>Ruolo, valore e voto medio. Si toccano e si aprono.</p></div>
-      <div class="card" style="--acc:rgba(255,194,61,.9);--chip:rgba(255,194,61,.14)"><span class="ic">🏆</span><h3>Bacheca dei trofei</h3><p>Traguardi che restano e titoli che cambiano ogni anno.</p></div>
-      <div class="card" style="--acc:rgba(47,217,138,.9);--chip:rgba(47,217,138,.14)"><span class="ic">🔔</span><h3>Promemoria automatici</h3><p>Presenze, formazione, ultima ora, giornata chiusa.</p></div>
-      <div class="card" style="--acc:rgba(126,194,255,.9);--chip:rgba(126,194,255,.14)"><span class="ic">📆</span><h3>Stagioni e recap</h3><p>Fino a 38 giornate, poi l'archivio con premi e record.</p></div>
-      <div class="card" style="--acc:rgba(255,93,107,.9);--chip:rgba(255,93,107,.14)"><span class="ic">🧤</span><h3>Regole su misura</h3><p>Portiere, presenze e valori li imposta l'organizzatore.</p></div>
+    <div class="feat rise">
+      <div class="fi" style="--chip:rgba(255,194,61,.14)"><span class="ic">💰</span><div class="tx"><b>Crediti che si muovono</b><span>Chi rende più di quanto costa sale, chi delude scende.</span></div></div>
+      <div class="fi" style="--chip:rgba(63,151,255,.14)"><span class="ic">🃏</span><div class="tx"><b>Card dei giocatori</b><span>Ruolo, valore e voto medio, sempre a portata di tocco.</span></div></div>
+      <div class="fi" style="--chip:rgba(255,194,61,.14)"><span class="ic">🏆</span><div class="tx"><b>Bacheca dei trofei</b><span>Traguardi di carriera e titoli di ogni stagione.</span></div></div>
+      <div class="fi" style="--chip:rgba(47,217,138,.14)"><span class="ic">🔔</span><div class="tx"><b>Promemoria automatici</b><span>Presenze, formazione, ultima ora, giornata chiusa.</span></div></div>
+      <div class="fi" style="--chip:rgba(126,194,255,.14)"><span class="ic">📆</span><div class="tx"><b>Stagioni e recap</b><span>Fino a 38 giornate, poi l'archivio con premi e record.</span></div></div>
+      <div class="fi" style="--chip:rgba(255,93,107,.14)"><span class="ic">🧤</span><div class="tx"><b>Regole su misura</b><span>Portiere, presenze e valori li imposta l'organizzatore.</span></div></div>
     </div>
   </div>
 </section>
@@ -577,13 +631,15 @@
     </div>
     <div class="ptgrid rise">
       <div class="prow"><span class="e">⚽</span><span class="l">Gol</span><span class="pt pos">+3</span></div>
-      <div class="prow"><span class="e">🅰️</span><span class="l">Assist</span><span class="pt pos">+2</span></div>
+      <div class="prow"><span class="e">👟</span><span class="l">Assist</span><span class="pt pos">+2</span></div>
       <div class="prow"><span class="e">🧤</span><span class="l">Porta inviolata</span><span class="pt pos">+3</span></div>
       <div class="prow"><span class="e">🙌</span><span class="l">Rigore parato</span><span class="pt pos">+3</span></div>
       <div class="prow"><span class="e">✅</span><span class="l">Vittoria</span><span class="pt pos">+2</span></div>
       <div class="prow"><span class="e">❌</span><span class="l">Sconfitta</span><span class="pt neg">−1</span></div>
-      <div class="prow"><span class="e">😵</span><span class="l">Autogol</span><span class="pt neg">−3</span></div>
+      <div class="prow"><span class="e">🅰️</span><span class="l">Autogol</span><span class="pt neg">−3</span></div>
+      <div class="prow"><span class="e">🚫</span><span class="l">Rigore sbagliato</span><span class="pt neg">−3</span></div>
       <div class="prow"><span class="e">🔴</span><span class="l">Gol subito</span><span class="pt neg">−1</span></div>
+      <div class="prow"><span class="e">🟨</span><span class="l">Cartellino giallo</span><span class="pt neg">−0,5</span></div>
       <div class="prow"><span class="e">©</span><span class="l">Capitano</span><span class="pt x2">voto ×2</span></div>
       <div class="prow"><span class="e">🏆</span><span class="l">MVP</span><span class="pt x2">voto ×2</span></div>
     </div>
@@ -609,7 +665,7 @@
       <details><summary>Quanti bisogna essere?</summary><div class="a"><p><b>Da dieci in su</b>, così le formazioni possono essere diverse tra loro. Con quindici è perfetto. La versione gratuita arriva <b>fino a 15 giocatori</b>; oltre serve Pro, e lì non c'è nessun tetto. Chi è già dentro <b>non viene mai tolto</b>.</p></div></details>
       <details><summary>Si può giocare senza scendere in campo?</summary><div class="a"><p><b>Sì.</b> Chi non gioca a calcetto — un amico, la fidanzata, chi è infortunato a lungo — entra come <b>solo manager</b>: ha la sua squadra, schiera la formazione e sta in classifica come tutti. Non prende voti, perché non gioca, e non compare nel sondaggio delle presenze. Se possa votare i giocatori lo decide l'organizzatore.</p></div></details>
       <details><summary>Serve scaricarla dagli store?</summary><div class="a"><p><b>No, è una PWA.</b> È un sito che si aggiunge alla schermata Home e da lì funziona come un'app: <b>icona sua, schermo intero, notifiche</b>. Gli aggiornamenti arrivano da soli, senza passare da App Store o Play Store.</p></div></details>
-      <details><summary>Chi assegna i voti?</summary><div class="a"><p><b>I giocatori.</b> A fine partita ognuno vota gli altri e <b>la media è il voto di giornata</b>. L'organizzatore inserisce solo i fatti: gol, assist, rigori, risultato.</p></div></details>
+      <details><summary>Chi assegna i voti?</summary><div class="a"><p><b>I giocatori.</b> A fine partita ognuno vota gli altri e <b>la media è il voto di giornata</b>. L'organizzatore inserisce solo i fatti: gol, assist, rigori, cartellini, risultato.</p></div></details>
       <details><summary>Deve fare tutto l'organizzatore?</summary><div class="a"><p><b>No</b>, ed è la cosa a cui teniamo di più. La giornata <b>si apre da sola</b>, i promemoria partono da soli, la giornata <b>si chiude quando arrivano i voti</b>. All'organizzatore resta solo da segnare com'è finita la partita.</p></div></details>
       <details><summary>Che dati raccogliete?</summary><div class="a"><p><b>Il minimo per far funzionare il gioco</b>: email, nome, soprannome, nome squadra e presenze. Le password le custodisce il servizio di accesso, <b>non le vediamo mai</b>. <b>Niente pubblicità, nessuna rivendita di dati.</b></p></div></details>
     </div>
