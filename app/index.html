@@ -6753,10 +6753,10 @@ function renderProPage(reason){
     /* Il super-admin ha la Fossa fondatrice: senza questo pulsante non potrebbe
        mai provare il pagamento dall'icona sulla Home, dove ?piano=free non
        arriva. Il server gli da' il link SOLO in modalita' test. */
-    if(cta) cta.innerHTML = isSuperAdmin()
-      ? '<button class="pro-test" onclick="proCheckout(this)">Prova del pagamento (modalit\u00e0 test)</button>'
-        +'<div class="pro-status" id="proStatus">Visibile solo al super-admin.</div>'
-      : '';
+    /* Il pulsante di prova compare SOLO se il checkout e' in modalita' test
+       (pro_checkout.mode='test'): in live sparisce da solo, senza toccare il file. */
+    if(cta) cta.innerHTML='';
+    if(isSuperAdmin()) proTestSlot();
     if(foot) foot.innerHTML='';
     proWdRender(owner);
     return;
@@ -6980,6 +6980,15 @@ function fmtWd(iso, withTime){
     return withTime ? s+' alle '+d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}) : s;
   }catch(_){ return String(iso||'').slice(0,10); }
 }
+async function proTestSlot(){
+  let cfg=null;
+  try{ const {data,error}=await sb.rpc('get_pro_checkout'); if(!error) cfg=data||null; }catch(_){ cfg=null; }
+  if(!cfg || cfg.mode!=='test') return;
+  const pg=document.getElementById('proPage'); const cta=document.getElementById('proCta');
+  if(!cta || !pg || pg.classList.contains('hidden') || !isPro()) return;
+  cta.innerHTML='<button class="pro-test" onclick="proCheckout(this)">Prova del pagamento (modalit\u00e0 test)</button>'
+    +'<div class="pro-status" id="proStatus">Visibile solo al super-admin, in modalit\u00e0 test.</div>';
+}
 async function proWdRender(owner){
   const box=document.getElementById('proWd'); if(!box) return;
   box.innerHTML='';
@@ -6993,7 +7002,7 @@ async function proWdRender(owner){
   const b=document.getElementById('proWd'); if(!b) return;
   if(w.requested_at){
     b.innerHTML='<div class="pro-wd"><b>Recesso richiesto</b>'
-      +'<small>Richiesta registrata il '+esc(fmtWd(w.requested_at,true))+'. Il rimborso sar\u00e0 disposto entro 14 giorni '
+      +'<small>Richiesta registrata il '+esc(fmtWd(w.requested_at,true))+'. Il rimborso integrale sar\u00e0 disposto entro 14 giorni '
       +'sul metodo di pagamento utilizzato; la lega torner\u00e0 quindi al piano gratuito, senza rimozione di alcun partecipante.</small></div>';
     return;
   }
