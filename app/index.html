@@ -1137,6 +1137,10 @@
     box-shadow:0 16px 38px -14px rgba(255,194,61,.85);transition:transform .15s}
   .pro-btn:active{transform:scale(.98)}
   .pro-status{font-size:12.5px;color:var(--muted);line-height:1.5;text-align:center;margin-top:16px}
+  .pro-btn:disabled{opacity:.6;cursor:default}
+  .pro-test{width:100%;background:none;border:1px dashed rgba(255,194,61,.45);color:var(--gold-soft);
+    font-family:inherit;font-weight:700;font-size:14px;padding:13px;border-radius:999px;cursor:pointer}
+  .pro-test:disabled{opacity:.6}
   .pro-foot{font-size:12px;color:var(--muted);text-align:center;line-height:1.55;margin:24px 0 0}
   .pro-foot a{color:var(--muted)}
   .plan-seats{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:12px}
@@ -2785,7 +2789,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='2.7';
+const APP_VERSION='2.8';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -6699,7 +6703,7 @@ function proPriceHTML(){
   const each=n>0 ? Math.ceil(PRO_NOW*100/n)/100 : null;
   return '<span class="pro-ribbon">Prezzo di lancio</span>'
     +'<div class="pro-row"><s>'+eur(PRO_FULL)+'</s><b>'+eur(PRO_NOW)+'</b><span>/stagione</span></div>'
-    +'<div class="pro-amount-sub">Per tutta la lega, non a testa. Nessun rinnovo automatico.</div>'
+    +'<div class="pro-amount-sub">Per tutta la lega, non a testa. IVA inclusa, nessun rinnovo automatico.</div>'
     +(each!=null
       ? '<div class="pro-each"><b>'+eur(each)+'</b><span>a testa \u00b7 siete in '+n+'</span></div>'
       : '');
@@ -6751,7 +6755,13 @@ function renderProPage(reason){
     if(on) on.innerHTML='<div class="pro-on"><span class="ic">'+(myPlan.founder?'\ud83c\udfc5':'\u2b50')+'</span>'
       +'<div><b>'+(myPlan.founder?'Lega fondatrice':'Pro attivo')+'</b>'
       +'<small>'+(myPlan.founder?'Una delle prime 20 leghe. Pro gratis, per sempre.':'Giocatori illimitati e tutte le stagioni.')+'</small></div></div>';
-    if(cta) cta.innerHTML='';
+    /* Il super-admin ha la Fossa fondatrice: senza questo pulsante non potrebbe
+       mai provare il pagamento dall'icona sulla Home, dove ?piano=free non
+       arriva. Il server gli da' il link SOLO in modalita' test. */
+    if(cta) cta.innerHTML = isSuperAdmin()
+      ? '<button class="pro-test" onclick="proCheckout(this)">\ud83e\uddea Prova il pagamento</button>'
+        +'<div class="pro-status" id="proStatus">Visibile solo a te. Funziona in modalit\u00e0 test.</div>'
+      : '';
     if(foot) foot.innerHTML='';
     return;
   }
@@ -6761,7 +6771,7 @@ function renderProPage(reason){
 
   if(owner){
     /* L'admin e' l'unico che puo' pagare: a lui il pulsante. */
-    if(cta) cta.innerHTML='<button class="pro-btn" onclick="proCheckout()">Passa a Pro</button>'
+    if(cta) cta.innerHTML='<button class="pro-btn" onclick="proCheckout(this)">Passa a Pro</button>'
       +'<div class="pro-status" id="proStatus"></div>';
     if(foot) foot.innerHTML='Continuando accetti i <a href="/termini.html" target="_blank" rel="noopener">termini</a>.';
   }else{
@@ -6772,11 +6782,169 @@ function renderProPage(reason){
     if(foot) foot.innerHTML='';
   }
 }
-/* Il checkout non c'\u00e8 ancora: il pulsante dice la verita' e non finge. */
-function proCheckout(){
+/* ---------- IL CHECKOUT (Lemon Squeezy, sessione 68) ----------
+   Il pagamento si apre DENTRO l'app, in un pannello sopra la pagina Pro
+   (Lemon.js). Non si esce mai: niente Safari, niente secondo login.
+
+   Chi decide cosa succede e' il server, non questo file:
+     get_pro_checkout() -> 'off'   : «il pagamento apre a breve» (come prima)
+                           'test'  : link di prova, SOLO al super-admin
+                           'live'  : link vero, all'admin di lega gratuita
+                           'already': la lega e' gia' Pro
+   Cosi' test -> live e' una riga di SQL, senza ricaricare l'app.
+
+   Lemon.js si scarica solo quando qualcuno preme il pulsante: chi non paga
+   non carica niente da fuori.
+
+   Dopo il pagamento la lega diventa Pro dal WEBHOOK (lemon-webhook ->
+   pro_apply_order), non da qui: l'evento Checkout.Success serve solo a
+   sapere che conviene chiedere al server «e' arrivato?». */
+let lemonLoading=null, proPaidBusy=false, proPollT=null;
+
+function proStatus(html){
   const st=document.getElementById('proStatus');
-  if(st) st.innerHTML="<b style=\"color:var(--gold)\">Il pagamento apre a breve.</b><br>Non serve fare niente: la lega continua a funzionare.";
+  if(st) st.innerHTML=html;
+}
+function proSoonMsg(){
+  proStatus("<b style=\"color:var(--gold)\">Il pagamento apre a breve.</b><br>Non serve fare niente: la lega continua a funzionare.");
+}
+function loadLemon(){
+  if(window.LemonSqueezy && window.LemonSqueezy.Url) return Promise.resolve();
+  if(lemonLoading) return lemonLoading;
+  lemonLoading=new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    s.src='https://app.lemonsqueezy.com/js/lemon.js';
+    s.async=true;
+    s.onload=()=>{
+      try{ if(typeof window.createLemonSqueezy==='function') window.createLemonSqueezy(); }catch(_){ }
+      if(window.LemonSqueezy && window.LemonSqueezy.Url) res();
+      else { lemonLoading=null; rej(new Error('lemon')); }
+    };
+    s.onerror=()=>{ lemonLoading=null; try{ s.remove(); }catch(_){ } rej(new Error('lemon')); };
+    document.head.appendChild(s);
+  });
+  return lemonLoading;
+}
+
+async function proCheckout(btn){
+  if(btn && btn.disabled) return;
   if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){ } }
+  const busy=(on)=>{ if(btn) btn.disabled=on; };
+  busy(true);
+  proStatus('Apro il pagamento\u2026');
+
+  let cfg=null;
+  try{
+    const {data,error}=await sb.rpc('get_pro_checkout');
+    if(error) throw error;
+    cfg=data||null;
+  }catch(_){ cfg=null; }
+
+  if(cfg && cfg.mode==='already'){
+    busy(false);
+    await loadMyPlan(); renderPlanUI(); renderProPage('info');
+    toast('La lega \u00e8 gi\u00e0 Pro');
+    return;
+  }
+  if(!cfg || !cfg.url || (cfg.mode!=='live' && cfg.mode!=='test')){
+    busy(false); proSoonMsg(); return;
+  }
+
+  let url;
+  try{
+    const u=new URL(cfg.url);
+    u.searchParams.set('checkout[custom][league_id]', String(cfg.league_id));
+    u.searchParams.set('checkout[custom][user_id]', String(cfg.user_id));
+    if(cfg.email) u.searchParams.set('checkout[email]', String(cfg.email));
+    u.searchParams.set('embed','1');
+    url=u.toString();
+  }catch(_){ busy(false); proSoonMsg(); return; }
+
+  try{ await loadLemon(); }
+  catch(_){
+    busy(false);
+    proStatus('Non riesco ad aprire il pagamento. Controlla la connessione e riprova.');
+    return;
+  }
+
+  try{
+    proPaidBusy=false;
+    window.LemonSqueezy.Setup({ eventHandler:(e)=>{
+      if(e && e.event==='Checkout.Success') proPaid();
+    }});
+    window.LemonSqueezy.Url.Open(url);
+    proStatus(cfg.mode==='test'
+      ? '\ud83e\uddea Modalit\u00e0 test: carta 4242 4242 4242 4242, scadenza futura, CVC qualsiasi.'
+      : 'Il pagamento \u00e8 gestito da Lemon Squeezy. Nessun rinnovo automatico.');
+  }catch(_){
+    proStatus('Non riesco ad aprire il pagamento. Riprova tra poco.');
+  }
+  busy(false);
+}
+
+/* Pagamento andato a buon fine nel pannello: si chiude il pannello e si
+   chiede al server ogni 2,5 secondi se il webhook e' arrivato. Di solito
+   bastano pochi secondi; dopo un minuto si smette di chiedere e si dice
+   la verita'. */
+function proPaid(){
+  if(proPaidBusy) return;
+  proPaidBusy=true;
+  try{ window.LemonSqueezy.Url.Close(); }catch(_){ }
+  if(navigator.vibrate){ try{ navigator.vibrate([10,40,10]); }catch(_){ } }
+  const cta=document.getElementById('proCta');
+  const foot=document.getElementById('proFoot');
+  if(foot) foot.innerHTML='';
+  if(cta) cta.innerHTML='<div class="pro-on"><span class="ic">\u23f3</span><div><b>Pagamento ricevuto</b>'
+    +'<small>Sto attivando Pro per la lega\u2026</small></div></div>';
+  clearTimeout(proPollT);
+  let tries=0;
+  const tick=async()=>{
+    tries++;
+    let o=null;
+    try{
+      const {data,error}=await sb.rpc('get_my_pro_order');
+      if(!error) o=data||null;
+    }catch(_){ o=null; }
+    if(o && o.status==='paid'){ proPaidDone(o); return; }
+    if(tries>=24){
+      proPaidBusy=false;
+      const c=document.getElementById('proCta');
+      if(c) c.innerHTML='<div class="pro-on"><span class="ic">\u2709\ufe0f</span><div><b>Pagamento ricevuto</b>'
+        +'<small>L\u2019attivazione sta arrivando: pu\u00f2 volerci qualche minuto. La ricevuta \u00e8 nella tua email.</small></div></div>'
+        +'<button class="pro-test" style="margin-top:12px" onclick="proRecheck(this)">Controlla di nuovo</button>';
+      return;
+    }
+    proPollT=setTimeout(tick,2500);
+  };
+  proPollT=setTimeout(tick,1500);
+}
+async function proRecheck(btn){
+  if(btn) btn.disabled=true;
+  let o=null;
+  try{ const {data,error}=await sb.rpc('get_my_pro_order'); if(!error) o=data||null; }catch(_){ }
+  if(o && o.status==='paid'){ proPaidDone(o); return; }
+  await loadMyPlan(); renderPlanUI();
+  if(isPro() && !planFakeFree){ renderProPage('info'); toast('\u2b50 Pro attivo per tutta la lega'); return; }
+  if(btn) btn.disabled=false;
+  toast('Non ancora: riprova tra un minuto');
+}
+async function proPaidDone(o){
+  clearTimeout(proPollT);
+  proPaidBusy=false;
+  await loadMyPlan();
+  renderPlanUI();
+  const cta=document.getElementById('proCta');
+  if(o.test_mode){
+    /* Gli ordini di prova non cambiano MAI il piano (vedi lemon.sql):
+       qui si conferma solo che il giro completo funziona. */
+    if(cta) cta.innerHTML='<div class="pro-on"><span class="ic">\ud83e\uddea</span><div><b>Ordine di prova n\u00b0'
+      +esc(String(o.order_number==null?'?':o.order_number))+' registrato</b>'
+      +'<small>Il giro funziona: pagamento, webhook e database. In modalit\u00e0 test la lega non cambia piano.</small></div></div>';
+    toast('Ordine di prova registrato');
+    return;
+  }
+  renderProPage('info');
+  toast('\u2b50 Pro attivo per tutta la lega');
 }
 function proTellAdmin(){
   const nm=(myLeague&&myLeague.name)?(' della lega '+myLeague.name):'';
