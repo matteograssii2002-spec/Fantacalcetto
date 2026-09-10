@@ -1077,71 +1077,66 @@
   .bch-empty{font-size:12.5px;color:var(--muted);text-align:center;padding:6px 0}
   /* ---- PAGINA BACHECA (full screen, niente sfondo che balla) ---- */
   /* ===== PIANI — FantaCalcetto Pro (sessione 56) ===== */
-  /* ---- PAGINA PRO ---------------------------------------------------------
-     Riscritta sul modello delle schermate di abbonamento fatte bene: logo,
-     nome del piano, prezzo, una tabella GRATIS/PRO con le spunte, un pulsante.
-     Meno parole possibile: chi legge deve capire in tre secondi cosa cambia,
-     non leggere un dépliant. Le spiegazioni lunghe stanno sulla vetrina. */
-  .pro-page{z-index:95}
-  .pro-bar{justify-content:flex-end;padding-bottom:0}
-  .pro-x{width:40px;height:40px;padding:0;border-radius:999px;display:grid;place-items:center;
-    font-size:15px;line-height:1;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--muted)}
-  .pro-page .bch-page-inner{position:relative;padding-top:0}
-  /* alone dorato dietro al marchio: da' profondita' senza aggiungere elementi
-     da guardare. Sta dietro a tutto e non intercetta i tocchi. */
-  .pro-glow{position:absolute;top:-72px;left:-14%;width:128%;height:300px;pointer-events:none;z-index:0;
-    background:radial-gradient(52% 52% at 26% 44%, rgba(255,194,61,.22), rgba(255,194,61,0) 72%)}
-  .pro-page .bch-page-inner>*:not(.pro-glow){position:relative;z-index:1}
-  .pro-top{display:flex;align-items:center;gap:16px;padding:8px 0 0}
-  .pro-logo{width:66px;height:66px;border-radius:999px;flex:none;border:1.5px solid rgba(255,194,61,.5);
-    padding:5px;background:rgba(255,194,61,.07);object-fit:contain;
-    box-shadow:0 10px 30px -12px rgba(255,194,61,.75)}
-  .pro-k{display:block;font-size:16px;font-weight:700;color:var(--muted);line-height:1.1}
-  .pro-tit{font-family:'Bricolage Grotesque',sans-serif;font-size:42px;font-weight:800;line-height:1;
-    letter-spacing:.05em;margin:6px 0 0;
-    background:linear-gradient(135deg,var(--gold-soft),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .pro-why{color:var(--muted);font-size:14.5px;line-height:1.5;margin:16px 0 0}
-  .pro-amount{margin:24px 0}
-  .pro-amount b{font-family:'Bricolage Grotesque',sans-serif;font-size:42px;font-weight:800;line-height:1;letter-spacing:-.02em}
-  .pro-amount span{font-size:18px;font-weight:700;color:var(--muted);margin-left:5px}
-  .pro-amount .pro-amount-sub{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5}
-  .pro-ribbon{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
-    color:#0d0900;background:linear-gradient(135deg,var(--gold-soft),var(--gold));
-    padding:6px 11px;border-radius:8px;margin-bottom:13px}
-  .pro-row{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
-  .pro-row s{font-family:'Bricolage Grotesque',sans-serif;font-size:21px;font-weight:800;
-    color:var(--muted);opacity:.6;text-decoration-thickness:2px}
-  .pro-each{margin-top:16px;padding-top:16px;border-top:1px solid var(--line);
-    display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
-  .pro-each b{font-family:'Bricolage Grotesque',sans-serif;font-size:25px;font-weight:800;color:var(--gold);line-height:1}
-  .pro-each span{font-size:12.5px;color:var(--muted);font-weight:600}
+  /* ---- PAGINA PRO (sessione 68: layout da app) -------------------------
+     Stessa impalcatura delle altre pagine a schermo intero: barra «‹ Indietro»
+     a sinistra, testata compatta come le schede, contenuti in card.
+     PRIMA: pagina «da vetrina» con un alone dorato largo il 128% (left:-14%).
+     Sporgeva dai lati, e su iPhone l'overlay scorreva anche in ORIZZONTALE:
+     la pagina «si muoveva tutta». Niente piu' elementi fuori misura, e
+     overflow-x:hidden come rete di sicurezza. */
+  .pro-page{z-index:95;overflow-x:hidden;overscroll-behavior:contain}
+  .pro-top{display:flex;align-items:center;gap:13px;margin:4px 0 16px}
+  .pro-logo{width:56px;height:56px;border-radius:14px;flex:none;object-fit:contain;padding:4px;
+    background:var(--surface);border:1px solid rgba(255,194,61,.35)}
+  .pro-id{min-width:0;flex:1}
+  .pro-id b{font-family:'Bricolage Grotesque';font-weight:800;font-size:21px;letter-spacing:-.01em;
+    display:flex;align-items:center;gap:7px;line-height:1.1}
+  .pro-badge{font-size:10.5px;font-weight:800;letter-spacing:.1em;color:#1b1207;
+    background:linear-gradient(135deg,var(--gold-soft),var(--gold));padding:3px 7px;border-radius:6px}
+  #proWhy{display:block;color:var(--muted);font-size:13px;line-height:1.45;margin-top:4px}
+  .pro-amount{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
+  .pro-amount b{font-family:'Bricolage Grotesque';font-size:32px;font-weight:800;line-height:1;letter-spacing:-.02em}
+  .pro-amount .pro-row>span{font-size:14px;font-weight:700;color:var(--muted)}
+  .pro-amount .pro-amount-sub{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.45}
+  .pro-amount .pro-ribbon{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+    color:#1b1207;background:linear-gradient(135deg,var(--gold-soft),var(--gold));padding:4px 8px;border-radius:6px;margin-bottom:10px}
+  .pro-row{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  .pro-row s{font-family:'Bricolage Grotesque';font-size:17px;font-weight:800;color:var(--muted);opacity:.6}
+  .pro-amount .pro-each{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);
+    display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .pro-amount .pro-each b{font-size:19px;color:var(--gold)}
+  .pro-amount .pro-each span{font-size:12px;color:var(--muted);font-weight:600}
   /* Chi Pro ce l'ha gia' non legge un'offerta: legge uno stato. */
-  .pro-on{display:flex;align-items:center;gap:14px;margin:24px 0;padding:16px;border-radius:18px;
-    background:linear-gradient(135deg,rgba(255,194,61,.16),rgba(255,194,61,.03));border:1px solid rgba(255,194,61,.28)}
-  .pro-on .ic{font-size:26px;line-height:1;flex:none}
-  .pro-on b{display:block;font-size:15.5px}
-  .pro-on small{display:block;color:var(--muted);font-size:12.5px;margin-top:3px}
-  .pro-tab{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:24px}
-  .pt-h{display:flex;align-items:center;padding:15px 18px 11px;font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--muted)}
+  .pro-on{display:flex;align-items:center;gap:13px;margin:0 0 12px;padding:15px 16px;border-radius:16px;
+    background:linear-gradient(135deg,rgba(255,194,61,.14),rgba(255,194,61,.03));border:1px solid rgba(255,194,61,.26)}
+  .pro-on .ic{font-size:24px;line-height:1;flex:none}
+  .pro-on b{display:block;font-size:15px}
+  .pro-on small{display:block;color:var(--muted);font-size:12.5px;margin-top:3px;line-height:1.45}
+  .pro-tab{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:16px}
+  .pt-h{display:flex;align-items:center;padding:12px 16px 9px;font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--muted)}
   .pt-h .k{flex:1}
-  .pt-h .a,.pt-h .b{width:60px;text-align:center}
+  .pt-h .a,.pt-h .b{width:52px;text-align:center}
   .pt-h .b{color:var(--gold-soft)}
-  .pt-r{display:flex;align-items:center;padding:15px 18px;border-top:1px solid var(--line);font-size:14.5px}
+  .pt-r{display:flex;align-items:center;padding:12px 16px;border-top:1px solid var(--line);font-size:14px}
   .pt-r .k{flex:1;min-width:0}
-  .pt-r .a,.pt-r .b{width:60px;text-align:center;font-size:16px;font-weight:800}
+  .pt-r .a,.pt-r .b{width:52px;text-align:center;font-size:15px;font-weight:800}
   .pt-r .a{color:var(--neutral)}
   .pt-r .b{color:var(--gold)}
-  .pt-r.only{color:var(--gold-soft)}
   .pro-btn{width:100%;background:linear-gradient(135deg,var(--gold-soft),var(--gold));color:#1b1207;
-    font-family:inherit;font-weight:800;font-size:17px;border:none;padding:18px;border-radius:999px;cursor:pointer;
-    box-shadow:0 16px 38px -14px rgba(255,194,61,.85);transition:transform .15s}
+    font-family:inherit;font-weight:800;font-size:16px;border:none;padding:16px;border-radius:15px;cursor:pointer;
+    box-shadow:0 12px 28px -12px rgba(255,194,61,.7);transition:transform .15s}
   .pro-btn:active{transform:scale(.98)}
-  .pro-status{font-size:12.5px;color:var(--muted);line-height:1.5;text-align:center;margin-top:16px}
   .pro-btn:disabled{opacity:.6;cursor:default}
-  .pro-test{width:100%;background:none;border:1px dashed rgba(255,194,61,.45);color:var(--gold-soft);
-    font-family:inherit;font-weight:700;font-size:14px;padding:13px;border-radius:999px;cursor:pointer}
+  .pro-status{font-size:12.5px;color:var(--muted);line-height:1.5;text-align:center;margin-top:12px}
+  .pro-test{width:100%;background:var(--bg2);border:1.5px dashed rgba(255,194,61,.45);color:var(--gold-soft);
+    font-family:inherit;font-weight:700;font-size:14px;padding:13px;border-radius:13px;cursor:pointer}
   .pro-test:disabled{opacity:.6}
-  .pro-foot{font-size:12px;color:var(--muted);text-align:center;line-height:1.55;margin:24px 0 0}
+  .pro-wd{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+  .pro-wd b{display:block;font-size:14px}
+  .pro-wd small{display:block;color:var(--muted);font-size:12.5px;line-height:1.45;margin-top:3px}
+  .pro-wd button{margin-top:10px;background:none;border:none;padding:0;color:var(--accent-soft);
+    font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer}
+  .pro-foot{font-size:12px;color:var(--muted);text-align:center;line-height:1.55;margin:18px 0 0}
   .pro-foot a{color:var(--muted)}
   .plan-seats{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:12px}
   .plan-seats b{display:block;font-size:14.5px;margin-bottom:4px}
@@ -2666,20 +2661,19 @@
        (proWhy), il resto no: chi ci arriva due volte da due strade diverse
        deve riconoscere la stessa pagina. -->
   <div class="overlay hidden bch-page pro-page" id="proPage">
-    <div class="bch-page-bar pro-bar">
-      <button class="bch-back pro-x" onclick="closePro()" aria-label="Chiudi">✕</button>
+    <div class="bch-page-bar">
+      <button class="bch-back" onclick="closePro()" aria-label="Indietro">‹ Indietro</button>
     </div>
     <div class="bch-page-inner">
-      <div class="pro-glow"></div>
       <div class="pro-top">
         <img class="pro-logo" src="/icon-512.png?v=4" alt="" onerror="this.style.display='none'">
-        <div><span class="pro-k">FantaCalcetto</span><h2 class="pro-tit">PRO</h2></div>
+        <div class="pro-id"><b>FantaCalcetto <span class="pro-badge">PRO</span></b><span id="proWhy">—</span></div>
       </div>
-      <p class="pro-why" id="proWhy">—</p>
       <div id="proOn"></div>
       <div class="pro-amount" id="proPrice"></div>
       <div class="pro-tab" id="proTab"></div>
       <div id="proCta"></div>
+      <div id="proWd"></div>
       <p class="pro-foot" id="proFoot"></p>
     </div>
   </div>
@@ -2789,7 +2783,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='2.8';
+const APP_VERSION='2.9';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -4419,7 +4413,7 @@ function renderMaintBtn(){
 /* Canale di segnalazione: prende il posto di «app offline» per gli admin che non
    siamo noi. L'email parte già con lega, versione e giornata in fondo, così non
    serve chiederli dopo — sono le tre cose che servono sempre per capire un bug. */
-const HELP_EMAIL='accesso@fantacalcettoitalia.it';
+const HELP_EMAIL='assistenza.fantacalcetto@gmail.com';
 function helpMailto(){
   const lega=myLeague&&myLeague.name?myLeague.name:'—';
   const md=currentMd?currentMd.label:'nessuna giornata aperta';
@@ -6679,10 +6673,10 @@ function seasonLocked(id){
 function proWhyText(reason){
   const n=Number(myPlan.members)||0, cap=Number(myPlan.member_cap)||15;
   switch(reason){
-    case 'muro':    return 'Numero massimo raggiunto ('+n+'/'+cap+'). Passa a Pro per far entrare altri giocatori.';
-    case 'tetto':   return 'Posti occupati: '+n+' su '+cap+'. Con Pro il limite non c\u2019\u00e8.';
-    case 'storico': return 'Le stagioni archiviate si consultano con Pro.';
-    default:        return 'Serve oltre i '+cap+' giocatori e per le stagioni archiviate.';
+    case 'muro':    return 'Numero massimo di partecipanti raggiunto ('+n+'/'+cap+'). Con Pro la lega pu\u00f2 accogliere nuovi giocatori.';
+    case 'tetto':   return 'Partecipanti: '+n+' su '+cap+'. Con Pro non \u00e8 previsto alcun limite.';
+    case 'storico': return 'Le stagioni archiviate sono consultabili con Pro.';
+    default:        return 'Per le leghe con pi\u00f9 di '+cap+' partecipanti e per consultare le stagioni archiviate.';
   }
 }
 /* La tabella e' la pagina: si legge in tre secondi. */
@@ -6703,9 +6697,9 @@ function proPriceHTML(){
   const each=n>0 ? Math.ceil(PRO_NOW*100/n)/100 : null;
   return '<span class="pro-ribbon">Prezzo di lancio</span>'
     +'<div class="pro-row"><s>'+eur(PRO_FULL)+'</s><b>'+eur(PRO_NOW)+'</b><span>/stagione</span></div>'
-    +'<div class="pro-amount-sub">Per tutta la lega, non a testa. IVA inclusa, nessun rinnovo automatico.</div>'
+    +'<div class="pro-amount-sub">Per l\u2019intera lega, non per singolo partecipante. IVA inclusa, nessun rinnovo automatico.</div>'
     +(each!=null
-      ? '<div class="pro-each"><b>'+eur(each)+'</b><span>a testa \u00b7 siete in '+n+'</span></div>'
+      ? '<div class="pro-each"><b>'+eur(each)+'</b><span>per partecipante \u00b7 '+n+' nella lega</span></div>'
       : '');
 }
 function proTabHTML(){
@@ -6722,6 +6716,7 @@ function openPro(reason){
 }
 function closePro(){
   const pg=document.getElementById('proPage'); if(pg) pg.classList.add('hidden');
+  proRestoreScroll();
 }
 /* Apertura AUTOMATICA (non richiesta dall'utente): al massimo una a settimana
    per dispositivo, qualunque cosa succeda. Le aperture volute — la riga nelle
@@ -6749,23 +6744,25 @@ function renderProPage(reason){
   /* Chi e' gia' Pro non deve leggere un'offerta: legge uno stato. */
   if(isPro()){
     if(why) why.textContent = myPlan.founder
-      ? 'Tutto attivo, senza scadenza.'
-      : 'Tutto attivo per la tua lega.';
+      ? 'Tutte le funzionalit\u00e0 attive, senza scadenza.'
+      : 'Tutte le funzionalit\u00e0 attive per la lega.';
     if(price) price.style.display='none';
     if(on) on.innerHTML='<div class="pro-on"><span class="ic">'+(myPlan.founder?'\ud83c\udfc5':'\u2b50')+'</span>'
       +'<div><b>'+(myPlan.founder?'Lega fondatrice':'Pro attivo')+'</b>'
-      +'<small>'+(myPlan.founder?'Una delle prime 20 leghe. Pro gratis, per sempre.':'Giocatori illimitati e tutte le stagioni.')+'</small></div></div>';
+      +'<small>'+(myPlan.founder?'Una delle prime 20 leghe: Pro incluso, senza scadenza.':'Partecipanti illimitati e accesso a tutte le stagioni.')+'</small></div></div>';
     /* Il super-admin ha la Fossa fondatrice: senza questo pulsante non potrebbe
        mai provare il pagamento dall'icona sulla Home, dove ?piano=free non
        arriva. Il server gli da' il link SOLO in modalita' test. */
     if(cta) cta.innerHTML = isSuperAdmin()
-      ? '<button class="pro-test" onclick="proCheckout(this)">\ud83e\uddea Prova il pagamento</button>'
-        +'<div class="pro-status" id="proStatus">Visibile solo a te. Funziona in modalit\u00e0 test.</div>'
+      ? '<button class="pro-test" onclick="proCheckout(this)">Prova del pagamento (modalit\u00e0 test)</button>'
+        +'<div class="pro-status" id="proStatus">Visibile solo al super-admin.</div>'
       : '';
     if(foot) foot.innerHTML='';
+    proWdRender(owner);
     return;
   }
   if(on) on.innerHTML='';
+  { const wd0=document.getElementById('proWd'); if(wd0) wd0.innerHTML=''; }
   if(price) price.style.display='';
   if(why) why.textContent = proWhyText(reason);
 
@@ -6773,12 +6770,12 @@ function renderProPage(reason){
     /* L'admin e' l'unico che puo' pagare: a lui il pulsante. */
     if(cta) cta.innerHTML='<button class="pro-btn" onclick="proCheckout(this)">Passa a Pro</button>'
       +'<div class="pro-status" id="proStatus"></div>';
-    if(foot) foot.innerHTML='Continuando accetti i <a href="/termini.html" target="_blank" rel="noopener">termini</a>.';
+    if(foot) foot.innerHTML='Proseguendo accetti i <a href="/termini.html" target="_blank" rel="noopener">Termini di servizio</a>.';
   }else{
     /* Un membro che preme «Passa a Pro» e scopre di non poter fare niente e'
        un'occasione buttata: gli si da' una cosa che puo' fare davvero. */
-    if(cta) cta.innerHTML='<button class="pro-btn" onclick="proTellAdmin()">Dillo al tuo admin</button>'
-      +'<div class="pro-status">Il passaggio lo fa chi amministra la lega.</div>';
+    if(cta) cta.innerHTML='<button class="pro-btn" onclick="proTellAdmin()">Segnala all\u2019amministratore</button>'
+      +'<div class="pro-status">L\u2019attivazione \u00e8 riservata all\u2019amministratore della lega.</div>';
     if(foot) foot.innerHTML='';
   }
 }
@@ -6799,14 +6796,30 @@ function renderProPage(reason){
    Dopo il pagamento la lega diventa Pro dal WEBHOOK (lemon-webhook ->
    pro_apply_order), non da qui: l'evento Checkout.Success serve solo a
    sapere che conviene chiedere al server «e' arrivato?». */
-let lemonLoading=null, proPaidBusy=false, proPollT=null;
+let lemonLoading=null, proPaidBusy=false, proPollT=null, proScrollSnap=null;
+
+/* Lemon.js, aprendo e chiudendo il pannello, puo' toccare lo scorrimento della
+   pagina. Si fotografa lo stato prima di aprire e lo si rimette com'era quando
+   il pannello si chiude o si lascia la pagina Pro. */
+function proSnapScroll(){
+  if(proScrollSnap) return;
+  try{ proScrollSnap={ b:document.body.style.overflow, h:document.documentElement.style.overflow }; }catch(_){ }
+}
+function proRestoreScroll(){
+  if(!proScrollSnap) return;
+  try{
+    document.body.style.overflow=proScrollSnap.b;
+    document.documentElement.style.overflow=proScrollSnap.h;
+  }catch(_){ }
+  proScrollSnap=null;
+}
 
 function proStatus(html){
   const st=document.getElementById('proStatus');
   if(st) st.innerHTML=html;
 }
 function proSoonMsg(){
-  proStatus("<b style=\"color:var(--gold)\">Il pagamento apre a breve.</b><br>Non serve fare niente: la lega continua a funzionare.");
+  proStatus("<b style=\"color:var(--gold)\">Il pagamento sar\u00e0 disponibile a breve.</b><br>Nel frattempo la lega continua a funzionare normalmente.");
 }
 function loadLemon(){
   if(window.LemonSqueezy && window.LemonSqueezy.Url) return Promise.resolve();
@@ -6831,7 +6844,7 @@ async function proCheckout(btn){
   if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){ } }
   const busy=(on)=>{ if(btn) btn.disabled=on; };
   busy(true);
-  proStatus('Apro il pagamento\u2026');
+  proStatus('Apertura del pagamento\u2026');
 
   let cfg=null;
   try{
@@ -6843,7 +6856,7 @@ async function proCheckout(btn){
   if(cfg && cfg.mode==='already'){
     busy(false);
     await loadMyPlan(); renderPlanUI(); renderProPage('info');
-    toast('La lega \u00e8 gi\u00e0 Pro');
+    toast('La lega dispone gi\u00e0 di FantaCalcetto Pro');
     return;
   }
   if(!cfg || !cfg.url || (cfg.mode!=='live' && cfg.mode!=='test')){
@@ -6863,7 +6876,7 @@ async function proCheckout(btn){
   try{ await loadLemon(); }
   catch(_){
     busy(false);
-    proStatus('Non riesco ad aprire il pagamento. Controlla la connessione e riprova.');
+    proStatus('Impossibile aprire il pagamento. Verifica la connessione e riprova.');
     return;
   }
 
@@ -6872,12 +6885,13 @@ async function proCheckout(btn){
     window.LemonSqueezy.Setup({ eventHandler:(e)=>{
       if(e && e.event==='Checkout.Success') proPaid();
     }});
+    proSnapScroll();
     window.LemonSqueezy.Url.Open(url);
     proStatus(cfg.mode==='test'
-      ? '\ud83e\uddea Modalit\u00e0 test: carta 4242 4242 4242 4242, scadenza futura, CVC qualsiasi.'
-      : 'Il pagamento \u00e8 gestito da Lemon Squeezy. Nessun rinnovo automatico.');
+      ? 'Modalit\u00e0 test: carta 4242 4242 4242 4242, scadenza futura, CVC qualsiasi.'
+      : 'Pagamento gestito da Lemon Squeezy. Nessun rinnovo automatico.');
   }catch(_){
-    proStatus('Non riesco ad aprire il pagamento. Riprova tra poco.');
+    proStatus('Impossibile aprire il pagamento. Riprova tra qualche istante.');
   }
   busy(false);
 }
@@ -6890,12 +6904,13 @@ function proPaid(){
   if(proPaidBusy) return;
   proPaidBusy=true;
   try{ window.LemonSqueezy.Url.Close(); }catch(_){ }
+  proRestoreScroll();
   if(navigator.vibrate){ try{ navigator.vibrate([10,40,10]); }catch(_){ } }
   const cta=document.getElementById('proCta');
   const foot=document.getElementById('proFoot');
   if(foot) foot.innerHTML='';
   if(cta) cta.innerHTML='<div class="pro-on"><span class="ic">\u23f3</span><div><b>Pagamento ricevuto</b>'
-    +'<small>Sto attivando Pro per la lega\u2026</small></div></div>';
+    +'<small>Attivazione di FantaCalcetto Pro in corso\u2026</small></div></div>';
   clearTimeout(proPollT);
   let tries=0;
   const tick=async()=>{
@@ -6910,8 +6925,8 @@ function proPaid(){
       proPaidBusy=false;
       const c=document.getElementById('proCta');
       if(c) c.innerHTML='<div class="pro-on"><span class="ic">\u2709\ufe0f</span><div><b>Pagamento ricevuto</b>'
-        +'<small>L\u2019attivazione sta arrivando: pu\u00f2 volerci qualche minuto. La ricevuta \u00e8 nella tua email.</small></div></div>'
-        +'<button class="pro-test" style="margin-top:12px" onclick="proRecheck(this)">Controlla di nuovo</button>';
+        +'<small>L\u2019attivazione pu\u00f2 richiedere alcuni minuti. La ricevuta \u00e8 stata inviata al tuo indirizzo email.</small></div></div>'
+        +'<button class="pro-test" style="margin-top:12px" onclick="proRecheck(this)">Verifica di nuovo</button>';
       return;
     }
     proPollT=setTimeout(tick,2500);
@@ -6924,9 +6939,9 @@ async function proRecheck(btn){
   try{ const {data,error}=await sb.rpc('get_my_pro_order'); if(!error) o=data||null; }catch(_){ }
   if(o && o.status==='paid'){ proPaidDone(o); return; }
   await loadMyPlan(); renderPlanUI();
-  if(isPro() && !planFakeFree){ renderProPage('info'); toast('\u2b50 Pro attivo per tutta la lega'); return; }
+  if(isPro() && !planFakeFree){ renderProPage('info'); toast('FantaCalcetto Pro attivato per la lega'); return; }
   if(btn) btn.disabled=false;
-  toast('Non ancora: riprova tra un minuto');
+  toast('Attivazione non ancora completata. Riprova tra qualche minuto.');
 }
 async function proPaidDone(o){
   clearTimeout(proPollT);
@@ -6937,23 +6952,108 @@ async function proPaidDone(o){
   if(o.test_mode){
     /* Gli ordini di prova non cambiano MAI il piano (vedi lemon.sql):
        qui si conferma solo che il giro completo funziona. */
-    if(cta) cta.innerHTML='<div class="pro-on"><span class="ic">\ud83e\uddea</span><div><b>Ordine di prova n\u00b0'
+    if(cta) cta.innerHTML='<div class="pro-on"><span class="ic">\u2713</span><div><b>Ordine di prova n\u00b0'
       +esc(String(o.order_number==null?'?':o.order_number))+' registrato</b>'
-      +'<small>Il giro funziona: pagamento, webhook e database. In modalit\u00e0 test la lega non cambia piano.</small></div></div>';
+      +'<small>Pagamento, notifica e registrazione verificati. In modalit\u00e0 test il piano della lega non viene modificato.</small></div></div>';
     toast('Ordine di prova registrato');
     return;
   }
   renderProPage('info');
-  toast('\u2b50 Pro attivo per tutta la lega');
+  toast('FantaCalcetto Pro attivato per la lega');
+}
+/* ---------- RECESSO (sessione 68) ----------
+   I termini riconoscono il recesso entro 14 giorni dall'acquisto, da esercitare
+   con una funzione DENTRO l'app. Eccola, sullo stesso schema della richiesta di
+   cancellazione dell'account:
+     1. la richiesta si registra nel database (request_pro_withdrawal): la data
+        fa fede anche se il messaggio email non parte;
+     2. si apre un messaggio gia' scritto verso l'assistenza (LEGAL_MAIL), che avvisa il Fornitore
+        e resta nella posta inviata di chi recede.
+   Il rimborso lo esegue il Fornitore dalla dashboard di Lemon Squeezy; il
+   webhook poi porta l'ordine a refunded e la lega torna gratuita da sola.
+   La card la vede il proprietario di una lega pagante (non fondatrice) e il
+   super-admin, che in modalita' test la usa per provare il giro. */
+function fmtWd(iso, withTime){
+  try{
+    const d=new Date(iso);
+    const s=d.toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'});
+    return withTime ? s+' alle '+d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}) : s;
+  }catch(_){ return String(iso||'').slice(0,10); }
+}
+async function proWdRender(owner){
+  const box=document.getElementById('proWd'); if(!box) return;
+  box.innerHTML='';
+  if(!((owner && !myPlan.founder) || isSuperAdmin())) return;
+  let w=null;
+  try{
+    const {data,error}=await sb.rpc('get_pro_withdrawal');
+    if(!error) w=data||null;
+  }catch(_){ w=null; }
+  if(!w) return;
+  const b=document.getElementById('proWd'); if(!b) return;
+  if(w.requested_at){
+    b.innerHTML='<div class="pro-wd"><b>Recesso richiesto</b>'
+      +'<small>Richiesta registrata il '+esc(fmtWd(w.requested_at,true))+'. Il rimborso sar\u00e0 disposto entro 14 giorni '
+      +'sul metodo di pagamento utilizzato; la lega torner\u00e0 quindi al piano gratuito, senza rimozione di alcun partecipante.</small></div>';
+    return;
+  }
+  b.innerHTML='<div class="pro-wd"><b>Diritto di recesso</b>'
+    +'<small>\u00c8 possibile recedere dall\u2019acquisto entro il '+esc(fmtWd(w.deadline,false))+', senza indicarne il motivo, con rimborso integrale.</small>'
+    +'<button onclick="proWdAsk()">Esercita il recesso \u203a</button></div>';
+}
+function proWdAsk(){
+  const o=document.createElement('div');
+  o.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(5,12,24,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px';
+  o.innerHTML='<div style="max-width:360px;max-height:88%;overflow-y:auto;background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:20px;padding:22px;box-shadow:0 24px 60px -20px rgba(0,0,0,.7)">'
+    +'<div style="font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:20px;margin-bottom:10px;color:#eaf1fb;text-align:center">Recesso dall\u2019acquisto</div>'
+    +'<p style="color:#8aa3c2;font-size:13.5px;line-height:1.55;margin:0 0 12px">Confermando, FantaCalcetto Pro sar\u00e0 <b style="color:#eaf1fb">disattivato per l\u2019intera lega</b> e verr\u00e0 disposto il <b style="color:#eaf1fb">rimborso integrale</b> sul metodo di pagamento utilizzato. I partecipanti gi\u00e0 presenti restano nella lega.</p>'
+    +'<p style="color:#8aa3c2;font-size:13px;line-height:1.55;margin:0 0 18px">La richiesta viene registrata immediatamente. Si aprir\u00e0 inoltre un messaggio precompilato indirizzato a <b style="color:#eaf1fb">'+LEGAL_MAIL+'</b>, da inviare come conferma scritta.</p>'
+    +'<button id="wdYes" style="width:100%;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;border:none;padding:14px;border-radius:13px;cursor:pointer">Conferma il recesso</button>'
+    +'<button id="wdCopy" style="width:100%;margin-top:9px;background:none;border:1px solid rgba(150,185,240,.2);color:#cfdff5;font-weight:700;font-size:13.5px;padding:12px;border-radius:12px;cursor:pointer">Copia l\'indirizzo</button>'
+    +'<button id="wdNo" style="width:100%;margin-top:9px;background:none;border:none;color:#8aa3c2;font-weight:700;font-size:13.5px;padding:10px;cursor:pointer">Annulla</button></div>';
+  document.body.appendChild(o);
+  o.querySelector('#wdNo').onclick=()=>o.remove();
+  o.querySelector('#wdCopy').onclick=()=>{
+    try{ navigator.clipboard.writeText(LEGAL_MAIL); toast('Indirizzo copiato'); }
+    catch(_){ toast(LEGAL_MAIL); }
+  };
+  o.querySelector('#wdYes').onclick=async(ev)=>{
+    const btn=ev.currentTarget; if(btn.disabled) return;
+    btn.disabled=true; btn.style.opacity='.6';
+    let r=null;
+    try{
+      const {data,error}=await sb.rpc('request_pro_withdrawal');
+      if(error) throw error;
+      r=data||null;
+    }catch(_){ r=null; }
+    if(!r){
+      btn.disabled=false; btn.style.opacity='';
+      toast('Impossibile registrare la richiesta. Contatta '+LEGAL_MAIL);
+      return;
+    }
+    const lega=(myLeague&&myLeague.name)?myLeague.name:'';
+    const mail=(user&&user.email)?user.email:'';
+    const oggetto='Recesso da FantaCalcetto Pro'+(r.order_number!=null?(' \u2014 ordine n\u00b0'+r.order_number):'');
+    const corpo='Esercito il diritto di recesso dall\'acquisto di FantaCalcetto Pro e chiedo il rimborso integrale sul metodo di pagamento utilizzato.'
+      +'\n\nOrdine n\u00b0: '+(r.order_number!=null?r.order_number:'(vedi ricevuta)')
+      +(lega?('\nLega: '+lega):'')
+      +(mail?('\nEmail dell\'account: '+mail):'')
+      +'\nRichiesta registrata nell\'app il: '+fmtWd(r.requested_at,true);
+    const mailto='mailto:'+LEGAL_MAIL+'?subject='+encodeURIComponent(oggetto)+'&body='+encodeURIComponent(corpo);
+    o.remove();
+    toast('Richiesta di recesso registrata');
+    proWdRender(true);
+    location.href=mailto;
+  };
 }
 function proTellAdmin(){
-  const nm=(myLeague&&myLeague.name)?(' della lega '+myLeague.name):'';
-  const tx="FantaCalcetto Pro"+nm+": giocatori illimitati e tutte le stagioni. 29,90\u20ac a stagione per tutta la lega, non a testa. Ci passiamo? www.fantacalcettoitalia.it/#prezzi";
+  const nm=(myLeague&&myLeague.name)?(' per la lega '+myLeague.name):'';
+  const tx="Proposta"+nm+": FantaCalcetto Pro, con partecipanti illimitati e accesso a tutte le stagioni. 29,90 \u20ac a stagione per l'intera lega, IVA inclusa. Si attiva dall'app, in Impostazioni \u2192 FantaCalcetto Pro. www.fantacalcettoitalia.it/#prezzi";
   if(navigator.share){
     navigator.share({text:tx}).catch(()=>{});
     return;
   }
-  try{ navigator.clipboard.writeText(tx); toast('Messaggio copiato: incollalo nel gruppo'); }
+  try{ navigator.clipboard.writeText(tx); toast('Messaggio copiato'); }
   catch(_){ toast('Copia questo: '+tx.slice(0,40)+'\u2026'); }
 }
 
@@ -7021,7 +7121,7 @@ function maybePlanFullNotice(){
    una persona che puo' accorgersi del caso limite. Quando la si automatizzera'
    servira' PRIMA decidere cosa succede alle leghe orfane.
    ========================================================================== */
-const LEGAL_MAIL = 'accesso@fantacalcettoitalia.it';
+const LEGAL_MAIL = 'assistenza.fantacalcetto@gmail.com';
 
 function openLegal(url){
   try{ window.open(url, '_blank', 'noopener'); }
@@ -8574,6 +8674,63 @@ document.addEventListener('touchend',e=>{
   const b=edgeBackTarget();
   if(b){ try{ b.click(); }catch(_){ } }
 },{passive:true});
+
+/* INDIETRO SU ANDROID (sessione 68).
+   Su Android il gesto dal bordo e il tasto indietro appartengono al SISTEMA: in
+   una PWA senza cronologia chiudono l'app invece della pagina aperta, e lo swipe
+   qui sopra non arriva nemmeno (il sistema si prende il gesto).
+   Soluzione: finche' c'e' qualcosa da chiudere (le stesse pagine dello swipe,
+   edgeBackTarget) si tiene UNA voce di cronologia «sentinella». Il sistema la
+   consuma -> popstate -> si preme il nostro «‹ Indietro». Se la pagina si chiude
+   col pulsante, la sentinella si ritira da sola, in silenzio.
+   Se e' aperto il pannello di pagamento, «indietro» chiude quello e basta.
+   SOLO fuori da iOS: su iPhone lo swipe e' gia' gestito sopra, e una cronologia
+   attiverebbe anche quello di iOS, chiudendo la pagina due volte. */
+(function(){
+  let IOS=false;
+  try{
+    const ua=navigator.userAgent||'', pf=navigator.platform||'';
+    IOS=/iPhone|iPad|iPod/.test(ua)||/iPhone|iPad|iPod/.test(pf)||(/Mac/.test(pf)&&(navigator.maxTouchPoints||0)>1);
+  }catch(_){ }
+  if(IOS || !window.history || typeof history.pushState!=='function') return;
+  let silent=false, queued=false;
+  const hasSentinel=()=>{ try{ return !!(history.state && history.state.fcBack); }catch(_){ return false; } };
+  const lemonOpen=()=>!!document.querySelector('iframe[src*="lemonsqueezy.com"]');
+  function sync(){
+    queued=false;
+    if(silent) return;
+    const t=edgeBackTarget();
+    if(t && !hasSentinel()){
+      try{ history.pushState({fcBack:1},''); }catch(_){ }
+    }else if(!t && hasSentinel()){
+      silent=true;
+      try{ history.back(); }catch(_){ silent=false; }
+    }
+  }
+  function queue(){ if(!queued){ queued=true; setTimeout(sync,0); } }
+  window.addEventListener('popstate',()=>{
+    if(silent){ silent=false; queue(); return; }
+    if(lemonOpen()){
+      try{ window.LemonSqueezy.Url.Close(); }catch(_){ }
+      try{ proRestoreScroll(); }catch(_){ }
+      queue(); return;
+    }
+    const b=edgeBackTarget();
+    if(b){ try{ b.click(); }catch(_){ } }
+    queue();
+  });
+  const mo=new MutationObserver(queue);
+  function watch(){
+    ['proPage','bachecaPage','teamLineupPage','v-settings'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) mo.observe(el,{attributes:true,attributeFilter:['class']});
+    });
+    document.querySelectorAll('#v-settings .setpage').forEach(el=>mo.observe(el,{attributes:true,attributeFilter:['class']}));
+    queue();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',watch);
+  else watch();
+})();
 
 function setNav(id){
   if(id==='page-avvisi') loadPushStatus();   // il dato si legge solo entrando qui
