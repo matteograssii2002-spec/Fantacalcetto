@@ -57,6 +57,15 @@
      regolamento/privacy/termini, e cambiarlo vorrebbe dire alzare ?v= su
      quattro file invece che caricarne uno. */
   @media (max-width:1240px){ .topnav{display:none} .topbar .btn{margin-left:auto} }
+  /* Sessione 68: il pulsante Pro esce dalla vetrina. Da qui non si sa di che
+     lega sei, quindi il passaggio si fa solo dentro l'app. Stili qui e non in
+     sito.css per lo stesso motivo della regola sopra. */
+  .calc .cvat{color:var(--muted);font-size:12.5px;font-weight:600;margin:-2px 0 10px}
+  .calc .cwhere{display:flex;align-items:flex-start;gap:10px;text-align:left;max-width:380px;
+    margin:22px auto 0;padding:13px 15px;border-radius:14px;
+    background:rgba(255,194,61,.08);border:1px solid rgba(255,194,61,.24);font-size:13.5px;line-height:1.5}
+  .calc .cwhere .ic{font-size:18px;line-height:1.2;flex:none}
+  .calc .cwhere b{color:var(--gold-soft)}
 </style>
 
 <script type="application/ld+json">
@@ -493,7 +502,7 @@
 
       <div class="plan pro">
         <h3>FantaCalcetto <span class="gd">Pro</span></h3>
-        <div class="pcost"><s>€39,90</s>€29,90<small>a stagione, tutta la lega</small></div>
+        <div class="pcost"><s>€39,90</s>€29,90<small>a stagione, tutta la lega, IVA inclusa</small></div>
         <ul>
           <li><span class="tk">✓</span><span><b>Giocatori illimitati</b></span></li>
           <li><span class="tk">✓</span><span>Storico di <b>tutte le stagioni</b></span></li>
@@ -509,6 +518,7 @@
       <div class="ceye">Pro · una stagione</div>
       <div class="cwas"><s>€39,90</s><i>dalla prossima stagione</i></div>
       <div class="cbig">€29,90</div>
+      <div class="cvat">IVA inclusa</div>
       <div class="cwhat">Per <u>tutta la lega</u>, non a testa.</div>
       <div class="cwhen">Una stagione è <b>fino a 38 giornate</b>.</div>
 
@@ -525,10 +535,9 @@
         <span class="cflag"><b>✓</b> Nessun rinnovo automatico</span>
         <span class="cflag"><b>✓</b> Si paga una volta e basta</span>
       </div>
-      <button class="btn btn-gold" type="button" id="proBtn" onclick="proSoon()">Passa a Pro &nbsp;→</button>
-      <p class="csoon" id="proSoon">Il pagamento apre a breve.</p>
-
-      <p class="cnote">La prende l'organizzatore, una volta sola.</p>
+      <div class="cwhere"><span class="ic">📱</span>
+        <span>Pro si attiva <b>dentro l'app</b>, da <b>Impostazioni → FantaCalcetto Pro</b>. Lo fa l'organizzatore, una volta sola, e vale per tutta la lega.</span>
+      </div>
     </div>
 
     <div class="pfound rise">
@@ -596,7 +605,8 @@
       <h2>Domande frequenti</h2>
     </div>
     <div class="faq rise">
-      <details><summary>Quanto costa?</summary><div class="a"><p><b>Giocare è gratis</b>, per sempre e senza pubblicità: fino a 15 giocatori avete il gioco completo, pagellone e classifica compresi. <b>Pro costa €29,90 a stagione per tutta la lega</b> (non a testa) e serve se siete più di 15 o se volete tenere le stagioni passate. <a href="#prezzi">Vedi i prezzi</a>.</p></div></details>
+      <details><summary>Quanto costa?</summary><div class="a"><p><b>Giocare è gratis</b>, per sempre e senza pubblicità: fino a 15 giocatori avete il gioco completo, pagellone e classifica compresi. <b>Pro costa €29,90 a stagione per tutta la lega</b> (non a testa, IVA inclusa) e serve se siete più di 15 o se volete tenere le stagioni passate. <a href="#prezzi">Vedi i prezzi</a>.</p></div></details>
+      <details><summary>Come si passa a Pro?</summary><div class="a"><p><b>Dall'app, non dal sito.</b> L'organizzatore della lega apre <b>Impostazioni → FantaCalcetto Pro</b>: il passaggio vale subito per tutti i membri, senza che nessuno debba fare niente.</p></div></details>
       <details><summary>C'è una prova a tempo?</summary><div class="a"><p><b>No, e non serve.</b> La versione gratuita non è una prova: è il gioco completo, senza scadenza e senza carta di credito. Pro si prende solo quando serve davvero, cioè quando superate i 15 giocatori o quando volete rivedere le stagioni passate.</p></div></details>
       <details><summary>Quanti bisogna essere?</summary><div class="a"><p><b>Da dieci in su</b>, così le formazioni possono essere diverse tra loro. Con quindici è perfetto. La versione gratuita arriva <b>fino a 15 giocatori</b>; oltre serve Pro, e lì non c'è nessun tetto. Chi è già dentro <b>non viene mai tolto</b>.</p></div></details>
       <details><summary>Si può giocare senza scendere in campo?</summary><div class="a"><p><b>Sì.</b> Chi non gioca a calcetto — un amico, la fidanzata, chi è infortunato a lungo — entra come <b>solo manager</b>: ha la sua squadra, schiera la formazione e sta in classifica come tutti. Non prende voti, perché non gioca, e non compare nel sondaggio delle presenze. Se possa votare i giocatori lo decide l'organizzatore.</p></div></details>
@@ -706,13 +716,7 @@ document.getElementById('yy').textContent = new Date().getFullYear();
    grandezza. Senza JavaScript la pagina mostra comunque il
    valore di partenza (15 persone), che e' gia' corretto.
    ------------------------------------------------------------ */
-/* Il pulsante Pro c'e' ma il pagamento non e' ancora collegato: invece di un
-   tasto morto (che sembra rotto), il clic scopre una riga che dice come stanno
-   le cose. Quando ci sara' il checkout, qui va solo cambiata la destinazione. */
-function proSoon(){
-  var n = document.getElementById('proSoon');
-  if (n) n.classList.add('on');
-}
+/* (sessione 68) proSoon() tolta insieme al pulsante: Pro si attiva nell'app. */
 
 var pxR = document.getElementById('pxRange');
 if (pxR) {
