@@ -1748,6 +1748,307 @@
   /* titolo del pagellone in gradiente accent (come la hero) */
   .pag-title{background:linear-gradient(100deg,#ffffff,var(--accent-soft));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
   .pag-eyebrow.gold~.pag-title,.pag-title.gold{background:linear-gradient(100deg,#ffffff,var(--gold-soft));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+
+  /* ============================================================
+     SESSIONE 69 — caroselli home · filtro classifica · Pagellone
+     ============================================================ */
+
+  /* --- CAROSELLI HOME: niente scroll nativo, lo spostamento è un transform (vedi bindTrack) --- */
+  .bctrack{overflow:hidden!important;scroll-snap-type:none;touch-action:pan-y;-webkit-tap-highlight-color:transparent}
+  .bctrack>*{scroll-snap-align:none}
+  .bcdots i{cursor:pointer}
+
+  /* --- CLASSIFICA: periodo in cui la giornata scelta non esiste --- */
+  .sfilter button.na{opacity:.32}
+
+  /* --- PAGELLONE: sfondo vivo, colore per scena --- */
+  .pag-aura{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .pag-aura i{position:absolute;width:118vmax;height:118vmax;border-radius:50%;opacity:.46;
+    background:radial-gradient(closest-side,currentColor,transparent 72%);transition:color 1.1s ease;will-change:transform}
+  .pag-aura i:nth-child(1){left:-62vmax;top:-66vmax;color:#3f97ff;animation:pzDriftA 19s ease-in-out infinite alternate}
+  .pag-aura i:nth-child(2){right:-64vmax;bottom:-66vmax;color:#8c5cff;animation:pzDriftB 23s ease-in-out infinite alternate}
+  .pag-aura i:nth-child(3){left:calc(50% - 36vmax);top:calc(38% - 36vmax);width:72vmax;height:72vmax;opacity:.2;color:#2ec4ff;animation:pzDriftC 27s ease-in-out infinite alternate}
+  .pag-aura::after{content:"";position:absolute;inset:0;background:radial-gradient(130% 95% at 50% 44%,transparent 46%,rgba(3,8,18,.74))}
+  @keyframes pzDriftA{to{transform:translate3d(16vmax,12vmax,0) scale(1.08)}}
+  @keyframes pzDriftB{to{transform:translate3d(-14vmax,-16vmax,0) scale(1.1)}}
+  @keyframes pzDriftC{to{transform:translate3d(-16vmax,10vmax,0) scale(.88)}}
+  .pag[data-scene="you"] .pag-aura i:nth-child(2){color:#2ec4ff}
+  .pag[data-scene="you"] .pag-aura i:nth-child(3){color:#5b6cff}
+  .pag[data-scene="topflop"] .pag-aura i:nth-child(1){color:#2fd98a}
+  .pag[data-scene="topflop"] .pag-aura i:nth-child(2){color:#ff5d6b}
+  .pag[data-scene="topflop"] .pag-aura i:nth-child(3){color:#3f97ff}
+  .pag[data-scene="leaders"] .pag-aura i:nth-child(1){color:#2ec4ff}
+  .pag[data-scene="leaders"] .pag-aura i:nth-child(2){color:#a78bfa}
+  .pag[data-scene="leaders"] .pag-aura i:nth-child(3){color:#2fd98a}
+  .pag[data-scene="captains"] .pag-aura i:nth-child(1){color:#ffc23d}
+  .pag[data-scene="captains"] .pag-aura i:nth-child(2){color:#ff5d6b}
+  .pag[data-scene="captains"] .pag-aura i:nth-child(3){color:#ff9a3c}
+  .pag[data-scene="mvp"] .pag-aura i:nth-child(1){color:#ffc23d}
+  .pag[data-scene="mvp"] .pag-aura i:nth-child(2){color:#ff8a3c}
+  .pag[data-scene="mvp"] .pag-aura i:nth-child(3){color:#ffd470}
+  .pag[data-scene="winner"] .pag-aura i:nth-child(1){color:#ffc23d}
+  .pag[data-scene="winner"] .pag-aura i:nth-child(2){color:#3f97ff}
+  .pag[data-scene="winner"] .pag-aura i:nth-child(3){color:#ff9a3c}
+  .pag[data-scene="forma"] .pag-aura i:nth-child(1){color:#ff7a28}
+  .pag[data-scene="forma"] .pag-aura i:nth-child(2){color:#ff3d5a}
+  .pag[data-scene="forma"] .pag-aura i:nth-child(3){color:#ffb03c}
+  .pag[data-scene="standings"] .pag-aura i:nth-child(2){color:#5b6cff}
+  .pag[data-mode="season"] .pag-aura i:nth-child(1){color:#ffc23d}
+  .pag[data-mode="season"] .pag-aura i:nth-child(2){color:#3f97ff}
+  .pag[data-mode="season"] .pag-aura i:nth-child(3){color:#ff9a3c}
+  @media (prefers-reduced-motion:reduce){ .pag-aura i{animation:none} }
+
+  /* barra storie e chiusura: la ✕ scende sotto la barra (prima copriva l'ultimo segmento) */
+  .pag-seg{height:3px;background:rgba(255,255,255,.16)}
+  .pag-seg i{background:linear-gradient(90deg,#bfe0ff,#fff);box-shadow:0 0 10px rgba(160,210,255,.85)}
+  .pag[data-mode="season"] .pag-seg i{background:linear-gradient(90deg,#ffd470,#fff4d6);box-shadow:0 0 10px rgba(255,194,61,.8)}
+  .pag-close{top:calc(24px + env(safe-area-inset-top));background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  /* centrata con i margini automatici invece che con justify-content: se una scena
+     e' piu' alta dello schermo, con justify-content:center la parte alta finiva
+     fuori e non si poteva nemmeno scorrere per vederla */
+  .pag-card{overflow-x:hidden;padding-top:44px;justify-content:flex-start}
+  :where(.pag-card)>:first-child{margin-top:auto}
+  :where(.pag-card)>:last-child{margin-bottom:auto}
+
+  /* ingresso a cascata: ogni blocco della scena sale un istante dopo il precedente */
+  .pag-card.pop{animation:none}
+  :where(.pag-card.pop)>*{animation:pzRise .68s cubic-bezier(.2,.85,.25,1) both}
+  :where(.pag-card.pop)>:nth-child(2){animation-delay:.07s}
+  :where(.pag-card.pop)>:nth-child(3){animation-delay:.14s}
+  :where(.pag-card.pop)>:nth-child(4){animation-delay:.21s}
+  :where(.pag-card.pop)>:nth-child(5){animation-delay:.28s}
+  :where(.pag-card.pop)>:nth-child(6){animation-delay:.35s}
+  :where(.pag-card.pop)>:nth-child(7){animation-delay:.42s}
+  :where(.pag-card.pop)>:nth-child(n+8){animation-delay:.49s}
+  @keyframes pzRise{from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){ :where(.pag-card.pop)>*{animation:none} }
+
+  .pag-eyebrow{position:relative;z-index:2;display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;font-size:11.5px;letter-spacing:.18em;
+    background:rgba(126,194,255,.10);border:1px solid rgba(126,194,255,.24);margin-bottom:16px}
+  .pag-eyebrow.gold{background:rgba(255,194,61,.10);border-color:rgba(255,194,61,.32)}
+  .pag-eyebrow.fire{color:#ffb27a;background:rgba(255,122,40,.12);border-color:rgba(255,140,60,.34)}
+  .pag .pag-lb{background:rgba(6,16,34,.55);border-color:rgba(255,255,255,.08)}
+
+  .pz-glass{background:linear-gradient(165deg,rgba(255,255,255,.09),rgba(255,255,255,.025));border:1px solid rgba(255,255,255,.10);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 22px 40px -28px rgba(0,0,0,.9)}
+
+  /* figura intera su piedistallo di luce: nessun riquadro che la taglia */
+  .pz-stage{--c:126,194,255;position:relative;display:flex;align-items:flex-end;justify-content:center;width:100%;height:calc(var(--sh) + 8px);flex:none}
+  .pz-stage.g{--c:47,217,138} .pz-stage.r{--c:255,93,107} .pz-stage.au{--c:255,194,61} .pz-stage.v{--c:167,139,250} .pz-stage.cy{--c:56,200,255}
+  .pz-halo{position:absolute;left:50%;bottom:6px;width:calc(var(--sh) * 1.02);height:calc(var(--sh) * 1.02);transform:translateX(-50%);border-radius:50%;
+    background:radial-gradient(closest-side,rgba(var(--c),.46),rgba(var(--c),.13) 58%,transparent)}
+  .pz-floor{position:absolute;left:50%;bottom:0;width:calc(var(--sh) * .78);height:calc(var(--sh) * .12 + 6px);transform:translateX(-50%);border-radius:50%;
+    background:radial-gradient(closest-side,rgba(var(--c),.8),rgba(var(--c),.2) 60%,transparent)}
+  .pz-img{position:relative;z-index:1;display:block;flex:none;object-fit:contain;margin-bottom:4px;border-radius:0;filter:drop-shadow(0 8px 12px rgba(0,0,0,.5))}
+  .pz-noav{position:relative;z-index:1;display:grid;place-items:center;border-radius:14px;background:rgba(255,255,255,.08);color:var(--muted);font-weight:800;margin-bottom:4px}
+
+  /* --- copertina --- */
+  .pz-badge{font-size:11.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#d6e9ff;padding:7px 15px;border-radius:999px;
+    background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pz-cover{position:relative;width:232px;height:232px;display:grid;place-items:center;margin:4px 0 -40px}
+  .pz-rings{position:absolute;inset:0}
+  .pz-rings i{position:absolute;inset:0;border-radius:50%;border:1.5px dashed rgba(126,194,255,.34);animation:pzSpin 30s linear infinite}
+  .pz-rings i:nth-child(2){inset:24px;border:1px solid rgba(126,194,255,.16);animation:none}
+  .pz-rings i:nth-child(3){inset:44px;border:none;background:radial-gradient(closest-side,rgba(63,151,255,.5),transparent);animation:pzPulse 3.2s ease-in-out infinite}
+  @keyframes pzSpin{to{transform:rotate(360deg)}}
+  @keyframes pzPulse{0%,100%{transform:scale(.9);opacity:.7}50%{transform:scale(1.08);opacity:1}}
+  .pz-bignum{position:relative;font-family:'Bricolage Grotesque';font-weight:800;font-size:172px;line-height:1;letter-spacing:-.06em;padding:0 .06em;
+    background:linear-gradient(180deg,#ffffff 12%,#a6d4ff 52%,rgba(63,151,255,.12) 96%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+  .pz-bignum.emo{font-size:92px;background:none;-webkit-text-fill-color:initial;color:initial}
+  .pz-tw{position:relative}
+  .pz-title{font-family:'Bricolage Grotesque';font-weight:800;font-size:50px;letter-spacing:-.03em;line-height:1;text-transform:uppercase;
+    background:linear-gradient(100deg,#ffffff 36%,#9fd0ff 48%,#ffffff 60%);background-size:260% 100%;background-position:100% 0;
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:pzShine 3.8s ease-in-out .8s infinite}
+  @keyframes pzShine{0%{background-position:100% 0}55%,100%{background-position:0 0}}
+  .pz-md{position:relative;display:flex;align-items:center;gap:10px;margin-top:12px;font-family:'Bricolage Grotesque';font-weight:700;font-size:19px;color:#d6e7fb}
+  .pz-md i{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.4)}
+  .pz-chips{position:relative;display:flex;gap:10px;margin-top:22px}
+  .pz-chip{min-width:98px;padding:11px 16px;border-radius:18px;background:linear-gradient(160deg,rgba(255,255,255,.11),rgba(255,255,255,.03));
+    border:1px solid rgba(255,255,255,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+  .pz-chip b{display:block;font-family:'Bricolage Grotesque';font-size:28px;line-height:1;color:#fff}
+  .pz-chip span{display:block;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#a3bcdd;margin-top:5px}
+
+  /* --- la tua giornata --- */
+  .pz-team{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;max-width:100%;
+    font-family:'Bricolage Grotesque';font-weight:800;font-size:22px;letter-spacing:-.01em}
+  .pz-team .tlogo{width:30px;height:30px;flex:none}
+  .pz-team span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pz-score{position:relative;display:flex;align-items:baseline;justify-content:center;gap:6px;margin-top:2px}
+  .pz-score span{font-family:'Bricolage Grotesque';font-weight:800;font-size:80px;line-height:1;letter-spacing:-.04em;color:#fff;
+    text-shadow:0 0 34px rgba(63,151,255,.75),0 0 2px rgba(160,210,255,.6)}
+  .pz-score small{font-size:15px;font-weight:800;color:#8fb0d8;letter-spacing:.08em;text-transform:uppercase}
+  .pz-ranks{position:relative;display:flex;gap:8px;margin-top:12px;width:100%;max-width:350px}
+  .pz-rk{flex:1;min-width:0;padding:10px 8px;border-radius:16px}
+  .pz-rk b{display:flex;align-items:baseline;justify-content:center;gap:6px;font-family:'Bricolage Grotesque';font-size:25px;line-height:1}
+  .pz-rk b em{font-style:normal;font-family:'Hanken Grotesk',sans-serif;font-size:12px;font-weight:800}
+  .pz-rk b em.up{color:var(--green)} .pz-rk b em.dn{color:var(--red)}
+  .pz-rk span{display:block;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9fb8da;margin-top:5px}
+  .pz-pills{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:10px;max-width:350px}
+  .pz-pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#d8e6f7;padding:6px 11px;border-radius:999px;
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10)}
+  .pz-pill b{color:#fff;font-weight:800}
+  .pz-pill.ok{background:rgba(47,217,138,.12);border-color:rgba(47,217,138,.36);color:#c4f3dc}
+  .pz-pill.au{background:rgba(255,194,61,.12);border-color:rgba(255,194,61,.36);color:#ffe3a1}
+  .pz-rosa{position:relative;width:100%;max-width:350px;margin-top:12px;border-radius:20px;padding:3px 12px}
+  .pz-prow{display:flex;align-items:center;gap:10px;padding:6px 0;animation:pzRow .55s cubic-bezier(.2,.85,.25,1) both;animation-delay:calc(.3s + var(--d) * .07s)}
+  .pz-prow+.pz-prow{border-top:1px solid rgba(255,255,255,.06)}
+  @keyframes pzRow{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+  .pz-pav{flex:none;width:42px;height:48px;display:flex;align-items:flex-end;justify-content:center;border-radius:13px;
+    background:radial-gradient(90% 70% at 50% 88%,rgba(126,194,255,.32),rgba(126,194,255,.04))}
+  .pz-pav .pz-img{margin-bottom:1px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.45))}
+  .pz-pmid{flex:1;min-width:0;text-align:left}
+  .pz-pn{display:flex;align-items:center;gap:6px;min-width:0}
+  .pz-pn b{font-weight:800;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pz-pn span{flex:none;margin-left:auto;font-size:9.5px;font-weight:800;letter-spacing:.08em;color:#8fa9cc}
+  .pz-pn em{flex:none;font-style:normal;font-size:9.5px;font-weight:900;padding:2px 5px;border-radius:6px;background:rgba(255,194,61,.18);color:var(--gold-soft)}
+  .pz-pn em.mvp{background:linear-gradient(135deg,#ffd470,#ffb020);color:#2a1a00}
+  .pz-bar{height:5px;border-radius:5px;background:rgba(255,255,255,.07);margin-top:6px;overflow:hidden}
+  .pz-bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#1fbf78,#8ff0c0);transform-origin:left center;
+    animation:pzBar .9s cubic-bezier(.2,.85,.25,1) both;animation-delay:calc(.45s + var(--d) * .07s)}
+  .pz-bar.neg i{background:linear-gradient(90deg,#e0404f,#ff9aa3)}
+  @keyframes pzBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  .pz-pp{flex:none;min-width:46px;text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px}
+  .pz-pp.pos{color:#8ff0c0} .pz-pp.neg{color:#ff9aa3}
+  .pz-foot{position:relative;margin-top:10px;font-size:12px;color:#8fa9cc} .pz-foot b{color:#fff}
+
+  /* --- duelli (top/flop, capitani) --- */
+  .pz-duo{position:relative;display:flex;gap:12px;width:100%;max-width:350px}
+  .pz-duel{--c:47,217,138;position:relative;flex:1;min-width:0;border-radius:24px;padding:14px 8px;overflow:hidden;
+    background:linear-gradient(180deg,rgba(var(--c),.17),rgba(255,255,255,.02) 62%);border:1px solid rgba(var(--c),.4);
+    box-shadow:0 22px 46px -28px rgba(var(--c),.6),inset 0 1px 0 rgba(255,255,255,.09)}
+  .pz-duel.dn{--c:255,93,107} .pz-duel.au{--c:255,194,61}
+  .pz-tag{display:inline-block;font-size:10.5px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;color:rgb(var(--c));
+    padding:5px 10px;border-radius:999px;background:rgba(var(--c),.14);margin-bottom:6px;max-width:100%}
+  .pz-dn{font-family:'Bricolage Grotesque';font-weight:800;font-size:18px;margin-top:8px;padding:0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pz-dsub{font-size:11.5px;color:#9fb8da;margin-top:2px;padding:0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pz-dp{font-family:'Bricolage Grotesque';font-weight:800;font-size:40px;line-height:1;margin-top:6px;color:rgb(var(--c));text-shadow:0 0 24px rgba(var(--c),.55)}
+  .pz-du{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#8fa9cc;margin-top:4px}
+  .pz-arm{display:inline-grid;place-items:center;width:16px;height:16px;margin:-2px 6px 0 -3px;vertical-align:middle;border-radius:5px;
+    background:rgb(var(--c));color:#1b1300;font-size:10px;font-weight:900;letter-spacing:0;box-shadow:0 0 10px rgba(var(--c),.6)}
+  .pz-subh{position:relative;margin:18px 0 10px;font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#9fb8da}
+  .pz-reps{position:relative;display:flex;gap:9px;width:100%;max-width:350px}
+  .pz-rep{flex:1;min-width:0;border-radius:18px;padding:10px 6px 11px}
+  .pz-rl{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-soft);margin-bottom:4px}
+  .pz-rn{font-size:12.5px;font-weight:800;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pz-rp{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;color:#8ff0c0;margin-top:2px}
+
+  /* --- migliori di giornata --- */
+  .pz-lsub{position:relative;color:#a8bdd9;font-size:14.5px;margin:-4px 0 16px;max-width:320px}
+  .pz-leads{position:relative;display:flex;gap:9px;width:100%;max-width:358px;align-items:flex-end}
+  .pz-lead{--c:56,200,255;flex:1;min-width:0;border-radius:22px;padding:12px 6px 14px;display:flex;flex-direction:column;align-items:center;
+    background:linear-gradient(180deg,rgba(var(--c),.19),rgba(255,255,255,.02) 66%);border:1px solid rgba(var(--c),.36);
+    box-shadow:0 18px 40px -26px rgba(var(--c),.65),inset 0 1px 0 rgba(255,255,255,.08)}
+  .pz-lead.v{--c:167,139,250} .pz-lead.g{--c:47,217,138}
+  .pz-lead.mid{padding-bottom:30px}
+  .pz-lic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:19px;margin-bottom:4px;
+    background:rgba(var(--c),.18);box-shadow:0 0 0 1px rgba(var(--c),.4),0 0 20px rgba(var(--c),.45)}
+  .pz-ln{font-size:13px;font-weight:800;margin-top:6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pz-lv{display:flex;align-items:baseline;justify-content:center;gap:4px;margin-top:4px;max-width:100%}
+  .pz-lv b{font-family:'Bricolage Grotesque';font-weight:800;font-size:34px;line-height:1;color:#fff;text-shadow:0 0 18px rgba(var(--c),.85)}
+  .pz-lv span{font-size:10.5px;font-weight:700;color:#a8bdd9;white-space:nowrap}
+  .pz-ll{font-size:9.5px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:rgb(var(--c));margin-top:6px}
+
+  /* --- elenchi (podio, voti MVP) --- */
+  .pz-rows{position:relative;display:flex;flex-direction:column;gap:7px;width:100%;max-width:334px;margin-top:16px}
+  .pz-row{display:flex;align-items:center;gap:11px;padding:8px 14px;border-radius:16px;text-align:left}
+  .pz-row .md{font-size:20px;width:24px;text-align:center;flex:none}
+  .pz-row .av{flex:none;width:34px;height:40px;display:flex;align-items:flex-end;justify-content:center}
+  .pz-row .av .pz-img{margin-bottom:0;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
+  .pz-row .tlogo{width:28px;height:28px;flex:none}
+  .pz-row .nm{flex:1;min-width:0;font-weight:800;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pz-row .vl{flex:none;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14.5px;color:#dbe8f7}
+  .pz-row .vl small{font-family:'Hanken Grotesk',sans-serif;font-size:10.5px;color:#8fa9cc;margin-left:4px;font-weight:700}
+
+  /* --- MVP e vincitore: raggi di luce --- */
+  .pz-rays{position:absolute;left:50%;top:50%;width:min(440px,100vw);height:min(440px,100vw);margin:calc(min(440px,100vw) / -2) 0 0 calc(min(440px,100vw) / -2);border-radius:50%;pointer-events:none;z-index:0;
+    overflow:hidden;
+    -webkit-mask-image:radial-gradient(closest-side,#000 16%,transparent 100%);mask-image:radial-gradient(closest-side,#000 16%,transparent 100%)}
+  /* il cerchio che gira sta DENTRO un contenitore fermo: ruotando, un quadrato
+     occupa la sua diagonale e allargava la scena oltre lo schermo */
+  .pz-rays::before{content:"";position:absolute;inset:0;border-radius:50%;
+    background:repeating-conic-gradient(from 0deg,rgba(255,214,120,.22) 0deg 7deg,transparent 7deg 20deg);animation:pzSpin 46s linear infinite}
+  @media (prefers-reduced-motion:reduce){ .pz-rays::before,.pz-rings i{animation:none} }
+  .pz-mvp{position:relative;width:250px;height:214px;display:flex;align-items:flex-end;justify-content:center;margin-top:18px}
+  .pz-mvp .pz-stage{position:relative;z-index:1}
+  .pz-crown{position:absolute;z-index:2;left:50%;top:-24px;font-size:38px;line-height:1;filter:drop-shadow(0 4px 10px rgba(255,194,61,.6));animation:pzBob 2.8s ease-in-out infinite}
+  @keyframes pzBob{0%,100%{transform:translate(-50%,0) rotate(-8deg)}50%{transform:translate(-50%,-6px) rotate(-3deg)}}
+  .pz-mvpn{position:relative;font-family:'Bricolage Grotesque';font-weight:800;font-size:40px;letter-spacing:-.03em;line-height:1.02;margin-top:10px;
+    color:#ffe08a;text-shadow:0 0 30px rgba(255,194,61,.55);max-width:100%;overflow-wrap:anywhere}
+  .pz-mvps{position:relative;display:flex;align-items:center;gap:10px;margin-top:8px;font-size:14px;color:#e8d5a8}
+  .pz-mvps b{color:#fff;font-family:'Bricolage Grotesque';font-size:17px}
+  .pz-mvps i{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.35)}
+  .pz-win{position:relative;width:220px;height:170px;display:grid;place-items:center}
+  .pz-medal{position:relative;z-index:1;width:132px;height:132px;border-radius:50%;display:grid;place-items:center;
+    background:radial-gradient(circle at 34% 28%,#fff3c4,#ffc23d 42%,#a86a0a 100%);
+    box-shadow:0 0 0 7px rgba(255,194,61,.16),0 0 56px rgba(255,194,61,.55),inset 0 -8px 16px rgba(110,60,0,.45)}
+  .pz-medal-in{width:106px;height:106px;border-radius:50%;display:grid;place-items:center;
+    background:radial-gradient(circle at 50% 32%,#1f3a6c,#0a1830);box-shadow:inset 0 2px 10px rgba(0,0,0,.65)}
+  .pz-medal-in .tlogo{width:70px;height:70px}
+  .pz-medal-in .emo{font-size:54px;line-height:1}
+  .pz-medal .cup{position:absolute;right:-8px;top:-6px;font-size:32px;line-height:1;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5))}
+  .pz-wtag{position:relative;margin-top:4px;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-soft)}
+  .pz-wname{position:relative;font-family:'Bricolage Grotesque';font-weight:800;font-size:34px;letter-spacing:-.03em;line-height:1.05;margin-top:6px;color:#fff;
+    max-width:100%;overflow-wrap:anywhere}
+  .pz-wpts{position:relative;display:flex;align-items:baseline;justify-content:center;gap:6px;margin-top:4px}
+  .pz-wpts span{font-family:'Bricolage Grotesque';font-weight:800;font-size:58px;line-height:1;color:#ffd470;text-shadow:0 0 32px rgba(255,194,61,.6)}
+  .pz-wpts small{font-size:13px;font-weight:800;color:#d8c08a;letter-spacing:.1em;text-transform:uppercase}
+  .pz-last{position:relative;margin-top:12px;display:flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:6px;font-size:13px;color:#ffc7cc;
+    padding:9px 14px;border-radius:14px;background:rgba(255,93,107,.10);border:1px solid rgba(255,93,107,.28);max-width:334px}
+  .pz-last b{color:#fff}
+
+  /* --- striscia di forma --- */
+  .pz-flame{position:relative;font-size:56px;line-height:1;margin:-4px 0 6px;filter:drop-shadow(0 0 22px rgba(255,122,40,.85));animation:pzFlick 1.7s ease-in-out infinite}
+  @keyframes pzFlick{0%,100%{transform:scale(1) rotate(-3deg)}50%{transform:scale(1.09) rotate(3deg)}}
+  .pz-fsub{position:relative;color:#f0cbb0;font-size:14px;margin-bottom:14px;max-width:320px}
+  .pz-flist{position:relative;display:flex;flex-direction:column;gap:8px;width:100%;max-width:358px}
+  .pz-frow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:18px;text-align:left;
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);
+    animation:pzRow .55s cubic-bezier(.2,.85,.25,1) both;animation-delay:calc(.3s + var(--d) * .09s)}
+  .pz-frow.lead{background:linear-gradient(100deg,rgba(255,122,40,.24),rgba(255,61,90,.08));border-color:rgba(255,140,60,.5);box-shadow:0 16px 36px -22px rgba(255,110,40,.85)}
+  .pz-fpos{flex:none;width:16px;font-family:'Bricolage Grotesque';font-weight:800;font-size:18px;color:#ffb27a;text-align:center}
+  .pz-frow .tlogo{width:30px;height:30px;flex:none}
+  .pz-fnm{flex:1;min-width:0}
+  .pz-fnm b{display:block;font-family:'Bricolage Grotesque';font-weight:800;font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pz-fnm span{display:block;font-size:11px;color:#c9a88e;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pz-spark{flex:none;display:flex;align-items:flex-end;gap:3px;height:28px}
+  .pz-spark i{display:block;width:6px;border-radius:3px 3px 1px 1px;background:linear-gradient(180deg,#ffd36b,#ff6a3d);transform-origin:bottom center;
+    animation:pzBarY .7s cubic-bezier(.2,.85,.25,1) both;animation-delay:calc(.55s + var(--d) * .09s + var(--k) * .06s)}
+  @keyframes pzBarY{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+  .pz-fpt{flex:none;min-width:52px;text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;color:#ffe2c4}
+  .pz-frow.lead .pz-fpt{color:#fff;text-shadow:0 0 14px rgba(255,140,60,.85)}
+  @media (prefers-reduced-motion:reduce){ .pz-prow,.pz-frow,.pz-bar i,.pz-spark i,.pz-flame,.pz-crown,.pz-title{animation:none} }
+  /* telefoni bassi (iPhone SE, Android compatti): stesse scene, misure strette */
+  @media (max-height:700px){
+    .pag-card{padding-top:38px}
+    .pag-eyebrow{margin-bottom:10px}
+    .pz-cover{width:196px;height:196px;margin-bottom:-34px} .pz-bignum{font-size:146px}
+    .pz-score span{font-size:64px} .pz-mvp{height:190px;margin-top:14px}
+    .pz-ranks{margin-top:8px} .pz-rk{padding:7px 8px} .pz-rk b{font-size:21px} .pz-rk span{margin-top:3px}
+    .pz-pills{margin-top:8px} .pz-rosa{margin-top:9px}
+    .pz-prow{padding:4px 0} .pz-pav{width:36px;height:42px}
+    .pz-pav .pz-img{height:38px!important;max-width:36px!important}
+    .pz-foot{margin-top:7px}
+    .pz-duel{padding:12px 8px} .pz-dp{font-size:34px}
+    .pz-duel .pz-stage{--sh:104px!important} .pz-duel .pz-img{height:104px!important;max-width:98px!important}
+    .pz-subh{margin:12px 0 8px}
+  }
+  @media (max-height:600px){
+    .pag-card{padding-top:34px;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+    .pz-pills,.pz-foot{display:none}
+    .pz-team{font-size:19px} .pz-score span{font-size:52px}
+    .pz-prow{padding:3px 0} .pz-pav{width:32px;height:36px}
+    .pz-pav .pz-img{height:33px!important;max-width:31px!important}
+    .pz-duel .pz-stage{--sh:86px!important} .pz-duel .pz-img{height:86px!important;max-width:82px!important}
+    .pz-dn{font-size:16px;margin-top:4px} .pz-dp{font-size:30px}
+    .pz-rep .pz-stage{--sh:48px!important} .pz-rep .pz-img{height:48px!important;max-width:46px!important}
+    .pz-lead .pz-stage{--sh:72px!important} .pz-lead .pz-img{height:72px!important;max-width:68px!important}
+    .pz-mvp .pz-stage{--sh:140px!important} .pz-mvp .pz-img{height:140px!important;max-width:133px!important}
+    .pz-mvp{height:152px;margin-top:26px} .pz-crown{top:-20px;font-size:32px} .pz-mvpn{font-size:32px}
+    .pz-win{height:150px} .pz-medal{width:112px;height:112px} .pz-medal-in{width:90px;height:90px} .pz-medal-in .tlogo{width:58px;height:58px}
+    .pz-wname{font-size:28px} .pz-wpts span{font-size:46px}
+    .pz-cover{width:170px;height:170px;margin-bottom:-30px} .pz-bignum{font-size:124px} .pz-title{font-size:42px}
+  }
 </style>
 </head>
 <body>
@@ -2725,6 +3026,7 @@
 
 <!-- PAGELLONE DI FINE GIORNATA (storie a schermo intero) -->
 <div class="pag" id="pag">
+  <div class="pag-aura" aria-hidden="true"><i></i><i></i><i></i></div>
   <canvas class="pag-confetti" id="pagConfetti"></canvas>
   <div class="pag-prog" id="pagProg"></div>
   <button class="pag-close" onclick="closeRecap()" data-stop>✕</button>
@@ -2783,7 +3085,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='2.9';
+const APP_VERSION='3.0';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -3047,14 +3349,14 @@ function tutDemoCards(){
         sub:'Media 6,8 nelle ultime tre',
         facts:[rvFactHTML('\ud83d\udcc8','+0,4','Forma'), rvFactHTML('\ud83c\udfaf','2\u00b0','Tra gli attaccanti')],
         go:'Vedi la tua scheda'});
-      pc.style.display='block';
+      pc.style.display='flex';
     }
     if(mc){
       mc.innerHTML=hcardHTML({wm:'\ud83d\udc54', eye:'Da manager', ttl:'Terzo posto',
         sub:'A 12,5 punti dalla vetta',
         facts:[rvFactHTML('\ud83c\udfc6','3\u00b0','In classifica'), rvFactHTML('\ud83d\udc51','\u00d72','Re della giornata')],
         go:'Vedi la tua squadra'});
-      mc.style.display='block';
+      mc.style.display='flex';
     }
     if(w) w.style.display='block';
     const rw=document.getElementById('homeRvWrap'), rg=document.getElementById('homeRvGrid');
@@ -4920,20 +5222,80 @@ async function loadSeasonStandingsFor(id){
     toast('Per le stagioni passate serve stagioni_selettore.sql');
   }
 }
+/* ==========================================================================
+   GIORNATA SCELTA + CAMBIO STAGIONE (sessione 69)
+
+   Prima, cambiando stagione con una giornata aperta, la scelta veniva buttata
+   ma la tendina restava sul valore vecchio: nella Stagione 2 non esisteva, e
+   la barra si vedeva vuota. Ora vale una regola sola:
+   - «Classifica generale», marcatori e assist esistono ovunque: si passa
+     liberamente fra stagioni e All time;
+   - una giornata si porta dietro il suo numero: da «Giornata 1» della
+     Stagione 1 si arriva a «Giornata 1» della Stagione 2. Se nella stagione di
+     arrivo quella giornata non c'è, lì non si passa (lo swipe rimbalza e la
+     pillola è spenta);
+   - All time non ha giornate: solo generale, marcatori e assist.
+   Il gemello si cerca per numero di giornata (etichetta «Giornata N»), perché
+   la numerazione riparte da 1 a ogni stagione.
+   ========================================================================== */
+function lbMdSelected(){ return !!selStandingsMd && selStandingsMd!=='scorers' && selStandingsMd!=='assists'; }
+/* giornate consultabili di un periodo, dalla più vecchia. All time: nessuna. */
+function lbVisibleMds(period){
+  if(period===ALLTIME) return [];
+  const now=Date.now();
+  return matchdaysList.filter(m=> (m.status==='closed' || m.status==='open' || (m.kickoff && now>=new Date(m.kickoff).getTime()))
+      && (period==null || m.season_id==null || String(m.season_id)===String(period)) ).slice().sort((a,b)=>a.id-b.id);
+}
+function mdKey(m){
+  const x=/(\d+)/.exec((m&&m.label)||'');
+  return x?('n'+Number(x[1])):('l'+String((m&&m.label)||''));
+}
+/* la «stessa» giornata dentro un altro periodo, oppure null */
+function mdTwinIn(mdId, period){
+  if(period===ALLTIME) return null;
+  const m=matchdaysList.find(x=>String(x.id)===String(mdId)); if(!m) return null;
+  const vis=lbVisibleMds(period);
+  if(vis.some(x=>x.id===m.id)) return m;
+  const k=mdKey(m);
+  return vis.find(x=>mdKey(x)===k)||null;
+}
+function lbScopeAvail(period){ return !lbMdSelected() || !!mdTwinIn(selStandingsMd, period); }
+/* il periodo non ha la giornata aperta: si resta dove si è, con un rimbalzo */
+function lbScopeBlocked(period, dir){
+  const m=matchdaysList.find(x=>String(x.id)===String(selStandingsMd));
+  toast(period===ALLTIME
+    ? 'All time mostra classifica generale, marcatori e assist'
+    : ((m?m.label:'Questa giornata')+' non presente nella '+scopeLabel(period)));
+  if(navigator.vibrate){ try{ navigator.vibrate([6,40,6]); }catch(_){ } }
+  const el=document.getElementById('lbList');
+  if(dir && el && el.animate && !prefersReduce()){
+    try{ el.animate([{transform:'translateX(0)'},{transform:'translateX('+(dir*-18)+'px)'},{transform:'translateX(0)'}],
+                    {duration:300,easing:'cubic-bezier(.2,.8,.3,1)'}); }catch(_){ }
+  }
+}
+async function loadMdStandings(id){
+  const data=await mdRows(id);
+  mdStandings=(data||[]).map(r=>({manager_id:r.manager_id,team_name:r.team_name,player_name:r.player_name,points:Number(r.points)}));
+}
 async function setViewSeason(id){
   const n=Number(id);
   if(seasonLocked(n)){ openPro('storico'); return; }
   if(lbBusy || n===viewSeasonId) return;
+  const twin=lbMdSelected()?mdTwinIn(selStandingsMd,n):null;
+  if(lbMdSelected() && !twin){ lbScopeBlocked(n,0); return; }
   lbBusy=true;
   viewSeasonId=n;
   lbScope=null;                         // il periodo di marcatori/assist torna a seguire la stagione
   if(selStandingsMd!=='scorers' && selStandingsMd!=='assists')
-    selStandingsMd='';                  // la giornata scelta appartiene all'altra stagione
+    selStandingsMd=twin?String(twin.id):'';   // la giornata passa alla sua gemella
   mdStandings=[];
   renderLegaSeasonHead();               // feedback immediato, prima della rete
   const el=document.getElementById('lbList'); if(el) el.innerHTML=skeletonRows('lb',5);
   if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){ } }
-  try{ await loadSeasonStandingsFor(n); } finally { lbBusy=false; }
+  try{
+    await loadSeasonStandingsFor(n);
+    if(twin) await loadMdStandings(twin.id);
+  } finally { lbBusy=false; }
   renderLB();
 }
 /* Testata della pagina Lega: il titolo È il selettore. Con una sola stagione
@@ -4945,7 +5307,7 @@ async function setViewSeason(id){
    dire due cose diverse nello stesso momento. */
 function renderLegaSeasonHead(){
   const bar=document.getElementById('lbScopeBar'); if(!bar) return;
-  bar.innerHTML=scopeBarHTML(lbScopeNow(),'setLbScope');
+  bar.innerHTML=scopeBarHTML(lbScopeNow(),'setLbScope',lbScopeAvail);
   bar.style.display=bar.innerHTML?'flex':'none';
 }
 /* Elenco stagioni in un foglio a comparsa: scala a 20 stagioni senza diventare
@@ -4991,7 +5353,7 @@ function bindSeasonSwipe(){
     done=true;
     const list=cardScopeList();                                    // stagioni + «Sempre»
     const i=list.findIndex(v=>String(v)===String(lbScopeNow())), j=(dx<0)?i+1:i-1;
-    if(i>=0 && j>=0 && j<list.length) setLbScope(list[j]);
+    if(i>=0 && j>=0 && j<list.length) setLbScope(list[j], dx<0?1:-1);
   },{passive:true});
   el.addEventListener('touchend',()=>{ x0=y0=null; },{passive:true});
 }
@@ -5080,15 +5442,16 @@ function scopeLocked(scope){
 }
 /* Fila di pillole: una per stagione, piu' «Sempre». Con una stagione sola
    sparisce: sarebbe un interruttore fra due cose identiche. */
-function scopeBarHTML(cur,fn){
+function scopeBarHTML(cur,fn,avail){
   if(allSeasons.length<2) return '';
+  const na=v=>(avail && String(cur)!==String(v) && !avail(v))?' na':'';
   let h=allSeasons.map(s=>{
     const lk=seasonLocked(s.id);
-    return `<button class="${String(cur)===String(s.id)?'on':''}${lk?' lk':''}" onclick="${fn}(${s.id})">`
+    return `<button class="${String(cur)===String(s.id)?'on':''}${lk?' lk':''}${na(s.id)}" onclick="${fn}(${s.id})">`
       +`${lk?'\ud83d\udd12 ':''}Stagione ${s.number}</button>`;
   }).join('');
   const lka=scopeLocked(ALLTIME);
-  h+=`<button class="all ${cur===ALLTIME?'on':''}${lka?' lk':''}" onclick="${fn}('${ALLTIME}')">`
+  h+=`<button class="all ${cur===ALLTIME?'on':''}${lka?' lk':''}${na(ALLTIME)}" onclick="${fn}('${ALLTIME}')">`
     +`${lka?'\ud83d\udd12 ':''}All time</button>`;
   return h;
 }
@@ -5698,7 +6061,7 @@ function renderHomeBcards(force){
         prog: nextBarHTML(card.next),
         go:'Vedi la tua scheda'
       });
-      pc.style.display='block'; updateStatsWrap();
+      pc.style.display='flex'; updateStatsWrap();
     });
   } else { pc.style.display='none'; updateStatsWrap(); }
   // ---- Card MANAGER 👔: per tutti ----
@@ -5726,7 +6089,7 @@ function renderHomeBcards(force){
         prog: nextBarHTML(card.next),
         go:'Vedi la tua squadra'
       });
-      mc.style.display='block'; updateStatsWrap();
+      mc.style.display='flex'; updateStatsWrap();
     });
   } else { mc.style.display='none'; updateStatsWrap(); }
 }
@@ -7836,26 +8199,104 @@ function renderMini(){
   if(mine>=3) rows.push(miniRowHTML(standings[mine],mine,true));
   mb.innerHTML=rows.join('');
 }
-/* pallini del carosello statistiche: si aggiornano solo quando la scheda a
-   fuoco cambia davvero, altrimenti riscriverebbero il DOM a ogni pixel. */
-const _dotAt={};
+/* ==========================================================================
+   CAROSELLI DELLA HOME — «Statistiche» e «Rivivi» (sessione 69)
+
+   Prima erano uno scroll nativo con scroll-snap. Su iPhone lo snap ogni tanto
+   si inceppava: le card venivano ridisegnate dai dati in arrivo mentre il dito
+   era sopra, oppure l'overflow passava da hidden ad auto, e la card restava
+   ferma a meta' o tagliata. Ora lo spostamento lo governa l'app con un
+   transform: la card segue il dito e al rilascio arriva SEMPRE su una
+   posizione intera. Basta accennare: 40px o un colpo rapido cambiano card.
+   Stesso codice su iPhone e Android; su computer si cambia coi pallini.
+   ========================================================================== */
+const CAR_GAP=10;
+function carCards(tr){ return Array.prototype.filter.call(tr.children,c=>c.nodeType===1 && c.style.display!=='none'); }
+function carPaint(tr,dx,anim){
+  const st=tr._car; if(!st) return;
+  const cards=carCards(tr), n=cards.length;
+  st.idx=Math.max(0,Math.min(Math.max(0,n-1),st.idx||0));
+  const i=st.idx, d=Math.round(dx||0);
+  const off=d-i*CAR_GAP;
+  const tf=(i||d)?`translate3d(calc(${-i*100}% ${off<0?'- '+(-off):'+ '+off}px),0,0)`:'';
+  const tr_=(anim && !prefersReduce())?'transform .42s cubic-bezier(.22,.9,.28,1)':'none';
+  Array.prototype.forEach.call(tr.children,c=>{
+    if(c.nodeType!==1) return;
+    if(c.style.display==='none'){ c.style.transform=''; c.style.transition=''; return; }
+    c.style.transition=tr_; c.style.transform=tf;
+  });
+}
+function carDots(tr){
+  const st=tr._car, d=st&&document.getElementById(st.dotsId); if(!d) return;
+  const n=carCards(tr).length;
+  if(n<2){ d.innerHTML=''; return; }
+  if(d.children.length!==n) d.innerHTML=Array.from({length:n},(_,k)=>`<i data-i="${k}"></i>`).join('');
+  Array.prototype.forEach.call(d.children,(el,k)=>el.classList.toggle('on',k===st.idx));
+}
+function carGo(tr,idx){
+  const st=tr._car; if(!st) return;
+  st.idx=idx; carPaint(tr,0,true); carDots(tr);
+}
 function renderTrackDots(trackId,dotsId){
-  const tr=document.getElementById(trackId), d=document.getElementById(dotsId);
-  if(!tr||!d) return;
-  const cards=Array.prototype.filter.call(tr.children,c=>c.style.display!=='none');
-  if(cards.length<2){ d.innerHTML=''; _dotAt[trackId]=-1; tr.style.overflowX='hidden'; return; }
-  tr.style.overflowX='auto';
-  // il passo è la larghezza VERA della card + il gap: le card di «Rivivi» sono
-  // all'88% (la successiva si intravede), quindi non si può assumere clientWidth
-  const step=(cards[0].getBoundingClientRect().width||tr.clientWidth)+10;
-  const idx=Math.max(0,Math.min(cards.length-1,Math.round(tr.scrollLeft/(step||1))));
-  if(idx===_dotAt[trackId] && d.children.length===cards.length) return;
-  _dotAt[trackId]=idx;
-  d.innerHTML=cards.map((_,i)=>`<i class="${i===idx?'on':''}"></i>`).join('');
+  const tr=document.getElementById(trackId); if(!tr) return;
+  if(!tr._car) bindTrack(trackId,dotsId);
+  if(!tr._car) return;
+  if(!tr._car.drag) carPaint(tr,0,false);     // card nuove: tornano al loro posto senza scatti
+  carDots(tr);
 }
 function bindTrack(trackId,dotsId){
-  const tr=document.getElementById(trackId); if(!tr||tr._sc) return; tr._sc=1;
-  tr.addEventListener('scroll',()=>{ renderTrackDots(trackId,dotsId); },{passive:true});
+  const tr=document.getElementById(trackId); if(!tr||tr._car) return;
+  const st=tr._car={idx:0,dotsId:dotsId,drag:false};
+  tr.style.overflowX='';
+  let on=false, lock=0, x0=0, y0=0, dx=0, lx=0, lt=0, v=0;
+  tr.addEventListener('touchstart',e=>{
+    on=false;
+    if(e.touches.length!==1 || carCards(tr).length<2) return;
+    on=true; lock=0; dx=0; v=0;
+    x0=lx=e.touches[0].clientX; y0=e.touches[0].clientY; lt=performance.now();
+  },{passive:true});
+  tr.addEventListener('touchmove',e=>{
+    if(!on) return;
+    const t=e.touches[0], mx=t.clientX-x0, my=t.clientY-y0;
+    if(!lock){
+      if(Math.abs(mx)<7 && Math.abs(my)<7) return;
+      lock=(Math.abs(mx)>Math.abs(my))?1:-1;          // deciso al primo movimento vero
+      if(lock===1) st.drag=true;
+    }
+    if(lock!==1) return;                                // scroll verticale: lo fa la pagina
+    if(e.cancelable) e.preventDefault();
+    const n=carCards(tr).length;
+    dx=mx;
+    if((st.idx<=0 && dx>0) || (st.idx>=n-1 && dx<0)) dx=dx*.3;   // bordo: resistenza elastica
+    const now=performance.now();
+    if(now>lt) v=(t.clientX-lx)/(now-lt);
+    lx=t.clientX; lt=now;
+    carPaint(tr,dx,false);
+  },{passive:false});
+  const finish=()=>{
+    if(!on) return; on=false;
+    if(lock!==1) return;
+    st.drag=false;
+    const n=carCards(tr).length, w=tr.clientWidth||320;
+    const lim=Math.min(40,w*.12), fresh=(performance.now()-lt)<100;
+    let go=0;
+    if(dx<=-lim || (fresh && v<-.3 && dx<-8)) go=1;
+    else if(dx>=lim || (fresh && v>.3 && dx>8)) go=-1;
+    const to=Math.max(0,Math.min(n-1,st.idx+go));
+    tr._noClick=Date.now()+450;                         // il rilascio di un trascinamento non apre la card
+    if(to!==st.idx && navigator.vibrate){ try{ navigator.vibrate(6); }catch(_){ } }
+    carGo(tr,to);
+  };
+  tr.addEventListener('touchend',finish,{passive:true});
+  tr.addEventListener('touchcancel',finish,{passive:true});
+  tr.addEventListener('click',e=>{
+    if(tr._noClick && Date.now()<tr._noClick){ e.stopPropagation(); e.preventDefault(); }
+  },true);
+  const d=document.getElementById(dotsId);
+  if(d && !d._car){ d._car=1; d.addEventListener('click',e=>{
+    const k=e.target && e.target.dataset ? e.target.dataset.i : null;
+    if(k!=null) carGo(tr,Number(k));
+  }); }
 }
 function renderBcDots(){ renderTrackDots('homeBcardTrack','homeBcardDots'); }
 function bindBcTrack(){ bindTrack('homeBcardTrack','homeBcardDots'); }
@@ -8415,15 +8856,17 @@ function renderLB(){
   renderLegaSeasonHead(); bindSeasonSwipe();
   const sel=document.getElementById('mdSelect');
   if(sel){
-    const cur=sel.value;
-    const now=Date.now();
-    const visMds=matchdaysList.filter(m=> (m.status==='closed' || m.status==='open' || (m.kickoff && now>=new Date(m.kickoff).getTime()))
-        && (period===ALLTIME || period==null || m.season_id==null || m.season_id===period) ).slice().sort((a,b)=>a.id-b.id);
+    // All time non ha giornate: generale, marcatori e assist e basta
+    const visMds=lbVisibleMds(period);
     sel.innerHTML='<option value="">\ud83c\udfc6 Classifica generale</option>'
       +'<option value="scorers">\u26bd Classifica marcatori</option>'
       +'<option value="assists">\ud83d\udc5f Classifica assist</option>'
-      +visMds.map(m=>`<option value="${m.id}">${esc(mdOptLabel(m,period))}</option>`).join('');
-    sel.value=cur||selStandingsMd||'';
+      +visMds.map(m=>`<option value="${m.id}">${esc(m.label)}</option>`).join('');
+    // la tendina dice SEMPRE cosa si sta guardando: una giornata che nel
+    // periodo non esiste torna alla classifica generale (mai una barra vuota)
+    if(lbMdSelected() && !visMds.some(m=>String(m.id)===String(selStandingsMd))){ selStandingsMd=''; mdStandings=[]; }
+    sel.value=selStandingsMd||'';
+    if(sel.selectedIndex<0) sel.selectedIndex=0;
   }
   const el=document.getElementById('lbList'), hint=document.getElementById('lbHint');
   const lr=document.getElementById('legaRecapWrap');
@@ -8478,23 +8921,24 @@ function lbScopeNow(){
   if(lbScope===ALLTIME) return ALLTIME;
   return (viewSeasonId!=null)?viewSeasonId:displaySeasonId;
 }
-function setLbScope(v){
+function setLbScope(v, dir){
   const n=(v===ALLTIME)?ALLTIME:Number(v);
-  if(scopeLocked(n)){ openPro('storico'); return; }
   if(String(n)===String(lbScopeNow())) return;
-  if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){ } }
-  // marcatori e assist sopravvivono al cambio periodo; una singola giornata no,
-  // perche' appartiene alla stagione che si sta lasciando
-  selStandingsMd=(selStandingsMd==='scorers'||selStandingsMd==='assists')?selStandingsMd:'';
-  mdStandings=[];
+  if(scopeLocked(n)){ openPro('storico'); return; }
+  // una giornata passa solo dove esiste la sua gemella
+  if(lbMdSelected() && !mdTwinIn(selStandingsMd,n)){ lbScopeBlocked(n,dir||0); return; }
   if(n===ALLTIME){
+    if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){ } }
     lbScope=ALLTIME;
     renderLB();
     if(allTimeStandings==null) loadAllTimeStandings().then(()=>{ if(lbScope===ALLTIME) renderLB(); });
     return;
   }
+  if(n!==viewSeasonId){ setViewSeason(n); return; }
+  // da All time alla stagione che si stava gia' guardando
+  if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){ } }
   lbScope=null;
-  if(n!==viewSeasonId) setViewSeason(n); else renderLB();
+  renderLB();
 }
 /* una riga della classifica marcatori/assist */
 function topRowHTML(t,i,emo){
@@ -8545,7 +8989,8 @@ function renderTopList(kind){
       </div>
       <div class="tp-v"><b>${k.val}</b><span>${ass?'assist':(k.val===1?'gol':'gol')}</span></div>
     </div>`;
-  el.innerHTML=list.map((t,i)=>topRowHTML(t,i,emo)).join('');
+  // il primo e' gia' nel riquadro grande qui sopra: l'elenco parte dal 2
+  el.innerHTML=list.slice(1).map((t,i)=>topRowHTML(t,i+1,emo)).join('');
 }
 async function loadMatchdaysList(){
   const {data}=await sb.from('matchdays').select('id,label,kickoff,status,closed_at,season_id').order('id',{ascending:false});
@@ -8557,10 +9002,7 @@ async function onSelectStandingsMd(){
   const sel=document.getElementById('mdSelect');
   selStandingsMd=sel.value||'';
   const isTop=(selStandingsMd==='scorers'||selStandingsMd==='assists');
-  if(selStandingsMd && !isTop){
-    const data=await mdRows(selStandingsMd);
-    mdStandings=(data||[]).map(r=>({manager_id:r.manager_id,team_name:r.team_name,player_name:r.player_name,points:Number(r.points)}));
-  }
+  if(selStandingsMd && !isTop) await loadMdStandings(selStandingsMd);
   if(isTop) await loadSeasonNumbers();
   renderLB();
 }
@@ -9376,22 +9818,35 @@ async function loadRecapExtra(md){
     if(cTop) ex.captains={top:cTop, flop:(cFlop&&cFlop!==cTop)?cFlop:null};
   }catch(_){ /* degrada: scene saltate */ }
 
-  // ---------- STRISCIA DI FORMA (ultime giornate chiuse, inclusa questa) ----------
+  // ---------- STRISCIA DI FORMA (ultime giornate chiuse DELLA STESSA STAGIONE, inclusa questa) ----------
+  // Sessione 69: prima contava le ultime tre giornate chiuse di sempre, quindi
+  // all'inizio della Stagione 2 sommava anche le ultime della Stagione 1.
   try{
-    const closed=(matchdaysList||[]).filter(m=>m.status==='closed').sort((a,b)=>a.id-b.id);
+    const mdObj=(matchdaysList||[]).find(m=>m.id===md);
+    const sameSeason=mdObj ? (m=>String(m.season_id)===String(mdObj.season_id)) : (()=>true);
+    const closed=(matchdaysList||[]).filter(m=>m.status==='closed' && sameSeason(m)).sort((a,b)=>a.id-b.id);
     const idx=closed.findIndex(m=>m.id===md);
     const end=idx<0?closed.length:idx+1;
     const upto=closed.slice(Math.max(0,end-3),end);
     if(upto.length>=2){
       const agg={};
-      for(const m of upto){
-        const gs=await mdRows(m.id);
-        (gs||[]).forEach(r=>{ const a=agg[r.manager_id]=agg[r.manager_id]||{team_name:r.team_name,total:0,n:0,last:0}; a.total+=Number(r.points)||0; a.n++; a.last=Number(r.points)||0; });
-      }
+      const all=await Promise.all(upto.map(m=>mdRows(m.id).catch(()=>[])));
+      all.forEach(gs=>(gs||[]).forEach(r=>{
+        const a=agg[r.manager_id]=agg[r.manager_id]||{manager_id:r.manager_id,team_name:r.team_name,total:0,n:0,last:0,pts:[]};
+        const v=Number(r.points)||0; a.total+=v; a.n++; a.last=v; a.pts.push(v);
+      }));
       const arr=Object.values(agg).filter(a=>a.n===upto.length).sort((a,b)=>b.total-a.total);
-      if(arr.length) ex.forma={count:upto.length, top:arr.slice(0,3)};
+      const sn=(mdObj && mdObj.season_id!=null)?seasonById(mdObj.season_id):null;
+      if(arr.length) ex.forma={count:upto.length, top:arr.slice(0,3), seasonNo:sn?sn.number:null};
     }
   }catch(_){}
+  // la classifica «adesso» e la posizione in classifica sono quelle della
+  // stagione a cui punta l'app: per una giornata di un'altra stagione non valgono
+  try{
+    const mdObj=(matchdaysList||[]).find(m=>m.id===md);
+    ex.sameSeason = !mdObj || displaySeasonId==null || mdObj.season_id==null || String(mdObj.season_id)===String(displaySeasonId);
+    if(!ex.sameSeason && ex.mine){ ex.mine.posSeason=null; ex.mine.deltaSeason=0; }
+  }catch(_){ ex.sameSeason=true; }
   return ex;
 }
 function buildRecapCards(d, ex){
@@ -9404,7 +9859,7 @@ function buildRecapCards(d, ex){
   if(d.mvp) c.push({t:'mvp'});       // 🏆 MVP della giornata (solo l'MVP, se votato)
   if(d.winner) c.push({t:'winner'}); // 🏆 vincitore di giornata + cucchiaio di legno
   if(ex.forma) c.push({t:'forma'});                                 // striscia di forma
-  if(standings.length) c.push({t:'standings'});                     // gran finale
+  if(standings.length && ex.sameSeason!==false) c.push({t:'standings'});   // gran finale (solo stagione di riferimento)
   c.push({t:'share'});
   return c;
 }
@@ -9426,6 +9881,8 @@ function showRecapCard(i){
   const card=recapCards[i], el=document.getElementById('pagCard');
   const season=(recapMode==='season');
   el.innerHTML= season ? renderSeasonHTML(card) : renderRecapHTML(card, recapData);
+  const pg=document.getElementById('pag');
+  if(pg){ pg.dataset.scene=card.t; pg.dataset.mode=season?'season':'md'; }   // colori di sfondo della scena
   el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
   el.scrollTop=0;
   const BIG=['mvp','verdict','winner','schamp','spalmares'];
@@ -9444,6 +9901,28 @@ function showRecapCard(i){
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function av(name,px){ return avatarImg(name,px); }
 
+/* ==========================================================================
+   PAGELLONE — PEZZI GRAFICI (sessione 69)
+
+   Gli avatar sono personaggi a figura intera (circa 3:5). Dentro un riquadro
+   quadrato con overflow:hidden venivano tagliati sui piedi o sulla testa.
+   Qui non c'e' piu' nessun riquadro che taglia: la figura sta in piedi su un
+   piedistallo di luce, con altezza fissa in px e larghezza libera, e se un
+   avatar fosse piu' largo del previsto `object-fit:contain` lo fa rientrare.
+   ========================================================================== */
+function pzFig(name,h){
+  const a=avatars.find(x=>x.name===name);
+  if(!a) return `<span class="pz-noav" style="height:${h}px;width:${Math.round(h*.62)}px;font-size:${Math.round(h*.3)}px">?</span>`;
+  return `<img class="pz-img" src="${a.url}" alt="" draggable="false" style="height:${h}px;width:auto;max-width:${Math.round(h*.95)}px">`;
+}
+function pzStage(name,h,tone){
+  return `<div class="pz-stage ${tone||''}" style="--sh:${h}px"><span class="pz-halo"></span><span class="pz-floor"></span>${pzFig(name,h)}</div>`;
+}
+function pzLogo(managerId,px){
+  const n=managerId?teamLogoName(managerId):'';
+  return n?logoImg(n,px):'';
+}
+
 function renderRecapHTML(card, d){
   const lg=(myLeague&&myLeague.name)?myLeague.name:'FantaCalcetto';
   const ex=recapExtra||{};
@@ -9454,13 +9933,19 @@ function renderRecapHTML(card, d){
         <div class="pag-hint">swipe giù per chiudere</div>`;
     case 'cover':{
       const n=d.numbers||{};
-      const teaser=(n.present>0||n.goals_total>0)
-        ? `<div class="pag-cover-teaser"><span><b>${n.present||0}</b> in campo</span><i></i><span><b>${n.goals_total||0}</b> gol</span></div>` : '';
-      return `<div class="pag-cover-badge">${esc(lg)}</div>
-        <div class="pag-cover-glow"><div class="pag-cover-emoji">📊</div></div>
-        <h2 class="pag-title">Pagellone</h2><div class="pag-cover-md">${esc(d.label||'Giornata')}</div>
-        ${teaser}
-        <div class="pag-hint">tocca per iniziare →</div>`;
+      const mdm=(matchdaysList||[]).find(m=>m.id===recapMd);
+      const when=(mdm&&mdm.kickoff)?rvShortDate(new Date(mdm.kickoff)):'';
+      const num=((/(\d+)/.exec(d.label||''))||[])[1]||'';
+      const chips=[];
+      if(n.present>0)     chips.push(`<div class="pz-chip"><b>${n.present}</b><span>in campo</span></div>`);
+      if(n.goals_total>0) chips.push(`<div class="pz-chip"><b>${n.goals_total}</b><span>${n.goals_total===1?'gol':'gol'}</span></div>`);
+      return `<div class="pz-badge">${esc(lg)}</div>
+        <div class="pz-cover"><div class="pz-rings"><i></i><i></i><i></i></div>
+          ${num?`<div class="pz-bignum">${num}</div>`:`<div class="pz-bignum emo">⚽</div>`}</div>
+        <div class="pz-tw"><h2 class="pz-title">Pagellone</h2></div>
+        <div class="pz-md">${esc(d.label||'Giornata')}${when?`<i></i>${esc(when)}`:''}</div>
+        ${chips.length?`<div class="pz-chips">${chips.join('')}</div>`:''}
+        <div class="pag-hint">Tocca per iniziare</div>`;
     }
     case 'numbers':{
       const n=d.numbers;
@@ -9485,62 +9970,80 @@ function renderRecapHTML(card, d){
     }
     case 'topflop':{
       const t=d.top_player, f=d.flop_player, R=ex.reparti||{};
-      const duo=t?`<div class="pag-duo">
-          <div class="pag-duo-col up"><div class="pag-duo-tag">🔝 Top</div>
-            <div class="pag-av sm">${av(t.avatar,84)}</div><div class="pag-duo-name">${esc(t.name)}</div>
-            <div class="pag-duo-pts" data-count="${t.pts}" data-dec="1">0</div></div>
-          ${f?`<div class="pag-duo-col down"><div class="pag-duo-tag">🥶 Flop</div>
-            <div class="pag-av sm">${av(f.avatar,84)}</div><div class="pag-duo-name">${esc(f.name)}</div>
-            <div class="pag-duo-pts" data-count="${f.pts}" data-dec="1">0</div></div>`:''}
-        </div>`:'';
-      const rep=(lbl,o)=>o?`<div class="rep-cell"><div class="rep-lbl">${lbl}</div><div class="rep-av">${av(o.avatar,40)}</div><div class="rep-nm">${esc(o.name)}</div><div class="rep-pt">${o.score.toFixed(1)}</div></div>`:'';
-      const reparti=(R.att||R.dif||R.por)?`<div class="rep-row">${rep('⚽ Att',R.att)}${rep('🛡️ Dif',R.dif)}${rep('🧤 Por',R.por)}</div>`:'';
-      return `<div class="pag-eyebrow">Top, Flop & Reparti</div>${duo}${reparti}`;
+      const duel=(o,up)=>`<div class="pz-duel ${up?'':'dn'}">
+          <div class="pz-tag">${up?'▲ Top':'▼ Flop'}</div>
+          ${pzStage(o.avatar,118,up?'g':'r')}
+          <div class="pz-dn">${esc(o.name)}</div>
+          <div class="pz-dp" data-count="${o.pts}" data-dec="1">0</div>
+          <div class="pz-du">punti</div></div>`;
+      const duo=t?`<div class="pz-duo">${duel(t,true)}${f?duel(f,false):''}</div>`:'';
+      const rep=(lbl,o,tone)=>o?`<div class="pz-rep pz-glass"><div class="pz-rl">${lbl}</div>
+          ${pzStage(o.avatar,62,tone)}<div class="pz-rn">${esc(o.name)}</div><div class="pz-rp">${o.score.toFixed(1)}</div></div>`:'';
+      const has=(R.att||R.dif||R.por);
+      return `<div class="pag-eyebrow">Top, Flop &amp; Reparti</div>${duo}
+        ${has?`<div class="pz-subh">Migliori per reparto</div>
+        <div class="pz-reps">${rep('Attacco',R.att,'cy')}${rep('Difesa',R.dif,'v')}${rep('Porta',R.por,'g')}</div>`:''}`;
     }
     case 'leaders':{
       const L=ex.leaders||{};
-      const cell=(ic,lbl,o,unit)=>o?`<div class="lead-cell"><div class="lead-ic">${ic}</div><div class="lead-av">${av(o.avatar,64)}</div><div class="lead-nm">${esc(o.name)}</div><div class="lead-val">${o.val}<span>${unit}</span></div><div class="lead-lbl">${lbl}</div></div>`:'';
+      const cell=(ic,lbl,o,unit,tone,mid)=>o?`<div class="pz-lead ${tone}${mid?' mid':''}">
+          <div class="pz-lic">${ic}</div>${pzStage(o.avatar,88,tone)}
+          <div class="pz-ln">${esc(o.name)}</div>
+          <div class="pz-lv"><b data-count="${o.val}">0</b><span>${unit}</span></div>
+          <div class="pz-ll">${lbl}</div></div>`:'';
       const wallUnit=L.wall?(L.wall.val===1?'gol preso':'gol presi'):'';
       const cells=[
-        cell('⚽','Bomber',L.bomber,'gol'),
-        cell('🎯','Assist-man',L.assistman,(L.assistman&&L.assistman.val===1)?'assist':'assist'),
-        cell('🧤','Muro',L.wall,wallUnit)
+        cell('⚽','Bomber',L.bomber,'gol','cy',false),
+        cell('🎯','Assist-man',L.assistman,'assist','v',true),
+        cell('🧤','Muro',L.wall,wallUnit,'g',false)
       ].filter(Boolean).join('');
       return `<div class="pag-eyebrow">I migliori di giornata</div>
-        <div class="pag-sub" style="margin-bottom:14px">Più gol, più assist e la porta meno battuta</div>
-        <div class="lead-row">${cells}</div>`;
+        <div class="pz-lsub">Più gol, più assist e la porta meno battuta</div>
+        <div class="pz-leads">${cells}</div>`;
     }
     case 'you':{
       const m=ex.mine||{};
-      const dT=m.deltaSeason>0?`<span class="you-up">▲ +${m.deltaSeason}</span>`:(m.deltaSeason<0?`<span class="you-dn">▼ ${Math.abs(m.deltaSeason)}</span>`:'');
-      const pos=m.posSeason?`${m.posSeason}º in classifica ${dT}`:'';
-      const rk=(m.rank&&m.nteams)?`${m.rank}º di giornata`:'';
-      const ord={a1:'ATT',a2:'ATT',a3:'ATT',d1:'DIF',d2:'DIF',d3:'DIF',g1:'POR'};
-      const rosa=(m.rosa||[]).map(p=>`<div class="you-prow"><div class="you-pav">${av(p.avatar,32)}</div>
-          <div class="you-pn">${esc(p.name)}${p.cap?' ©️':''}${p.mvp?' 🏆':''}<span>${ord[p.slot]||''}</span></div>
-          <div class="you-pp ${p.score>=0?'pos':'neg'}">${p.score.toFixed(1)}</div></div>`).join('');
-      const capL=m.captain?`<div class="you-chip">©️ <b>${esc(m.captain.name)}</b> · ${m.captain.score.toFixed(1)} pt</div>`:'';
-      const winL=(m.realWins||0)>0?`<div class="you-chip ok">🏆 ${m.realWins} dei tuoi ${m.realWins===1?'ha vinto':'hanno vinto'}</div>`:'';
+      const ROLE={a1:'ATT',a2:'ATT',a3:'ATT',d1:'DIF',d2:'DIF',d3:'DIF',g1:'POR'};
+      const logo=pzLogo(profile&&profile.id,30);
+      const dT=m.deltaSeason>0?`<em class="up">▲${m.deltaSeason}</em>`:(m.deltaSeason<0?`<em class="dn">▼${Math.abs(m.deltaSeason)}</em>`:'');
+      const ranks=[];
+      if(m.rank) ranks.push(`<div class="pz-rk pz-glass"><b>${m.rank}°</b><span>${m.nteams?('di giornata su '+m.nteams):'di giornata'}</span></div>`);
+      if(m.posSeason) ranks.push(`<div class="pz-rk pz-glass"><b>${m.posSeason}°${dT}</b><span>in classifica</span></div>`);
+      const rosaArr=m.rosa||[];
+      const maxAbs=Math.max(1,...rosaArr.map(p=>Math.abs(p.score)));
+      const rosa=rosaArr.map((p,i)=>{
+        const w=Math.max(4,Math.round(Math.abs(p.score)/maxAbs*100));
+        return `<div class="pz-prow" style="--d:${i}">
+          <div class="pz-pav">${pzFig(p.avatar,44)}</div>
+          <div class="pz-pmid">
+            <div class="pz-pn"><b>${esc(p.name)}</b>${p.cap?'<em>C</em>':''}${p.mvp?'<em class="mvp">MVP</em>':''}<span>${ROLE[p.slot]||''}</span></div>
+            <div class="pz-bar${p.score<0?' neg':''}"><i style="width:${w}%"></i></div>
+          </div>
+          <div class="pz-pp ${p.score>=0?'pos':'neg'}">${p.score.toFixed(1)}</div></div>`;
+      }).join('');
+      const pills=[];
+      if(m.captain) pills.push(`<span class="pz-pill au">© <b>${esc(m.captain.name)}</b> ${m.captain.score.toFixed(1)} pt</span>`);
+      if((m.realWins||0)>0) pills.push(`<span class="pz-pill ok">🏆 ${m.realWins} ${m.realWins===1?'dei tuoi ha vinto':'dei tuoi hanno vinto'}</span>`);
       return `<div class="pag-eyebrow">La tua giornata</div>
-        <div class="you-team">${esc(m.teamName||'')}</div>
-        <div class="pag-bigline" style="color:var(--accent-soft)"><span data-count="${m.points}" data-dec="1">0</span></div>
-        <div class="pag-ptlabel">punti di giornata</div>
-        <div class="you-meta">${[rk,pos].filter(Boolean).join(' · ')}</div>
-        <div class="you-chips">${capL}${winL}</div>
-        <div class="you-rosa">${rosa}</div>
-        <div class="you-mod">modulo ${esc(m.module||'')}${m.moduleBonus?` (${m.moduleBonus>0?'+':''}${m.moduleBonus})`:''} · totale <b>${(m.points!=null?m.points:0).toFixed(1)}</b></div>`;
+        <div class="pz-team">${logo}<span>${esc(m.teamName||'')}</span></div>
+        <div class="pz-score"><span data-count="${m.points}" data-dec="1">0</span><small>pt</small></div>
+        ${ranks.length?`<div class="pz-ranks">${ranks.join('')}</div>`:''}
+        ${pills.length?`<div class="pz-pills">${pills.join('')}</div>`:''}
+        <div class="pz-rosa pz-glass">${rosa}</div>
+        <div class="pz-foot">Modulo <b>${esc(m.module||'')}</b>${m.moduleBonus?` · bonus ${m.moduleBonus>0?'+':''}${m.moduleBonus}`:''} · totale <b>${(m.points!=null?m.points:0).toFixed(1)}</b></div>`;
     }
     case 'captains':{
       const C=ex.captains||{};
-      const top=C.top?`<div class="pag-duo-col up"><div class="pag-duo-tag">✅ Capitano più azzeccato</div>
-          <div class="pag-av sm">${av(C.top.avatar,84)}</div><div class="pag-duo-name">${esc(C.top.player_name)}</div>
-          <div class="cap-team">scelto da ${esc(C.top.team_name)}</div><div class="pag-duo-pts" data-count="${C.top.score}" data-dec="1">0</div></div>`:'';
-      const flop=C.flop?`<div class="pag-duo-col down"><div class="pag-duo-tag">❌ Capitano sfortunato</div>
-          <div class="pag-av sm">${av(C.flop.avatar,84)}</div><div class="pag-duo-name">${esc(C.flop.player_name)}</div>
-          <div class="cap-team">scelto da ${esc(C.flop.team_name)}</div><div class="pag-duo-pts" data-count="${C.flop.score}" data-dec="1">0</div></div>`:'';
-      const duo=(top||flop)?`<div class="pag-duo">${top}${flop}</div>`:'';
+      const duel=(o,good)=>`<div class="pz-duel ${good?'au':'dn'}">
+          <div class="pz-tag"><span class="pz-arm">C</span>${good?'Migliore':'Peggiore'}</div>
+          ${pzStage(o.avatar,112,good?'au':'r')}
+          <div class="pz-dn">${esc(o.player_name)}</div>
+          <div class="pz-dsub">scelto da ${esc(o.team_name)}</div>
+          <div class="pz-dp" data-count="${o.score}" data-dec="1">0</div>
+          <div class="pz-du">punti</div></div>`;
+      const duo=(C.top||C.flop)?`<div class="pz-duo">${C.top?duel(C.top,true):''}${C.flop?duel(C.flop,false):''}</div>`:'';
       return `<div class="pag-eyebrow gold">La fascia da capitano</div>
-        <div class="pag-sub" style="margin-bottom:12px">Il capitano vale doppio sul voto: ecco chi l'ha scelto meglio e chi peggio</div>${duo}`;
+        <div class="pz-lsub">Il voto del capitano vale doppio</div>${duo}`;
     }
     case 'verdict':{
       const w=d.winner, c=d.cucchiaio, n=d.numbers||{};
@@ -9557,14 +10060,22 @@ function renderRecapHTML(card, d){
       return `<div class="pag-eyebrow">Il verdetto</div>${win}${gamble}${spoon}${split}`;
     }
     case 'forma':{
-      const F=ex.forma||{}, top=F.top||[], medal=['🥇','🥈','🥉'];
-      const rows=top.map((a,i)=>`<div class="forma-row ${i===0?'lead':''}">
-          <div class="forma-rk">${medal[i]||(i+1)}</div>
-          <div class="forma-nm">${esc(a.team_name)}</div>
-          <div class="forma-pt">${a.total.toFixed(1)}<span>pt</span></div></div>`).join('');
-      return `<div class="pag-eyebrow">Striscia di forma 🔥</div>
-        <div class="forma-sub">Chi è più caldo nelle ultime ${F.count||3} giornate</div>
-        <div class="forma-list">${rows}</div>`;
+      const F=ex.forma||{}, top=F.top||[];
+      const peak=Math.max(1,...top.map(a=>Math.max(0,...(a.pts&&a.pts.length?a.pts:[a.total]))));
+      const rows=top.map((a,i)=>{
+        const bars=(a.pts||[]).map((v,k)=>`<i style="height:${Math.max(10,Math.round(Math.max(0,v)/peak*100))}%;--k:${k}"></i>`).join('');
+        const lg=pzLogo(a.manager_id,30);
+        return `<div class="pz-frow${i===0?' lead':''}" style="--d:${i}">
+          <div class="pz-fpos">${i+1}</div>${lg}
+          <div class="pz-fnm"><b>${esc(a.team_name)}</b><span>media ${(a.total/(a.n||1)).toFixed(1)} a giornata</span></div>
+          <div class="pz-spark">${bars}</div>
+          <div class="pz-fpt">${a.total.toFixed(1)}</div></div>`;
+      }).join('');
+      const sub='Punti nelle ultime '+(F.count||3)+' giornate'+(F.seasonNo?(' della Stagione '+F.seasonNo):'');
+      return `<div class="pag-eyebrow fire">Striscia di forma</div>
+        <div class="pz-flame">🔥</div>
+        <div class="pz-fsub">${esc(sub)}</div>
+        <div class="pz-flist">${rows}</div>`;
     }
     case 'movers':{
       const s=d.scalata, c=d.crollo;
@@ -9584,28 +10095,33 @@ function renderRecapHTML(card, d){
     case 'winner':{
       const w=d.winner, c=d.cucchiaio;
       const pod=ex.mdPodium||[];
-      const second=pod[1], third=pod[2];
-      const podRow=(medal,o)=>o?`<div class="vd-row"><div class="vd-medal">${medal}</div><div class="vd-nm">${esc(o.team_name)}</div><div class="vd-pt">${Number(o.points).toFixed(1)}<span>pt</span></div></div>`:'';
-      const others=(second||third)?`<div class="vd-list">${podRow('🥈',second)}${podRow('🥉',third)}</div>`:'';
-      // Fanalino di coda (era "cucchiaio di legno"): preferisco il vero ultimo di giornata, fallback sul cucchiaio
+      const wid=(pod[0] && pod[0].team_name===w.team_name)?pod[0].manager_id:null;
+      const wLogo=pzLogo(wid,72);
+      const podRow=(medal,o)=>o?`<div class="pz-row pz-glass"><div class="md">${medal}</div>${pzLogo(o.manager_id,28)}
+          <div class="nm">${esc(o.team_name)}</div><div class="vl">${Number(o.points).toFixed(1)}<small>pt</small></div></div>`:'';
+      const others=(pod[1]||pod[2])?`<div class="pz-rows">${podRow('🥈',pod[1])}${podRow('🥉',pod[2])}</div>`:'';
       let fan=ex.mdLast||(c?{team_name:c.team_name,points:Number(c.points)}:null);
-      if(fan && w && fan.team_name===w.team_name) fan=null;   // non mostrarlo se coincide col vincitore
-      const fanHTML=fan?`<div class="pag-spoon">🙅🏻‍♂️ Fanalino di coda: <b>${esc(fan.team_name)}</b> · ${Number(fan.points).toFixed(1)} pt</div>`:'';
-      return `<div class="pag-eyebrow">Il verdetto</div>
-        <div class="pag-trophy">🏆</div><div class="pag-win-tag">Vincitore di giornata</div>
-        <h2 class="pag-name gold">${esc(w.team_name)}</h2>
-        <div class="pag-bigline"><span data-count="${w.points}" data-dec="1">0</span></div>
-        <div class="pag-ptlabel">punti</div>${others}${fanHTML}`;
+      if(fan && w && fan.team_name===w.team_name) fan=null;
+      const fanHTML=fan?`<div class="pz-last">Fanalino di coda <b>${esc(fan.team_name)}</b> · ${Number(fan.points).toFixed(1)} pt</div>`:'';
+      return `<div class="pag-eyebrow gold">Il verdetto</div>
+        <div class="pz-win"><div class="pz-rays"></div>
+          <div class="pz-medal"><div class="pz-medal-in">${wLogo||'<span class="emo">🏆</span>'}</div>${wLogo?'<span class="cup">🏆</span>':''}</div></div>
+        <div class="pz-wtag">Vincitore di giornata</div>
+        <h2 class="pz-wname">${esc(w.team_name)}</h2>
+        <div class="pz-wpts"><span data-count="${w.points}" data-dec="1">0</span><small>pt</small></div>
+        ${others}${fanHTML}`;
     }
     case 'mvp':{
       const m=d.mvp;
-      const extra=(m.pts!=null)?' · '+Number(m.pts).toFixed(1)+' pt':'';
       const others=(ex.mvpPodium||[]).slice(1,3);   // 2º e 3º più votati
-      const podHTML=others.length?`<div class="mvp-podium">`+others.map((o,i)=>`<div class="mvp-prow"><div class="mvp-pmedal">${i===0?'🥈':'🥉'}</div><div class="mvp-pav">${av(o.avatar,40)}</div><div class="mvp-pnm">${esc(o.name)}</div><div class="mvp-pv">${o.votes}<span> nom.</span></div></div>`).join('')+`</div>`:'';
+      const podHTML=others.length?`<div class="pz-rows">`+others.map((o,i)=>`<div class="pz-row pz-glass"><div class="md">${i===0?'🥈':'🥉'}</div>
+          <div class="av">${pzFig(o.avatar,36)}</div><div class="nm">${esc(o.name)}</div>
+          <div class="vl">${o.votes}<small>${o.votes===1?'nomination':'nomination'}</small></div></div>`).join('')+`</div>`:'';
       return `<div class="pag-eyebrow gold">MVP della giornata</div>
-        <div class="pag-av huge gold">${av(m.avatar,180)}</div>
-        <h2 class="pag-name gold big">${esc(m.name)}</h2>
-        <div class="pag-sub">${m.votes} nomination${extra}</div>${podHTML}`;
+        <div class="pz-mvp"><div class="pz-rays"></div><div class="pz-crown">👑</div>${pzStage(m.avatar,178,'au')}</div>
+        <h2 class="pz-mvpn">${esc(m.name)}</h2>
+        <div class="pz-mvps"><span><b>${m.votes}</b> nomination</span>${m.pts!=null?`<i></i><span><b>${Number(m.pts).toFixed(1)}</b> pt</span>`:''}</div>
+        ${podHTML}`;
     }
     case 'share':
       return `<div class="pag-eyebrow">Condividi la giornata</div>
