@@ -2049,6 +2049,203 @@
     .pz-wname{font-size:28px} .pz-wpts span{font-size:46px}
     .pz-cover{width:170px;height:170px;margin-bottom:-30px} .pz-bignum{font-size:124px} .pz-title{font-size:42px}
   }
+
+  /* ============================================================
+     SESSIONE 70 — copertina con la squadra · storia da condividere
+     · recap di stagione nello stile del Pagellone
+     ============================================================ */
+
+  /* --- copertina: la squadra al completo --- */
+  .pz-squad{position:relative;width:100%;max-width:400px;margin:14px 0 4px;display:flex;justify-content:center}
+  .pz-squad img{position:relative;z-index:1;display:block;width:100%;height:auto;
+    filter:drop-shadow(0 18px 22px rgba(0,0,0,.55));animation:pzFloat 5.5s ease-in-out infinite}
+  .pz-squad-glow{position:absolute;left:50%;bottom:-6%;width:92%;height:46%;transform:translateX(-50%);border-radius:50%;
+    background:radial-gradient(closest-side,rgba(63,151,255,.55),rgba(63,151,255,.12) 60%,transparent)}
+  .pz-squad.au .pz-squad-glow{background:radial-gradient(closest-side,rgba(255,194,61,.5),rgba(255,194,61,.1) 60%,transparent)}
+  .pz-squad::before{content:"";position:absolute;left:50%;top:48%;width:116%;padding-top:70%;transform:translate(-50%,-50%);border-radius:50%;
+    background:radial-gradient(closest-side,rgba(126,194,255,.20),transparent 70%)}
+  .pz-squad.au::before{background:radial-gradient(closest-side,rgba(255,194,61,.20),transparent 70%)}
+  .pz-squad.noimg{min-height:0} .pz-squad.noimg img{display:none}
+  .pz-squad.noimg::after{content:"⚽";position:relative;z-index:1;font-size:86px;line-height:1.3}
+  @keyframes pzFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  .pz-badge.au{color:#ffe3a1;background:rgba(255,194,61,.10);border-color:rgba(255,194,61,.32)}
+  .pz-title.au{background-image:linear-gradient(100deg,#ffffff 34%,#ffd470 48%,#ffffff 62%)}
+  .pz-chips .pz-chip{min-width:104px}
+
+  /* --- ultima storia: anteprima da condividere --- */
+  .pz-shstage{--shh:clamp(250px,calc(100vh - 300px),600px);position:relative;margin:2px 0 18px;
+    width:calc(var(--shh) * .5625);height:var(--shh)}
+  .pz-shstage::before{content:"";position:absolute;inset:-10% -12%;border-radius:50%;
+    background:radial-gradient(closest-side,rgba(63,151,255,.40),transparent 72%);pointer-events:none}
+  .pz-shstage.au::before{background:radial-gradient(closest-side,rgba(255,194,61,.34),transparent 72%)}
+  .pz-shwrap{position:relative;width:100%;height:100%;border-radius:22px;overflow:hidden;
+    background:linear-gradient(170deg,#0d2446,#050a15);
+    box-shadow:0 0 0 1px rgba(255,255,255,.14),0 30px 60px -24px rgba(0,0,0,.9),0 0 50px -10px rgba(63,151,255,.45);
+    animation:pzFloat 6s ease-in-out infinite}
+  .pz-shstage.au .pz-shwrap{box-shadow:0 0 0 1px rgba(255,214,120,.22),0 30px 60px -24px rgba(0,0,0,.9),0 0 50px -10px rgba(255,194,61,.4)}
+  .pz-shwrap::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.14) 45%,transparent 60%);background-size:260% 100%;background-position:120% 0;
+    animation:pzSheen 4.5s ease-in-out 1s infinite}
+  @keyframes pzSheen{0%{background-position:120% 0}45%,100%{background-position:-60% 0}}
+  .pz-shcv{display:block;width:100%;height:100%;animation:pzFade .5s ease both}
+  @keyframes pzFade{from{opacity:0}to{opacity:1}}
+  .pz-shload{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+    color:#a9bfdc;font-size:13px;font-weight:600}
+  .pz-spin{width:30px;height:30px;border-radius:50%;border:3px solid rgba(255,255,255,.14);border-top-color:#9fd0ff;animation:pzSpin .9s linear infinite}
+  .pz-shbtn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:220px;padding:16px 30px;
+    border:none;border-radius:999px;cursor:pointer;font:inherit;font-weight:800;font-size:16.5px;letter-spacing:.01em;color:#fff;overflow:hidden;
+    background:linear-gradient(135deg,#5aa8ff,#1c6ff2);
+    box-shadow:0 16px 34px -12px rgba(63,151,255,.75),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .12s}
+  .pz-shbtn.au{color:#241800;background:linear-gradient(135deg,#ffe08a,#ffb020);box-shadow:0 16px 34px -12px rgba(255,176,32,.7),inset 0 1px 0 rgba(255,255,255,.5)}
+  .pz-shbtn::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.35) 50%,transparent 65%);
+    background-size:250% 100%;background-position:130% 0;animation:pzSheen 3.2s ease-in-out 1.2s infinite}
+  .pz-shbtn:active{transform:scale(.96)}
+  .pz-shbtn svg{position:relative;z-index:1} .pz-shbtn span{position:relative;z-index:1}
+  .pz-shnote{position:relative;margin-top:12px;font-size:12px;font-weight:600;letter-spacing:.04em;color:#8fa9cc}
+  @media (prefers-reduced-motion:reduce){ .pz-squad img,.pz-shwrap,.pz-shwrap::after,.pz-shbtn::after{animation:none} }
+
+  /* --- recap di stagione: pezzi nuovi --- */
+  .pz-sublbl{position:relative;margin-top:4px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fb8da}
+  .pz-hname+.pz-awd{margin-top:16px}
+  .pz-note{position:relative;margin-top:14px;max-width:340px;padding:12px 16px;border-radius:16px;font-size:13.5px;line-height:1.5;color:#c9d9ee;
+    background:linear-gradient(165deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.09)}
+  .pz-note b{color:#fff}
+  .pz-tiles{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:340px}
+  .pz-tile{--c:126,194,255;padding:16px 8px 13px;border-radius:20px;
+    background:linear-gradient(180deg,rgba(var(--c),.16),rgba(255,255,255,.02));border:1px solid rgba(var(--c),.34);
+    box-shadow:0 16px 34px -24px rgba(var(--c),.6)}
+  .pz-tile.cy{--c:56,200,255} .pz-tile.v{--c:167,139,250} .pz-tile.g{--c:47,217,138} .pz-tile.au{--c:255,194,61}
+  .pz-tile b{display:block;font-family:'Bricolage Grotesque';font-weight:800;font-size:40px;line-height:1;color:#fff;text-shadow:0 0 22px rgba(var(--c),.8)}
+  .pz-tile span{display:block;margin-top:6px;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgb(var(--c))}
+  .pz-hero{position:relative;width:100%;display:flex;justify-content:center;margin-top:2px}
+  .pz-hname{position:relative;display:flex;align-items:center;justify-content:center;gap:2px;margin-top:8px;max-width:100%;
+    font-family:'Bricolage Grotesque';font-weight:800;font-size:30px;letter-spacing:-.02em;line-height:1.05;overflow-wrap:anywhere}
+  .pz-hname.au{color:#ffe08a;text-shadow:0 0 26px rgba(255,194,61,.5)}
+  .pz-hname .pz-arm{width:22px;height:22px;font-size:12px;margin:0 8px 0 0}
+  .pz-bigv{--c:126,194,255;position:relative;display:flex;flex-direction:column;align-items:center;margin-top:6px}
+  .pz-bigv.cy{--c:56,200,255} .pz-bigv.v{--c:167,139,250} .pz-bigv.au{--c:255,194,61}
+  .pz-bigv b{font-family:'Bricolage Grotesque';font-weight:800;font-size:64px;line-height:1;color:#fff;text-shadow:0 0 30px rgba(var(--c),.85)}
+  .pz-bigv>span{margin-top:4px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgb(var(--c))}
+  .pz-chart{position:relative;width:100%;max-width:350px;border-radius:20px;padding:4px 12px 10px}
+  .pz-chart .pag-path{margin-top:8px;max-width:none}
+  .pz-module{position:relative;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:62px;line-height:1;letter-spacing:-.04em;color:#fff;
+    text-shadow:0 0 30px rgba(63,151,255,.8)}
+  .pz-row.au{background:linear-gradient(165deg,rgba(255,194,61,.16),rgba(255,255,255,.02));border-color:rgba(255,194,61,.38)}
+  .pz-row .nm small,.pz-row .vl small{display:block}
+  .pz-row .nm small{font-family:'Hanken Grotesk',sans-serif;font-size:11px;font-weight:600;color:#8fa9cc;margin-top:1px}
+  .pz-row .vl{text-align:right} .pz-row .vl small{margin:1px 0 0}
+  .pz-pair{position:relative;display:flex;align-items:flex-end;justify-content:center;width:100%;max-width:330px}
+  .pz-pair .pz-stage{width:50%}
+  .pz-plus{flex:none;align-self:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:34px;color:#cfe0f7;margin:0 -10px;position:relative;z-index:2}
+  .pz-pairn{position:relative;display:flex;width:100%;max-width:330px;margin-top:6px}
+  .pz-pairn span{flex:1;min-width:0;font-weight:800;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pz-emo{position:relative;font-size:64px;line-height:1.15;margin:6px 0 10px;filter:drop-shadow(0 0 24px rgba(56,200,255,.8));animation:pzBob2 3s ease-in-out infinite}
+  .pz-emo.au{filter:drop-shadow(0 0 24px rgba(255,194,61,.85))}
+  @keyframes pzBob2{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+  /* record di giornata */
+  .pz-recs{position:relative;display:flex;flex-direction:column;gap:12px;width:100%;max-width:350px}
+  .pz-rec{--c:255,194,61;display:flex;align-items:center;gap:12px;padding:16px;border-radius:22px;text-align:left;
+    background:linear-gradient(120deg,rgba(var(--c),.20),rgba(255,255,255,.02));border:1px solid rgba(var(--c),.42);
+    box-shadow:0 20px 40px -26px rgba(var(--c),.7)}
+  .pz-rec.r{--c:255,93,107}
+  .pz-rec-ic{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:26px;
+    background:rgba(var(--c),.18);box-shadow:0 0 0 1px rgba(var(--c),.4),0 0 22px rgba(var(--c),.4)}
+  .pz-rec-tx{flex:1;min-width:0}
+  .pz-rec-tx .k{display:block;font-size:10.5px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:rgb(var(--c))}
+  .pz-rec-tx .n{display:flex;align-items:center;gap:7px;margin-top:4px;font-family:'Bricolage Grotesque';font-weight:800;font-size:18px}
+  .pz-rec-tx .n .tlogo{width:24px;height:24px}
+  .pz-rec-tx .md{display:block;margin-top:2px;font-size:12px;color:#9fb8da}
+  .pz-rec-v{flex:none;text-align:right}
+  .pz-rec-v b{display:block;font-family:'Bricolage Grotesque';font-weight:800;font-size:34px;line-height:1;color:#fff;text-shadow:0 0 20px rgba(var(--c),.8)}
+  .pz-rec-v small{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fb8da}
+  /* premi in vetro */
+  .pz-awd{position:relative;display:flex;flex-direction:column;gap:9px;width:100%;max-width:356px}
+  .pz-aw{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 10px;border-radius:20px;text-align:left;
+    background:linear-gradient(165deg,rgba(255,255,255,.09),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.10);
+    animation:pzRow .55s cubic-bezier(.2,.85,.25,1) both;animation-delay:.3s}
+  .pz-aw:nth-child(2){animation-delay:.4s} .pz-aw:nth-child(3){animation-delay:.5s} .pz-aw:nth-child(4){animation-delay:.6s}
+  .pz-aw.au{background:linear-gradient(120deg,rgba(255,194,61,.18),rgba(255,255,255,.02));border-color:rgba(255,194,61,.40);box-shadow:0 16px 34px -24px rgba(255,194,61,.7)}
+  .pz-aw.me{background:linear-gradient(120deg,rgba(63,151,255,.22),rgba(255,255,255,.02));border-color:rgba(126,194,255,.55);box-shadow:0 16px 34px -24px rgba(63,151,255,.8)}
+  .pz-aw .ic{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:19px;background:rgba(255,255,255,.07)}
+  .pz-aw.au .ic{background:rgba(255,194,61,.18);box-shadow:0 0 16px rgba(255,194,61,.35)}
+  .pz-aw .av{flex:none;width:40px;height:52px;display:flex;align-items:flex-end;justify-content:center;border-radius:12px;
+    background:radial-gradient(90% 70% at 50% 88%,rgba(126,194,255,.30),transparent)}
+  .pz-aw .av.team{align-items:center;font-size:22px}
+  .pz-aw .av .tlogo{width:34px;height:34px}
+  .pz-aw .av .pz-img{margin-bottom:1px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.45))}
+  .pz-aw .tx{flex:1;min-width:0}
+  .pz-aw .k{display:block;font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#9fb8da;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pz-aw.au .k{color:var(--gold-soft)} .pz-aw.me .k{color:var(--accent-soft)}
+  .pz-aw .n{display:block;margin-top:2px;font-family:'Bricolage Grotesque';font-weight:800;font-size:16.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pz-aw .vl{flex:none;text-align:right;font-family:'Bricolage Grotesque';font-weight:800;font-size:22px;line-height:1;color:#fff}
+  .pz-aw.au .vl{color:#ffd470}
+  .pz-aw .vl small{display:block;margin-top:3px;font-family:'Hanken Grotesk',sans-serif;font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8fa9cc}
+  /* podio */
+  .pz-pod{position:relative;display:flex;align-items:flex-end;gap:10px;width:100%;max-width:340px;margin-top:6px}
+  .pz-podc{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
+  .pz-podc .lg{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;margin-bottom:8px;
+    background:radial-gradient(circle at 50% 35%,#1f3a6c,#0a1830);box-shadow:0 0 0 3px rgba(190,205,225,.45),0 10px 24px -10px rgba(0,0,0,.8)}
+  .pz-podc.p1 .lg{width:76px;height:76px;box-shadow:0 0 0 4px #ffc23d,0 0 34px rgba(255,194,61,.6)}
+  .pz-podc.p3 .lg{box-shadow:0 0 0 3px rgba(214,140,80,.6),0 10px 24px -10px rgba(0,0,0,.8)}
+  .pz-podc .lg .emo{font-size:28px}
+  .pz-podc .nm{max-width:100%;font-family:'Bricolage Grotesque';font-weight:800;font-size:14px;line-height:1.15;margin-bottom:8px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pz-podc.p1 .nm{font-size:16px;color:#ffe08a}
+  .pz-podc .bar{width:100%;display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:12px;border-radius:18px 18px 4px 4px;
+    background:linear-gradient(180deg,rgba(126,194,255,.30),rgba(126,194,255,.04));border:1px solid rgba(126,194,255,.30);border-bottom:none;
+    transform-origin:bottom center;animation:pzBarY .8s cubic-bezier(.2,.85,.25,1) both}
+  .pz-podc.p2 .bar{height:120px;animation-delay:.45s} .pz-podc.p3 .bar{height:92px;animation-delay:.6s}
+  .pz-podc.p1 .bar{height:160px;animation-delay:.3s;background:linear-gradient(180deg,rgba(255,194,61,.42),rgba(255,194,61,.05));border-color:rgba(255,194,61,.55);
+    box-shadow:0 -10px 40px -14px rgba(255,194,61,.85)}
+  .pz-podc .bar .md{font-size:26px;line-height:1}
+  .pz-podc .bar b{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:#eaf3ff}
+  /* duello */
+  .pz-vs{position:relative;display:flex;align-items:center;gap:8px;width:100%;max-width:350px}
+  .pz-vsc{flex:1;min-width:0;padding:18px 10px;border-radius:22px;display:flex;flex-direction:column;align-items:center;gap:6px}
+  .pz-vsc .rk{font-family:'Bricolage Grotesque';font-weight:800;font-size:30px;line-height:1;color:#9fd0ff}
+  .pz-vsc .nm{max-width:100%;font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pz-vsx{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:14px;
+    color:#241800;background:linear-gradient(135deg,#ffe08a,#ffb020);box-shadow:0 0 24px rgba(255,194,61,.6)}
+
+  /* sfondo per le scene di stagione */
+  .pag[data-scene="syou"] .pag-aura i:nth-child(1),.pag[data-scene="spath"] .pag-aura i:nth-child(1),.pag[data-scene="smodule"] .pag-aura i:nth-child(1){color:#3f97ff}
+  .pag[data-scene="syou"] .pag-aura i:nth-child(2),.pag[data-scene="spath"] .pag-aura i:nth-child(2),.pag[data-scene="smodule"] .pag-aura i:nth-child(2){color:#2ec4ff}
+  .pag[data-scene="sloyal"] .pag-aura i:nth-child(1),.pag[data-scene="splayer"] .pag-aura i:nth-child(1),.pag[data-scene="sjump"] .pag-aura i:nth-child(1){color:#2ec4ff}
+  .pag[data-scene="sloyal"] .pag-aura i:nth-child(2),.pag[data-scene="splayer"] .pag-aura i:nth-child(2),.pag[data-scene="sjump"] .pag-aura i:nth-child(2){color:#8c5cff}
+  .pag[data-scene="stwin"] .pag-aura i:nth-child(1){color:#2ec4ff} .pag[data-scene="stwin"] .pag-aura i:nth-child(2){color:#a78bfa}
+  .pag[data-scene="snumbers"] .pag-aura i:nth-child(1){color:#2ec4ff} .pag[data-scene="snumbers"] .pag-aura i:nth-child(2){color:#2fd98a}
+  .pag[data-scene="sfun"] .pag-aura i:nth-child(1){color:#a78bfa} .pag[data-scene="sfun"] .pag-aura i:nth-child(2){color:#ff5d9e}
+  .pag[data-scene="sduel"] .pag-aura i:nth-child(1){color:#ff5d6b} .pag[data-scene="sduel"] .pag-aura i:nth-child(2){color:#3f97ff}
+  .pag[data-scene="srecords"] .pag-aura i:nth-child(2){color:#ff5d6b}
+  .pag[data-scene="sfinal"] .pag-aura i:nth-child(1){color:#3f97ff} .pag[data-scene="sfinal"] .pag-aura i:nth-child(2){color:#5b6cff}
+
+  @media (max-height:700px){
+    .pz-squad{max-width:330px;margin:8px 0 0}
+    .pz-shstage{margin-bottom:14px}
+    .pz-tile{padding:12px 8px 10px} .pz-tile b{font-size:34px}
+    .pz-hero .pz-stage{--sh:140px!important} .pz-hero .pz-img{height:140px!important;max-width:133px!important}
+    .pz-hero.sm .pz-stage{--sh:112px!important} .pz-hero.sm .pz-img{height:112px!important;max-width:106px!important}
+    .pz-pair .pz-stage{--sh:118px!important} .pz-pair .pz-img{height:118px!important;max-width:112px!important}
+    .pz-bigv b{font-size:54px} .pz-note{margin-top:10px;padding:10px 14px;font-size:13px}
+    .pz-podc.p1 .bar{height:130px} .pz-podc.p2 .bar{height:98px} .pz-podc.p3 .bar{height:76px}
+    .pz-aw{padding:6px 12px 6px 8px} .pz-awd{gap:7px}
+  }
+  @media (max-height:600px){
+    .pz-squad{max-width:270px;margin:4px 0 0}
+    .pz-tiles{gap:7px} .pz-tile{padding:9px 6px 8px} .pz-tile b{font-size:28px} .pz-tile span{margin-top:4px}
+    .pz-hero .pz-stage{--sh:108px!important} .pz-hero .pz-img{height:108px!important;max-width:103px!important}
+    .pz-hero.sm .pz-stage{--sh:82px!important} .pz-hero.sm .pz-img{height:82px!important;max-width:78px!important}
+    .pz-pair .pz-stage{--sh:96px!important} .pz-pair .pz-img{height:96px!important;max-width:92px!important}
+    .pz-hname{font-size:24px;margin-top:4px} .pz-bigv b{font-size:44px} .pz-module{font-size:48px}
+    .pz-note{font-size:12.5px;line-height:1.4}
+    .pz-aw .av{height:44px} .pz-aw .av .pz-img{height:40px!important;max-width:38px!important}
+    .pz-aw .n{font-size:15px} .pz-aw .vl{font-size:19px}
+    .pz-podc.p1 .bar{height:104px} .pz-podc.p2 .bar{height:80px} .pz-podc.p3 .bar{height:62px}
+    .pz-podc .lg{width:46px;height:46px} .pz-podc.p1 .lg{width:60px;height:60px}
+    .pz-rec{padding:12px} .pz-rec-v b{font-size:28px}
+    .pz-emo{font-size:48px}
+  }
 </style>
 </head>
 <body>
@@ -3085,7 +3282,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='3.0';
+const APP_VERSION='3.1';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -9692,10 +9889,11 @@ function openRecapLatest(){ const md=latestClosedMd(); if(md) openRecap(md.id,fa
 
 async function openRecap(md, auto){
   if(recapBusy) return; recapBusy=true;
+  try{ pzPreloadSquad(); }catch(_){ }
   try{
     const {data,error}=await sb.rpc('get_matchday_recap',{md});
     if(error||!data||data.closed===false){ if(!auto) toast('Pagellone non ancora disponibile'); return; }
-    recapData=data; recapMd=md; recapMode='md'; _shareCanvas=null;
+    recapData=data; recapMd=md; recapMode='md'; _shareCanvas=null; _sharePromise=null;
     try{ recapExtra=await loadRecapExtra(md); }catch(_){ recapExtra={}; }
     recapCards=buildRecapCards(data,recapExtra); recapIdx=0;
     try{ localStorage.setItem('fc_recap_seen_'+md,'1'); }catch(_){ }
@@ -9892,6 +10090,11 @@ function showRecapCard(i){
   if(card.t==='sfinal')    renderSeasonStandings();
   if(card.t==='schamp')    { const t=el.querySelector('.pag-trophy'); if(t) t.classList.add('pulse'); }   // niente coriandoli: coprivano barra di stato e progressione
   if(card.t==='share')     prepShareCard();
+  // la storia si prepara gia' durante la penultima scena: all'arrivo e' pronta
+  try{ const nx=recapCards[i+1];
+    if(nx && !_sharePromise){ if(nx.t==='share') _sharePromise=buildShareCard(); else if(nx.t==='sshare') _sharePromise=buildSeasonShareCard(); }
+    if(_sharePromise) _sharePromise.catch(()=>{ _sharePromise=null; });
+  }catch(_){ }
   if(card.t==='sshare')    prepSeasonShare();
   // auto-avanzamento "a storie": parte da solo sulle scene di racconto, non sulle finali
   const dur=(i<recapCards.length-1)?(PAG_DUR[card.t]||0):0;
@@ -9918,6 +10121,31 @@ function pzFig(name,h){
 function pzStage(name,h,tone){
   return `<div class="pz-stage ${tone||''}" style="--sh:${h}px"><span class="pz-halo"></span><span class="pz-floor"></span>${pzFig(name,h)}</div>`;
 }
+/* La squadra al completo: copertina del pagellone e del recap di stagione.
+   File a parte (app/squadra.webp), scaricato solo quando serve e poi in cache.
+   Se manca, la copertina resta in piedi senza immagine. */
+const FC_SQUAD_URL='squadra.webp?v=1';
+let _squadImg=null, _sharePromise=null;
+function pzPreloadSquad(){
+  if(_squadImg) return _squadImg;
+  _squadImg=new Promise(res=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=()=>res(null); im.src=FC_SQUAD_URL; });
+  return _squadImg;
+}
+function pzSquadHTML(tone){
+  pzPreloadSquad();
+  return `<div class="pz-squad ${tone||''}"><span class="pz-squad-glow"></span>`
+    +`<img src="${FC_SQUAD_URL}" alt="" draggable="false" onerror="this.parentNode.classList.add('noimg')"></div>`;
+}
+/* ultima scena: anteprima della storia da condividere */
+function pzShareSceneHTML(title,fn,tone){
+  const shareIc='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>';
+  return `<div class="pag-eyebrow ${tone==='au'?'gold':''}">${esc(title)}</div>
+    <div class="pz-shstage ${tone||''}">
+      <div class="pz-shwrap" id="pagShareWrap"><div class="pz-shload"><span class="pz-spin"></span><span>Preparo la storia</span></div></div>
+    </div>
+    <button class="pz-shbtn ${tone||''}" onclick="${fn}" data-stop>${shareIc}<span>Condividi</span></button>
+    <div class="pz-shnote">Formato storia · Instagram e WhatsApp</div>`;
+}
 function pzLogo(managerId,px){
   const n=managerId?teamLogoName(managerId):'';
   return n?logoImg(n,px):'';
@@ -9935,13 +10163,11 @@ function renderRecapHTML(card, d){
       const n=d.numbers||{};
       const mdm=(matchdaysList||[]).find(m=>m.id===recapMd);
       const when=(mdm&&mdm.kickoff)?rvShortDate(new Date(mdm.kickoff)):'';
-      const num=((/(\d+)/.exec(d.label||''))||[])[1]||'';
       const chips=[];
       if(n.present>0)     chips.push(`<div class="pz-chip"><b>${n.present}</b><span>in campo</span></div>`);
-      if(n.goals_total>0) chips.push(`<div class="pz-chip"><b>${n.goals_total}</b><span>${n.goals_total===1?'gol':'gol'}</span></div>`);
+      if(n.goals_total>0) chips.push(`<div class="pz-chip"><b>${n.goals_total}</b><span>gol</span></div>`);
       return `<div class="pz-badge">${esc(lg)}</div>
-        <div class="pz-cover"><div class="pz-rings"><i></i><i></i><i></i></div>
-          ${num?`<div class="pz-bignum">${num}</div>`:`<div class="pz-bignum emo">⚽</div>`}</div>
+        ${pzSquadHTML('')}
         <div class="pz-tw"><h2 class="pz-title">Pagellone</h2></div>
         <div class="pz-md">${esc(d.label||'Giornata')}${when?`<i></i>${esc(when)}`:''}</div>
         ${chips.length?`<div class="pz-chips">${chips.join('')}</div>`:''}
@@ -10124,10 +10350,7 @@ function renderRecapHTML(card, d){
         ${podHTML}`;
     }
     case 'share':
-      return `<div class="pag-eyebrow">Condividi la giornata</div>
-        <div class="pag-share-wrap" id="pagShareWrap"><div class="pag-share-load">Preparo l'immagine…</div></div>
-        <button class="pag-share-btn" onclick="shareRecap()" data-stop>📤 Condividi</button>
-        <div class="pag-hint">swipe giù per chiudere</div>`;
+      return pzShareSceneHTML('Condividi la giornata','shareRecap()','');
   }
   return '';
 }
@@ -10354,55 +10577,265 @@ function winnerLogoName(w){
   const s=(standings||[]).find(x=>x.team_name===w.team_name);
   return (s&&teamLogoBy[s.manager_id])||'';
 }
-async function buildShareCard(){
-  const d=recapData, W=1080, H=1350;
-  const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const ctx=cv.getContext('2d');
-  try{ await document.fonts.ready; }catch(_){ }
-  const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#0c2138'); bg.addColorStop(1,'#070f1f');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  const gl=ctx.createRadialGradient(W*0.5,H*0.16,40,W*0.5,H*0.16,W*0.75); gl.addColorStop(0,'rgba(63,151,255,.28)'); gl.addColorStop(1,'rgba(63,151,255,0)');
-  ctx.fillStyle=gl; ctx.fillRect(0,0,W,H);
-  ctx.textAlign='center';
-  ctx.fillStyle='#7ec2ff'; ctx.font='800 34px "Hanken Grotesk",sans-serif';
-  ctx.fillText('PAGELLONE DI GIORNATA', W/2, 128);
-  ctx.fillStyle='#eaf1fb'; ctx.font='800 80px "Bricolage Grotesque",sans-serif';
-  ctx.fillText(d.label||'Giornata', W/2, 214);
-  let y=320;
-  // emoji a SINISTRA, testo al CENTRO, immagine a DESTRA (logo squadra per la riga squadra, avatar per i giocatori)
-  async function block(emoji,label,name,sub,opts){
-    opts=opts||{};
-    rr(ctx,80,y,W-160,210,34); ctx.fillStyle='rgba(255,255,255,.05)'; ctx.fill();
-    ctx.lineWidth=2; ctx.strokeStyle='rgba(180,205,245,.18)'; rr(ctx,80,y,W-160,210,34); ctx.stroke();
-    // SINISTRA: simbolo
-    ctx.font='84px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(emoji||'⭐', 175, y+106); ctx.textBaseline='alphabetic';
-    // DESTRA: immagine (logo o avatar)
-    const isize=150, ix=W-80-26-isize, iy=y+(210-isize)/2;
-    if(opts.logoName!==undefined){ await drawLogo(ctx,opts.logoName,ix,iy,isize); }
-    else if(opts.avatarName!==undefined){ await drawAvatar(ctx,opts.avatarName,ix,iy,isize,name); }
-    // CENTRO: testo
-    const tx=272, maxNameW=ix-tx-24;
-    ctx.textAlign='left';
-    ctx.fillStyle='#8aa0c0'; ctx.font='800 28px "Hanken Grotesk",sans-serif'; ctx.fillText(label.toUpperCase(), tx, y+72);
-    ctx.fillStyle='#eaf1fb'; ctx.font='800 50px "Bricolage Grotesque",sans-serif';
-    let nm=name||'—'; while(ctx.measureText(nm).width>maxNameW && nm.length>3){ nm=nm.slice(0,-2); } if(nm!==(name||'—')) nm+='…';
-    ctx.fillText(nm, tx, y+128);
-    if(sub){ ctx.fillStyle='#ffd470'; ctx.font='800 34px "JetBrains Mono",monospace'; ctx.fillText(sub, tx, y+178); }
-    ctx.textAlign='center'; y+=250;
+/* ==========================================================================
+   STORIA DA CONDIVIDERE (sessione 70)
+
+   Prima era un'immagine 1080×1350 a tre righe uguali (emoji, testo,
+   riquadro). Ora e' una storia 1080×1920, il formato di Instagram e WhatsApp,
+   con lo stesso linguaggio del Pagellone: sfondo con aloni, raggi dietro il
+   vincitore, logo in medaglia d'oro, personaggi a figura intera su un
+   piedistallo di luce, e in fondo la TUA giornata (e' quello che si posta).
+   Tutto disegnato sul canvas: avatar e loghi arrivano come blob dallo storage,
+   il logo dell'app dallo stesso dominio, quindi l'immagine resta esportabile.
+   ========================================================================== */
+const SH_W=1080, SH_H=1920;
+function shFont(w,px,fam){
+  const f = fam==='mono' ? '"JetBrains Mono",monospace' : (fam==='body' ? '"Hanken Grotesk",sans-serif' : '"Bricolage Grotesque",sans-serif');
+  return w+' '+px+'px '+f;
+}
+/* testo che si restringe fino a stare in maxW, poi taglia coi puntini */
+function shText(ctx,text,x,y,o){
+  o=o||{};
+  let px=o.px||40; const w=o.w||800, fam=o.fam, min=o.min||Math.round(px*.6);
+  let t=String(text==null?'':text);
+  ctx.font=shFont(w,px,fam);
+  if(o.maxW){
+    while(ctx.measureText(t).width>o.maxW && px>min){ px-=2; ctx.font=shFont(w,px,fam); }
+    if(ctx.measureText(t).width>o.maxW){
+      while(t.length>2 && ctx.measureText(t+'…').width>o.maxW) t=t.slice(0,-1);
+      t=t.replace(/\s+$/,'')+'…';
+    }
   }
-  if(d.winner) await block('🏆','Vincitore di giornata', d.winner.team_name, Number(d.winner.points).toFixed(1)+' punti', {logoName:winnerLogoName(d.winner)});
-  if(d.mvp)    await block('⭐','MVP', d.mvp.name, d.mvp.votes+' nomination', {avatarName:d.mvp.avatar});
-  if(d.capocannoniere) await block('👟','Capocannoniere', d.capocannoniere.name, d.capocannoniere.gol+' gol', {avatarName:d.capocannoniere.avatar});
-  ctx.fillStyle='#5d76a0'; ctx.font='600 28px "Hanken Grotesk",sans-serif'; ctx.textAlign='center';
-  ctx.fillText('fantacalcettoitalia.it', W/2, H-70);
+  ctx.textAlign=o.align||'center'; ctx.textBaseline='alphabetic';
+  ctx.fillStyle=o.color||'#fff';
+  if(o.glow){ ctx.save(); ctx.shadowColor=o.glow; ctx.shadowBlur=o.blur||40; ctx.fillText(t,x,y); ctx.restore(); }
+  ctx.fillText(t,x,y);
+  return ctx.measureText(t).width;
+}
+function shBg(ctx,gold){
+  const g=ctx.createLinearGradient(0,0,0,SH_H);
+  g.addColorStop(0,gold?'#1a2238':'#0d2446'); g.addColorStop(.55,gold?'#0d1526':'#0a1730'); g.addColorStop(1,'#050a15');
+  ctx.fillStyle=g; ctx.fillRect(0,0,SH_W,SH_H);
+  const blobs=gold
+    ? [[150,300,760,'255,194,61',.32],[980,820,680,'63,151,255',.26],[520,1620,820,'255,138,60',.16]]
+    : [[140,280,760,'63,151,255',.38],[990,760,680,'140,92,255',.30],[540,1640,860,'46,196,255',.16]];
+  blobs.forEach(([x,y,r,c,a])=>{
+    const rg=ctx.createRadialGradient(x,y,0,x,y,r);
+    rg.addColorStop(0,`rgba(${c},${a})`); rg.addColorStop(1,`rgba(${c},0)`);
+    ctx.fillStyle=rg; ctx.fillRect(0,0,SH_W,SH_H);
+  });
+  // il campo, appena accennato: cerchio di centrocampo e linea di metà
+  ctx.save(); ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=5;
+  ctx.beginPath(); ctx.arc(SH_W/2,1370,300,0,Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-10,1370); ctx.lineTo(SH_W+10,1370); ctx.stroke();
+  ctx.beginPath(); ctx.arc(SH_W/2,1370,12,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,.06)'; ctx.fill();
+  ctx.restore();
+  // fasce di luce in diagonale
+  ctx.save(); ctx.globalAlpha=.05; ctx.fillStyle='#fff';
+  [[-200,0,170],[260,0,70],[760,0,120]].forEach(([x,,w])=>{ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x+w,0); ctx.lineTo(x+w-700,SH_H); ctx.lineTo(x-700,SH_H); ctx.closePath(); ctx.fill(); });
+  ctx.restore();
+  const v=ctx.createRadialGradient(SH_W/2,SH_H*.45,SH_H*.3,SH_W/2,SH_H*.45,SH_H*.78);
+  v.addColorStop(0,'rgba(3,8,18,0)'); v.addColorStop(1,'rgba(3,8,18,.72)');
+  ctx.fillStyle=v; ctx.fillRect(0,0,SH_W,SH_H);
+}
+function shRays(ctx,cx,cy,R,rgb){
+  ctx.save();
+  const n=28;
+  for(let i=0;i<n;i++){
+    const a0=(i/n)*Math.PI*2, a1=a0+(Math.PI*2/n)*.42;
+    const rg=ctx.createRadialGradient(cx,cy,0,cx,cy,R);
+    rg.addColorStop(0,`rgba(${rgb},.34)`); rg.addColorStop(.55,`rgba(${rgb},.12)`); rg.addColorStop(1,`rgba(${rgb},0)`);
+    ctx.fillStyle=rg; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,R,a0,a1); ctx.closePath(); ctx.fill();
+  }
+  const core=ctx.createRadialGradient(cx,cy,0,cx,cy,R*.55);
+  core.addColorStop(0,`rgba(${rgb},.38)`); core.addColorStop(1,`rgba(${rgb},0)`);
+  ctx.fillStyle=core; ctx.fillRect(cx-R,cy-R,R*2,R*2);
+  ctx.restore();
+}
+function shGlass(ctx,x,y,w,h,r,rgb){
+  ctx.save();
+  const g=ctx.createLinearGradient(x,y,x,y+h);
+  g.addColorStop(0,rgb?`rgba(${rgb},.20)`:'rgba(255,255,255,.10)'); g.addColorStop(1,rgb?'rgba(255,255,255,.03)':'rgba(255,255,255,.03)');
+  rr(ctx,x,y,w,h,r); ctx.fillStyle=g; ctx.fill();
+  ctx.lineWidth=2.5; ctx.strokeStyle=rgb?`rgba(${rgb},.48)`:'rgba(255,255,255,.14)'; rr(ctx,x,y,w,h,r); ctx.stroke();
+  ctx.restore();
+}
+function shPill(ctx,text,cx,y,rgb,txtColor){
+  ctx.font=shFont(800,30,'body');
+  const t=String(text).toUpperCase(); let tw=ctx.measureText(t).width;
+  const maxW=860; let tt=t; while(tw>maxW-80 && tt.length>3){ tt=tt.slice(0,-1); tw=ctx.measureText(tt+'…').width; } if(tt!==t) tt+='…';
+  const w=Math.min(maxW,tw+80), h=64;
+  rr(ctx,cx-w/2,y-h/2,w,h,32); ctx.fillStyle=`rgba(${rgb},.14)`; ctx.fill();
+  ctx.lineWidth=2; ctx.strokeStyle=`rgba(${rgb},.36)`; rr(ctx,cx-w/2,y-h/2,w,h,32); ctx.stroke();
+  ctx.fillStyle=txtColor; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(tt,cx,y+2); ctx.textBaseline='alphabetic';
+}
+async function shBrand(ctx){
+  const icon=await loadImg('/icon-512.png?v=4');
+  ctx.font=shFont(800,34,'body');
+  const label='FANTACALCETTO', tw=ctx.measureText(label).width, isz=70, gap=20;
+  const total=(icon?isz+gap:0)+tw, x0=SH_W/2-total/2, cy=118;
+  if(icon){ ctx.save(); rr(ctx,x0,cy-isz/2,isz,isz,18); ctx.clip(); ctx.drawImage(icon,x0,cy-isz/2,isz,isz); ctx.restore(); }
+  ctx.fillStyle='#eaf3ff'; ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillText(label,x0+(icon?isz+gap:0),cy+2); ctx.textBaseline='alphabetic';
+}
+function shTitle(ctx,text,y,gold){
+  ctx.font=shFont(800,150);
+  let px=150; while(ctx.measureText(text).width>960 && px>90){ px-=4; ctx.font=shFont(800,px); }
+  const g=ctx.createLinearGradient(0,y-px*.8,0,y+px*.1);
+  g.addColorStop(0,'#ffffff'); g.addColorStop(1,gold?'#ffd470':'#9fd0ff');
+  ctx.save(); ctx.textAlign='center'; ctx.shadowColor=gold?'rgba(255,194,61,.45)':'rgba(63,151,255,.55)'; ctx.shadowBlur=50;
+  ctx.fillStyle=g; ctx.fillText(text,SH_W/2,y); ctx.restore();
+}
+/* personaggio a figura intera su piedistallo di luce: mai tagliato */
+async function shFig(ctx,name,cx,bottom,h,rgb,fallback){
+  const halo=ctx.createRadialGradient(cx,bottom-h*.46,0,cx,bottom-h*.46,h*.66);
+  halo.addColorStop(0,`rgba(${rgb},.52)`); halo.addColorStop(.55,`rgba(${rgb},.14)`); halo.addColorStop(1,`rgba(${rgb},0)`);
+  ctx.fillStyle=halo; ctx.fillRect(cx-h,bottom-h*1.15,h*2,h*1.3);
+  ctx.save(); ctx.translate(cx,bottom); ctx.scale(1,.2);
+  const fl=ctx.createRadialGradient(0,0,0,0,0,h*.42);
+  fl.addColorStop(0,`rgba(${rgb},.9)`); fl.addColorStop(.6,`rgba(${rgb},.25)`); fl.addColorStop(1,`rgba(${rgb},0)`);
+  ctx.fillStyle=fl; ctx.beginPath(); ctx.arc(0,0,h*.42,0,Math.PI*2); ctx.fill(); ctx.restore();
+  const url=await avatarBlob(name); const img=url?await loadImg(url):null;
+  if(img && img.naturalWidth){
+    const ar=img.naturalWidth/img.naturalHeight; let dh=h, dw=h*ar;
+    if(dw>h*.95){ dw=h*.95; dh=dw/ar; }
+    ctx.save(); ctx.shadowColor='rgba(0,0,0,.55)'; ctx.shadowBlur=34; ctx.shadowOffsetY=16;
+    ctx.drawImage(img,cx-dw/2,bottom-dh-h*.03,dw,dh); ctx.restore();
+  } else {
+    const r=h*.3;
+    ctx.beginPath(); ctx.arc(cx,bottom-h*.45,r,0,Math.PI*2); ctx.fillStyle=`rgba(${rgb},.22)`; ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font=shFont(800,Math.round(r*.8)); ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(initials(fallback||name),cx,bottom-h*.45+4); ctx.textBaseline='alphabetic';
+  }
+}
+/* medaglia d'oro con dentro il logo della squadra (o la coppa, se il logo manca) */
+async function shMedal(ctx,logoName,cx,cy,r){
+  ctx.save();
+  ctx.shadowColor='rgba(255,194,61,.65)'; ctx.shadowBlur=70;
+  const g=ctx.createRadialGradient(cx-r*.35,cy-r*.45,r*.1,cx,cy,r);
+  g.addColorStop(0,'#fff3c4'); g.addColorStop(.42,'#ffc23d'); g.addColorStop(1,'#a86a0a');
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(cx,cy,r+16,0,Math.PI*2); ctx.lineWidth=10; ctx.strokeStyle='rgba(255,194,61,.18)'; ctx.stroke();
+  const ri=r*.8, gi=ctx.createRadialGradient(cx,cy-ri*.4,ri*.1,cx,cy,ri);
+  gi.addColorStop(0,'#1f3a6c'); gi.addColorStop(1,'#0a1830');
+  ctx.beginPath(); ctx.arc(cx,cy,ri,0,Math.PI*2); ctx.fillStyle=gi; ctx.fill();
+  const url=logoName?await logoBlob(logoName):null; const img=url?await loadImg(url):null;
+  if(img && img.naturalWidth){
+    const box=ri*1.3, ar=img.naturalWidth/img.naturalHeight; let dw=box, dh=box; if(ar>1) dh=box/ar; else dw=box*ar;
+    ctx.drawImage(img,cx-dw/2,cy-dh/2,dw,dh);
+  } else {
+    ctx.font=Math.round(ri*1.05)+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🏆',cx,cy+6); ctx.textBaseline='alphabetic';
+  }
+}
+async function shLogoTile(ctx,logoName,x,y,s){
+  const url=logoName?await logoBlob(logoName):null; const img=url?await loadImg(url):null;
+  rr(ctx,x,y,s,s,s*.26); ctx.fillStyle='rgba(255,255,255,.07)'; ctx.fill();
+  if(img && img.naturalWidth){
+    const box=s*.78, ar=img.naturalWidth/img.naturalHeight; let dw=box, dh=box; if(ar>1) dh=box/ar; else dw=box*ar;
+    ctx.drawImage(img,x+(s-dw)/2,y+(s-dh)/2,dw,dh);
+  } else {
+    ctx.font=Math.round(s*.5)+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🛡️',x+s/2,y+s/2+4); ctx.textBaseline='alphabetic';
+  }
+}
+/* fila di (fino a) tre personaggi: MVP, top, bomber — o i premi di stagione */
+async function shTrio(ctx,items,y0){
+  items=items.filter(Boolean).slice(0,3); if(!items.length) return;
+  const n=items.length, gap=24, cw=n===3?304:(n===2?400:520), ch=430;
+  const x0=SH_W/2-(n*cw+(n-1)*gap)/2;
+  for(let i=0;i<n;i++){
+    const it=items[i], x=x0+i*(cw+gap), cx=x+cw/2;
+    shGlass(ctx,x,y0,cw,ch,40,it.rgb);
+    await shFig(ctx,it.avatar,cx,y0+262,218,it.rgb,it.name);
+    shText(ctx,it.label.toUpperCase(),cx,y0+312,{px:24,w:900,fam:'body',color:`rgb(${it.rgb})`,maxW:cw-40});
+    shText(ctx,it.name,cx,y0+362,{px:40,w:800,maxW:cw-40,min:26});
+    shText(ctx,it.value,cx,y0+406,{px:32,w:700,fam:'mono',color:'#eaf3ff',maxW:cw-40,min:20});
+  }
+}
+/* riquadro «la mia giornata / la mia stagione» */
+async function shMine(ctx,y0,o){
+  const x=60, w=SH_W-120, h=210;
+  shGlass(ctx,x,y0,w,h,44,o.gold?'255,194,61':'126,194,255');
+  await shLogoTile(ctx,o.logo,x+34,y0+45,120);
+  const tx=x+186;
+  shText(ctx,o.label.toUpperCase(),tx,y0+78,{px:26,w:900,fam:'body',align:'left',color:o.gold?'#ffd470':'#9fd0ff'});
+  shText(ctx,o.team,tx,y0+134,{px:50,w:800,align:'left',maxW:w-186-270,min:32});
+  if(o.line) shText(ctx,o.line,tx,y0+180,{px:28,w:600,fam:'body',align:'left',color:'#a9bfdc',maxW:w-186-270});
+  const rx=x+w-40;
+  shText(ctx,o.big,rx,y0+128,{px:92,w:800,align:'right',color:o.gold?'#ffd470':'#ffffff',glow:o.gold?'rgba(255,194,61,.6)':'rgba(63,151,255,.7)',blur:36,maxW:250,min:60});
+  if(o.sub) shText(ctx,o.sub,rx,y0+176,{px:28,w:800,fam:'body',align:'right',color:'#a9bfdc',maxW:250});
+}
+function shFooter(ctx){
+  shText(ctx,'fantacalcettoitalia.it',SH_W/2,SH_H-62,{px:30,w:700,fam:'body',color:'#8fa9cc'});
+}
+async function shFonts(){
+  // i font servono per disegnare bene, ma una rete lenta non deve bloccare la storia
+  const wait=new Promise(res=>setTimeout(res,1500));
+  try{ await Promise.race([wait, Promise.all([document.fonts.load('800 80px "Bricolage Grotesque"'),document.fonts.load('800 30px "Hanken Grotesk"'),
+                          document.fonts.load('700 30px "JetBrains Mono"')]).then(()=>document.fonts.ready)]); }catch(_){ }
+}
+/* squadra al completo al posto del vincitore, se il vincitore non c'e' */
+async function shSquad(ctx,cy){
+  const im=await pzPreloadSquad(); if(!im) return;
+  const w=980, h=w*im.naturalHeight/im.naturalWidth;
+  ctx.drawImage(im,SH_W/2-w/2,cy-h/2,w,h);
+}
+
+async function buildShareCard(){
+  const d=recapData||{}, ex=recapExtra||{};
+  const cv=document.createElement('canvas'); cv.width=SH_W; cv.height=SH_H; const ctx=cv.getContext('2d');
+  await shFonts();
+  shBg(ctx,false);
+  await shBrand(ctx);
+  shPill(ctx,(myLeague&&myLeague.name)||'FantaCalcetto',SH_W/2,212,'126,194,255','#bfe0ff');
+  shTitle(ctx,'PAGELLONE',392,false);
+  const mdm=(matchdaysList||[]).find(m=>m.id===recapMd);
+  const when=(mdm&&mdm.kickoff)?rvShortDate(new Date(mdm.kickoff)):'';
+  shText(ctx,(d.label||'Giornata')+(when?'  ·  '+when:''),SH_W/2,468,{px:46,w:700,color:'#d6e7fb',maxW:940});
+
+  // --- vincitore di giornata ---
+  const w=d.winner;
+  if(w){
+    const pod=ex.mdPodium||[];
+    const wid=(pod[0] && pod[0].team_name===w.team_name)?pod[0].manager_id:null;
+    const logo=wid?teamLogoName(wid):winnerLogoName(w);
+    shRays(ctx,SH_W/2,680,470,'255,200,90');
+    await shMedal(ctx,logo,SH_W/2,672,138);
+    shText(ctx,'VINCITORE DI GIORNATA',SH_W/2,872,{px:30,w:900,fam:'body',color:'#ffd470'});
+    shText(ctx,w.team_name,SH_W/2,956,{px:84,w:800,maxW:960,min:50});
+    shText(ctx,Number(w.points||0).toFixed(1)+' pt',SH_W/2,1068,{px:104,w:800,color:'#ffd470',glow:'rgba(255,194,61,.65)',blur:44});
+  } else {
+    await shSquad(ctx,800);
+  }
+
+  // --- i protagonisti ---
+  const L=ex.leaders||{}, trio=[];
+  if(d.mvp) trio.push({label:'MVP',name:d.mvp.name,avatar:d.mvp.avatar,value:d.mvp.votes+' nomination',rgb:'255,194,61'});
+  if(d.top_player) trio.push({label:'Top di giornata',name:d.top_player.name,avatar:d.top_player.avatar,value:Number(d.top_player.pts||0).toFixed(1)+' pt',rgb:'47,217,138'});
+  if(L.bomber) trio.push({label:'Bomber',name:L.bomber.name,avatar:L.bomber.avatar,value:L.bomber.val+' gol',rgb:'56,200,255'});
+  else if(L.assistman) trio.push({label:'Assist-man',name:L.assistman.name,avatar:L.assistman.avatar,value:L.assistman.val+' assist',rgb:'167,139,250'});
+  await shTrio(ctx,trio,1140);
+
+  // --- la mia giornata ---
+  const m=ex.mine;
+  if(m){
+    await shMine(ctx,1596,{label:'La mia giornata',team:m.teamName||(profile&&profile.team_name)||'',logo:teamLogoName(profile&&profile.id),
+      big:Number(m.points||0).toFixed(1),sub:'punti',line:(m.rank?(m.rank+'° di giornata'+(m.nteams?' su '+m.nteams:'')):'')});
+  } else if(ex.mdPodium && ex.mdPodium.length>1){
+    const p2=ex.mdPodium[1];
+    await shMine(ctx,1596,{label:'Secondo posto',team:p2.team_name,logo:teamLogoName(p2.manager_id),big:Number(p2.points||0).toFixed(1),sub:'punti'});
+  }
+  shFooter(ctx);
   return cv;
 }
 async function prepShareCard(){
   const wrap=document.getElementById('pagShareWrap'); if(!wrap) return;
   try{
-    const cv=await buildShareCard();
+    const cv=await (_sharePromise||(_sharePromise=buildShareCard()));
     if(document.getElementById('pag').classList.contains('open')){
-      wrap.innerHTML=''; cv.className='pag-share-canvas'; wrap.appendChild(cv); _shareCanvas=cv;
+      wrap.innerHTML=''; cv.className='pz-shcv'; wrap.appendChild(cv); _shareCanvas=cv;
     }
   }catch(_){ wrap.innerHTML='<div class="pag-share-load">Immagine non disponibile</div>'; }
 }
@@ -10496,6 +10929,7 @@ async function openSeasonRecap(id, auto){
      comunque. Si blocca dopo, quando ne comincia un'altra. */
   if(!auto && seasonLocked(id)){ openPro('storico'); return; }
   if(recapBusy) return; recapBusy=true;
+  try{ pzPreloadSquad(); }catch(_){ }
   try{
     const {data,error}=await sb.rpc('get_season_recap', id?{p_season:id}:{});
     if(error||!data||data.empty||!data.season_id){
@@ -10505,7 +10939,7 @@ async function openSeasonRecap(id, auto){
                             : 'Recap vuoto: la stagione non ha giornate chiuse (chiudi la giornata e ricalcola).');
       return;
     }
-    seasonData=data; seasonRecapId=data.season_id; recapMode='season'; _shareCanvas=null;
+    seasonData=data; seasonRecapId=data.season_id; recapMode='season'; _shareCanvas=null; _sharePromise=null;
     recapCards=buildSeasonCards(data); recapIdx=0;
     try{ localStorage.setItem('fc_srecap_seen_'+data.season_id,'1'); }catch(_){ }
     const p=document.getElementById('pag'); p.classList.add('open');
@@ -10635,210 +11069,191 @@ function seasonPathSVG(path, teams){
   </div>`;
 }
 
-/* riga premio: emoji · avatar · etichetta+nome · valore */
+/* riga premio: medaglione · figura intera · etichetta+nome · valore (sessione 70) */
 function sAwd(icon,label,who,val,cls){
   if(!who) return '';
-  return `<div class="pag-awd-row ${cls||''}">
-    <span class="pag-awd-ic">${icon}</span>
-    <span class="pag-awd-av">${av(who.avatar,44)}</span>
-    <span class="pag-awd-tx"><span class="pag-awd-k">${esc(label)}</span><span class="pag-awd-n">${esc(who.name)}</span></span>
-    <span class="pag-awd-v">${val}</span></div>`;
+  return `<div class="pz-aw ${cls||''}"><span class="ic">${icon}</span><span class="av">${pzFig(who.avatar,48)}</span>
+    <span class="tx"><span class="k">${esc(label)}</span><span class="n">${esc(who.name)}</span></span>
+    <span class="vl">${val}</span></div>`;
 }
 function sIsMe(who){ return !!(who && seasonData && seasonData.me_player_id && Number(who.player_id)===Number(seasonData.me_player_id)); }
+function sTile(v,lbl,tone,dec){
+  return `<div class="pz-tile ${tone||''}"><b data-count="${Number(v)||0}"${dec?' data-dec="1"':''}>0</b><span>${esc(lbl)}</span></div>`;
+}
 
+/* ==========================================================================
+   RECAP DI STAGIONE — stesso linguaggio del Pagellone di giornata (sessione 70)
+   Figure intere su piedistallo, raggi e medaglia per il campione, tessere
+   luminose per i numeri, premi come righe in vetro. L'oro resta l'accento.
+   ========================================================================== */
 function renderSeasonHTML(card){
   const d=seasonData||{}, a=d.awards||{}, f=d.fun||{}, n=d.numbers||{}, me=d.mine, mp=d.me_player;
   const num='Stagione '+(d.number||1);
+  const myLogo=me?pzLogo(me.manager_id||d.me_manager_id,30):'';
   switch(card.t){
 
     case 'scover':
-      return `<div class="pag-sbadge">${esc(d.league||'FantaCalcetto')}</div>
-        <div class="pag-cover-glow gold"><div class="pag-cover-emoji">🏆</div></div>
-        <h2 class="pag-title">${esc(num)}</h2>
-        <div class="pag-cover-md">L'annata è archiviata</div>
-        <div class="pag-cover-teaser"><span><b>${d.md_count||0}</b> giornate</span><i></i><span><b>${n.goals||0}</b> gol</span></div>
-        <div class="pag-hint">tocca per iniziare →</div>`;
+      return `<div class="pz-badge au">${esc(d.league||'FantaCalcetto')}</div>
+        ${pzSquadHTML('au')}
+        <div class="pz-tw"><h2 class="pz-title au">${esc(num)}</h2></div>
+        <div class="pz-md">L'annata è archiviata</div>
+        <div class="pz-chips"><div class="pz-chip"><b>${d.md_count||0}</b><span>giornate</span></div><div class="pz-chip"><b>${n.goals||0}</b><span>gol</span></div></div>
+        <div class="pag-hint">Tocca per iniziare</div>`;
 
     case 'snumbers':
       return `<div class="pag-eyebrow">La stagione in numeri</div>
-        <div class="pag-stats">
-          <div class="pag-stat"><div class="pag-statv" data-count="${n.goals||0}">0</div><div class="pag-statk">gol</div></div>
-          <div class="pag-stat"><div class="pag-statv" data-count="${n.assists||0}">0</div><div class="pag-statk">assist</div></div>
-        </div>
-        <div class="pag-stats" style="margin-top:8px">
-          <div class="pag-stat"><div class="pag-statv" data-count="${n.presences||0}">0</div><div class="pag-statk">presenze</div></div>
-          <div class="pag-stat"><div class="pag-statv" data-count="${n.votes||0}">0</div><div class="pag-statk">voti dati</div></div>
-        </div>
-        <div class="pag-note">Media di <b>${esc(String(n.avg_goals||0))}</b> gol a giornata${
-          n.best_md?`, e la più scoppiettante è stata <b>${esc(n.best_md.label)}</b> con ${n.best_md.goals} gol`:''}.</div>`;
+        <div class="pz-tiles">${sTile(n.goals,'gol','cy')}${sTile(n.assists,'assist','v')}${sTile(n.presences,'presenze','g')}${sTile(n.votes,'voti dati','au')}</div>
+        <div class="pz-note">Media di <b>${esc(String(n.avg_goals||0))}</b> gol a giornata${
+          n.best_md?`. La più ricca: <b>${esc(n.best_md.label)}</b>, con ${n.best_md.goals} gol`:''}.</div>`;
 
     case 'srecords':{
       const h=d.records.high, l=d.records.low;
+      const rec=(o,tone,ic,k)=>`<div class="pz-rec ${tone}"><div class="pz-rec-ic">${ic}</div>
+          <div class="pz-rec-tx"><span class="k">${k}</span><span class="n">${pzLogo(o.manager_id,24)}${esc(o.team_name)}</span><span class="md">${esc(o.label)}</span></div>
+          <div class="pz-rec-v"><b data-count="${Number(o.points)||0}" data-dec="1">0</b><small>pt</small></div></div>`;
       return `<div class="pag-eyebrow">I record di giornata</div>
-        <div class="pag-awd">
-          <div class="pag-awd-row gold"><span class="pag-awd-ic">🚀</span>
-            <span class="pag-awd-tx"><span class="pag-awd-k">Punteggio più alto · <span class="nb">${esc(h.label)}</span></span>
-              <span class="pag-awd-n">${esc(h.team_name)}</span></span>
-            <span class="pag-awd-v">${fmtPts(h.points)}</span></div>
-          ${l?`<div class="pag-awd-row"><span class="pag-awd-ic">🪫</span>
-            <span class="pag-awd-tx"><span class="pag-awd-k">Punteggio più basso · <span class="nb">${esc(l.label)}</span></span>
-              <span class="pag-awd-n">${esc(l.team_name)}</span></span>
-            <span class="pag-awd-v">${fmtPts(l.points)}</span></div>`:''}
-        </div>`;
+        <div class="pz-recs">${rec(h,'au','🚀','Punteggio più alto')}${l?rec(l,'r','🪫','Punteggio più basso'):''}</div>`;
     }
 
     case 'syou':{
       const b=me.best_md, w=me.worst_md;
       return `<div class="pag-eyebrow">La tua stagione</div>
-        <h2 class="pag-name">${esc(me.team_name||'La tua squadra')}</h2>
-        <div class="pag-bigline"><span data-count="${me.points||0}" data-dec="1">0</span></div>
-        <div class="pag-ptlabel">punti in ${d.md_count||0} giornate</div>
-        <div class="pag-stats" style="margin-top:20px">
-          <div class="pag-stat"><div class="pag-statv" data-count="${me.rank||0}">0</div><div class="pag-statk">posizione su ${me.teams||'—'}</div></div>
-          <div class="pag-stat"><div class="pag-statv" data-count="${me.best_pos||me.rank||0}">0</div><div class="pag-statk">miglior posizione</div></div>
+        <div class="pz-team">${myLogo}<span>${esc(me.team_name||'La tua squadra')}</span></div>
+        <div class="pz-score"><span data-count="${me.points||0}" data-dec="1">0</span><small>pt</small></div>
+        <div class="pz-sublbl">in ${d.md_count||0} giornate</div>
+        <div class="pz-ranks">
+          <div class="pz-rk pz-glass"><b>${me.rank||'—'}°</b><span>su ${me.teams||'—'} squadre</span></div>
+          <div class="pz-rk pz-glass"><b>${me.best_pos||me.rank||'—'}°</b><span>miglior posizione</span></div>
         </div>
-        ${b?`<div class="pag-note">Il tuo capolavoro: <b>${fmtPts(b.points)} punti</b> in ${esc(b.label)}${
-          w?`. La serata storta invece è stata ${esc(w.label)}, con ${fmtPts(w.points)}`:''}.</div>`:''}`;
+        ${b?`<div class="pz-note">Giornata migliore: <b>${fmtPts(b.points)} punti</b> in ${esc(b.label)}${
+          w?`. La peggiore: ${esc(w.label)}, con ${fmtPts(w.points)}`:''}.</div>`:''}`;
     }
 
     case 'spath':{
       const lead=me.leader_days||0;
       return `<div class="pag-eyebrow">La tua parabola</div>
-        <h2 class="pag-name" style="font-size:24px">Dove sei stato, giornata per giornata</h2>
-        ${seasonPathSVG(me.path, me.teams)}
-        <div class="pag-note">${lead>0
-          ? `Hai comandato la classifica per <b>${lead} giornat${lead===1?'a':'e'}</b> e il tuo punto più alto è stato il <b>${me.best_pos}º posto</b>.`
-          : `Il tuo punto più alto della stagione è stato il <b>${me.best_pos||me.rank}º posto</b>.`}</div>`;
+        <div class="pz-lsub">Posizione in classifica, giornata per giornata</div>
+        <div class="pz-chart pz-glass">${seasonPathSVG(me.path, me.teams)}</div>
+        <div class="pz-note">${lead>0
+          ? `In testa per <b>${lead} giornat${lead===1?'a':'e'}</b>, miglior posizione <b>${me.best_pos}º</b>.`
+          : `Miglior posizione della stagione: <b>${me.best_pos||me.rank}º</b>.`}</div>`;
     }
 
     case 'sloyal':{
       const L=me.loyal;
       return `<div class="pag-eyebrow">Il tuo fedelissimo</div>
-        <div class="pag-av">${av(L.avatar,150)}</div>
-        <h2 class="pag-name">${esc(L.name)}</h2>
-        <div class="pag-bigline"><span data-count="${L.times}">0</span>×</div>
-        <div class="pag-ptlabel">volte in formazione</div>
-        <div class="pag-note">Con te ha messo insieme <b>${L.gol||0} gol</b> e <b>${L.assist||0} assist</b>.</div>`;
+        <div class="pz-hero">${pzStage(L.avatar,168,'cy')}</div>
+        <h2 class="pz-hname">${esc(L.name)}</h2>
+        <div class="pz-bigv cy"><b data-count="${L.times}">0</b><span>volte in formazione</span></div>
+        <div class="pz-note">Insieme: <b>${L.gol||0} gol</b> e <b>${L.assist||0} assist</b>.</div>`;
     }
 
     case 'scaptain':{
       const C=me.captain, pct=C.tot?Math.round((C.hits/C.tot)*100):0;
-      return `<div class="pag-eyebrow">La fascia</div>
-        <div class="pag-av">${av(C.avatar,150)}</div>
-        <h2 class="pag-name">${esc(C.name)}</h2>
-        <div class="pag-bigline"><span data-count="${C.times}">0</span>×</div>
-        <div class="pag-ptlabel">capitano</div>
-        <div class="pag-note">${C.tot?`Le tue fasce hanno ripagato <b>${C.hits} volte su ${C.tot}</b> (${pct}%) tra gol e MVP.`
-          :'Una scelta di cuore, più che di numeri.'}</div>`;
+      return `<div class="pag-eyebrow gold">La fascia</div>
+        <div class="pz-hero">${pzStage(C.avatar,168,'au')}</div>
+        <h2 class="pz-hname"><span class="pz-arm" style="--c:255,194,61">C</span>${esc(C.name)}</h2>
+        <div class="pz-bigv au"><b data-count="${C.times}">0</b><span>volte capitano</span></div>
+        <div class="pz-note">${C.tot?`Fascia ripagata <b>${C.hits} volte su ${C.tot}</b> (${pct}%), tra gol e MVP.`
+          :'Nessun gol né MVP con la fascia.'}</div>`;
     }
 
     case 'smodule':{
       const M=me.modules, top=M[0];
       const most=M.slice().sort((x,y)=>y.times-x.times)[0];
       return `<div class="pag-eyebrow">Il tuo modulo</div>
-        <h2 class="pag-name" style="font-size:26px">${esc(most.module)}</h2>
-        <div class="pag-ptlabel">usato ${most.times} volt${most.times===1?'a':'e'}</div>
-        <div class="pag-awd" style="margin-top:20px">
-          ${M.map(m=>`<div class="pag-awd-row ${m.module===top.module?'gold':''}">
-            <span class="pag-awd-ic">${m.module===top.module?'📈':'📋'}</span>
-            <span class="pag-awd-tx"><span class="pag-awd-k">${m.times} giornat${m.times===1?'a':'e'}</span>
-              <span class="pag-awd-n">${esc(m.module)}</span></span>
-            <span class="pag-awd-v">${fmtPts(m.avg)}</span></div>`).join('')}
-        </div>
-        ${(most.module!==top.module)
-          ? `<div class="pag-note">Curioso: il tuo preferito è il <b>${esc(most.module)}</b>, ma quello che rende di più è il <b>${esc(top.module)}</b>.</div>`
-          : `<div class="pag-note">Il modulo che usi di più è anche quello che ti rende di più: <b>${fmtPts(top.avg)}</b> punti a giornata.</div>`}`;
+        <div class="pz-module">${esc(most.module)}</div>
+        <div class="pz-sublbl">usato ${most.times} volt${most.times===1?'a':'e'}</div>
+        <div class="pz-rows">${M.map(m=>`<div class="pz-row pz-glass${m.module===top.module?' au':''}">
+            <div class="md">${m.module===top.module?'📈':'📋'}</div>
+            <div class="nm">${esc(m.module)}<small>${m.times} giornat${m.times===1?'a':'e'}</small></div>
+            <div class="vl">${fmtPts(m.avg)}<small>media</small></div></div>`).join('')}</div>
+        <div class="pz-note">${(most.module!==top.module)
+          ? `Il più usato è il <b>${esc(most.module)}</b>, il più redditizio il <b>${esc(top.module)}</b>.`
+          : `Il più usato è anche il più redditizio: <b>${fmtPts(top.avg)}</b> punti a giornata.`}</div>`;
     }
 
     case 'splayer':
       return `<div class="pag-eyebrow">Tu in campo</div>
-        <div class="pag-av">${av(mp.avatar,150)}</div>
-        <h2 class="pag-name">${esc(mp.name)}</h2>
-        <div class="pag-stats" style="margin-top:18px">
-          <div class="pag-stat"><div class="pag-statv" data-count="${mp.gol||0}">0</div><div class="pag-statk">gol</div></div>
-          <div class="pag-stat"><div class="pag-statv" data-count="${mp.ast||0}">0</div><div class="pag-statk">assist</div></div>
-        </div>
-        <div class="pag-stats" style="margin-top:8px">
-          <div class="pag-stat"><div class="pag-statv" data-count="${mp.pres||0}">0</div><div class="pag-statk">presenze</div></div>
-          <div class="pag-stat"><div class="pag-statv" data-count="${mp.vote||0}" data-dec="1">0</div><div class="pag-statk">voto medio</div></div>
-        </div>
-        ${mp.best?`<div class="pag-note">La tua serata migliore: <b>${Number(mp.best.vote).toFixed(2)}</b> in ${esc(mp.best.label)}${
-          mp.mvp?`. E ti sei preso <b>${mp.mvp} MVP</b>`:''}.</div>`:''}`;
+        <div class="pz-hero sm">${pzStage(mp.avatar,140,'cy')}</div>
+        <h2 class="pz-hname">${esc(mp.name)}</h2>
+        <div class="pz-tiles">${sTile(mp.gol,'gol','cy')}${sTile(mp.ast,'assist','v')}${sTile(mp.pres,'presenze','g')}${sTile(mp.vote,'voto medio','au',true)}</div>
+        ${mp.best?`<div class="pz-note">Serata migliore: <b>${Number(mp.best.vote).toFixed(2)}</b> in ${esc(mp.best.label)}${
+          mp.mvp?`. <b>${mp.mvp} MVP</b> in stagione`:''}.</div>`:''}`;
 
     case 'stwin':
       return `<div class="pag-eyebrow">Il tuo gemello</div>
-        <div class="pag-av">${av(mp.twin.avatar,150)}</div>
-        <h2 class="pag-name">${esc(mp.twin.name)}</h2>
-        <div class="pag-note">Siete finiti nella stessa formazione <b>${mp.twin.times} volte</b>. Un pacchetto difficile da separare.</div>`;
+        <div class="pz-pair">${pzStage(mp.avatar,140,'cy')}<span class="pz-plus">+</span>${pzStage(mp.twin.avatar,140,'v')}</div>
+        <div class="pz-pairn"><span>${esc(mp.name)}</span><span>${esc(mp.twin.name)}</span></div>
+        <div class="pz-bigv v"><b data-count="${mp.twin.times}">0</b><span>volte nella stessa formazione</span></div>`;
 
     case 'schamp':{
-      const w=d.champion;
+      const w=d.champion, lg=pzLogo(w.manager_id,72);
       return `<div class="pag-eyebrow gold">Campione della stagione</div>
-        <div class="pag-trophy">🏆</div>
-        <div style="margin-top:12px">${teamLogoHTML(w.manager_id,86)}</div>
-        <h2 class="pag-name gold big">${esc(w.team_name)}</h2>
-        <div class="pag-win-tag">${esc(w.player_name||'')}</div>
-        <div class="pag-bigline"><span data-count="${w.points||0}" data-dec="1">0</span></div>
-        <div class="pag-ptlabel">punti${w.gap!=null?` · ${fmtPts(w.gap)} sul secondo`:''}</div>`;
+        <div class="pz-win"><div class="pz-rays"></div>
+          <div class="pz-medal"><div class="pz-medal-in">${lg||'<span class="emo">🏆</span>'}</div>${lg?'<span class="cup">🏆</span>':''}</div></div>
+        <div class="pz-wtag">${esc(w.player_name||num)}</div>
+        <h2 class="pz-wname">${esc(w.team_name)}</h2>
+        <div class="pz-wpts"><span data-count="${w.points||0}" data-dec="1">0</span><small>pt</small></div>
+        ${w.gap!=null?`<div class="pz-sublbl">${fmtPts(w.gap)} punti sul secondo</div>`:''}`;
     }
 
     case 'spodium':{
       const p=d.podium, ord=[p[1],p[0],p[2]], cls=['p2','p1','p3'], med=['🥈','🥇','🥉'];
-      return `<div class="pag-eyebrow">Il podio</div>
-        <div class="pag-pod">
-          ${ord.map((t,i)=>t?`<div class="pag-pod-c ${cls[i]}">
-            <div class="pag-pod-nm">${esc(t.team_name)}</div>
-            <div class="pag-pod-bar"><div class="pag-pod-r">${med[i]}</div><div class="pag-pod-p">${fmtPts(t.points)}</div></div>
+      return `<div class="pag-eyebrow gold">Il podio</div>
+        <div class="pz-pod">
+          ${ord.map((t,i)=>t?`<div class="pz-podc ${cls[i]}">
+            <div class="lg">${pzLogo(t.manager_id,i===1?56:44)||`<span class="emo">${med[i]}</span>`}</div>
+            <div class="nm">${esc(t.team_name)}</div>
+            <div class="bar"><span class="md">${med[i]}</span><b>${fmtPts(t.points)}</b></div>
           </div>`:'').join('')}
         </div>
-        ${d.last?`<div class="pag-note">🥄 Cucchiaio di legno a <b>${esc(d.last.team_name)}</b>: c'è sempre un anno prossimo.</div>`:''}`;
+        ${d.last?`<div class="pz-last">Cucchiaio di legno <b>${esc(d.last.team_name)}</b></div>`:''}`;
     }
 
     case 'sawards1':
       return `<div class="pag-eyebrow gold">I premi della stagione</div>
-        <div class="pag-awd">
-          ${sAwd('👟','Capocannoniere',a.capocannoniere,(a.capocannoniere?a.capocannoniere.val+' ⚽':''),sIsMe(a.capocannoniere)?'me':'gold')}
-          ${sAwd('👟','Re degli assist',a.assistman,(a.assistman?a.assistman.val+' 👟':''),sIsMe(a.assistman)?'me':'')}
-          ${sAwd('🏅','Pallone d\'oro',a.goldenball,(a.goldenball?Number(a.goldenball.val).toFixed(2):''),sIsMe(a.goldenball)?'me':'')}
+        <div class="pz-awd">
+          ${sAwd('⚽','Capocannoniere',a.capocannoniere,(a.capocannoniere?a.capocannoniere.val+'<small>gol</small>':''),sIsMe(a.capocannoniere)?'me':'au')}
+          ${sAwd('👟','Re degli assist',a.assistman,(a.assistman?a.assistman.val+'<small>assist</small>':''),sIsMe(a.assistman)?'me':'')}
+          ${sAwd('🏅','Pallone d\'oro',a.goldenball,(a.goldenball?Number(a.goldenball.val).toFixed(2)+'<small>media</small>':''),sIsMe(a.goldenball)?'me':'')}
         </div>`;
 
     case 'sawards2':
       return `<div class="pag-eyebrow gold">I premi della stagione</div>
-        <div class="pag-awd">
-          ${sAwd('⭐','Uomo copertina',a.cover,(a.cover?a.cover.val+' MVP':''),sIsMe(a.cover)?'me':'gold')}
-          ${sAwd('🧤','Saracinesca',a.wall,(a.wall?Number(a.wall.val).toFixed(2):''),sIsMe(a.wall)?'me':'')}
-          ${sAwd('🚩','Bandiera',a.flag,(a.flag?a.flag.val+' pres.':''),sIsMe(a.flag)?'me':'')}
+        <div class="pz-awd">
+          ${sAwd('⭐','Uomo copertina',a.cover,(a.cover?a.cover.val+'<small>MVP</small>':''),sIsMe(a.cover)?'me':'au')}
+          ${sAwd('🧤','Saracinesca',a.wall,(a.wall?Number(a.wall.val).toFixed(2)+'<small>gol subiti</small>':''),sIsMe(a.wall)?'me':'')}
+          ${sAwd('🚩','Bandiera',a.flag,(a.flag?a.flag.val+'<small>presenze</small>':''),sIsMe(a.flag)?'me':'')}
         </div>
-        ${a.wall?`<div class="pag-note">La Saracinesca è il portiere meno battuto: gol subiti a partita.</div>`:''}`;
+        ${a.wall?`<div class="pz-note">Saracinesca: il portiere con meno gol subiti a partita.</div>`:''}`;
 
     case 'swanted':
       return `<div class="pag-eyebrow">Mercato</div>
-        <div class="pag-awd">
-          ${sAwd('🔥','Il più desiderato',a.wanted,(a.wanted?a.wanted.val+'×':''),sIsMe(a.wanted)?'me':'gold')}
-          ${sAwd('👻','Il grande escluso',a.excluded,(a.excluded?a.excluded.val+'×':''),sIsMe(a.excluded)?'me':'')}
+        <div class="pz-awd">
+          ${sAwd('🔥','Il più desiderato',a.wanted,(a.wanted?a.wanted.val+'<small>volte</small>':''),sIsMe(a.wanted)?'me':'au')}
+          ${sAwd('👻','Il grande escluso',a.excluded,(a.excluded?a.excluded.val+'<small>volte</small>':''),sIsMe(a.excluded)?'me':'')}
         </div>
-        <div class="pag-note">Quante volte sono finiti in una formazione, sommando tutte le squadre.</div>`;
+        <div class="pz-note">Volte in formazione, sommando tutte le squadre.</div>`;
 
     case 'sjump':{
       const j=d.jump;
       return `<div class="pag-eyebrow">Il sorpasso dell'anno</div>
-        <div class="pag-cover-emoji">🚀</div>
-        <h2 class="pag-name">${esc(j.team_name||'—')}</h2>
-        <div class="pag-bigline">+<span data-count="${j.jump}">0</span></div>
-        <div class="pag-ptlabel">posizioni in una sola giornata</div>
-        <div class="pag-note">È successo in <b>${esc(j.label)}</b>, chiusa al ${j.pos}º posto.</div>`;
+        <div class="pz-emo cy">🚀</div>
+        <div class="pz-team">${pzLogo(j.manager_id,30)}<span>${esc(j.team_name||'—')}</span></div>
+        <div class="pz-bigv cy"><b>+<span data-count="${j.jump}">0</span></b><span>posizioni in una giornata</span></div>
+        <div class="pz-note">In <b>${esc(j.label)}</b>, chiusa al ${j.pos}º posto.</div>`;
     }
 
     case 'sduel':{
       const q=d.duel;
       return `<div class="pag-eyebrow">Il duello</div>
-        <h2 class="pag-name" style="font-size:24px">${q.pos}º contro ${q.pos+1}º</h2>
-        <div class="pag-duel">
-          <div class="pag-duel-c"><div class="pag-duel-n">${esc(q.t1)}</div></div>
-          <div class="pag-duel-x">VS</div>
-          <div class="pag-duel-c"><div class="pag-duel-n">${esc(q.t2)}</div></div>
+        <div class="pz-vs">
+          <div class="pz-vsc pz-glass"><span class="rk">${q.pos}º</span><span class="nm">${esc(q.t1)}</span></div>
+          <div class="pz-vsx">VS</div>
+          <div class="pz-vsc pz-glass"><span class="rk">${q.pos+1}º</span><span class="nm">${esc(q.t2)}</span></div>
         </div>
-        <div class="pag-note">Divise da <b>${fmtPts(q.gap)} punti</b> dopo un'intera stagione.</div>`;
+        <div class="pz-bigv au"><b data-count="${Number(q.gap)||0}" data-dec="1">0</b><span>punti di distacco a fine stagione</span></div>`;
     }
 
     case 'striples':{
@@ -10846,53 +11261,39 @@ function renderSeasonHTML(card){
       const nameOf=g=> g>=5?'Manita':(g===4?'Poker':'Tripletta');
       const icoOf =g=> g>=5?'🖐️':(g===4?'🎰':'🎩');
       return `<div class="pag-eyebrow">Serate da ricordare</div>
-        <div class="pag-awd">
-          ${T.map(t=>`<div class="pag-awd-row ${t.gol>=4?'gold':''}">
-            <span class="pag-awd-ic">${icoOf(t.gol)}</span>
-            <span class="pag-awd-av">${av(t.avatar,44)}</span>
-            <span class="pag-awd-tx"><span class="pag-awd-k">${nameOf(t.gol)} · ${esc(t.label)}</span>
-              <span class="pag-awd-n">${esc(t.name)}</span></span>
-            <span class="pag-awd-v">${t.gol} ⚽</span></div>`).join('')}
-        </div>`;
+        <div class="pz-awd">${T.map(t=>sAwd(icoOf(t.gol),nameOf(t.gol)+' · '+t.label,t,t.gol+'<small>gol</small>',t.gol>=4?'au':'')).join('')}</div>`;
     }
 
     case 'sfun':
       return `<div class="pag-eyebrow">Premi speciali</div>
-        <div class="pag-awd">
-          ${sAwd('🫠','Il migliore (degli scarsi)',a.worst,(a.worst?Number(a.worst.val).toFixed(2):''),sIsMe(a.worst)?'me':'')}
-          ${sAwd('🙈','Autogol d\'autore',a.owngoal,(a.owngoal?a.owngoal.val+'':''),sIsMe(a.owngoal)?'me':'')}
-          ${f.lucky?`<div class="pag-awd-row"><span class="pag-awd-ic">🍀</span>
-            <span class="pag-awd-tx"><span class="pag-awd-k">Mister Fortuna</span>
-              <span class="pag-awd-n">${esc(f.lucky.team_name||'—')}</span></span>
-            <span class="pag-awd-v">${fmtPts(f.lucky.val)}</span></div>`:''}
+        <div class="pz-awd">
+          ${sAwd('🫠','Il migliore degli scarsi',a.worst,(a.worst?Number(a.worst.val).toFixed(2)+'<small>media</small>':''),sIsMe(a.worst)?'me':'')}
+          ${sAwd('🙈','Autogol d\'autore',a.owngoal,(a.owngoal?a.owngoal.val+'<small>autogol</small>':''),sIsMe(a.owngoal)?'me':'')}
+          ${f.lucky?`<div class="pz-aw"><span class="ic">🍀</span><span class="av team">${pzLogo(f.lucky.manager_id,34)||'🛡️'}</span>
+            <span class="tx"><span class="k">Mister Fortuna</span><span class="n">${esc(f.lucky.team_name||'—')}</span></span>
+            <span class="vl">${fmtPts(f.lucky.val)}<small>pt</small></span></div>`:''}
         </div>
-        <div class="pag-note">Mister Fortuna è chi ha raccolto più punti dal risultato della squadra vera, invece che dalle prestazioni.${
-          a.worst?` Il "migliore degli scarsi" si assegna solo con almeno ${a.gate||4} presenze: nessuno vince per caso.`:''}</div>`;
+        <div class="pz-note">Mister Fortuna: più punti dal risultato della partita vera.${
+          a.worst?` Il migliore degli scarsi richiede almeno ${a.gate||4} presenze.`:''}</div>`;
 
     case 'spalmares':{
       const P=seasonPalmares(d);
       return `<div class="pag-eyebrow gold">Il tuo palmarès</div>
-        <div class="pag-cover-emoji">🎖️</div>
-        <h2 class="pag-name gold" style="font-size:26px">${P.length===1?'Un premio è tuo':P.length+' premi sono tuoi'}</h2>
-        <div class="pag-awd" style="margin-top:20px">
-          ${P.map(p=>{const L=SEASON_AWARD_LABELS[p.key];
-            return `<div class="pag-awd-row gold"><span class="pag-awd-ic">${L[0]}</span>
-              <span class="pag-awd-tx"><span class="pag-awd-k">${esc(num)}</span>
-                <span class="pag-awd-n">${esc(L[1])}</span></span>
-              <span class="pag-awd-v">${esc(L[2](p.val))}</span></div>`;}).join('')}
-        </div>`;
+        <div class="pz-emo au">🎖️</div>
+        <h2 class="pz-hname au">${P.length===1?'Un premio è tuo':P.length+' premi sono tuoi'}</h2>
+        <div class="pz-awd">${P.map(p=>{const L=SEASON_AWARD_LABELS[p.key];
+            return `<div class="pz-aw au"><span class="ic">${L[0]}</span>
+              <span class="tx"><span class="k">${esc(num)}</span><span class="n">${esc(L[1])}</span></span>
+              <span class="vl">${esc(L[2](p.val))}</span></div>`;}).join('')}</div>`;
     }
 
     case 'sfinal':
       return `<div class="pag-eyebrow">Classifica finale</div>
         <div class="pag-lb" id="pagLb">${skeletonRows('lb',Math.min(5,(d.standings||[]).length||3))}</div>
-        <div class="pag-hint">swipe giù per chiudere</div>`;
+        <div class="pag-hint">Scorri verso il basso per chiudere</div>`;
 
     case 'sshare':
-      return `<div class="pag-eyebrow">Portala con te</div>
-        <div class="pag-share-wrap" id="pagShareWrap"><div class="pag-share-load">Preparo l'immagine…</div></div>
-        <button class="pag-share-btn" onclick="shareSeason()" data-stop>📤 Condividi</button>
-        <div class="pag-hint">swipe giù per chiudere</div>`;
+      return pzShareSceneHTML('Condividi la stagione','shareSeason()','au');
   }
   return '';
 }
@@ -10904,57 +11305,56 @@ function renderSeasonStandings(){
   box.innerHTML=rows.map((t,i)=>lbRowHTML(t,i,t.points,false)).join('');
 }
 
-/* card PNG di fine stagione */
+/* storia di fine stagione: stesso impianto della giornata, in oro */
 async function buildSeasonShareCard(){
-  const d=seasonData, W=1080, H=1350, me=d.mine, mp=d.me_player;
-  const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const ctx=cv.getContext('2d');
-  try{ await document.fonts.ready; }catch(_){ }
-  const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#12203a'); bg.addColorStop(1,'#070f1f');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  const gl=ctx.createRadialGradient(W*0.5,H*0.16,40,W*0.5,H*0.16,W*0.75);
-  gl.addColorStop(0,'rgba(255,194,61,.26)'); gl.addColorStop(1,'rgba(255,194,61,0)');
-  ctx.fillStyle=gl; ctx.fillRect(0,0,W,H);
-  ctx.textAlign='center';
-  ctx.fillStyle='#ffd470'; ctx.font='800 34px "Hanken Grotesk",sans-serif';
-  ctx.fillText((d.league||'FANTACALCETTO').toUpperCase(), W/2, 120);
-  ctx.fillStyle='#eaf1fb'; ctx.font='800 84px "Bricolage Grotesque",sans-serif';
-  ctx.fillText('Stagione '+(d.number||1), W/2, 214);
-  let y=300;
-  async function block(emoji,label,name,sub,opts){
-    opts=opts||{};
-    rr(ctx,80,y,W-160,200,34); ctx.fillStyle='rgba(255,255,255,.05)'; ctx.fill();
-    ctx.lineWidth=2; ctx.strokeStyle='rgba(180,205,245,.18)'; rr(ctx,80,y,W-160,200,34); ctx.stroke();
-    ctx.font='80px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(emoji||'⭐', 175, y+100); ctx.textBaseline='alphabetic';
-    const isize=140, ix=W-80-26-isize, iy=y+(200-isize)/2;
-    if(opts.logoName!==undefined) await drawLogo(ctx,opts.logoName,ix,iy,isize);
-    else if(opts.avatarName!==undefined) await drawAvatar(ctx,opts.avatarName,ix,iy,isize,name);
-    const tx=272, maxNameW=(opts.logoName!==undefined||opts.avatarName!==undefined?ix:W-80-26)-tx-24;
-    ctx.textAlign='left';
-    ctx.fillStyle='#8aa0c0'; ctx.font='800 28px "Hanken Grotesk",sans-serif'; ctx.fillText(label.toUpperCase(), tx, y+70);
-    ctx.fillStyle='#eaf1fb'; ctx.font='800 50px "Bricolage Grotesque",sans-serif';
-    let nm=name||'—'; while(ctx.measureText(nm).width>maxNameW && nm.length>3){ nm=nm.slice(0,-2); }
-    if(nm!==(name||'—')) nm+='…';
-    ctx.fillText(nm, tx, y+124);
-    if(sub){ ctx.fillStyle='#ffd470'; ctx.font='800 34px "JetBrains Mono",monospace'; ctx.fillText(sub, tx, y+172); }
-    ctx.textAlign='center'; y+=232;
+  const d=seasonData||{}, me=d.mine, mp=d.me_player, a=d.awards||{}, n=d.numbers||{};
+  const cv=document.createElement('canvas'); cv.width=SH_W; cv.height=SH_H; const ctx=cv.getContext('2d');
+  await shFonts();
+  shBg(ctx,true);
+  await shBrand(ctx);
+  shPill(ctx,d.league||(myLeague&&myLeague.name)||'FantaCalcetto',SH_W/2,212,'255,194,61','#ffe3a1');
+  shTitle(ctx,'STAGIONE '+(d.number||1),392,true);
+  const bits=[]; if(d.md_count) bits.push(d.md_count+(d.md_count===1?' giornata':' giornate')); if(n.goals) bits.push(n.goals+' gol'); if(n.assists) bits.push(n.assists+' assist');
+  shText(ctx,bits.join('  ·  ')||'Stagione archiviata',SH_W/2,468,{px:44,w:700,color:'#f1e2bf',maxW:940});
+
+  // --- campione ---
+  const c=d.champion;
+  if(c){
+    shRays(ctx,SH_W/2,680,470,'255,200,90');
+    await shMedal(ctx,teamLogoName(c.manager_id),SH_W/2,672,138);
+    shText(ctx,'CAMPIONE DELLA STAGIONE',SH_W/2,872,{px:30,w:900,fam:'body',color:'#ffd470'});
+    shText(ctx,c.team_name,SH_W/2,956,{px:84,w:800,maxW:960,min:50});
+    shText(ctx,fmtPts(c.points||0)+' pt',SH_W/2,1068,{px:104,w:800,color:'#ffd470',glow:'rgba(255,194,61,.65)',blur:44});
+  } else {
+    await shSquad(ctx,800);
   }
-  if(me) await block('📋','La mia squadra', me.team_name,
-        me.rank+'º su '+me.teams+' · '+fmtPts(me.points)+' punti', {logoName:teamLogoName(me.manager_id||d.me_manager_id)});
-  if(mp) await block('👟','Le mie cifre', mp.name,
-        (mp.gol||0)+' gol · '+(mp.ast||0)+' assist · '+(mp.pres||0)+' pres.', {avatarName:mp.avatar});
-  if(d.champion) await block('🏆','Campione', d.champion.team_name, fmtPts(d.champion.points)+' punti',
-        {logoName:teamLogoName(d.champion.manager_id)});
-  ctx.fillStyle='#5d76a0'; ctx.font='600 28px "Hanken Grotesk",sans-serif'; ctx.textAlign='center';
-  ctx.fillText('fantacalcettoitalia.it', W/2, H-70);
+
+  // --- i premi ---
+  const trio=[];
+  if(a.capocannoniere) trio.push({label:'Capocannoniere',name:a.capocannoniere.name,avatar:a.capocannoniere.avatar,value:a.capocannoniere.val+' gol',rgb:'56,200,255'});
+  if(a.goldenball)     trio.push({label:"Pallone d'oro",name:a.goldenball.name,avatar:a.goldenball.avatar,value:Number(a.goldenball.val).toFixed(2)+' media',rgb:'255,194,61'});
+  if(a.assistman)      trio.push({label:'Re degli assist',name:a.assistman.name,avatar:a.assistman.avatar,value:a.assistman.val+' assist',rgb:'167,139,250'});
+  if(trio.length<3 && a.cover) trio.push({label:'Uomo copertina',name:a.cover.name,avatar:a.cover.avatar,value:a.cover.val+' MVP',rgb:'47,217,138'});
+  await shTrio(ctx,trio,1140);
+
+  // --- la mia stagione ---
+  if(me){
+    const line=mp?((mp.gol||0)+' gol · '+(mp.ast||0)+' assist · '+(mp.pres||0)+' presenze'):(me.best_pos?('Miglior posizione: '+me.best_pos+'°'):'');
+    await shMine(ctx,1596,{gold:true,label:'La mia stagione',team:me.team_name||'',logo:teamLogoName(me.manager_id||d.me_manager_id),
+      big:(me.rank||'—')+'°',sub:(me.teams?('su '+me.teams+' · '):'')+fmtPts(me.points||0)+' pt',line:line});
+  } else if(mp){
+    await shMine(ctx,1596,{gold:true,label:'La mia stagione',team:mp.name,logo:'',big:String(mp.gol||0),sub:'gol',
+      line:(mp.ast||0)+' assist · '+(mp.pres||0)+' presenze'});
+  }
+  shFooter(ctx);
   return cv;
 }
 async function prepSeasonShare(){
   const wrap=document.getElementById('pagShareWrap'); if(!wrap) return;
   try{
-    const cv=await buildSeasonShareCard();
+    const cv=await (_sharePromise||(_sharePromise=buildSeasonShareCard()));
     if(document.getElementById('pag').classList.contains('open')){
-      wrap.innerHTML=''; cv.className='pag-share-canvas'; wrap.appendChild(cv); _shareCanvas=cv;
+      wrap.innerHTML=''; cv.className='pz-shcv'; wrap.appendChild(cv); _shareCanvas=cv;
     }
   }catch(_){ wrap.innerHTML='<div class="pag-share-load">Immagine non disponibile</div>'; }
 }
