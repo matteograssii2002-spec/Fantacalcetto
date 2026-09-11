@@ -2246,6 +2246,179 @@
     .pz-rec{padding:12px} .pz-rec-v b{font-size:28px}
     .pz-emo{font-size:48px}
   }
+
+  /* ============================================================
+     SESSIONE 71 — pagina FantaCalcetto Pro · Regolamento
+     stesso linguaggio delle storie finali del Pagellone:
+     aloni, raggi, riflessi che passano, ingresso a cascata
+     ============================================================ */
+
+  /* --- PRO: sfondo --- */
+  .pro-page{background:#060c18}
+  .pro-aura{position:fixed;top:0;left:0;right:0;bottom:0;overflow:hidden;pointer-events:none;z-index:0}
+  .pro-aura i{position:absolute;border-radius:50%;background:radial-gradient(closest-side,currentColor,transparent 72%);will-change:transform}
+  .pro-aura i:nth-child(1){width:120vmax;height:120vmax;left:-60vmax;top:-70vmax;color:rgba(255,194,61,.34);animation:pzDriftA 18s ease-in-out infinite alternate}
+  .pro-aura i:nth-child(2){width:110vmax;height:110vmax;right:-62vmax;top:10vh;color:rgba(63,151,255,.30);animation:pzDriftB 22s ease-in-out infinite alternate}
+  .pro-aura i:nth-child(3){width:100vmax;height:100vmax;left:-30vmax;bottom:-70vmax;color:rgba(255,138,60,.18);animation:pzDriftC 26s ease-in-out infinite alternate}
+  .pro-aura::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 30%,transparent 50%,rgba(3,8,18,.7))}
+  .pro-page .bch-page-bar{position:sticky;z-index:3;background:linear-gradient(180deg,rgba(6,12,24,.92),rgba(6,12,24,.6) 70%,transparent)}
+  .pro-page .bch-page-inner{position:relative;z-index:1}
+
+  /* --- PRO: testata con medaglia --- */
+  .pro-hero{display:flex;flex-direction:column;align-items:center;text-align:center;margin:0 0 18px}
+  .pro-medal{position:relative;width:150px;height:150px;display:grid;place-items:center;margin:4px 0 6px}
+  .pro-rays{position:absolute;left:50%;top:50%;width:min(340px,100vw);height:min(340px,100vw);transform:translate(-50%,-50%);border-radius:50%;overflow:hidden;
+    -webkit-mask-image:radial-gradient(closest-side,#000 20%,transparent 100%);mask-image:radial-gradient(closest-side,#000 20%,transparent 100%)}
+  .pro-rays::before{content:"";position:absolute;inset:0;border-radius:50%;
+    background:repeating-conic-gradient(from 0deg,rgba(255,214,120,.26) 0deg 7deg,transparent 7deg 20deg);animation:pzSpin 40s linear infinite}
+  .pro-ring{position:absolute;inset:6px;border-radius:50%;
+    background:conic-gradient(from 0deg,#fff3c4,#ffc23d,#a86a0a,#ffd470,#fff3c4,#ffc23d,#a86a0a,#fff3c4);
+    box-shadow:0 0 0 6px rgba(255,194,61,.14),0 0 60px rgba(255,194,61,.55);animation:pzSpin 12s linear infinite}
+  .pro-coin{position:relative;width:112px;height:112px;border-radius:50%;display:grid;place-items:center;
+    background:radial-gradient(circle at 50% 30%,#1f3a6c,#0a1830);box-shadow:inset 0 3px 12px rgba(0,0,0,.65)}
+  .pro-coin img{width:74px;height:74px;border-radius:18px;object-fit:contain;filter:drop-shadow(0 6px 12px rgba(0,0,0,.5))}
+  .pro-kicker{position:relative;margin-top:10px;font-size:12px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;color:#d9c9a3}
+  .pro-word{position:relative;font-family:'Bricolage Grotesque';font-weight:800;font-size:76px;line-height:.95;letter-spacing:-.02em;
+    background:linear-gradient(100deg,#ffe08a 30%,#fff8e1 45%,#ffc23d 60%);background-size:260% 100%;background-position:100% 0;
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:pzShine 3.6s ease-in-out .6s infinite}
+  .pro-page #proWhy{position:relative;display:block;max-width:330px;margin-top:10px;color:#b9c8dc;font-size:14px;line-height:1.5}
+
+  /* --- PRO: stato attivo --- */
+  .pro-on{position:relative;overflow:hidden;align-items:center;gap:14px;padding:16px 18px;border-radius:22px;
+    background:linear-gradient(120deg,rgba(255,194,61,.22),rgba(255,194,61,.04));border:1px solid rgba(255,194,61,.45);
+    box-shadow:0 20px 40px -26px rgba(255,194,61,.75),inset 0 1px 0 rgba(255,255,255,.12)}
+  .pro-on::after,.pro-amount::after,.pro-btn::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+    background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:260% 100%;background-position:130% 0;
+    animation:pzSheen 4.2s ease-in-out 1.2s infinite}
+  .pro-on .ic{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;font-size:26px;flex:none;
+    background:radial-gradient(circle at 35% 30%,#fff3c4,#ffc23d 55%,#b9780f);box-shadow:0 0 22px rgba(255,194,61,.6)}
+  .pro-on b{font-family:'Bricolage Grotesque';font-weight:800;font-size:18px;color:#ffe3a1}
+  .pro-on small{color:#d6c7a6}
+
+  /* --- PRO: prezzo --- */
+  .pro-amount{position:relative;overflow:hidden;padding:18px 18px 16px;border-radius:24px;margin-bottom:14px;
+    background:linear-gradient(160deg,rgba(255,194,61,.16),rgba(255,255,255,.03) 55%);border:1px solid rgba(255,194,61,.40);
+    box-shadow:0 26px 50px -30px rgba(255,194,61,.7),inset 0 1px 0 rgba(255,255,255,.1)}
+  .pro-price-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+  .pro-amount .pro-ribbon{margin:0;padding:5px 10px;border-radius:999px;font-size:10.5px;box-shadow:0 0 18px rgba(255,194,61,.45)}
+  .pro-price-top s{font-family:'Bricolage Grotesque';font-size:17px;font-weight:800;color:#8fa9cc;opacity:.8}
+  .pro-amount .pro-row{align-items:baseline}
+  .pro-amount .pro-row b{font-size:54px;letter-spacing:-.03em;color:#ffd470;text-shadow:0 0 34px rgba(255,194,61,.55)}
+  .pro-amount .pro-row>span{color:#d9c9a3}
+  .pro-amount .pro-amount-sub{color:#aebdd1}
+  .pro-amount .pro-each{align-items:center;border-top:1px solid rgba(255,194,61,.22)}
+  .pro-each-ic{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:14px;background:rgba(255,194,61,.16)}
+
+  /* --- PRO: tabella --- */
+  .pro-tab{position:relative;border-radius:24px;margin-bottom:18px;
+    background:linear-gradient(165deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.10);
+    box-shadow:0 22px 44px -30px rgba(0,0,0,.9)}
+  .pro-tab .pt-h,.pro-tab .pt-r{align-items:stretch;padding:0 0 0 16px}
+  .pro-tab .pt-h .k,.pro-tab .pt-r .k{display:flex;align-items:center}
+  .pro-tab .pt-h .k{padding:14px 0 10px}
+  .pro-tab .pt-h .a,.pro-tab .pt-h .b,.pro-tab .pt-r .a,.pro-tab .pt-r .b{width:64px;display:grid;place-items:center}
+  .pro-tab .pt-h .b,.pro-tab .pt-r .b{background:linear-gradient(180deg,rgba(255,194,61,.13),rgba(255,194,61,.07))}
+  .pro-tab .pt-h .b em{font-style:normal;color:#241800;background:linear-gradient(135deg,#ffe08a,#ffb020);padding:4px 9px;border-radius:999px;
+    letter-spacing:.12em;box-shadow:0 0 16px rgba(255,194,61,.5)}
+  .pro-tab .pt-r{border-top:1px solid rgba(255,255,255,.07);font-weight:600}
+  .pro-tab .pt-r .k{padding:11px 8px 11px 0;gap:11px}
+  .pro-tab .pt-r .k .ic{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font-size:16px;flex:none;background:rgba(255,255,255,.07)}
+  .pro-tab .pt-r.only .k{color:#fff}
+  .pro-tab .pt-r.only .k .ic{background:rgba(255,194,61,.18);box-shadow:0 0 14px rgba(255,194,61,.3)}
+  .pro-tab .ck,.pro-tab .no{font-style:normal;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:13px;font-weight:900}
+  .pro-tab .a .ck{background:rgba(143,169,204,.16);color:#b9c8dc}
+  .pro-tab .b .ck{background:linear-gradient(135deg,#ffe08a,#ffb020);color:#241800;box-shadow:0 0 12px rgba(255,194,61,.55)}
+  .pro-tab .no{color:rgba(143,169,204,.45)}
+  .pro-tab .pt-r:last-child .b{border-radius:0 0 23px 0}
+  .pro-tab .pt-h .b{border-radius:0 23px 0 0}
+
+  /* --- PRO: pulsante --- */
+  .pro-btn{position:relative;overflow:hidden;padding:18px;border-radius:999px;font-size:17px;
+    background:linear-gradient(135deg,#ffe08a,#ffb020);color:#241800;
+    box-shadow:0 18px 38px -12px rgba(255,176,32,.75),inset 0 1px 0 rgba(255,255,255,.55);animation:proPulse 2.8s ease-in-out infinite}
+  .pro-btn span{position:relative;z-index:1}
+  @keyframes proPulse{0%,100%{box-shadow:0 18px 38px -12px rgba(255,176,32,.75),inset 0 1px 0 rgba(255,255,255,.55)}
+    50%{box-shadow:0 18px 50px -8px rgba(255,176,32,.95),inset 0 1px 0 rgba(255,255,255,.55)}}
+  .pro-page .pro-status{color:#aebdd1}
+  .pro-wd{background:linear-gradient(165deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border-color:rgba(255,255,255,.10);border-radius:20px}
+
+  /* --- PRO: ingresso a cascata --- */
+  .pro-page.pro-in .pro-hero,.pro-page.pro-in #proOn,.pro-page.pro-in .pro-amount,.pro-page.pro-in .pro-tab,
+  .pro-page.pro-in #proCta,.pro-page.pro-in #proWd,.pro-page.pro-in .pro-foot{animation:pzRise .7s cubic-bezier(.2,.85,.25,1) both}
+  .pro-page.pro-in #proOn{animation-delay:.08s} .pro-page.pro-in .pro-amount{animation-delay:.14s}
+  .pro-page.pro-in .pro-tab{animation-delay:.22s} .pro-page.pro-in #proCta{animation-delay:.3s}
+  .pro-page.pro-in #proWd,.pro-page.pro-in .pro-foot{animation-delay:.36s}
+  .pro-page.pro-in .pt-r{animation:pzRow .5s cubic-bezier(.2,.85,.25,1) both;animation-delay:calc(.35s + var(--i) * .05s)}
+  .pro-page.pro-in .pro-medal{animation:proPop .8s cubic-bezier(.2,1.3,.3,1) both}
+  @keyframes proPop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+  @media (prefers-reduced-motion:reduce){
+    .pro-aura i,.pro-rays::before,.pro-ring,.pro-word,.pro-btn,.pro-on::after,.pro-amount::after,.pro-btn::after{animation:none}
+    .pro-page.pro-in *{animation:none!important}
+  }
+
+  /* --- REGOLAMENTO --- */
+  #page-regolamento .rg{display:flex;flex-direction:column}
+  .rg-hero{position:relative;overflow:hidden;padding:20px 16px 16px;border-radius:24px;text-align:center;
+    background:linear-gradient(160deg,rgba(63,151,255,.20),rgba(140,92,255,.08) 55%,rgba(255,255,255,.02));border:1px solid rgba(126,194,255,.30);
+    box-shadow:0 24px 46px -30px rgba(63,151,255,.8),inset 0 1px 0 rgba(255,255,255,.1)}
+  .rg-hero::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+    background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.14) 50%,transparent 65%);background-size:260% 100%;background-position:130% 0;
+    animation:pzSheen 5s ease-in-out 1s infinite}
+  .rg-glow{position:absolute;left:50%;top:-60%;width:130%;padding-top:100%;transform:translateX(-50%);border-radius:50%;pointer-events:none;
+    background:radial-gradient(closest-side,rgba(63,151,255,.35),transparent 70%);animation:pzPulse 5s ease-in-out infinite}
+  .rg-kick{position:relative;display:inline-block;padding:6px 13px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;
+    color:#bfe0ff;background:rgba(126,194,255,.12);border:1px solid rgba(126,194,255,.28)}
+  .rg-formula{position:relative;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px}
+  .rg-chip{flex:1;min-width:0;max-width:104px;padding:11px 4px 9px;border-radius:16px;
+    background:rgba(8,20,40,.55);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+  .rg-chip b{display:block;font-family:'Bricolage Grotesque';font-weight:800;font-size:22px;line-height:1;color:#fff;text-shadow:0 0 18px rgba(63,151,255,.7)}
+  .rg-chip small{display:block;margin-top:5px;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#9fb8da;line-height:1.2}
+  .rg-chip.au{border-color:rgba(255,194,61,.45);background:rgba(40,28,6,.45)}
+  .rg-chip.au b{color:#ffd470;text-shadow:0 0 18px rgba(255,194,61,.7)}
+  .rg-op{flex:none;font-family:'Bricolage Grotesque';font-weight:800;font-size:20px;color:#9fd0ff}
+  .rg-note{position:relative;margin:14px 4px 0;font-size:12.5px;line-height:1.5;color:#b9c8dc}
+
+  .rg-sec{--c:47,217,138;display:flex;align-items:center;gap:9px;margin:22px 2px 10px;font-size:11.5px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:rgb(var(--c))}
+  .rg-sec.r{--c:255,93,107} .rg-sec.au{--c:255,194,61}
+  .rg-sec .dot{width:8px;height:8px;border-radius:50%;background:rgb(var(--c));box-shadow:0 0 12px rgba(var(--c),.9)}
+  .rg-sec::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(var(--c),.45),transparent)}
+  .rg-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .rg-t{--c:47,217,138;position:relative;display:grid;grid-template-columns:auto 1fr;grid-template-areas:"ic v" "l l";align-items:center;gap:8px 8px;
+    padding:12px 13px 12px;border-radius:18px;min-width:0;
+    background:linear-gradient(160deg,rgba(var(--c),.13),rgba(255,255,255,.02) 70%);border:1px solid rgba(var(--c),.28);
+    box-shadow:0 14px 30px -24px rgba(var(--c),.7)}
+  .rg-t.r{--c:255,93,107} .rg-t.au{--c:255,194,61}
+  .rg-t.wide{grid-column:1 / -1;grid-template-columns:auto 1fr auto;grid-template-areas:"ic l v"}
+  .rg-t .ic{grid-area:ic;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-size:18px;background:rgba(var(--c),.16)}
+  .rg-t .v{grid-area:v;justify-self:end;font-family:'Bricolage Grotesque';font-weight:800;font-size:26px;line-height:1;color:rgb(var(--c));
+    text-shadow:0 0 18px rgba(var(--c),.55);white-space:nowrap}
+  .rg-t .l{grid-area:l;min-width:0;font-size:13.5px;font-weight:700;line-height:1.25;color:#eaf1fb}
+  .rg-t .l small{display:block;margin-top:2px;font-size:10.5px;font-weight:700;letter-spacing:.04em;color:#8fa9cc}
+
+  .rg-ex{position:relative;overflow:hidden;margin-top:22px;padding:16px;border-radius:22px;
+    background:linear-gradient(160deg,rgba(255,194,61,.14),rgba(255,255,255,.02) 65%);border:1px solid rgba(255,194,61,.36)}
+  .rg-ex-k{font-size:10.5px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-soft)}
+  .rg-ex-t{margin-top:5px;font-size:14px;font-weight:600;color:#eaf1fb}
+  .rg-ex-calc{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:12px}
+  .rg-ex-calc span{padding:7px 10px;border-radius:11px;background:rgba(8,20,40,.55);border:1px solid rgba(255,255,255,.1);
+    font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:#eaf1fb}
+  .rg-ex-calc i{font-style:normal;font-family:'Bricolage Grotesque';font-weight:800;font-size:17px;color:#9fb8da}
+  .rg-ex-calc b{padding:6px 14px;border-radius:12px;font-family:'Bricolage Grotesque';font-weight:800;font-size:24px;color:#241800;
+    background:linear-gradient(135deg,#ffe08a,#ffb020);box-shadow:0 0 22px rgba(255,194,61,.55)}
+
+  /* ingresso: ogni volta che la pagina si apre (display none -> block riavvia le animazioni) */
+  #page-regolamento .rg>*{animation:pzRise .6s cubic-bezier(.2,.85,.25,1) both}
+  #page-regolamento .rg>:nth-child(2){animation-delay:.06s} #page-regolamento .rg>:nth-child(3){animation-delay:.1s}
+  #page-regolamento .rg>:nth-child(4){animation-delay:.16s} #page-regolamento .rg>:nth-child(5){animation-delay:.2s}
+  #page-regolamento .rg>:nth-child(6){animation-delay:.26s} #page-regolamento .rg>:nth-child(7){animation-delay:.3s}
+  #page-regolamento .rg>:nth-child(n+8){animation-delay:.36s}
+  @media (prefers-reduced-motion:reduce){ #page-regolamento .rg>*,.rg-hero::after,.rg-glow{animation:none} }
+  @media (max-width:350px){
+    .rg-chip b{font-size:18px} .rg-chip small{font-size:8.5px} .rg-op{font-size:16px}
+    .rg-t{padding:10px} .rg-t .v{font-size:22px} .rg-t .ic{width:32px;height:32px;font-size:16px}
+    .pro-word{font-size:64px} .pro-amount .pro-row b{font-size:46px}
+    .rg-ex-calc{gap:5px} .rg-ex-calc span{padding:6px 8px;font-size:14px} .rg-ex-calc i{font-size:15px} .rg-ex-calc b{padding:5px 11px;font-size:20px}
+  }
 </style>
 </head>
 <body>
@@ -2876,20 +3049,51 @@
     <div class="setpage" id="page-regolamento">
       <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
       <div class="section-h"><h2>Regolamento</h2></div>
-      <div class="set-card">
-        <div class="rules" style="margin-top:0">
-          <div class="rule"><div class="ic">⚽</div><div class="tx">Gol</div><div class="pt pos">+3</div></div>
-          <div class="rule"><div class="ic">👟</div><div class="tx">Assist</div><div class="pt pos">+2</div></div>
-          <div class="rule"><div class="ic">🟨</div><div class="tx">Cartellino giallo</div><div class="pt neg">−0,5</div></div>
-          <div class="rule"><div class="ic">😵</div><div class="tx">Autogol</div><div class="pt neg">−3</div></div>
-          <div class="rule"><div class="ic">🚫</div><div class="tx">Rigore sbagliato</div><div class="pt neg">−3</div></div>
-          <div class="rule"><div class="ic">🙌</div><div class="tx">Rigore parato</div><div class="pt pos">+3</div></div>
-          <div class="rule"><div class="ic">🧤</div><div class="tx">Clean Sheet</div><div class="pt pos">+3</div></div>
-          <div class="rule"><div class="ic">🔴</div><div class="tx">Gol subito</div><div class="pt neg">−1</div></div>
-          <div class="rule"><div class="ic">✅</div><div class="tx">Squadra vince</div><div class="pt pos">+2</div></div>
-          <div class="rule"><div class="ic">❌</div><div class="tx">Squadra perde</div><div class="pt neg">−1</div></div>
-          <div class="rule"><div class="ic">©️</div><div class="tx">Capitano</div><div class="pt x2">×2</div></div>
-          <div class="rule"><div class="ic">🏆</div><div class="tx">MVP</div><div class="pt x2">×2</div></div>
+      <!-- Sessione 71: stessa sostanza di prima (valori da scoreOf), presentata a blocchi.
+           Portiere: imbattibilita' +3, ogni gol subito -1 (solo g1). Capitano e MVP
+           raddoppiano SOLO il voto, non i bonus. Senza voti il voto vale 6. -->
+      <div class="rg">
+        <div class="rg-hero">
+          <span class="rg-glow"></span>
+          <div class="rg-kick">Il punteggio</div>
+          <div class="rg-formula">
+            <span class="rg-chip"><b>Voto</b><small>media ricevuta</small></span>
+            <span class="rg-op">×</span>
+            <span class="rg-chip au"><b>×2</b><small>capitano · MVP</small></span>
+            <span class="rg-op">+</span>
+            <span class="rg-chip"><b>±</b><small>bonus e malus</small></span>
+          </div>
+          <p class="rg-note">Senza voti il voto vale 6. Capitano e MVP raddoppiano solo il voto, non i bonus.</p>
+        </div>
+
+        <div class="rg-sec g"><span class="dot"></span>Bonus</div>
+        <div class="rg-grid">
+          <div class="rg-t g"><span class="ic">⚽</span><span class="v">+3</span><span class="l">Gol</span></div>
+          <div class="rg-t g"><span class="ic">👟</span><span class="v">+2</span><span class="l">Assist</span></div>
+          <div class="rg-t g"><span class="ic">🙌</span><span class="v">+3</span><span class="l">Rigore parato</span></div>
+          <div class="rg-t g"><span class="ic">✅</span><span class="v">+2</span><span class="l">Squadra vince</span></div>
+          <div class="rg-t g wide"><span class="ic">🧤</span><span class="v">+3</span><span class="l">Porta inviolata<small>solo portiere</small></span></div>
+        </div>
+
+        <div class="rg-sec r"><span class="dot"></span>Malus</div>
+        <div class="rg-grid">
+          <div class="rg-t r"><span class="ic">😵</span><span class="v">−3</span><span class="l">Autogol</span></div>
+          <div class="rg-t r"><span class="ic">🚫</span><span class="v">−3</span><span class="l">Rigore sbagliato</span></div>
+          <div class="rg-t r"><span class="ic">🔴</span><span class="v">−1</span><span class="l">Gol subito<small>solo portiere</small></span></div>
+          <div class="rg-t r"><span class="ic">❌</span><span class="v">−1</span><span class="l">Squadra perde</span></div>
+          <div class="rg-t r wide"><span class="ic">🟨</span><span class="v">−0,5</span><span class="l">Cartellino giallo</span></div>
+        </div>
+
+        <div class="rg-sec au"><span class="dot"></span>Moltiplicatori</div>
+        <div class="rg-grid">
+          <div class="rg-t au"><span class="ic">©️</span><span class="v">×2</span><span class="l">Capitano<small>sul voto</small></span></div>
+          <div class="rg-t au"><span class="ic">🏆</span><span class="v">×2</span><span class="l">MVP<small>sul voto</small></span></div>
+        </div>
+
+        <div class="rg-ex">
+          <div class="rg-ex-k">Esempio</div>
+          <div class="rg-ex-t">Capitano con voto 7, un gol, squadra vincente</div>
+          <div class="rg-ex-calc"><span>7 × 2</span><i>+</i><span>3</span><i>+</i><span>2</span><i>=</i><b>19</b></div>
         </div>
       </div>
     </div>
@@ -3162,10 +3366,16 @@
     <div class="bch-page-bar">
       <button class="bch-back" onclick="closePro()" aria-label="Indietro">‹ Indietro</button>
     </div>
+    <div class="pro-aura" aria-hidden="true"><i></i><i></i><i></i></div>
     <div class="bch-page-inner">
-      <div class="pro-top">
-        <img class="pro-logo" src="/icon-512.png?v=4" alt="" onerror="this.style.display='none'">
-        <div class="pro-id"><b>FantaCalcetto <span class="pro-badge">PRO</span></b><span id="proWhy">—</span></div>
+      <div class="pro-hero">
+        <div class="pro-medal">
+          <span class="pro-rays"></span><span class="pro-ring"></span>
+          <span class="pro-coin"><img src="/icon-512.png?v=4" alt="" onerror="this.style.display='none'"></span>
+        </div>
+        <div class="pro-kicker">FantaCalcetto</div>
+        <div class="pro-word">PRO</div>
+        <span id="proWhy">—</span>
       </div>
       <div id="proOn"></div>
       <div class="pro-amount" id="proPrice"></div>
@@ -3282,7 +3492,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='3.3';
+const APP_VERSION='3.4';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -7241,13 +7451,13 @@ function proWhyText(reason){
 }
 /* La tabella e' la pagina: si legge in tre secondi. */
 const PRO_TAB=[
-  ['Gioco completo',      1,1],
-  ['Pagellone e bacheca', 1,1],
-  ['Notifiche',           1,1],
-  ['Fino a 15 giocatori', 1,1],
-  ['Giocatori illimitati',0,1],
-  ['Tutte le stagioni',   0,1],
-  ['Albo d\u2019oro',        0,1]
+  ['\ud83c\udfae','Gioco completo',      1,1],
+  ['\ud83d\udcca','Pagellone e bacheca', 1,1],
+  ['\ud83d\udd14','Notifiche',           1,1],
+  ['\ud83d\udc65','Fino a 15 giocatori', 1,1],
+  ['\u267e\ufe0f','Giocatori illimitati',0,1],
+  ['\ud83d\uddc2\ufe0f','Tutte le stagioni',   0,1],
+  ['\ud83c\udfc6','Albo d\u2019oro',        0,1]
 ];
 const PRO_FULL=39.90, PRO_NOW=29.90;
 function eur(v){ return v.toFixed(2).replace('.',',')+'\u00a0\u20ac'; }
@@ -7255,21 +7465,24 @@ function proPriceHTML(){
   const n=Number(myPlan.members)||0;
   // per eccesso ai centesimi: la somma delle quote non deve stare SOTTO il totale
   const each=n>0 ? Math.ceil(PRO_NOW*100/n)/100 : null;
-  return '<span class="pro-ribbon">Prezzo di lancio</span>'
-    +'<div class="pro-row"><s>'+eur(PRO_FULL)+'</s><b>'+eur(PRO_NOW)+'</b><span>/stagione</span></div>'
+  return '<div class="pro-price-top"><span class="pro-ribbon">Prezzo di lancio</span><s>'+eur(PRO_FULL)+'</s></div>'
+    +'<div class="pro-row"><b>'+eur(PRO_NOW)+'</b><span>/stagione</span></div>'
     +'<div class="pro-amount-sub">Per l\u2019intera lega, non per singolo partecipante. IVA inclusa, nessun rinnovo automatico.</div>'
     +(each!=null
-      ? '<div class="pro-each"><b>'+eur(each)+'</b><span>per partecipante \u00b7 '+n+' nella lega</span></div>'
+      ? '<div class="pro-each"><span class="pro-each-ic">\ud83d\udc64</span><b>'+eur(each)+'</b><span>per partecipante \u00b7 '+n+' nella lega</span></div>'
       : '');
 }
 function proTabHTML(){
-  return '<div class="pt-h"><span class="k"></span><span class="a">GRATIS</span><span class="b">PRO</span></div>'
-    + PRO_TAB.map(r=>`<div class="pt-r"><span class="k">${esc(r[0])}</span>`
-        +`<span class="a">${r[1]?'\u2713':''}</span><span class="b">${r[2]?'\u2713':''}</span></div>`).join('');
+  const yes='<i class="ck">\u2713</i>', no='<i class="no">\u2014</i>';
+  return '<div class="pt-h"><span class="k">Cosa comprende</span><span class="a">Gratis</span><span class="b"><em>PRO</em></span></div>'
+    + PRO_TAB.map((r,i)=>`<div class="pt-r${r[2]?'':' only'}" style="--i:${i}"><span class="k"><span class="ic">${r[0]}</span>${esc(r[1])}</span>`
+        +`<span class="a">${r[2]?yes:no}</span><span class="b">${r[3]?yes:no}</span></div>`).join('');
 }
 function openPro(reason){
   const pg=document.getElementById('proPage'); if(!pg) return;
   renderProPage(reason||'info');
+  // l'ingresso a cascata riparte a ogni apertura
+  pg.classList.remove('pro-in'); void pg.offsetWidth; pg.classList.add('pro-in');
   pg.classList.remove('hidden');
   const inner=pg.querySelector('.bch-page-inner'); if(inner) inner.scrollTop=0;
   pg.scrollTop=0;
@@ -7307,7 +7520,7 @@ function renderProPage(reason){
       ? 'Tutte le funzionalit\u00e0 attive, senza scadenza.'
       : 'Tutte le funzionalit\u00e0 attive per la lega.';
     if(price) price.style.display='none';
-    if(on) on.innerHTML='<div class="pro-on"><span class="ic">'+(myPlan.founder?'\ud83c\udfc5':'\u2b50')+'</span>'
+    if(on) on.innerHTML='<div class="pro-on"><span class="ic"><span>'+(myPlan.founder?'\ud83c\udfc5':'\u2b50')+'</span></span>'
       +'<div><b>'+(myPlan.founder?'Lega fondatrice':'Pro attivo')+'</b>'
       +'<small>'+(myPlan.founder?'Una delle prime 20 leghe: Pro incluso, senza scadenza.':'Partecipanti illimitati e accesso a tutte le stagioni.')+'</small></div></div>';
     /* Il super-admin ha la Fossa fondatrice: senza questo pulsante non potrebbe
@@ -7328,13 +7541,13 @@ function renderProPage(reason){
 
   if(owner){
     /* L'admin e' l'unico che puo' pagare: a lui il pulsante. */
-    if(cta) cta.innerHTML='<button class="pro-btn" onclick="proCheckout(this)">Passa a Pro</button>'
+    if(cta) cta.innerHTML='<button class="pro-btn" onclick="proCheckout(this)"><span>\u2b50 Passa a Pro</span></button>'
       +'<div class="pro-status" id="proStatus"></div>';
     if(foot) foot.innerHTML='Proseguendo accetti i <a href="/termini.html" target="_blank" rel="noopener">Termini di servizio</a>.';
   }else{
     /* Un membro che preme «Passa a Pro» e scopre di non poter fare niente e'
        un'occasione buttata: gli si da' una cosa che puo' fare davvero. */
-    if(cta) cta.innerHTML='<button class="pro-btn" onclick="proTellAdmin()">Segnala all\u2019amministratore</button>'
+    if(cta) cta.innerHTML='<button class="pro-btn" onclick="proTellAdmin()"><span>Segnala all\u2019amministratore</span></button>'
       +'<div class="pro-status">L\u2019attivazione \u00e8 riservata all\u2019amministratore della lega.</div>';
     if(foot) foot.innerHTML='';
   }
@@ -7628,6 +7841,7 @@ function proTellAdmin(){
 
 /* ---------- QUELLO CHE IL PIANO CAMBIA A SCHERMO ---------- */
 function renderPlanUI(){
+  try{ renderSeasonRecapButton(); }catch(_){ }   // l'Albo d'oro dipende dal piano: si riallinea quando il piano cambia
   const r=document.getElementById('rowPro'), sub=document.getElementById('proRowSub');
   if(r&&sub){
     r.style.display = profile ? 'flex' : 'none';
@@ -10882,39 +11096,62 @@ let seasonData=null, seasonRecapId=null;
 
 /* i due riquadri li disegna renderRecapButton: qui resta solo la riga
    «Albo d'oro» del menu Impostazioni, che compare a stagione archiviata. */
+/* ==========================================================================
+   ALBO D'ORO (sessione 71)
+   Pro: tutte le stagioni archiviate, ognuna col suo recap.
+   Gratis: solo la stagione di riferimento (quella in corso, o l'ultima chiusa se
+   la nuova non e' ancora partita). Le archiviate precedenti non compaiono una per
+   una: stanno in UNA riga «con Pro», cosi' si sa che esistono senza riempire
+   l'elenco di lucchetti.
+   Il recap di una stagione ancora aperta NON si apre: get_season_recap lo
+   congelerebbe a meta' (season_recaps si scrive una volta sola).
+   ========================================================================== */
+function alboPast(){ return allSeasons.filter(s=>s.status!=='open'); }
+function alboList(){
+  if(isPro()) return alboPast();
+  const ref=allSeasons.find(s=>Number(s.id)===Number(displaySeasonId));
+  return ref?[ref]:[];
+}
+function alboLockedCount(){ return isPro()?0:alboPast().filter(s=>seasonLocked(s.id)).length; }
 function renderSeasonRecapButton(){
   renderRecapButton();
   const r=document.getElementById('alboRow');
-  if(r){
-    r.style.display=lastClosedSeason?'flex':'none';
-    const sub=document.getElementById('alboSub');
-    const n=allSeasons.filter(x=>x.status!=='open').length;
-    if(sub&&lastClosedSeason){
-      sub.textContent=n>1?(n+' stagioni archiviate'):('La Stagione '+lastClosedSeason.number+' archiviata');
-      if(seasonLocked(lastClosedSeason.id)) sub.textContent='\ud83d\udd12 '+sub.textContent+' · con Pro';
-    }
+  if(!r) return;
+  r.style.display=lastClosedSeason?'flex':'none';
+  const sub=document.getElementById('alboSub');
+  if(!sub || !lastClosedSeason) return;
+  if(isPro()){
+    const n=alboPast().length;
+    sub.textContent=n===1?'1 stagione archiviata':(n+' stagioni archiviate');
+    return;
   }
+  const ref=alboList()[0], lk=alboLockedCount();
+  let t=ref?('Stagione '+ref.number+(ref.status==='open'?' in corso':' archiviata')):'Stagioni archiviate';
+  if(lk) t+=' \u00b7 archivio completo con Pro';
+  sub.textContent=t;
 }
-/* Elenco delle stagioni archiviate: da qui si riapre il recap di ognuna,
-   non solo dell'ultima. Con 10 stagioni resta una lista, non una fila di pillole. */
 function openAlboSheet(){
-  const past=allSeasons.filter(s=>s.status!=='open');
-  if(!past.length){ toast('Nessuna stagione archiviata'); return; }
-  // tutte bloccate: l'elenco non avrebbe niente di apribile, si va dritti al perche'
-  if(past.every(s=>seasonLocked(s.id))){ openPro('storico'); return; }
-  if(past.length===1){ openSeasonRecap(past[0].id,false); return; }
+  const list=alboList(), lk=alboLockedCount();
+  if(!list.length && !lk){ toast('Nessuna stagione archiviata'); return; }
+  // una sola stagione apribile e niente altro da mostrare: si va dritti al recap
+  if(list.length===1 && !lk && list[0].status!=='open'){ openSeasonRecap(list[0].id,false); return; }
   document.getElementById('sheetTitle').textContent="Albo d'oro";
-  document.getElementById('sheetHint').textContent='Riapri il recap di una stagione.';
-  document.getElementById('sheetList').innerHTML=past.map(s=>{
-    const mds=Number(s.mds_closed||0);
-    if(seasonLocked(s.id))
-      return `<div class="opt" onclick="closeSheet();openPro('storico')"><div class="oav emo">\ud83d\udd12</div>`
-        +`<div class="info"><b>Stagione ${s.number}</b><span>Archiviata · con Pro</span></div>`
-        +`<span class="pr" style="color:var(--gold);font-weight:800;font-size:11px;letter-spacing:.08em">PRO</span></div>`;
+  document.getElementById('sheetHint').textContent=isPro()
+    ? 'Riapri il recap di una stagione.'
+    : 'Con il piano gratuito \u00e8 disponibile la stagione di riferimento.';
+  const rows=list.map(s=>{
+    const mds=Number(s.mds_closed||0), md=mds?(mds+(mds===1?' giornata':' giornate')):'';
+    if(s.status==='open')
+      return `<div class="opt" onclick="toast('Il recap sar\u00e0 disponibile a fine stagione')"><div class="oav emo">\u23f3</div>`
+        +`<div class="info"><b>Stagione ${s.number}</b><span>In corso${md?' \u00b7 '+md:''} \u00b7 recap a fine stagione</span></div></div>`;
     return `<div class="opt" onclick="closeSheet();openSeasonRecap(${s.id},false)"><div class="oav emo">\ud83c\udfc6</div>`
-      +`<div class="info"><b>Stagione ${s.number}</b><span>${mds?(mds+(mds===1?' giornata':' giornate')):'Archiviata'}</span></div>`
+      +`<div class="info"><b>Stagione ${s.number}</b><span>${md||'Archiviata'}</span></div>`
       +`<span class="pr">\u203a</span></div>`;
-  }).join('');
+  });
+  if(lk) rows.push(`<div class="opt" onclick="closeSheet();openPro('storico')"><div class="oav emo">\ud83d\udd12</div>`
+      +`<div class="info"><b>Stagioni archiviate</b><span>${lk===1?'1 stagione':lk+' stagioni'} \u00b7 con Pro</span></div>`
+      +`<span class="pr" style="color:var(--gold);font-weight:800;font-size:11px;letter-spacing:.08em">PRO</span></div>`);
+  document.getElementById('sheetList').innerHTML=rows.join('');
   openSheet();
 }
 function openSeasonRecapLatest(){
