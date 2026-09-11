@@ -3282,7 +3282,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='3.1';
+const APP_VERSION='3.3';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -10219,9 +10219,9 @@ function renderRecapHTML(card, d){
           <div class="pz-ll">${lbl}</div></div>`:'';
       const wallUnit=L.wall?(L.wall.val===1?'gol preso':'gol presi'):'';
       const cells=[
-        cell('⚽','Bomber',L.bomber,'gol','cy',false),
-        cell('🎯','Assist-man',L.assistman,'assist','v',true),
-        cell('🧤','Muro',L.wall,wallUnit,'g',false)
+        cell('🎯','Assist-man',L.assistman,'assist','v',false),   // sinistra
+        cell('⚽','Bomber',L.bomber,'gol','cy',true),              // centro, rialzato
+        cell('🧤','Muro',L.wall,wallUnit,'g',false)               // destra
       ].filter(Boolean).join('');
       return `<div class="pag-eyebrow">I migliori di giornata</div>
         <div class="pz-lsub">Più gol, più assist e la porta meno battuta</div>
@@ -10986,7 +10986,7 @@ function buildSeasonCards(d){
   if(d.jump&&d.jump.jump>0) c.push({t:'sjump'});
   if(d.duel) c.push({t:'sduel'});
   if(f.triples&&f.triples.length) c.push({t:'striples'});
-  if(a.worst||a.owngoal||f.lucky) c.push({t:'sfun'});
+  // «Premi speciali» (migliore degli scarsi, autogol, Mister Fortuna) tolta dal recap: sessione 70
   if(seasonPalmares(d).length) c.push({t:'spalmares'});
   if(d.standings&&d.standings.length) c.push({t:'sfinal'});
   c.push({t:'sshare'});
@@ -11263,18 +11263,6 @@ function renderSeasonHTML(card){
       return `<div class="pag-eyebrow">Serate da ricordare</div>
         <div class="pz-awd">${T.map(t=>sAwd(icoOf(t.gol),nameOf(t.gol)+' · '+t.label,t,t.gol+'<small>gol</small>',t.gol>=4?'au':'')).join('')}</div>`;
     }
-
-    case 'sfun':
-      return `<div class="pag-eyebrow">Premi speciali</div>
-        <div class="pz-awd">
-          ${sAwd('🫠','Il migliore degli scarsi',a.worst,(a.worst?Number(a.worst.val).toFixed(2)+'<small>media</small>':''),sIsMe(a.worst)?'me':'')}
-          ${sAwd('🙈','Autogol d\'autore',a.owngoal,(a.owngoal?a.owngoal.val+'<small>autogol</small>':''),sIsMe(a.owngoal)?'me':'')}
-          ${f.lucky?`<div class="pz-aw"><span class="ic">🍀</span><span class="av team">${pzLogo(f.lucky.manager_id,34)||'🛡️'}</span>
-            <span class="tx"><span class="k">Mister Fortuna</span><span class="n">${esc(f.lucky.team_name||'—')}</span></span>
-            <span class="vl">${fmtPts(f.lucky.val)}<small>pt</small></span></div>`:''}
-        </div>
-        <div class="pz-note">Mister Fortuna: più punti dal risultato della partita vera.${
-          a.worst?` Il migliore degli scarsi richiede almeno ${a.gate||4} presenze.`:''}</div>`;
 
     case 'spalmares':{
       const P=seasonPalmares(d);
