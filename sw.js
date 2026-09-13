@@ -68,13 +68,13 @@ const OFFLINE_HTML = `<!doctype html><html lang="it"><head><meta charset="utf-8"
  html,body{margin:0;height:100%;background:#0a1626;color:#eef4fd;
    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
  .w{position:fixed;top:0;bottom:0;left:0;right:0;display:flex;flex-direction:column;
-   align-items:center;justify-content:flex-end;text-align:center;padding:26px 24px 34px;
+   align-items:center;justify-content:center;text-align:center;padding:26px 24px 34px;
    background:radial-gradient(120% 62% at 50% 30%, rgba(63,151,255,.20), transparent 64%)}
- .sq{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:flex-end;justify-content:center;width:100%}
+ .sq{position:relative;flex:0 1 auto;min-height:0;max-height:36vh;display:flex;align-items:flex-end;justify-content:center;width:100%}
  .sq::after{content:'';position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);
    width:80%;height:42px;border-radius:50%;
    background:radial-gradient(50% 50% at 50% 50%, rgba(63,151,255,.38), transparent 72%)}
- .sq img{position:relative;z-index:1;width:100%;max-width:430px;max-height:100%;object-fit:contain;
+ .sq img{position:relative;z-index:1;width:100%;max-width:430px;max-height:36vh;object-fit:contain;
    filter:drop-shadow(0 20px 26px rgba(0,0,0,.55))}
  h1{font-size:25px;letter-spacing:-.03em;margin:28px 0 0;font-weight:800}
  p{color:#9bb2d6;font-size:13.5px;line-height:1.45;margin:9px 0 22px}
@@ -83,7 +83,7 @@ const OFFLINE_HTML = `<!doctype html><html lang="it"><head><meta charset="utf-8"
 </style></head><body><div class="w">
  <div class="sq"><img src="/app/squadra.webp" alt="" onerror="this.style.display='none'"></div>
  <h1>Nessuna connessione</h1>
- <p>La pagina si ricarica da sola appena torna la rete.</p>
+ <p>Per usare l&rsquo;app serve una connessione a internet.<br>Riparte da sola appena la rete torna.</p>
  <button onclick="location.reload()">Riprova</button>
  <script>addEventListener('online',()=>location.reload());<\/script>
 </div></body></html>`;

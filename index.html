@@ -4,6 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
+<!-- PRIMO DISEGNO — deve restare in cima, prima di ogni foglio di stile.
+     Il problema: la grafica della vetrina sta in `sito.css`, un file a parte.
+     Su iPhone, quando la rete e' lenta, Safari non aspetta all'infinito: dopo
+     qualche istante disegna la pagina con gli stili che ha, cioe' NESSUNO, e si
+     vede l'elenco dei link in Times New Roman. Queste poche righe arrivano coi
+     primi byte: dipingono lo sfondo scuro e coprono tutto col logo finche'
+     `sito.css` non e' pronto (classe `ready` sull'<html>, messa dall'onload del
+     foglio). Se il foglio non arrivasse, la copertura si toglie da sola dopo 8
+     secondi invece di lasciare lo schermo bloccato. -->
+<style>
+  html{background:#0a1626}
+  #preboot{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;
+    background:radial-gradient(130% 80% at 50% 32%, rgba(63,151,255,.20), transparent 62%),#0a1626;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    animation:pbGiveUp .4s ease 8s forwards}
+  #preboot img{width:88px;height:88px;border-radius:25px;display:block;
+    box-shadow:0 20px 44px -16px rgba(63,151,255,.6)}
+  #preboot span{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    font-weight:800;font-size:19px;letter-spacing:-.03em;color:#eef4fd}
+  #preboot span i{font-style:normal;color:#dbe5f6}
+  html.ready #preboot{opacity:0;visibility:hidden;transition:opacity .3s ease}
+  @keyframes pbGiveUp{to{opacity:0;visibility:hidden}}
+</style>
+
 <!-- ------------------------------------------------------------------
      PONTE VERSO L'APP — deve stare qui in cima, prima di qualsiasi altra cosa.
      Fino allo spostamento l'app stava alla radice, quindi in giro esistono:
@@ -48,8 +72,11 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="sito.css?v=11">
+<!-- I font non fermano il disegno della pagina: si scaricano e poi si applicano. -->
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="sito.css?v=11" onload="document.documentElement.classList.add('ready')">
+<script>addEventListener('load',function(){document.documentElement.classList.add('ready');});</script>
 <style>
   /* «Punteggi e Regolamento» e' lungo quasi il triplo di «Punteggi»: sotto i
      1240px il menu in alto non ci sta piu' e va sostituito dalla tendina.
@@ -154,6 +181,7 @@
 </script>
 </head>
 <body>
+<div id="preboot"><img src="icon-512.png?v=4" alt=""><span>Fanta<i>Calcetto</i></span></div>
 
 <header class="topbar" id="topbar">
   <div class="wrap">
