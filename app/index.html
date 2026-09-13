@@ -3142,6 +3142,7 @@
       <button class="navrow gold adminRow" id="rowMd" onclick="setNav('page-giornata')" style="display:none"><span class="ic">⚽</span><span class="lab">Centro giornata<small id="admMdSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold adminRow" id="rowAdminHub" onclick="setNav('page-admin')" style="display:none"><span class="ic">🛠️</span><span class="lab">Amministra la lega<small id="admHubSub">Persone, regole, stagione</small></span><span class="go">›</span></button>
       <div class="setgrp">Altro</div>
+      <button class="navrow t-slate" id="rowInstall" onclick="openInstallHelp()"><span class="ic">📲</span><span class="lab">Installa sulla Home<small id="rowInstallSub">Icona sua, schermo intero, notifiche</small></span><span class="go">›</span></button>
       <button class="navrow t-slate" onclick="setNav('page-privacy')"><span class="ic">🔒</span><span class="lab">Privacy e dati<small>Informativa, termini, cancellazione</small></span><span class="go">›</span></button>
       <div class="setfoot">
         <button class="logout" id="logoutBtn">Esci dall'account</button>
@@ -4472,6 +4473,14 @@ function openInstallHelp(){
 }
 function closeInstallHelp(){ document.getElementById('instGate').classList.add('hidden'); }
 
+/* La riga nelle impostazioni non ha senso per chi l'app ce l'ha gia'. */
+function syncInstallRow(){
+  const r=document.getElementById('rowInstall'); if(!r) return;
+  r.style.display = fcIsStandalone() ? 'none' : '';
+  const s=document.getElementById('rowInstallSub');
+  if(s && fcInAppBrowser()) s.textContent='Apri in '+(fcIsIOS()?'Safari':'Chrome')+' per installare';
+}
+
 /* BANNER «aggiungila alla Home»: ogni 20 giorni, solo a chi gioca dal
    browser. Prima non esisteva, e su iPhone il buco era doppio: senza l'app
    installata `PushManager` non c'è, quindi pushSupported() è falso e
@@ -4540,10 +4549,15 @@ function maybeShowHomeBanner(){
     if(document.getElementById('lnOk') || _recapPending || document.getElementById('pag').classList.contains('open')) return false;
 
     const dentro=fcInAppBrowser();
-    /* il browser interno non è un consiglio ogni 20 giorni: è un muro. */
+    /* Il conteggio riparte da quando l'utente CHIUDE il banner, non da quando
+       lo vede: prima bastava mostrarlo una volta perche' sparisse per venti
+       giorni, anche a chi non l'aveva letto. Su iPhone l'attesa e' piu' corta,
+       perche' senza app installata non arriva nessuna notifica. Dentro il
+       browser di un'altra app non e' un consiglio, e' un muro: sempre. */
     if(!dentro){
       const last=parseInt(localStorage.getItem('fc_home_banner')||'0');
-      if(Date.now()-last < 20*24*3600*1000) return false;
+      const attesa=(fcIsIOS()?4:10)*24*3600*1000;
+      if(Date.now()-last < attesa) return false;
     }
 
     const b=document.getElementById('homeBanner'); if(!b) return false;
@@ -4567,7 +4581,6 @@ function maybeShowHomeBanner(){
     }
 
     b.classList.add('on');
-    if(!dentro) localStorage.setItem('fc_home_banner', String(Date.now()));
     return true;
   }catch(_){ return false; }
 }
@@ -4797,6 +4810,7 @@ async function afterLogin(){
     // prima l'installazione, poi le notifiche: senza app sulla Home le push
     // non possono funzionare (su iPhone PushManager non esiste nemmeno), quindi
     // i due banner non escono mai insieme e questo ha la precedenza
+    syncInstallRow();
     if(!maybeShowHomeBanner()) maybeShowNotifBanner();
     maybeShowTutorial();     // tutorial alla prima apertura (aspetta che il resto sia sparito)
   }
