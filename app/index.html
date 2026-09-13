@@ -4374,8 +4374,11 @@ function fcIsPhone(){ return /iphone|ipad|ipod|android/i.test(navigator.userAgen
 function fcCanInstall(){
   if(fcIsStandalone()) return false;
   if(typeof fcInstallPrompt!=='undefined' && fcInstallPrompt) return true;
-  if(fcIsIOS()) return true;                       // Safari: si fa a mano
-  return /android/i.test(navigator.userAgent||''); // include i tablet
+  /* Non guardo piu' la parola «Android» nello user agent: i tablet Samsung in
+     modalita' desktop non ce l'hanno, pur essendo tablet che installano
+     benissimo. Guardo invece se ho riconosciuto un browser per cui so
+     scrivere le istruzioni. */
+  return fcBrowser()!=='desktop';
 }
 function fcIsIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent||''); }
 
@@ -4387,30 +4390,112 @@ const IG_SVG={
   dots :'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>',
   app  :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="3"/><path d="M10 18h4"/></svg>',
   down :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v14"/><path d="m6 13 6 6 6-6"/></svg>',
-  world:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.7 2.6 15.3 0 18M12 3c-2.6 2.7-2.6 15.3 0 18"/></svg>'
+  world:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.7 2.6 15.3 0 18M12 3c-2.6 2.7-2.6 15.3 0 18"/></svg>',
+  bars :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  hdots:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg>',
+  inst :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="13" rx="2.5"/><path d="M8 21h8"/><path d="M12 7.5v5.5"/><path d="m9.5 10.5 2.5 2.5 2.5-2.5"/></svg>'
 };
 function igLi(icon, testo, nota){
   return '<li><span class="igi">'+IG_SVG[icon]+'</span><span class="igtx">'+testo
     +(nota?'<small>'+nota+'</small>':'')+'</span></li>';
 }
+/* Ogni browser nasconde l'installazione in un posto diverso e la chiama con
+   un nome diverso. Dire "apri il menu" e' inutile: su Chrome il menu e' in
+   alto a destra ed e' fatto di tre puntini verticali, su Samsung Internet e'
+   in basso a destra ed e' fatto di tre righe. Quindi si riconosce il browser
+   e si scrivono le parole e i simboli di QUEL browser.
+   I nomi delle voci cambiano con la versione e con la lingua del telefono:
+   dove il nome puo' variare c'e' la nota con l'alternativa. */
+function fcBrowser(){
+  const u=navigator.userAgent||'';
+  if(fcInAppBrowser())            return 'inapp';
+  if(/SamsungBrowser/i.test(u))   return 'samsung';
+  if(/FxiOS/i.test(u))            return 'ios-firefox';
+  if(/CriOS/i.test(u))            return 'ios-chrome';
+  if(/EdgiOS/i.test(u))           return 'ios-edge';
+  if(fcIsIOS())                   return 'ios-safari';
+  if(/EdgA\//i.test(u))           return 'edge-android';
+  if(/OPR\/|Opera/i.test(u))      return 'opera-android';
+  if(/Firefox\//i.test(u))        return 'firefox-android';
+  if(/Android/i.test(u))          return 'chrome-android';
+  return 'desktop';
+}
+function fcBrowserNome(){
+  return {samsung:'Samsung Internet','ios-firefox':'Firefox','ios-chrome':'Chrome',
+          'ios-edge':'Edge','ios-safari':'Safari','edge-android':'Edge',
+          'opera-android':'Opera','firefox-android':'Firefox',
+          'chrome-android':'Chrome',desktop:'questo browser'}[fcBrowser()]||'questo browser';
+}
+
 function igStepsHTML(){
-  if(fcInAppBrowser()){
+  const b=fcBrowser();
+  const apri=igLi('app','Apri FantaCalcetto dall\u2019icona nuova');
+
+  if(b==='inapp'){
     const dove=fcIsIOS()?'Safari':'Chrome';
     return igLi('world','Apri questa pagina in '+dove,
                 'Il browser dentro WhatsApp e Instagram non permette di installare niente.')
          + igLi('share','Poi torna qui e aggiungila alla Home');
   }
-  if(fcIsIOS()){
-    return igLi('share','Tocca <b>Condividi</b> in basso',
-                'Il quadrato con la freccia in su. Su alcuni iPhone \u00e8 dentro <b>\u2022\u2022\u2022</b>.')
+
+  /* iPhone e iPad: tutti i browser passano dal foglio Condividi di iOS, ma il
+     pulsante non sta nello stesso posto. */
+  if(b==='ios-safari' || b==='ios-chrome' || b==='ios-firefox' || b==='ios-edge'){
+    const dove = b==='ios-safari'  ? 'nella barra in fondo allo schermo'
+               : b==='ios-chrome'  ? 'in fondo allo schermo, al centro'
+               : b==='ios-firefox' ? 'nel menu <b>\u2261</b> in basso a destra'
+               :                     'nella barra in fondo';
+    return igLi('share','Tocca <b>Condividi</b>', 'Il quadrato con la freccia in su, '+dove+'.')
          + igLi('plus','Scorri e scegli <b>Aggiungi a Home</b>',
-                'In inglese <b>Add to Home Screen</b>. Poi conferma con <b>Aggiungi</b>.')
-         + igLi('app','Apri FantaCalcetto dall\u2019icona nuova');
+                'In inglese <b>Add to Home Screen</b>. Poi conferma con <b>Aggiungi</b> in alto a destra.')
+         + apri;
   }
-  return igLi('dots','Tocca il menu <b>\u22ee</b> in alto a destra')
+
+  if(b==='samsung'){
+    return igLi('bars','Tocca il menu <b>\u2261</b> in basso a destra',
+                'Le tre righe orizzontali, accanto alle schede.')
+         + igLi('plus','Scegli <b>Aggiungi pagina a</b>, poi <b>Schermata Home</b>',
+                'Su alcune versioni c\u2019\u00e8 direttamente <b>Installa</b>.')
+         + apri;
+  }
+
+  if(b==='firefox-android'){
+    return igLi('dots','Tocca il menu <b>\u22ee</b> in basso a destra',
+                'I tre puntini in verticale.')
+         + igLi('plus','Scegli <b>Installa</b>',
+                'Su alcune versioni si chiama <b>Aggiungi alla schermata Home</b>.')
+         + apri;
+  }
+
+  if(b==='edge-android'){
+    return igLi('hdots','Tocca il menu <b>\u22ef</b> in basso al centro',
+                'I tre puntini in orizzontale.')
+         + igLi('plus','Scegli <b>Aggiungi al telefono</b>',
+                'In inglese <b>Add to phone</b>.')
+         + apri;
+  }
+
+  if(b==='opera-android'){
+    return igLi('dots','Tocca il menu di Opera',
+                'In basso a destra, o l\u2019icona rossa a seconda della versione.')
+         + igLi('plus','Scegli <b>Schermata Home</b>',
+                'A volte sta dentro <b>Aggiungi a\u2026</b>.')
+         + apri;
+  }
+
+  if(b==='desktop'){
+    return igLi('inst','Clicca l\u2019icona di installazione nella barra dell\u2019indirizzo',
+                'A destra dell\u2019indirizzo: uno schermo con una freccia verso il basso.')
+         + igLi('plus','Oppure menu <b>\u22ee</b> \u2192 <b>Installa FantaCalcetto</b>')
+         + apri;
+  }
+
+  /* Chrome su Android e tutto il resto */
+  return igLi('dots','Tocca il menu <b>\u22ee</b> in alto a destra',
+              'I tre puntini in verticale, accanto all\u2019indirizzo.')
        + igLi('plus','Scegli <b>Installa app</b>',
-              'Su alcuni telefoni si chiama <b>Installa e crea scorciatoia</b>.')
-       + igLi('app','Apri FantaCalcetto dall\u2019icona nuova');
+              'Se non c\u2019\u00e8, cerca <b>Aggiungi alla schermata Home</b>.')
+       + apri;
 }
 function igWhyHTML(){
   if(fcInAppBrowser()) return '';
