@@ -898,6 +898,20 @@
   .addbtn{width:100%;margin-top:12px;background:var(--surface2);border:1px dashed var(--line-strong);color:var(--accent-soft);font-weight:700;font-size:14px;padding:12px;border-radius:12px;cursor:pointer}
   .logout{width:100%;margin-top:14px;background:none;border:1px solid var(--line-strong);color:var(--muted);font-weight:600;font-size:14px;padding:12px;border-radius:12px;cursor:pointer}
 
+  /* Barra d'installazione: sta nel flusso, sopra la navigazione, quindi non
+     copre niente e non ha bisogno di position:fixed né di calcoli di altezza. */
+  .ibar{display:none;flex:none;position:relative;z-index:51;align-items:center;gap:11px;
+    padding:10px 13px;background:linear-gradient(180deg,#12335c,#0d2444);
+    border-top:1px solid rgba(120,170,255,.28);box-shadow:0 -8px 24px -12px rgba(0,0,0,.8)}
+  .ibar.on{display:flex}
+  .ib-ic{width:38px;height:38px;border-radius:10px;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.45)}
+  .ib-tx{flex:1;min-width:0;line-height:1.25}
+  .ib-tx b{display:block;font-size:14.5px;font-weight:800;color:#eaf1fb}
+  .ib-tx small{display:block;font-size:12px;color:#9fb8d8;margin-top:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ib-go{flex:none;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;
+    font-weight:800;font-size:14px;border:none;padding:10px 18px;border-radius:11px;cursor:pointer}
+  .ib-x{flex:none;background:none;border:none;color:#7f97b6;font-size:15px;padding:6px;cursor:pointer}
   .nav{flex:none;position:relative;z-index:50;padding:5px 12px calc(6px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line)}
   /* RETE DI SICUREZZA iOS: quando il viewport è bugiardo (--vp-gap > 0) iOS non disegna gli ultimi
      --vp-gap pt del guscio → le scritte della barra ci finivano dentro e sparivano. Con .vp-lie il
@@ -3487,6 +3501,12 @@
   </section>
   </div><!-- /scrollwrap -->
 
+  <div class="ibar" id="installBar">
+    <img class="ib-ic" src="/icon-192.png?v=5" alt="">
+    <div class="ib-tx"><b>Installa FantaCalcetto</b><small>Icona sua, schermo intero, notifiche</small></div>
+    <button class="ib-go" onclick="fcDoInstall()">Installa</button>
+    <button class="ib-x" onclick="fcHideInstallBar()" aria-label="Non ora">✕</button>
+  </div>
   <nav class="nav"><div class="nav-inner">
     <button class="on" data-v="home" onclick="go('home')"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"/></svg></i><span>Home</span></button>
     <button data-v="mercato" onclick="go('mercato')"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16l-1 13H5L4 7zM8 7V5a4 4 0 018 0v2" stroke-linecap="round" stroke-linejoin="round"/></svg></i><span>Mercato</span></button>
@@ -4569,6 +4589,26 @@ function openInstallHelp(){
 function closeInstallHelp(){ document.getElementById('instGate').classList.add('hidden'); }
 
 /* La riga nelle impostazioni non ha senso per chi l'app ce l'ha gia'. */
+/* La barra si rivaluta a ogni evento utile: all'avvio, quando Chrome offre il
+   prompt (che spesso arriva in ritardo) e quando l'app viene installata. */
+function fcSyncInstallBar(){
+  const bar=document.getElementById('installBar'); if(!bar) return;
+  const ok = !fcIsStandalone()
+          && typeof fcInstallPrompt!=='undefined' && !!fcInstallPrompt
+          && !fcInstallBarHidden();
+  bar.classList.toggle('on', ok);
+}
+function fcHideInstallBar(){
+  try{ sessionStorage.setItem('fc_ibar_off','1'); }catch(_){ }
+  const bar=document.getElementById('installBar'); if(bar) bar.classList.remove('on');
+}
+/* Il rifiuto vale per questa sessione soltanto: alla visita dopo la barra
+   torna. Non e' insistenza fine a se stessa, e' che senza app installata su
+   questo telefono mezzo prodotto non funziona. */
+function fcInstallBarHidden(){
+  try{ return sessionStorage.getItem('fc_ibar_off')==='1'; }catch(_){ return false; }
+}
+
 function syncInstallRow(){
   const r=document.getElementById('rowInstall'); if(!r) return;
   r.style.display = fcIsStandalone() ? 'none' : '';
@@ -4596,10 +4636,11 @@ window.addEventListener('beforeinstallprompt', e=>{
      installare?» e' gia' stata presa col no. E' il caso dei tablet che si
      dichiarano computer. Riprovo il banner, ma non la schermata piena: farla
      comparire addosso a chi sta gia' usando l'app sarebbe un agguato. */
-  try{ syncInstallRow(); if(!document.querySelector('.nbanner.on')) maybeShowHomeBanner(); }catch(_){ }
+  try{ fcSyncInstallBar(); syncInstallRow(); if(!document.querySelector('.nbanner.on')) maybeShowHomeBanner(); }catch(_){ }
 });
 window.addEventListener('appinstalled', ()=>{
   fcInstallPrompt=null;
+  try{ fcSyncInstallBar(); syncInstallRow(); }catch(_){ }
   try{ localStorage.setItem('fc_home_banner', String(Date.now())); }catch(_){ }
 });
 
@@ -4915,7 +4956,7 @@ async function afterLogin(){
     // prima l'installazione, poi le notifiche: senza app sulla Home le push
     // non possono funzionare (su iPhone PushManager non esiste nemmeno), quindi
     // i due banner non escono mai insieme e questo ha la precedenza
-    syncInstallRow();
+    syncInstallRow(); fcSyncInstallBar();
     if(!maybeShowHomeBanner()) maybeShowNotifBanner();
     maybeShowTutorial();     // tutorial alla prima apertura (aspetta che il resto sia sparito)
   }
