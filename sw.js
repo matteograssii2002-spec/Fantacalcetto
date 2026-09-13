@@ -19,6 +19,7 @@ const SHELL = [
   '/app/',
   '/app/index.html',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+  '/app/squadra.webp',
   '/icon-192.png',
   '/icon-512.png'
 ];
@@ -62,22 +63,27 @@ self.addEventListener('activate', e => {
 /* Pagina di scorta per tutto ciò che non è l'app (per esempio la vetrina). */
 const OFFLINE_HTML = `<!doctype html><html lang="it"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Senza connessione</title>
+<title>Nessuna connessione</title>
 <style>
- html,body{margin:0;height:100%;background:#0a1a2f;color:#eaf1fb;
+ html,body{margin:0;height:100%;background:#0a1626;color:#eef4fd;
    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
  .w{position:fixed;top:0;bottom:0;left:0;right:0;display:flex;flex-direction:column;
-   align-items:center;justify-content:center;text-align:center;padding:28px}
- .i{width:74px;height:74px;border-radius:20px;background:rgba(63,151,255,.14);
-   border:1px solid rgba(120,170,255,.3);display:flex;align-items:center;justify-content:center;
-   font-size:34px;margin-bottom:18px}
- h1{font-size:20px;margin:0 0 8px} p{color:#9fb8d8;font-size:14px;line-height:1.5;margin:0 0 22px;max-width:300px}
- button{background:linear-gradient(135deg,#4ea0ff,#1c6ff2);color:#fff;border:none;
-   font-size:15px;font-weight:800;padding:13px 26px;border-radius:12px}
+   align-items:center;justify-content:flex-end;text-align:center;padding:26px 24px 34px;
+   background:radial-gradient(120% 62% at 50% 30%, rgba(63,151,255,.20), transparent 64%)}
+ .sq{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:flex-end;justify-content:center;width:100%}
+ .sq::after{content:'';position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);
+   width:80%;height:42px;border-radius:50%;
+   background:radial-gradient(50% 50% at 50% 50%, rgba(63,151,255,.38), transparent 72%)}
+ .sq img{position:relative;z-index:1;width:100%;max-width:430px;max-height:100%;object-fit:contain;
+   filter:drop-shadow(0 20px 26px rgba(0,0,0,.55))}
+ h1{font-size:25px;letter-spacing:-.03em;margin:28px 0 0;font-weight:800}
+ p{color:#9bb2d6;font-size:13.5px;line-height:1.45;margin:9px 0 22px}
+ button{width:100%;max-width:340px;background:linear-gradient(135deg,#4ea0ff,#1c6ff2);color:#fff;border:none;
+   font-size:15.5px;font-weight:800;padding:15px 26px;border-radius:14px}
 </style></head><body><div class="w">
- <div class="i">&#9917;</div>
+ <div class="sq"><img src="/app/squadra.webp" alt="" onerror="this.style.display='none'"></div>
  <h1>Nessuna connessione</h1>
- <p>Controlla la rete o la modalit&agrave; aereo: appena torna, la pagina si ricarica da sola.</p>
+ <p>La pagina si ricarica da sola appena torna la rete.</p>
  <button onclick="location.reload()">Riprova</button>
  <script>addEventListener('online',()=>location.reload());<\/script>
 </div></body></html>`;
