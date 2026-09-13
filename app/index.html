@@ -158,15 +158,16 @@
     opacity:0;transition:opacity .35s ease}
   #offline.on{opacity:1}
   .off-inner{max-width:var(--maxw);width:100%;margin:0 auto;flex:1;min-height:0;display:flex;flex-direction:column;
+    justify-content:center;
     padding:calc(26px + env(safe-area-inset-top)) 24px calc(32px + env(safe-area-inset-bottom))}
   /* La squadra al centro, la stessa del Pagellone: la partita è in pausa, non finita.
      Il file sta già nel sito e nella cache del service worker, quindi si vede
      anche senza rete. */
-  .off-icon{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:flex-end;justify-content:center}
+  .off-icon{position:relative;flex:0 1 auto;min-height:0;max-height:36vh;display:flex;align-items:flex-end;justify-content:center}
   .off-icon::after{content:"";position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);
     width:80%;height:42px;border-radius:50%;pointer-events:none;
     background:radial-gradient(50% 50% at 50% 50%, rgba(63,151,255,.38), transparent 72%)}
-  .off-squad{position:relative;z-index:1;width:100%;max-width:430px;max-height:100%;height:auto;
+  .off-squad{position:relative;z-index:1;width:100%;max-width:430px;max-height:36vh;height:auto;
     object-fit:contain;display:block;filter:drop-shadow(0 20px 26px rgba(0,0,0,.55));
     animation:offFloat 5.5s ease-in-out infinite}
   .off-squad.noimg{display:none}
@@ -2730,7 +2731,7 @@
     </div>
     <div class="off-mid">
       <h1 class="off-h">Nessuna connessione</h1>
-      <p class="off-sub">L’app riparte da sola appena torna la rete.</p>
+      <p class="off-sub">Per usare l’app serve una connessione a internet.<br>Riparte da sola appena la rete torna.</p>
     </div>
     <div class="off-actions">
       <button class="ob-btn" id="offBtn" onclick="retryOffline()">Riprova</button>
@@ -3524,12 +3525,6 @@
   </section>
   </div><!-- /scrollwrap -->
 
-  <div class="ibar" id="installBar">
-    <img class="ib-ic" src="/icon-192.png?v=5" alt="">
-    <div class="ib-tx"><b id="ibTitle">Installa FantaCalcetto</b><small id="ibSub">Icona sua, schermo intero, notifiche</small></div>
-    <button class="ib-go" id="ibGo" onclick="fcInstallBarGo()">Installa</button>
-    <button class="ib-x" onclick="fcHideInstallBar()" aria-label="Non ora">✕</button>
-  </div>
   <nav class="nav"><div class="nav-inner">
     <button class="on" data-v="home" onclick="go('home')"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"/></svg></i><span>Home</span></button>
     <button data-v="mercato" onclick="go('mercato')"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16l-1 13H5L4 7zM8 7V5a4 4 0 018 0v2" stroke-linecap="round" stroke-linejoin="round"/></svg></i><span>Mercato</span></button>
@@ -3720,7 +3715,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='3.5';
+const APP_VERSION='3.6';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -4483,12 +4478,29 @@ function igStepsHTML(){
 
   /* iPhone e iPad: tutti i browser passano dal foglio Condividi di iOS, ma il
      pulsante non sta nello stesso posto. */
-  if(b==='ios-safari' || b==='ios-chrome' || b==='ios-firefox' || b==='ios-edge'){
-    const dove = b==='ios-safari'  ? 'nella barra in fondo allo schermo'
-               : b==='ios-chrome'  ? 'in fondo allo schermo, al centro'
-               : b==='ios-firefox' ? 'nel menu <b>\u2261</b> in basso a destra'
-               :                     'nella barra in fondo';
-    return igLi('share','Tocca <b>Condividi</b>', 'Il quadrato con la freccia in su, '+dove+'.')
+  /* Dalle ultime versioni di iOS la barra di Safari e' cambiata: il quadrato con
+     la freccia non c'e' piu' in chiaro, sta dentro il menu <b>\u22ef</b> in fondo a
+     destra. Chi ha la versione vecchia vede ancora il quadrato. Si nominano
+     tutti e due, con l'icona di ognuno, cosi' la strada e' giusta comunque. */
+  if(b==='ios-safari'){
+    return igLi('hdots','Tocca <b>\u22ef</b> in fondo a destra',
+                'I tre puntini nella barra di Safari. Sulle versioni pi\u00f9 vecchie al loro posto c\u2019\u00e8 <b>Condividi</b>, il quadrato con la freccia in su.')
+         + igLi('plus','Scegli <b>Aggiungi alla schermata Home</b>',
+                'In inglese <b>Add to Home Screen</b>. Se non lo vedi subito, apri prima <b>Condividi</b> e scorri l\u2019elenco. Poi conferma con <b>Aggiungi</b> in alto a destra.')
+         + apri;
+  }
+  if(b==='ios-chrome'){
+    return igLi('hdots','Tocca <b>\u22ef</b> in fondo a destra',
+                'I tre puntini in orizzontale, accanto alle schede.')
+         + igLi('plus','Scegli <b>Aggiungi a schermata Home</b>',
+                'Se non c\u2019\u00e8, apri <b>Condividi</b> e scorri fino a <b>Aggiungi a Home</b>.')
+         + apri;
+  }
+  if(b==='ios-firefox' || b==='ios-edge'){
+    const dove = b==='ios-firefox' ? 'Il menu <b>\u2261</b> in basso a destra.'
+                                   : 'I tre puntini <b>\u22ef</b> nella barra in fondo.';
+    return igLi(b==='ios-firefox'?'bars':'hdots','Apri il menu del browser', dove)
+         + igLi('share','Scegli <b>Condividi</b>')
          + igLi('plus','Scorri e scegli <b>Aggiungi a Home</b>',
                 'In inglese <b>Add to Home Screen</b>. Poi conferma con <b>Aggiungi</b> in alto a destra.')
          + apri;
@@ -4534,10 +4546,10 @@ function igStepsHTML(){
   }
 
   /* Chrome su Android e tutto il resto */
-  return igLi('dots','Tocca il menu <b>\u22ee</b> in alto a destra',
-              'I tre puntini in verticale, accanto all\u2019indirizzo.')
+  return igLi('dots','Tocca il menu <b>\u22ee</b>',
+              'I tre puntini in verticale, in alto a destra accanto all\u2019indirizzo. Su alcuni telefoni la barra sta in fondo: allora sono in basso a destra.')
        + igLi('plus','Scegli <b>Installa app</b>',
-              'Se non c\u2019\u00e8, cerca <b>Aggiungi alla schermata Home</b>.')
+              'Su alcune versioni si chiama <b>Aggiungi alla schermata Home</b>.')
        + apri;
 }
 function igWhyHTML(){
@@ -4558,12 +4570,17 @@ function igActionHTML(){
   }
   if(fcIsIOS()){
     return '<div class="ig-point">'+IG_SVG.down+'</div>'
-      +'<p class="ig-pointlab">Il pulsante Condividi \u00e8 qui sotto, nella barra di Safari.</p>';
+      +'<p class="ig-pointlab">Il menu <b>\u22ef</b> e il pulsante Condividi sono qui sotto, nella barra di Safari.</p>';
   }
   return '';
 }
 /* quando arrivo dal link d'invito e non ho l'app: si passa di qui */
-function showInstGate(lg){
+/* Da 3.6 la schermata pu\u00f2 comparire anche a chi \u00e8 gi\u00e0 dentro con la sessione
+   salvata: in quel caso \u00abContinua nel browser\u00bb non deve buttarlo sul login, ma
+   riprendere da dove era. La funzione da richiamare arriva qui. */
+let _igResume=null;
+function showInstGate(lg, resume){
+  _igResume = resume || null;
   hideSplash();
   ['welcome','gate','league','onboard'].forEach(id=>{const e=document.getElementById(id); if(e)e.classList.add('hidden');});
   document.getElementById('igBar').style.display='none';
@@ -4582,16 +4599,18 @@ function showInstGate(lg){
 }
 /* l'uscita di servizio: la ricordo 24h, o chi molla a metà registrazione
    se la ritrova in faccia a ogni ricarica */
+/* Il rifiuto vale per questa apertura soltanto. Prima durava 24 ore, ma senza
+   l'app sulla Home met\u00e0 prodotto non funziona (su iPhone niente notifiche del
+   tutto), quindi la schermata torna alla prossima apertura e sparisce da sola
+   il giorno che l'app viene installata. */
 function instGateSkip(){
-  try{ localStorage.setItem('fc_inv_skip', String(Date.now())); }catch(_){ }
+  try{ sessionStorage.setItem('fc_inv_skip','1'); }catch(_){ }
   document.getElementById('instGate').classList.add('hidden');
+  if(_igResume){ const r=_igResume; _igResume=null; r(); return; }
   authIntent='join'; showGate('join');
 }
 function instGateSkipped(){
-  try{
-    const t=parseInt(localStorage.getItem('fc_inv_skip')||'0');
-    return !!t && (Date.now()-t) < 24*3600*1000;
-  }catch(_){ return false; }
+  try{ return sessionStorage.getItem('fc_inv_skip')==='1'; }catch(_){ return false; }
 }
 /* la stessa schermata, aperta di mia volontà dal banner: si chiude e basta */
 function openInstallHelp(){
@@ -4622,36 +4641,13 @@ function closeInstallHelp(){ document.getElementById('instGate').classList.add('
      prompt disponibile  -> «Installa», finestra di sistema
      iPhone e simili     -> «Come», i passi di QUEL browser
      dentro WhatsApp     -> «Apri», perche' li' non si installa niente */
-function fcSyncInstallBar(){
-  const bar=document.getElementById('installBar'); if(!bar) return;
-  const ok = fcCanInstall() && !fcInstallBarHidden();
-  bar.classList.toggle('on', ok);
-  if(!ok) return;
-  const t=document.getElementById('ibTitle');
-  const s=document.getElementById('ibSub');
-  const g=document.getElementById('ibGo');
-  if(!t||!s||!g) return;
-  if(fcInAppBrowser()){
-    t.textContent='Apri in '+(fcIsIOS()?'Safari':'Chrome');
-    s.textContent='Da qui non si pu\u00f2 installare n\u00e9 ricevere notifiche';
-    g.textContent='Apri';
-  }else if(fcInstallPrompt){
-    t.textContent='Installa FantaCalcetto';
-    s.textContent='Icona sua, schermo intero, notifiche';
-    g.textContent='Installa';
-  }else{
-    t.textContent='Aggiungila alla Home';
-    s.textContent=fcIsIOS()?'Su iPhone le notifiche arrivano solo cos\u00ec'
-                           :'Icona sua, schermo intero, notifiche';
-    g.textContent='Come';
-  }
-}
-/* un solo pulsante, tre strade: la scelta la fa il codice, non l'utente */
-function fcInstallBarGo(){
-  if(fcInAppBrowser()) return fcOpenOutside();
-  if(fcInstallPrompt)  return fcDoInstall();
-  openInstallHelp();
-}
+/* Da 3.6 dentro l'app non c'\u00e8 pi\u00f9 niente che chiede di installare: n\u00e9 la barra
+   in fondo n\u00e9 il banner in alto. L'invito si fa una volta sola e nel punto
+   giusto \u2014 la schermata piena all'apertura \u2014 e poi si sta zitti: chi \u00e8 dentro
+   sta giocando, e ripeterglielo a ogni schermata \u00e8 pubblicit\u00e0.
+   Le funzioni restano perch\u00e9 sono richiamate da pi\u00f9 punti. */
+function fcSyncInstallBar(){ }
+function fcInstallBarGo(){ }
 function fcHideInstallBar(){
   try{ sessionStorage.setItem('fc_ibar_off','1'); }catch(_){ }
   const bar=document.getElementById('installBar'); if(bar) bar.classList.remove('on');
@@ -4741,13 +4737,12 @@ function fcOpenOutside(){
 }
 
 function maybeShowHomeBanner(){
+  /* Spento da 3.6: ci pensa la schermata piena all'apertura. Resta la funzione
+     perché la chiamano l'avvio e l'evento del prompt di Chrome. */
+  return false;
+  /* eslint-disable no-unreachable */
   try{
-    if(!fcCanInstall()) return false;      // già installata, o browser che non sa installare
-    /* Da 3.5 la barra in fondo dice la stessa cosa e non se ne va: due avvisi
-       identici nella stessa schermata sono rumore. Se la barra c'è, il banner
-       non esce. */
-    const _ib=document.getElementById('installBar');
-    if(_ib && _ib.classList.contains('on')) return false;
+    if(!fcCanInstall()) return false;
     if(document.getElementById('lnOk') || _recapPending || document.getElementById('pag').classList.contains('open')) return false;
 
     const dentro=fcInAppBrowser();
@@ -5000,7 +4995,12 @@ async function boot(){
   spTo(24);
   // sessione aperta dal link di recupero: prima la nuova password, poi si entra
   if(session&&_recoveryLink){ gateEnterRecovery(session.user?session.user.email:''); return; }
-  if(session){ user=session.user; afterLogin(); }
+  if(session){
+    user=session.user;
+    // sessione salvata ma app nel browser: prima la schermata d'installazione
+    if(fcCanInstall() && !instGateSkipped()){ showInstGate(null, ()=>afterLogin()); return; }
+    afterLogin();
+  }
   else {
     // LINK D'INVITO (?lega=slug): salto la welcome e vado dritto al login,
     // già in modalità "entra in una lega" e con il nome della lega a schermo.
