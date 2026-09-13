@@ -4367,6 +4367,16 @@ function fcIsStandalone(){
   }catch(_){ return false; }
 }
 function fcIsPhone(){ return /iphone|ipad|ipod|android/i.test(navigator.userAgent||''); }
+/* Non «sei un telefono», ma «sai installare»: i tablet Samsung si presentano
+   come computer (versione desktop dei siti) e restavano tagliati fuori, pur
+   potendo installare benissimo. Se il browser ha offerto il prompt, la
+   risposta e' si' a prescindere da cosa dice lo user agent. */
+function fcCanInstall(){
+  if(fcIsStandalone()) return false;
+  if(typeof fcInstallPrompt!=='undefined' && fcInstallPrompt) return true;
+  if(fcIsIOS()) return true;                       // Safari: si fa a mano
+  return /android/i.test(navigator.userAgent||''); // include i tablet
+}
 function fcIsIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent||''); }
 
 /* I simboli disegnati invece che descritti: «Condividi» non vuol dire niente
@@ -4434,7 +4444,7 @@ function showInstGate(lg){
   // va cercato a mano, perche' il link non sopravvive (iOS installa la start_url)
   document.getElementById('igLega').innerHTML = (lg && lg.name)
     ? 'Sei stato invitato in <b>'+esc(lg.name)+'</b><br>Dopo l\u2019installazione cerca questo nome.'
-    : 'Ci vuole un minuto.';
+    : 'Ci vuole un minuto: icona sua, schermo intero e <b>notifiche</b> quando si apre una giornata.';
   document.getElementById('igSteps').innerHTML=igStepsHTML();
   document.getElementById('igWhy').innerHTML=igWhyHTML()+igActionHTML();
   const e2=document.getElementById('igEsc');
@@ -4495,7 +4505,14 @@ function dismissHomeBanner(){
    qualcuno intercetta questo evento e lo tiene da parte. Senza, l'utente
    deve andarsela a cercare nel menu del browser: e non ci va. */
 let fcInstallPrompt=null;
-window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); fcInstallPrompt=e; });
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault(); fcInstallPrompt=e;
+  /* L'evento puo' arrivare dopo l'avvio, quando la decisione «si puo'
+     installare?» e' gia' stata presa col no. E' il caso dei tablet che si
+     dichiarano computer. Riprovo il banner, ma non la schermata piena: farla
+     comparire addosso a chi sta gia' usando l'app sarebbe un agguato. */
+  try{ syncInstallRow(); if(!document.querySelector('.nbanner.on')) maybeShowHomeBanner(); }catch(_){ }
+});
 window.addEventListener('appinstalled', ()=>{
   fcInstallPrompt=null;
   try{ localStorage.setItem('fc_home_banner', String(Date.now())); }catch(_){ }
@@ -4545,7 +4562,7 @@ function fcOpenOutside(){
 
 function maybeShowHomeBanner(){
   try{
-    if(fcIsStandalone() || !fcIsPhone()) return false;      // già installata, o non è un telefono
+    if(!fcCanInstall()) return false;      // già installata, o browser che non sa installare
     if(document.getElementById('lnOk') || _recapPending || document.getElementById('pag').classList.contains('open')) return false;
 
     const dentro=fcInAppBrowser();
@@ -4738,10 +4755,13 @@ async function boot(){
         // da telefono e senza app installata si passa dalla schermata
         // d'installazione: è l'unico momento in cui la persona è disposta a
         // farlo, e se non lo fa adesso non lo farà mai
-        if(fcIsPhone() && !fcIsStandalone() && !instGateSkipped()){ showInstGate(lg); return; }
+        if(fcCanInstall() && !instGateSkipped()){ showInstGate(lg); return; }
         authIntent='join'; showGate('join'); return;
       }
     }
+    /* Anche senza invito: chi arriva da «Gioca ora» è nello stesso momento
+       utile, cioè prima di essersi affezionato all'icona del browser. */
+    if(fcCanInstall() && !instGateSkipped()){ showInstGate(null); return; }
     showWelcome();
   }
 }
