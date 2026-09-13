@@ -900,18 +900,28 @@
 
   /* Barra d'installazione: sta nel flusso, sopra la navigazione, quindi non
      copre niente e non ha bisogno di position:fixed né di calcoli di altezza. */
-  .ibar{display:none;flex:none;position:relative;z-index:51;align-items:center;gap:11px;
-    padding:10px 13px;background:linear-gradient(180deg,#12335c,#0d2444);
-    border-top:1px solid rgba(120,170,255,.28);box-shadow:0 -8px 24px -12px rgba(0,0,0,.8)}
+  .ibar{display:none;flex:none;position:relative;z-index:51;align-items:center;gap:12px;
+    padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg,#143a68,#0d2444);
+    border-top:1px solid rgba(120,170,255,.34);box-shadow:0 -10px 28px -12px rgba(0,0,0,.85)}
   .ibar.on{display:flex}
-  .ib-ic{width:38px;height:38px;border-radius:10px;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.45)}
-  .ib-tx{flex:1;min-width:0;line-height:1.25}
-  .ib-tx b{display:block;font-size:14.5px;font-weight:800;color:#eaf1fb}
-  .ib-tx small{display:block;font-size:12px;color:#9fb8d8;margin-top:2px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .ib-go{flex:none;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;
-    font-weight:800;font-size:14px;border:none;padding:10px 18px;border-radius:11px;cursor:pointer}
+  .ibar::before{content:'';position:absolute;left:0;right:0;top:0;height:2px;
+    background:linear-gradient(90deg,transparent,rgba(120,170,255,.75),transparent)}
+  .ib-ic{width:46px;height:46px;border-radius:12px;flex:none;box-shadow:0 3px 10px rgba(0,0,0,.5)}
+  .ib-tx{flex:1;min-width:0;line-height:1.28}
+  .ib-tx b{display:block;font-size:15.5px;font-weight:800;color:#eaf1fb}
+  .ib-tx small{display:block;font-size:12.5px;color:#a8c0de;margin-top:3px}
+  .ib-go{flex:none;background:linear-gradient(135deg,#4ea0ff,#1c6ff2);color:#fff;
+    font-weight:800;font-size:14.5px;border:none;padding:12px 20px;border-radius:12px;cursor:pointer;
+    box-shadow:0 4px 14px -4px rgba(63,151,255,.7);animation:ibPulse 2.8s ease-in-out infinite}
+  @keyframes ibPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+  @media (prefers-reduced-motion:reduce){.ib-go{animation:none}}
   .ib-x{flex:none;background:none;border:none;color:#7f97b6;font-size:15px;padding:6px;cursor:pointer}
+  @media (max-width:359px){
+    .ib-ic{width:38px;height:38px}
+    .ib-tx b{font-size:14px} .ib-tx small{font-size:11.5px}
+    .ib-go{padding:10px 14px;font-size:13.5px}
+  }
   .nav{flex:none;position:relative;z-index:50;padding:5px 12px calc(6px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line)}
   /* RETE DI SICUREZZA iOS: quando il viewport è bugiardo (--vp-gap > 0) iOS non disegna gli ultimi
      --vp-gap pt del guscio → le scritte della barra ci finivano dentro e sparivano. Con .vp-lie il
@@ -3503,8 +3513,8 @@
 
   <div class="ibar" id="installBar">
     <img class="ib-ic" src="/icon-192.png?v=5" alt="">
-    <div class="ib-tx"><b>Installa FantaCalcetto</b><small>Icona sua, schermo intero, notifiche</small></div>
-    <button class="ib-go" onclick="fcDoInstall()">Installa</button>
+    <div class="ib-tx"><b id="ibTitle">Installa FantaCalcetto</b><small id="ibSub">Icona sua, schermo intero, notifiche</small></div>
+    <button class="ib-go" id="ibGo" onclick="fcInstallBarGo()">Installa</button>
     <button class="ib-x" onclick="fcHideInstallBar()" aria-label="Non ora">✕</button>
   </div>
   <nav class="nav"><div class="nav-inner">
@@ -3697,7 +3707,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='3.4';
+const APP_VERSION='3.5';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -4591,12 +4601,43 @@ function closeInstallHelp(){ document.getElementById('instGate').classList.add('
 /* La riga nelle impostazioni non ha senso per chi l'app ce l'ha gia'. */
 /* La barra si rivaluta a ogni evento utile: all'avvio, quando Chrome offre il
    prompt (che spesso arriva in ritardo) e quando l'app viene installata. */
+/* La barra non aspetta piu' il prompt di Chrome. Prima compariva solo dove il
+   browser sapeva installare da solo, cioe' mai su iPhone: proprio dove
+   l'installazione conta di piu', perche' senza icona sulla Home le notifiche
+   non esistono. Ora compare a chiunque possa installare, e cambia il pulsante
+   in base a cosa quel browser sa fare davvero:
+     prompt disponibile  -> «Installa», finestra di sistema
+     iPhone e simili     -> «Come», i passi di QUEL browser
+     dentro WhatsApp     -> «Apri», perche' li' non si installa niente */
 function fcSyncInstallBar(){
   const bar=document.getElementById('installBar'); if(!bar) return;
-  const ok = !fcIsStandalone()
-          && typeof fcInstallPrompt!=='undefined' && !!fcInstallPrompt
-          && !fcInstallBarHidden();
+  const ok = fcCanInstall() && !fcInstallBarHidden();
   bar.classList.toggle('on', ok);
+  if(!ok) return;
+  const t=document.getElementById('ibTitle');
+  const s=document.getElementById('ibSub');
+  const g=document.getElementById('ibGo');
+  if(!t||!s||!g) return;
+  if(fcInAppBrowser()){
+    t.textContent='Apri in '+(fcIsIOS()?'Safari':'Chrome');
+    s.textContent='Da qui non si pu\u00f2 installare n\u00e9 ricevere notifiche';
+    g.textContent='Apri';
+  }else if(fcInstallPrompt){
+    t.textContent='Installa FantaCalcetto';
+    s.textContent='Icona sua, schermo intero, notifiche';
+    g.textContent='Installa';
+  }else{
+    t.textContent='Aggiungila alla Home';
+    s.textContent=fcIsIOS()?'Su iPhone le notifiche arrivano solo cos\u00ec'
+                           :'Icona sua, schermo intero, notifiche';
+    g.textContent='Come';
+  }
+}
+/* un solo pulsante, tre strade: la scelta la fa il codice, non l'utente */
+function fcInstallBarGo(){
+  if(fcInAppBrowser()) return fcOpenOutside();
+  if(fcInstallPrompt)  return fcDoInstall();
+  openInstallHelp();
 }
 function fcHideInstallBar(){
   try{ sessionStorage.setItem('fc_ibar_off','1'); }catch(_){ }
@@ -4689,6 +4730,11 @@ function fcOpenOutside(){
 function maybeShowHomeBanner(){
   try{
     if(!fcCanInstall()) return false;      // già installata, o browser che non sa installare
+    /* Da 3.5 la barra in fondo dice la stessa cosa e non se ne va: due avvisi
+       identici nella stessa schermata sono rumore. Se la barra c'è, il banner
+       non esce. */
+    const _ib=document.getElementById('installBar');
+    if(_ib && _ib.classList.contains('on')) return false;
     if(document.getElementById('lnOk') || _recapPending || document.getElementById('pag').classList.contains('open')) return false;
 
     const dentro=fcInAppBrowser();
@@ -4826,9 +4872,75 @@ window.addEventListener('online', async ()=>{
 });
 window.addEventListener('offline', ()=>showOffline());
 
+/* ---------- BATTITO DEL DISPOSITIVO ----------
+   A cosa serve: la console super-admin non aveva modo di sapere quante persone
+   hanno davvero l'app sulla Home, chi è rimasto a una versione vecchia e chi ha
+   le notifiche spente. Sono le tre domande che dal di fuori non si possono
+   vedere, e che dicono se l'app viene usata come è stata pensata.
+
+   Perché il vecchio battito non funzionava: `sb.rpc('touch_last_seen')` senza
+   `await` né `.then()` non parte mai. Il builder di PostgREST fa la chiamata
+   solo quando qualcuno lo aspetta: la riga sembrava innocua e invece non ha mai
+   scritto niente (last_seen è nullo per tutti e 21 gli utenti).
+
+   Cosa si registra: una riga per dispositivo, non per persona. Nessun dato in
+   più rispetto a quello che il telefono racconta già al server a ogni richiesta.
+------------------------------------------------------------------ */
+function fcDeviceKey(){
+  try{
+    let k=localStorage.getItem('fc_dev');
+    if(!k){
+      k=(window.crypto&&crypto.randomUUID)?crypto.randomUUID()
+        :(String(Date.now())+Math.random().toString(36).slice(2));
+      localStorage.setItem('fc_dev',k);
+    }
+    return k;
+  }catch(_){ return 'no-storage'; }
+}
+function fcPlatform(){
+  const u=navigator.userAgent||'';
+  if(/iphone|ipod/i.test(u)) return 'iphone';
+  if(/ipad/i.test(u) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1)) return 'ipad';
+  if(/android/i.test(u))     return 'android';
+  if(/Macintosh/i.test(u))   return 'mac';
+  if(/Windows/i.test(u))     return 'windows';
+  return 'altro';
+}
+function fcPushState(){
+  try{
+    if(!pushSupported()) return 'non_supportate';
+    const p=Notification.permission;
+    return p==='granted'?'attive':(p==='denied'?'bloccate':'da_attivare');
+  }catch(_){ return 'non_supportate'; }
+}
+let _lastTouch=0;
+function touchDevice(force){
+  if(!sb||!user) return;
+  if(!force && (Date.now()-_lastTouch) < 30*60*1000) return;   // al massimo ogni mezz'ora
+  _lastTouch=Date.now();
+  try{
+    sb.rpc('touch_device',{
+      p_key:fcDeviceKey(),
+      p_standalone:fcIsStandalone(),
+      p_version:APP_VERSION,
+      p_platform:fcPlatform(),
+      p_browser:fcBrowser(),
+      p_push:fcPushState()
+    }).then(()=>{}).catch(()=>{});   // mai .catch() diretto: non è una Promise vera
+  }catch(_){ }
+}
+/* l'app torna in primo piano: è il momento in cui lo stato può essere cambiato
+   davvero (installata nel frattempo, notifiche concesse, versione nuova) */
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) touchDevice(); });
+
 /* ---------- AUTH / BOOT ---------- */
 async function boot(){
   refreshVersionLine();
+  /* Partenza senza rete: il service worker serve l'app dalla cache, ma la
+     libreria di Supabase arriva da un CDN e offline non si scarica. Senza
+     questa guardia `supabase.createClient` esplode e resta lo schermo fermo sul
+     logo per nove secondi, fino alla rete di sicurezza. */
+  if(typeof supabase==='undefined' || !supabase || !supabase.createClient){ showOffline(); return; }
   if(SUPABASE_URL.includes('INCOLLA')||SUPABASE_ANON.includes('INCOLLA')){
     showGate('login');
     gateStatus('⚠️ Apri il file e incolla Project URL e anon key nelle prime righe dello script.');
@@ -4961,7 +5073,7 @@ async function afterLogin(){
     maybeShowTutorial();     // tutorial alla prima apertura (aspetta che il resto sia sparito)
   }
   await loadMaintenance(); subscribeMaintenance();
-  try{ sb.rpc('touch_last_seen'); }catch(_){}   // battito "attivo" per la dashboard super-admin
+  touchDevice();   // battito del dispositivo per la console super-admin
   hideSplash();
 }
 let myLeague=null;
@@ -10406,6 +10518,7 @@ async function enablePush(){
     let sub=await reg.pushManager.getSubscription();
     if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlB64ToUint8(VAPID_PUBLIC)});
     await sb.from('push_subscriptions').upsert({endpoint:sub.endpoint,user_id:user.id,sub:sub.toJSON()},{onConflict:'endpoint'});
+    touchDevice(true);   // lo stato delle notifiche è appena cambiato
     toast('Notifiche attivate ✅');
   }catch(e){ toast('Errore notifiche: '+e.message); }
   renderNotifBtn();
