@@ -9973,7 +9973,7 @@ document.getElementById('setSaveBtn').onclick=async function(){
   applyProfile(); renderAll(); openSettings(); toast('Modifiche salvate');
 };
 document.getElementById('logoutBtn').onclick=async()=>{
-  if(!confirm('Vuoi uscire dall\'account?\n\nPer rientrare ti servirà la tua email (ricevi un codice via mail). Senza accesso alla mail non potrai rientrare.')) return;
+  if(!confirm('Vuoi uscire dall\'account?\n\nPer rientrare ti serviranno la tua email e la tua password. Se non ricordi la password puoi reimpostarla dalla schermata di accesso.')) return;
   await sb.auth.signOut(); location.reload();
 };
 
