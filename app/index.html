@@ -5692,7 +5692,7 @@ async function loadMyRole(){
   }catch(_){ opRole={is_owner:false,is_vice:false,can_operate:false}; }
 }
 async function loadPlayers(){
-  const {data}=await sb.from('players').select('*').order('id');
+  const {data}=await sb.from('players').select('*').is('deleted_at',null).order('id');
   players=(data||[]).map(p=>({id:p.id,name:p.name,role:p.role,avatar:p.avatar,forma:p.forma??6,present:!!p.present,injured:!!p.injured,cost:(p.cost==null?PRICE:p.cost),valore:(p.valore==null?null:Number(p.valore)),owner_id:p.owner_id,isMe:p.owner_id===user.id}));
   ensureStats();
 }
@@ -8058,15 +8058,22 @@ function maybePlanFullNotice(){
    restare leggibili anche da chi l'app non ce l'ha (e da un motore di ricerca).
    Si aprono in una scheda a parte, cosi' chi le legge non perde la sessione.
 
-   ⚠️ LA CANCELLAZIONE NON E' AUTOMATICA, ED E' UNA SCELTA.
-   Un account non e' una riga: l'utente compare in profili, presenze, voti dati
-   e ricevuti, formazioni, statistiche, iscrizioni push. E soprattutto, se chi
-   chiede di sparire e' l'unico amministratore di una lega, quella lega resta
-   senza padrone e gli altri membri restano bloccati.
-   Il GDPR chiede un canale funzionante e una risposta entro 30 giorni, non un
-   pulsante: quindi qui si inoltra la richiesta, e la cancellazione la esegue
-   una persona che puo' accorgersi del caso limite. Quando la si automatizzera'
-   servira' PRIMA decidere cosa succede alle leghe orfane.
+   LA CANCELLAZIONE E' AUTOMATICA E IMMEDIATA (sessione store, RPC delete_my_account).
+
+   Il database NON cancella la riga del profilo: la marca con deleted_at e
+   toglie l'identita' di accesso. E' l'unico modo di far sparire una persona
+   senza toccare le classifiche, perche' votes, nominations, lineups e
+   standings_adjustments puntano a profiles con ON DELETE CASCADE: cancellare
+   il profilo porterebbe via voti e formazioni delle stagioni gia' chiuse.
+
+   Le giornate gia' giocate restano com'erano: in quel momento la persona
+   faceva parte della lega. Da qui in avanti sparisce da elenco membri, vice,
+   votanti, presenze, listone e notifiche.
+
+   Il proprietario di una lega con altri membri attivi non puo' cancellarsi:
+   il database rifiuta con SQLSTATE FC020 finche' non passa la lega a
+   qualcun altro (transfer_league_ownership). Se invece e' rimasto solo, la
+   lega non ha piu' ragione di esistere e viene cancellata per intero.
    ========================================================================== */
 const LEGAL_MAIL = 'assistenza.fantacalcetto@gmail.com';
 
@@ -8075,41 +8082,168 @@ function openLegal(url){
   catch(_){ location.href = url; }
 }
 
+/* Stili dell'overlay di cancellazione: tenuti fuori dalle funzioni perche'
+   i tre passaggi devono avere lo stesso aspetto. */
+const AD_BOX  ='max-width:360px;width:100%;max-height:88%;overflow-y:auto;background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:20px;padding:22px;box-shadow:0 24px 60px -20px rgba(0,0,0,.7)';
+const AD_TIT  ='font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:20px;margin-bottom:10px;color:#eaf1fb;text-align:center';
+const AD_TXT  ='color:#8aa3c2;font-size:13.5px;line-height:1.55;margin:0 0 12px';
+const AD_WARN ='color:#f3e2be;font-size:13px;line-height:1.5;margin:0 0 12px;background:rgba(255,194,61,.1);border-left:3px solid #ffc23d;border-radius:0 10px 10px 0;padding:11px 13px';
+const AD_RED  ='width:100%;background:linear-gradient(135deg,#ff6470,#d81f31);color:#fff;font-weight:800;font-size:15px;border:none;padding:14px;border-radius:13px;cursor:pointer';
+const AD_BLUE ='width:100%;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;border:none;padding:14px;border-radius:13px;cursor:pointer';
+const AD_GHOST='width:100%;margin-top:9px;background:none;border:none;color:#8aa3c2;font-weight:700;font-size:13.5px;padding:10px;cursor:pointer';
+const AD_ROW  ='display:flex;align-items:center;gap:10px;width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(150,185,240,.18);color:#eaf1fb;font-weight:700;font-size:14px;padding:12px;border-radius:12px;cursor:pointer;margin-bottom:8px;text-align:left';
+
+function adBox(){ const o=document.getElementById('adOverlay'); return o?o.firstElementChild:null; }
+function adClose(){ const o=document.getElementById('adOverlay'); if(o) o.remove(); }
+
 function askAccountDeletion(){
-  const mail = (user && user.email) ? user.email : '';
-  const lega = (myLeague && myLeague.name) ? myLeague.name : '';
-  const owner = !!(profile && profile.is_admin);
-
-  const oggetto = 'Richiesta di cancellazione account';
-  const corpo = 'Chiedo la cancellazione del mio account e dei dati personali che mi riguardano.'
-    + '\n\nEmail dell\'account: ' + (mail || '(indicare l\'email)')
-    + (lega ? ('\nLega: ' + lega) : '')
-    + '\n\nSono consapevole che l\'operazione e\' irreversibile e comporta la rimozione dei miei punteggi, voti e presenze.';
-  const mailto = 'mailto:' + LEGAL_MAIL
-    + '?subject=' + encodeURIComponent(oggetto)
-    + '&body='    + encodeURIComponent(corpo);
-
+  adClose();
   const o=document.createElement('div');
+  o.id='adOverlay';
   o.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(5,12,24,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px';
-  o.innerHTML='<div style="max-width:360px;max-height:88%;overflow-y:auto;background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:20px;padding:22px;box-shadow:0 24px 60px -20px rgba(0,0,0,.7)">'
-    +'<div style="font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:20px;margin-bottom:10px;color:#eaf1fb;text-align:center">Elimina il mio account</div>'
-    +'<p style="color:#8aa3c2;font-size:13.5px;line-height:1.55;margin:0 0 12px">La cancellazione rimuove il profilo e <b style="color:#eaf1fb">tutti i dati di gioco</b>: punteggi, voti, presenze e trofei. La classifica della lega cambier\u00e0 per tutti. <b style="color:#eaf1fb">L\'operazione non si pu\u00f2 annullare.</b></p>'
-    + (owner
-        ? '<p style="color:#f3e2be;font-size:13px;line-height:1.5;margin:0 0 12px;background:rgba(255,194,61,.1);border-left:3px solid #ffc23d;border-radius:0 10px 10px 0;padding:11px 13px">\u26a0\ufe0f Amministri una lega: indica nel messaggio a chi passarla, altrimenti nessuno potr\u00e0 pi\u00f9 aprire le giornate.</p>'
-        : '')
-    +'<p style="color:#8aa3c2;font-size:13px;line-height:1.55;margin:0 0 18px">Premendo qui sotto si apre un messaggio gi\u00e0 scritto, indirizzato a <b style="color:#eaf1fb">'+LEGAL_MAIL+'</b>. La cancellazione viene eseguita <b style="color:#eaf1fb">entro 30 giorni</b> e riceverai conferma.</p>'
-    +'<button id="adMail" style="width:100%;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;border:none;padding:14px;border-radius:13px;cursor:pointer">Scrivi la richiesta</button>'
-    +'<button id="adCopy" style="width:100%;margin-top:9px;background:none;border:1px solid rgba(150,185,240,.2);color:#cfdff5;font-weight:700;font-size:13.5px;padding:12px;border-radius:12px;cursor:pointer">Copia l\'indirizzo</button>'
-    +'<button id="adNo" style="width:100%;margin-top:9px;background:none;border:none;color:#8aa3c2;font-weight:700;font-size:13.5px;padding:10px;cursor:pointer">Annulla</button></div>';
+  o.innerHTML='<div style="'+AD_BOX+'"></div>';
   document.body.appendChild(o);
-  o.querySelector('#adNo').onclick=()=>o.remove();
-  o.querySelector('#adMail').onclick=()=>{ o.remove(); location.href=mailto; };
-  o.querySelector('#adCopy').onclick=()=>{
-    /* rete di sicurezza: su un telefono senza app di posta configurata il
-       mailto non apre niente e il pulsante sembrerebbe rotto. */
-    try{ navigator.clipboard.writeText(LEGAL_MAIL); toast('Indirizzo copiato'); }
-    catch(_){ toast(LEGAL_MAIL); }
+  adStepIntro();
+}
+
+/* PASSO 1 — cosa succede davvero. Il testo cambia in base al ruolo, perche'
+   per il proprietario le conseguenze sono diverse. */
+async function adStepIntro(){
+  const box=adBox(); if(!box) return;
+  const owner=!!(profile && profile.is_admin);
+
+  /* per il proprietario devo sapere PRIMA se e' rimasto solo: le due strade
+     sono diverse e non voglio scoprirlo a meta' percorso. */
+  if(owner && _leagueMembers==null){
+    box.innerHTML='<div style="'+AD_TIT+'">Elimina il mio account</div>'
+      +'<p style="'+AD_TXT+'">Un attimo\u2026</p>';
+    try{
+      const {data,error}=await sb.rpc('list_league_members');
+      if(!error) _leagueMembers=data||[];
+    }catch(_){ }
+  }
+  const soli =owner && Array.isArray(_leagueMembers) && _leagueMembers.filter(m=>!m.is_owner).length===0;
+
+  box.innerHTML='<div style="'+AD_TIT+'">Elimina il mio account</div>'
+    +'<p style="'+AD_TXT+'">Il tuo profilo viene disattivato e l\'accesso eliminato: email e credenziali spariscono. Da quel momento non compari pi\u00f9 nell\'elenco della lega, nel listone, nelle presenze e nelle notifiche.</p>'
+    +'<p style="'+AD_TXT+'">Le giornate gi\u00e0 giocate restano come sono: voti, presenze e punti di allora non si toccano, quindi <b style="color:#eaf1fb">le classifiche non cambiano per nessuno</b>.</p>'
+    +(owner
+      ? '<p style="'+AD_WARN+'">Amministri questa lega. '+(soli
+          ? 'Sei l\'unico membro rimasto: cancellandoti verr\u00e0 eliminata anche la lega, con tutte le sue giornate.'
+          : 'Prima di cancellarti devi passarla a un altro membro.')+'</p>'
+      : '')
+    +'<p style="'+AD_TXT+'"><b style="color:#eaf1fb">L\'operazione non si pu\u00f2 annullare.</b></p>'
+    +'<button id="adGo" style="'+AD_BLUE+'">Continua</button>'
+    +'<button id="adNo" style="'+AD_GHOST+'">Annulla</button>';
+
+  box.querySelector('#adNo').onclick=adClose;
+  box.querySelector('#adGo').onclick=()=>{
+    if(owner && !soli) adStepSuccessor(); else adStepConfirm();
   };
+}
+
+/* PASSO 2 (solo proprietario) — a chi passa la lega. */
+async function adStepSuccessor(){
+  const box=adBox(); if(!box) return;
+  box.innerHTML='<div style="'+AD_TIT+'">Chi prende la lega</div>'
+    +'<p style="'+AD_TXT+'">Carico l\'elenco dei membri\u2026</p>';
+
+  let rows=[];
+  try{
+    const {data,error}=await sb.rpc('list_league_members');
+    if(error) throw error;
+    rows=(data||[]).filter(m=>!m.is_owner);
+  }catch(e){
+    box.innerHTML='<div style="'+AD_TIT+'">Chi prende la lega</div>'
+      +'<p style="'+AD_TXT+'">'+esc(errText(e))+'</p>'
+      +'<button id="adNo" style="'+AD_GHOST+'">Chiudi</button>';
+    box.querySelector('#adNo').onclick=adClose; return;
+  }
+
+  if(!rows.length){
+    box.innerHTML='<div style="'+AD_TIT+'">Nessuno a cui passarla</div>'
+      +'<p style="'+AD_WARN+'">Sei l\'unico membro attivo rimasto. Continuando verr\u00e0 eliminata anche la lega, con tutte le sue giornate, i voti e le classifiche.</p>'
+      +'<button id="adGo" style="'+AD_BLUE+'">Continua</button>'
+      +'<button id="adNo" style="'+AD_GHOST+'">Annulla</button>';
+    box.querySelector('#adNo').onclick=adClose;
+    box.querySelector('#adGo').onclick=adStepConfirm;
+    return;
+  }
+
+  box.innerHTML='<div style="'+AD_TIT+'">Chi prende la lega</div>'
+    +'<p style="'+AD_TXT+'">Chi scegli diventa il nuovo proprietario e potr\u00e0 aprire le giornate, gestire il listone e i vice. Il passaggio \u00e8 immediato.</p>'
+    +rows.map(m=>'<button class="adPick" data-id="'+esc(m.id)+'" style="'+AD_ROW+'">'
+        +esc(m.player_name||m.team_name||'Membro')+'</button>').join('')
+    +'<button id="adNo" style="'+AD_GHOST+'">Annulla</button>';
+
+  box.querySelector('#adNo').onclick=adClose;
+  box.querySelectorAll('.adPick').forEach(b=>{
+    b.onclick=async ()=>{
+      box.querySelectorAll('.adPick').forEach(x=>x.disabled=true);
+      b.textContent='Passaggio in corso\u2026';
+      try{
+        const {error}=await sb.rpc('transfer_league_ownership',{p_user:b.dataset.id});
+        if(error) throw error;
+      }catch(e){
+        toast(errText(e));
+        box.querySelectorAll('.adPick').forEach(x=>x.disabled=false);
+        adStepSuccessor(); return;
+      }
+      /* da qui in poi non sono piu' il proprietario: allineo lo stato locale
+         cosi' il passo successivo non ripropone la scelta. */
+      if(profile) profile.is_admin=false;
+      opRole={is_owner:false,is_vice:false,can_operate:false};
+      _leagueMembers=null;
+      adStepConfirm();
+    };
+  });
+}
+
+/* PASSO 3 — conferma. Non chiede di scrivere niente: e' un secondo tap
+   deliberato su una schermata diversa, che basta a fermare il tocco per
+   sbaglio senza trasformare la cancellazione in un esame. */
+function adStepConfirm(){
+  const box=adBox(); if(!box) return;
+  box.innerHTML='<div style="'+AD_TIT+'">Sei sicuro?</div>'
+    +'<p style="'+AD_TXT+'">Stai per eliminare definitivamente il tuo account. Perderai l\'accesso e non potrai rientrare con questa email.</p>'
+    +'<p style="'+AD_TXT+'"><b style="color:#eaf1fb">Non si torna indietro.</b></p>'
+    +'<button id="adKill" style="'+AD_RED+'">Elimina definitivamente</button>'
+    +'<button id="adNo" style="'+AD_GHOST+'">No, torna indietro</button>';
+
+  const btn=box.querySelector('#adKill');
+  box.querySelector('#adNo').onclick=adClose;
+  btn.onclick=()=>adDoDelete(btn);
+}
+
+async function adDoDelete(btn){
+  btn.disabled=true; btn.style.opacity='.6'; btn.textContent='Cancellazione in corso\u2026';
+
+  let esito=null;
+  try{
+    const {data,error}=await sb.rpc('delete_my_account');
+    if(error) throw error;
+    esito=data;
+  }catch(e){
+    btn.disabled=false; btn.style.opacity='1'; btn.textContent='Elimina definitivamente';
+    toast(errText(e));
+    return;
+  }
+
+  /* pulizia lato telefono: la subscription push resterebbe registrata nel
+     browser anche se la riga nel database non c'e' piu'. */
+  try{
+    const reg=await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.getSubscription();
+    if(sub) await sub.unsubscribe();
+  }catch(_){ }
+  try{ await sb.auth.signOut(); }catch(_){ }
+  try{ localStorage.clear(); }catch(_){ }
+
+  adClose();
+  alert(esito==='league_deleted'
+    ? 'Account e lega eliminati. Grazie di aver giocato.'
+    : 'Account eliminato. Grazie di aver giocato.');
+  location.replace('/');
 }
 
 /* ---------- PAGINA BACHECA (overlay full-screen) ---------- */
@@ -9922,6 +10056,21 @@ async function deletePlayer(id){
    il problema si risolve solo segnalandolo. */
 function errText(e){
   const m=String((e&&e.message)||e||'');
+  const c=String((e&&e.code)||'');
+  /* Cancellazione account e passaggio di lega: il database alza errori con un
+     codice stabile, il testo tecnico non va mostrato a nessuno. */
+  if(c==='FC020' || /must_transfer_ownership/i.test(m))
+    return 'Sei il proprietario della lega: prima devi passarla a un altro membro.';
+  if(/superadmin_cannot_self_delete/i.test(m))
+    return 'Questo account amministra il servizio: non si cancella da qui.';
+  if(/already_deleted/i.test(m))
+    return 'Questo account risulta gi\u00e0 eliminato.';
+  if(/already_owner/i.test(m))
+    return 'Sei gi\u00e0 tu il proprietario della lega.';
+  if(/not_member/i.test(m))
+    return 'Quella persona non \u00e8 un membro attivo della lega.';
+  if(/not_authenticated|no_profile/i.test(m))
+    return 'Sessione non valida: esci e rientra.';
   if(/row-level security|violates row level|42501|permission denied/i.test(m))
     return 'Il database non ti riconosce come amministratore di questa lega. Segnalacelo da Impostazioni \u203a Aiuto e manutenzione.';
   if(/duplicate key|already exists|23505/i.test(m))
