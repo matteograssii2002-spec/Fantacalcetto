@@ -142,6 +142,34 @@
   .empty{color:var(--muted);font-size:13px;padding:12px 2px;line-height:1.55}
   .skel{color:var(--muted);font-size:13px;padding:8px 2px}
 
+  /* CONTROLLI — una riga per cosa, un pallino e la spiegazione gia' in italiano.
+     Prima qui finiva il messaggio grezzo del database (il timeout di pg_net),
+     che diceva molto a chi sa leggerlo e niente a chi deve solo capire se gira. */
+  .chk{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line)}
+  .chk:first-child{border-top:none;padding-top:2px}
+  .chk i{width:11px;height:11px;border-radius:50%;flex:none;margin-top:4px;background:var(--muted)}
+  .chk.ok   i{background:var(--green);box-shadow:0 0 0 4px rgba(55,201,138,.15)}
+  .chk.warn i{background:var(--amber);box-shadow:0 0 0 4px rgba(255,184,77,.15)}
+  .chk.bad  i{background:var(--red);box-shadow:0 0 0 4px rgba(255,107,107,.16)}
+  .chk b{display:block;font-size:14px;font-weight:700;letter-spacing:-.01em}
+  .chk span{display:block;color:var(--muted);font-size:12.5px;line-height:1.45;margin-top:2px}
+
+  /* BARRE DI ADOZIONE: la percentuale grande, il conto vero piccolo accanto. */
+  .bar{margin:0 0 13px}
+  .bar:last-child{margin-bottom:0}
+  .bar .bl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}
+  .bar .bl b{font-size:13.5px;font-weight:700}
+  .bar .bl u{text-decoration:none;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:15px}
+  .bar .bl u em{font-style:normal;color:var(--muted);font-size:11.5px;font-weight:600;margin-left:5px}
+  .bar .bt{height:9px;border-radius:6px;background:var(--surface2);overflow:hidden}
+  .bar .bf{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--accent-soft));transition:width .5s ease}
+  .bar.g .bf{background:linear-gradient(90deg,var(--green),#7ee6b6)}
+  .bar.o .bf{background:linear-gradient(90deg,var(--gold),var(--gold-soft))}
+  .vrow{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:6px 0;border-top:1px solid var(--line)}
+  .vrow:first-child{border-top:none}
+  .vrow b{font-family:'JetBrains Mono',monospace;font-weight:800}
+  .vrow.old span{color:var(--amber)}
+
   /* ====================== AGGIUNTE DELLA VERSIONE 2 ======================
      Il problema della console vecchia non erano i dati: c'erano quasi tutti.
      Era che stavano tutti nella stessa colonna, uno sotto l'altro, senza una
@@ -254,8 +282,9 @@
 
   <!-- ============ OGGI ============ -->
   <div class="tabpane on" id="paneOggi">
-    <div id="health" class="health dim"><span class="bulb"></span>
-      <div><div class="ht" id="hTitle">Controllo automazione&hellip;</div><div class="hs" id="hSub">&mdash;</div></div>
+    <div class="card" id="chkCard">
+      <h2>Controlli <span class="rt" id="chkCount"></span></h2>
+      <div id="chkBody"><div class="skel">Controllo&hellip;</div></div>
     </div>
 
     <div class="card" id="attCard">
@@ -269,15 +298,21 @@
     </div>
 
     <div class="card">
+      <h2>Come viene usata <span class="rt" id="adoBase"></span></h2>
+      <div id="adoBars"><div class="skel">Carico&hellip;</div></div>
+    </div>
+
+    <div class="card">
       <h2>Colpo d&rsquo;occhio</h2>
       <div class="grid">
         <div class="stat blue"><b id="lTot">&ndash;</b><span>Leghe</span></div>
         <div class="stat green"><b id="lAct">&ndash;</b><span>Attive (30g)</span></div>
         <div class="stat muted"><b id="lIna">&ndash;</b><span>Ferme</span></div>
-        <div class="stat"><b id="uTot">&ndash;</b><span>Utenti</span></div>
-        <div class="stat green"><b id="uAct">&ndash;</b><span>Attivi (30g)</span></div>
-        <div class="stat gold"><b id="pTot">&ndash;</b><span>Con notifiche</span></div>
+        <div class="stat"><b id="uTot">&ndash;</b><span>Persone</span></div>
+        <div class="stat green"><b id="uAct">&ndash;</b><span>Attive (30g)</span></div>
+        <div class="stat green"><b id="uAct7">&ndash;</b><span>Attive (7g)</span></div>
       </div>
+      <div id="adoVers" style="margin-top:14px"></div>
     </div>
   </div>
 
@@ -430,25 +465,21 @@ async function loadAll(silent){
   const b=document.getElementById('refBtn'); b.textContent='\u2026'; b.disabled=true;
   /* quattro chiamate in parallelo, ognuna col suo paracadute: se una manca la
      console non deve spegnersi, deve solo mostrare un po' meno. */
-  const [ov, he, lg, pl] = await Promise.all([
+  const [ov, he, lg, pl, ck, ad] = await Promise.all([
     sb.rpc('sa_overview').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_health').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_leagues_full').then(r=>r.error?null:r.data).catch(()=>null),
-    sb.rpc('sa_plans').then(r=>r.error?null:r.data).catch(()=>null)
+    sb.rpc('sa_plans').then(r=>r.error?null:r.data).catch(()=>null),
+    sb.rpc('sa_checks').then(r=>r.error?null:r.data).catch(()=>null),
+    sb.rpc('sa_adoption').then(r=>r.error?null:r.data).catch(()=>null)
   ]);
   if(ov) paintOverview(ov);
   health=he;
   hasNewRpc = !!(he || lg);
   document.getElementById('sqlWarn').style.display  = hasNewRpc?'none':'flex';
   document.getElementById('sqlWarnB').style.display = pl?'none':'flex';
-  paintHealth(he);
-  /* sa_overview non porta sempre il totale delle iscrizioni push; sa_health si.
-     Se manca da una parte lo prendo dall'altra invece di lasciare un trattino. */
-  if(he && he.push_total!=null){
-    const e=document.getElementById('pTot');
-    if(e && (e.textContent==='\u2013'||e.textContent==='')) e.textContent=he.push_total;
-  }
-
+  renderChecks(ck);
+  renderAdoption(ad);
   if(lg){ leagues=lg||[]; }
   else {
     const old=await sb.rpc('sa_leagues').then(r=>r.error?null:r.data).catch(()=>null);
@@ -531,55 +562,102 @@ function paintMoney(ov){
   document.getElementById('fSlots').innerHTML=sl;
 }
 
-/* ---------- IL SEMAFORO ----------
-   La domanda a cui deve rispondere e' una sola: «sta girando?». Il segnale
-   piu' vicino alla verita' e' l'ultima risposta HTTP della Edge Function,
-   perche' dice che notify e' stata chiamata davvero E cosa ha risposto.
-   Verde sotto i 15 minuti, giallo sotto l'ora, rosso oltre. */
-function paintHealth(h){
-  const box=document.getElementById('health');
-  const t=document.getElementById('hTitle'), s=document.getElementById('hSub');
-  if(!h){ box.className='health dim'; t.textContent='Automazione: non leggibile';
-    s.textContent='Le funzioni di controllo non rispondono. Esegui console_a.sql.'; return; }
-  const job=h.cron_job, run=h.cron_run, http=h.http_last;
-  const parts=[];
-  if(job && job.active===false){
-    box.className='health bad';
-    t.textContent='Il cron \u00e8 SPENTO';
-    s.textContent='Il job \u00ab'+(job.jobname||job.jobid)+'\u00bb esiste ma \u00e8 disattivato: non si apre niente e non parte nessun promemoria. Riattivalo con  update cron.job set active=true.';
+/* ---------- I CONTROLLI ----------
+   Il semaforo vecchio metteva a schermo quello che rispondeva il database, che
+   era anche giusto ma illeggibile: «errore: Timeout of 5000 ms reached...» sotto
+   un pallino verde. La domanda vera e' un'altra, e sono sette: gira il timer?
+   quando ha girato l'ultima volta? la funzione ha risposto bene? ci sono
+   giornate aperte? le notifiche partono? il checkout e' acceso? ho abbastanza
+   dati per fidarmi dei numeri qui sotto?
+   Le risposte, gia' scritte in italiano, arrivano da sa_checks(): qui si
+   disegnano e basta. */
+function renderChecks(list){
+  const body=document.getElementById('chkBody');
+  const cnt=document.getElementById('chkCount');
+  if(!body) return;
+  if(!Array.isArray(list) || !list.length){
+    body.innerHTML='<div class="skel">Controlli non disponibili. Esegui <span class="num">console_metriche.sql</span>.</div>';
+    if(cnt) cnt.textContent='';
     return;
   }
-  if(!job){ parts.push('job del cron non leggibile'); }
-  else parts.push('job \u00ab'+esc(job.jobname||job.jobid)+'\u00bb \u00b7 '+esc(job.schedule||''));
+  const peso={bad:0,warn:1,na:2,ok:3};
+  const ord=list.slice().sort((x,y)=>(peso[x.s]??9)-(peso[y.s]??9));
+  body.innerHTML=ord.map(c=>'<div class="chk '+esc(c.s||'na')+'"><i></i><div><b>'+esc(c.t||'')+'</b>'
+    +'<span>'+esc(c.d||'')+'</span></div></div>').join('');
+  const male=list.filter(c=>c.s==='bad').length, giallo=list.filter(c=>c.s==='warn').length;
+  if(cnt) cnt.textContent = male? (male+' da guardare') : (giallo? (giallo+' da tenere d\u2019occhio') : 'tutto a posto');
+  const card=document.getElementById('chkCard');
+  if(card) card.style.borderColor = male?'rgba(255,107,107,.40)':(giallo?'rgba(255,184,77,.36)':'var(--line)');
+}
 
-  const age = msAgo(http && http.when);
-  const runAge = msAgo(run && run.started);
-  const best = (age==null) ? runAge : (runAge==null ? age : Math.min(age,runAge));
-
-  if(run && run.status && String(run.status).toLowerCase()!=='succeeded')
-    parts.push('ultimo giro: '+esc(run.status));
-  if(http && http.code && Number(http.code)>=400)
-    parts.push('ultima risposta HTTP '+http.code);
-  if(http && http.error) parts.push('errore: '+esc(String(http.error).slice(0,90)));
-
-  let cls='dim', ttl='Automazione: nessun segnale';
-  if(best==null){
-    ttl='Automazione: nessun segnale recente';
-    parts.unshift('non risulta nessun giro registrato');
-  } else {
-    const quando = ago(http&&http.when) !== '\u2014' ? ago(http.when) : ago(run&&run.started);
-    if(best < 15*MIN){ cls='ok';   ttl='Automazione attiva \u00b7 ultimo giro '+quando; }
-    else if(best < 60*MIN){ cls='warn'; ttl='Automazione in ritardo \u00b7 ultimo giro '+quando; }
-    else { cls='bad'; ttl='Automazione FERMA \u00b7 ultimo giro '+quando; }
+/* ---------- COME VIENE USATA ----------
+   Tre domande che dal di fuori non si possono vedere: quante persone hanno
+   davvero l'icona sulla Home, quante hanno acceso le notifiche, quante sono
+   rimaste indietro con la versione. La base del conto non e' \u00abtutti gli
+   iscritti\u00bb ma \u00abquelli che hanno aperto l'app da quando la misuriamo\u00bb:
+   scriverlo accanto al titolo evita di leggere percentuali che non vogliono
+   dire niente nei primi giorni. */
+function bar(cls,titolo,n,base,nota){
+  const pct = base>0 ? Math.round(n*100/base) : 0;
+  return '<div class="bar '+cls+'"><div class="bl"><b>'+esc(titolo)+'</b>'
+    +'<u>'+pct+'%<em>'+n+' su '+base+'</em></u></div>'
+    +'<div class="bt"><i class="bf" style="display:block;width:'+(base>0?pct:0)+'%"></i></div>'
+    +(nota?'<div class="chk" style="padding:6px 0 0;border:none"><span>'+esc(nota)+'</span></div>':'')
+    +'</div>';
+}
+function renderAdoption(a){
+  const box=document.getElementById('adoBars');
+  const base=document.getElementById('adoBase');
+  const vers=document.getElementById('adoVers');
+  if(!box) return;
+  if(!a){
+    box.innerHTML='<div class="skel">Numeri non disponibili. Esegui <span class="num">console_metriche.sql</span>.</div>';
+    if(base) base.textContent=''; if(vers) vers.innerHTML='';
+    return;
   }
-  const httpBad = !!(http && Number(http.code)>=400);
-  const runBad  = !!(run && run.status && String(run.status).toLowerCase()!=='succeeded');
-  if((httpBad||runBad) && cls==='ok') cls='warn';
-  box.className='health '+cls;
-  t.textContent=ttl;
-  s.innerHTML=parts.join(' \u00b7 ') + (h.matchdays_open!=null
-    ? '<br>'+h.matchdays_open+(h.matchdays_open===1?' giornata viva':' giornate vive')
-      +' \u00b7 '+(h.push_total||0)+' iscrizioni push' : '');
+  // il colpo d'occhio: questi numeri sono piu' puliti di quelli vecchi
+  const set=(id,v)=>{ const e=document.getElementById(id); if(e&&v!=null) e.textContent=v; };
+  set('lTot',a.leghe); set('lAct',a.leghe_attive);
+  if(a.leghe!=null&&a.leghe_attive!=null) set('lIna', Math.max(0,a.leghe-a.leghe_attive));
+  set('uTot',a.utenti); set('uAct',a.attivi_30); set('uAct7',a.attivi_7);
+
+  const m=a.misurati||0;
+  if(base) base.textContent = m ? ('su '+m+' che hanno aperto l\u2019app') : '';
+  if(!m){
+    box.innerHTML='<div class="skel">Nessun battito ricevuto: i numeri si riempiono man mano che le persone aprono la versione 3.5 o pi\u00f9 recente.</div>';
+    if(vers) vers.innerHTML='';
+    return;
+  }
+  const versioni=Array.isArray(a.versioni)?a.versioni:[];
+  const ultima=versioni.length?versioni[0].v:null;
+  const aggiornate=versioni.length?versioni[0].n:0;
+
+  box.innerHTML =
+      bar('g','App installata sulla Home', a.installate||0, m,
+          (a.installate||0)<m ? 'Chi gioca dal browser su iPhone non riceve nessuna notifica.' : '')
+    + bar('','Notifiche accese', a.push_attive||0, m,
+          (a.push_bloccate? a.push_bloccate+' le hanno bloccate dal telefono. ':'')
+          +((a.push_da_fare||0)? (a.push_da_fare+' non hanno ancora risposto alla richiesta.'):''))
+    + (ultima ? bar('o','Sulla versione '+esc(ultima), aggiornate, m,
+          aggiornate<m ? 'Chi \u00e8 indietro prende la versione nuova alla prima apertura con la rete.' : '') : '');
+
+  let h='';
+  if(versioni.length>1){
+    h+='<div class="sect" style="margin:2px 0 6px">Versioni in giro</div>';
+    h+=versioni.map((v,i)=>'<div class="vrow'+(i?' old':'')+'"><span>'+esc(v.v)+(i?'':' \u00b7 la pi\u00f9 recente')+'</span><b>'+v.n+'</b></div>').join('');
+  }
+  const pf=Array.isArray(a.piattaforme)?a.piattaforme:[];
+  if(pf.length){
+    const nomi={iphone:'iPhone',ipad:'iPad',android:'Android',mac:'Mac',windows:'Windows',altro:'Altro','?':'Sconosciuto'};
+    h+='<div class="sect" style="margin:12px 0 6px">Da che dispositivo</div>';
+    h+=pf.map(x=>'<div class="vrow"><span>'+esc(nomi[x.p]||x.p)+'</span><b>'+x.n+'</b></div>').join('');
+  }
+  if(a.iscrizioni!=null){
+    h+='<div class="chk" style="padding:12px 0 0"><span>Le iscrizioni push registrate sono <b style="display:inline;font-size:12.5px">'
+      +a.iscrizioni+'</b> per <b style="display:inline;font-size:12.5px">'+(a.persone_push||0)
+      +'</b> persone: ogni telefono e ogni reinstallazione conta una riga, le righe non sono le persone.</span></div>';
+  }
+  if(vers) vers.innerHTML=h;
 }
 
 /* ---------- giornate vive ---------- */

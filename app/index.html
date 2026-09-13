@@ -12,14 +12,18 @@
      toglie boot(); se il codice non partisse, sparisce da solo dopo 12s. -->
 <style>
   html,body{margin:0;background:#0a1626}
+  /* Misure copiate dallo splash (#splash, .sp-head, .sp-logo): stesso sfondo,
+     logo da 118px con lo stesso raggio a 54px dal bordo alto. Cosi' il passaggio
+     dalla copertura alla schermata di caricamento non si vede: il logo resta
+     dov'e'. Per lo stesso motivo, quando la copertura se ne va, allo splash
+     viene tolta la caduta del logo (classe .noanim): ricadrebbe una seconda
+     volta sotto gli occhi di chi lo sta gia' guardando fermo. */
   #preboot{position:fixed;top:0;left:0;right:0;bottom:0;z-index:5000;
     background:radial-gradient(130% 80% at 50% 32%, rgba(63,151,255,.20), transparent 62%),#0a1626;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
-  #preboot img{width:96px;height:96px;border-radius:27px;display:block;
-    box-shadow:0 20px 44px -16px rgba(63,151,255,.6)}
-  #preboot span{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-    font-weight:800;font-size:19px;letter-spacing:-.03em;color:#eef4fd}
-  #preboot span i{font-style:normal;color:#dbe5f6}
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+  #preboot img{width:118px;height:118px;border-radius:30px;display:block;margin-top:54px;
+    box-shadow:0 26px 60px -18px rgba(63,151,255,.7), inset 0 1px 0 rgba(255,255,255,.25)}
   #preboot.out{opacity:0;transition:opacity .25s ease;pointer-events:none}
   @keyframes pbGiveUp{to{opacity:0;visibility:hidden}}
   #preboot{animation:pbGiveUp .4s ease 12s forwards}
@@ -88,6 +92,8 @@
     background:radial-gradient(130% 80% at 50% 32%, rgba(63,151,255,.20), transparent 62%),var(--bg);
     padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);transition:opacity .55s ease, transform .55s ease}
   #splash.gone{opacity:0;transform:scale(1.04);pointer-events:none}
+  /* il logo era gia' a schermo sotto la copertura d'avvio: non lo si fa ricadere */
+  #splash.noanim .sp-logowrap{animation:none}
   /* blocco alto (logo + nome + occhiello): spostato in su per far posto all'immagine sotto */
   .sp-head{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;margin-top:54px}
   /* 1) il LOGO cade dall'alto con rimbalzo, alone che pulsa + onda che si espande */
@@ -2637,7 +2643,7 @@
 </style>
 </head>
 <body>
-<div id="preboot"><img src="/icon-512.png?v=3" alt=""><span>Fanta<i>Calcetto</i></span></div>
+<div id="preboot"><img src="/icon-512.png?v=3" alt=""></div>
 <script>
 /* ALTEZZA VERA DEL GUSCIO (--app-h) + AREA NON DISEGNATA (--vp-gap).
    Misurato sull'iPhone: schermo/webview 852pt, ma iOS in PWA standalone dichiara un viewport di
@@ -4946,7 +4952,11 @@ async function boot(){
   /* lo splash è disegnato e coperto: la copertura d'avvio può andarsene */
   try{
     const _pb=document.getElementById('preboot');
-    if(_pb){ _pb.classList.add('out'); setTimeout(()=>{ if(_pb.parentNode) _pb.parentNode.removeChild(_pb); }, 300); }
+    if(_pb){
+      const _sp=document.getElementById('splash'); if(_sp) _sp.classList.add('noanim');
+      _pb.classList.add('out');
+      setTimeout(()=>{ if(_pb.parentNode) _pb.parentNode.removeChild(_pb); }, 300);
+    }
   }catch(_){ }
   refreshVersionLine();
   /* Partenza senza rete: il service worker serve l'app dalla cache, ma la
