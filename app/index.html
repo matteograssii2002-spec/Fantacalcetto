@@ -3,6 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<!-- PRIMO DISEGNO — deve stare in cima, prima di qualunque altra cosa.
+     Il file dell'app è grosso quasi un mega: mentre arriva, il browser può
+     disegnare quello che ha già letto prima di aver finito il foglio di stile
+     principale, e per un istante si vedeva la pagina bianca o il testo nudo
+     dell'app. Questo pezzetto di stile e il riquadro subito dentro <body>
+     coprono tutto con lo sfondo scuro e il logo, dal primo fotogramma. Lo
+     toglie boot(); se il codice non partisse, sparisce da solo dopo 12s. -->
+<style>
+  html,body{margin:0;background:#0a1626}
+  #preboot{position:fixed;top:0;left:0;right:0;bottom:0;z-index:5000;
+    background:radial-gradient(130% 80% at 50% 32%, rgba(63,151,255,.20), transparent 62%),#0a1626;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+  #preboot img{width:96px;height:96px;border-radius:27px;display:block;
+    box-shadow:0 20px 44px -16px rgba(63,151,255,.6)}
+  #preboot span{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    font-weight:800;font-size:19px;letter-spacing:-.03em;color:#eef4fd}
+  #preboot span i{font-style:normal;color:#dbe5f6}
+  #preboot.out{opacity:0;transition:opacity .25s ease;pointer-events:none}
+  @keyframes pbGiveUp{to{opacity:0;visibility:hidden}}
+  #preboot{animation:pbGiveUp .4s ease 12s forwards}
+</style>
 <title>FantaCalcetto</title>
 <meta name="robots" content="noindex">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -22,7 +43,10 @@
 <link rel="manifest" href="manifest.webmanifest?v=5">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<!-- media="print" + onload: il browser lo scarica senza fermare il disegno della
+     pagina, poi lo applica. Con una rete lenta erano secondi di schermo bianco. -->
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"></noscript>
 <style>
   :root{--bg:#0a1626;--bg2:#0e1d34;--surface:#15294b;--surface2:#1f3a6c;--line:rgba(150,185,240,.07);--line-strong:rgba(150,185,240,.15);
     --text:#eef4fd;--muted:#9bb2d6;--accent:#3f97ff;--accent-soft:#7ec2ff;--accent-deep:#1c6ff2;--gold:#ffc23d;--gold-soft:#ffd470;--green:#2fd98a;--red:#ff5d6b;--neutral:#e8eef9;--maxw:460px;
@@ -130,35 +154,33 @@
 
   /* ---- OFFLINE / nessuna connessione (vale anche da app nativa: è tutto lato client) ---- */
   #offline{position:fixed;top:0;bottom:0;left:0;right:0;z-index:1400;display:none;flex-direction:column;
-    background:radial-gradient(130% 78% at 50% 26%, rgba(63,151,255,.15), transparent 62%),var(--bg);
+    background:radial-gradient(120% 62% at 50% 30%, rgba(63,151,255,.20), transparent 64%),var(--bg);
     opacity:0;transition:opacity .35s ease}
   #offline.on{opacity:1}
   .off-inner{max-width:var(--maxw);width:100%;margin:0 auto;flex:1;min-height:0;display:flex;flex-direction:column;
     padding:calc(26px + env(safe-area-inset-top)) 24px calc(32px + env(safe-area-inset-bottom))}
-  .off-top{margin-top:24px;flex:0 0 auto}
-  /* icona: stessa forma del logo ma spenta, così "si vede" che qualcosa non va */
-  .off-icon{position:relative;width:96px;height:96px;border-radius:27px;margin:0 auto;display:grid;place-items:center;
-    color:var(--accent-soft);background:linear-gradient(135deg,#26436f,#182f52);
-    border:1px solid rgba(127,176,255,.22);
-    box-shadow:0 20px 44px -18px rgba(8,20,40,.9), inset 0 1px 0 rgba(255,255,255,.14)}
-  .off-icon::after{content:"";position:absolute;inset:0;border-radius:27px;
-    box-shadow:0 0 0 0 rgba(63,151,255,.34);animation:offRing 2.6s ease-out .3s infinite}
-  @keyframes offRing{0%{box-shadow:0 0 0 0 rgba(63,151,255,.34)}70%,100%{box-shadow:0 0 0 26px rgba(63,151,255,0)}}
-  .off-icon svg{width:46px;height:46px;display:block}
-  .off-mid{margin-top:32px;flex:0 0 auto}
-  .off-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:24px;letter-spacing:-.03em;line-height:1.05;text-align:center;margin:0}
-  .off-sub{font-size:13.5px;color:var(--muted);text-align:center;line-height:1.45;margin:10px 8px 0}
-  /* illustrazione: la stessa della welcome, ma spenta — la partita è in pausa */
-  .off-hero{flex:1 1 auto;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;padding:8px 0}
-  .off-hero img{width:100%;max-width:360px;max-height:100%;height:auto;object-fit:contain;display:block;
-    opacity:.3;filter:grayscale(.75) brightness(.72)}
-  .off-actions{margin-top:auto;width:100%;flex:0 0 auto;padding-top:8px}
+  /* La squadra al centro, la stessa del Pagellone: la partita è in pausa, non finita.
+     Il file sta già nel sito e nella cache del service worker, quindi si vede
+     anche senza rete. */
+  .off-icon{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:flex-end;justify-content:center}
+  .off-icon::after{content:"";position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);
+    width:80%;height:42px;border-radius:50%;pointer-events:none;
+    background:radial-gradient(50% 50% at 50% 50%, rgba(63,151,255,.38), transparent 72%)}
+  .off-squad{position:relative;z-index:1;width:100%;max-width:430px;max-height:100%;height:auto;
+    object-fit:contain;display:block;filter:drop-shadow(0 20px 26px rgba(0,0,0,.55));
+    animation:offFloat 5.5s ease-in-out infinite}
+  .off-squad.noimg{display:none}
+  @keyframes offFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .off-mid{margin-top:28px;flex:0 0 auto}
+  .off-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:25px;letter-spacing:-.03em;line-height:1.05;text-align:center;margin:0}
+  .off-sub{font-size:13.5px;color:var(--muted);text-align:center;line-height:1.45;margin:9px 8px 0}
+  .off-actions{margin-top:22px;width:100%;flex:0 0 auto}
   .off-status{margin-top:12px;font-size:13px;color:var(--accent-soft);text-align:center;line-height:1.4;min-height:18px}
   .off-status.bad{color:var(--red)}
-  .off-shake{animation:offShake .42s cubic-bezier(.36,.07,.19,.97) both}
-  @keyframes offShake{10%,90%{transform:translateX(-2px)}30%,70%{transform:translateX(4px)}50%{transform:translateX(-5px)}100%{transform:none}}
+  .off-shake .off-squad{animation:offShake .42s cubic-bezier(.36,.07,.19,.97) both}
+  @keyframes offShake{10%,90%{transform:translateX(-3px)}30%,70%{transform:translateX(5px)}50%{transform:translateX(-7px)}100%{transform:none}}
   @media (prefers-reduced-motion: reduce){
-    .off-icon::after,.off-shake{animation:none}
+    .off-squad{animation:none}
   }
   .ob-inner{max-width:var(--maxw);margin:0 auto;padding:calc(26px + env(safe-area-inset-top)) 24px calc(40px + env(safe-area-inset-bottom));min-height:100%;display:flex;flex-direction:column}
   .ob-brand{display:flex;align-items:center;gap:11px;margin-bottom:18px}
@@ -2614,6 +2636,7 @@
 </style>
 </head>
 <body>
+<div id="preboot"><img src="/icon-512.png?v=3" alt=""><span>Fanta<i>Calcetto</i></span></div>
 <script>
 /* ALTEZZA VERA DEL GUSCIO (--app-h) + AREA NON DISEGNATA (--vp-gap).
    Misurato sull'iPhone: schermo/webview 852pt, ma iOS in PWA standalone dichiara un viewport di
@@ -2701,24 +2724,14 @@
 <!-- OFFLINE · nessuna connessione / modalità aereo (tutto lato client: vale anche da app nativa) -->
 <div id="offline">
   <div class="off-inner">
-    <div class="off-top">
-      <div class="off-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M1.4 8.9a16 16 0 0 1 5.2-3.1"></path>
-          <path d="M10.9 4.9a16 16 0 0 1 11.7 4"></path>
-          <path d="M5 12.5a11 11 0 0 1 4.2-2.2"></path>
-          <path d="M19 12.5a11 11 0 0 0-2.6-1.7"></path>
-          <path d="M8.6 16.1a6 6 0 0 1 6.8 0"></path>
-          <path d="M12 20h.01"></path>
-          <path d="M2 2l20 20"></path>
-        </svg>
-      </div>
+    <div class="off-icon">
+      <img class="off-squad" src="squadra.webp?v=1" alt="" loading="eager" decoding="async"
+           onerror="this.classList.add('noimg')">
     </div>
     <div class="off-mid">
-      <h1 class="off-h">Sei offline</h1>
-      <p class="off-sub">Controlla il Wi-Fi o i dati mobili.<br>La partita ti aspetta. ⚽</p>
+      <h1 class="off-h">Nessuna connessione</h1>
+      <p class="off-sub">L’app riparte da sola appena torna la rete.</p>
     </div>
-    <div class="off-hero"><img id="offHero" alt="" loading="lazy" decoding="async"></div>
     <div class="off-actions">
       <button class="ob-btn" id="offBtn" onclick="retryOffline()">Riprova</button>
       <div class="off-status" id="offStatus"></div>
@@ -4935,6 +4948,11 @@ document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) touchDe
 
 /* ---------- AUTH / BOOT ---------- */
 async function boot(){
+  /* lo splash è disegnato e coperto: la copertura d'avvio può andarsene */
+  try{
+    const _pb=document.getElementById('preboot');
+    if(_pb){ _pb.classList.add('out'); setTimeout(()=>{ if(_pb.parentNode) _pb.parentNode.removeChild(_pb); }, 300); }
+  }catch(_){ }
   refreshVersionLine();
   /* Partenza senza rete: il service worker serve l'app dalla cache, ma la
      libreria di Supabase arriva da un CDN e offline non si scarica. Senza
