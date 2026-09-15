@@ -786,6 +786,8 @@
   #setMenu .setfoot{margin-top:auto;padding-top:26px}
   #setMenu .setfoot .logout{margin-top:0}
   @keyframes setSlide{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+  .setpage.on.back{animation:setSlideBack .22s ease}
+  @keyframes setSlideBack{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
   .navrow{width:100%;display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:15px 16px;cursor:pointer;color:var(--text);font-family:inherit;text-align:left;margin-top:12px}
   /* intestazioni di gruppo del menu Impostazioni: separano «io» da «la lega» */
   .setgrp{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:22px 4px 2px}
@@ -8172,13 +8174,21 @@ document.getElementById('obBtn').onclick=async function(){
 };
 
 /* ---------- NAV / RENDER ---------- */
+const _tabY={};
 function go(v){
+  const was=document.querySelector('.view.active');
+  const wasV=was ? was.id.replace(/^v-/,'') : null;
+  if(wasV && wasV!==v) _tabY[wasV]=_scrollY();
   document.querySelectorAll('.view').forEach(s=>s.classList.remove('active'));
   document.getElementById('v-'+v).classList.add('active');
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
-  if(v==='settings'){ setNav('setMenu'); openSettings(); }
+  if(v==='settings'){ _setStack.length=0; setNav('setMenu'); openSettings(); }
   if(v==='classifica'){ maybeAnimateLega(); }
-  toTop();
+  /* stessa scheda toccata di nuovo, o Impostazioni: in cima.
+     Un'altra scheda: dove la si era lasciata. */
+  const y = (wasV===v || v==='settings') ? 0 : (_tabY[v]||0);
+  if(y){ _scrollTo(y); requestAnimationFrame(()=>_scrollTo(y)); }
+  else toTop();
 }
 function applyProfile(){
   document.getElementById('heroTeam').innerHTML=teamLogoHTML(user.id,18)+`<span class="tnm">${esc(profile.team_name)}</span>`;
@@ -10754,12 +10764,43 @@ document.addEventListener('touchend',e=>{
   else watch();
 })();
 
+/* 4.1 — TORNANDO INDIETRO SI RITROVA IL PUNTO DI PRIMA.
+   Ogni volta che si entra in una sotto-pagina, la pagina da cui si parte va in
+   una pila con la sua posizione di scorrimento. Se poi si torna a una pagina
+   della pila (col pulsante, con lo swipe o col tasto indietro di Android) si
+   riapre dove la si era lasciata. Entrare in una pagina nuova parte dall'alto.
+   L'animazione d'ingresso va nel verso giusto: da destra avanti, da sinistra
+   indietro. */
+const _setStack=[];
+function _scrollY(){
+  const a=document.getElementById('scrollwrap');
+  return a ? a.scrollTop : (window.scrollY||0);
+}
+function _scrollTo(y){
+  const a=document.getElementById('scrollwrap');
+  if(a) a.scrollTop=y;
+  try{ window.scrollTo(0,y); }catch(_){ }
+}
 function setNav(id){
   if(id==='page-avvisi') loadPushStatus();   // il dato si legge solo entrando qui
 
-  document.querySelectorAll('#v-settings .setpage').forEach(p=>p.classList.remove('on'));
-  const el=document.getElementById(id); if(el)el.classList.add('on');
-  toTop();
+  const cur=document.querySelector('#v-settings .setpage.on');
+  const curId=cur?cur.id:null;
+  let back=false, y=0;
+  const k=_setStack.findIndex(x=>x.id===id);
+  if(k>=0){ back=true; y=_setStack[k].y; _setStack.length=k; }
+  else if(curId && curId!==id){
+    _setStack.push({id:curId, y:_scrollY()});
+    if(_setStack.length>20) _setStack.shift();
+  }
+
+  document.querySelectorAll('#v-settings .setpage').forEach(p=>p.classList.remove('on','back'));
+  const el=document.getElementById(id);
+  if(el){ if(back) el.classList.add('back'); el.classList.add('on'); }
+  if(back){
+    _scrollTo(y);
+    requestAnimationFrame(()=>_scrollTo(y));   // dopo il disegno, se l'altezza e' cambiata
+  }else toTop();
 }
 function openSettings(){
   setAvatarDraft=profile.avatar;
@@ -11071,7 +11112,14 @@ async function checkForUpdate(){
     }
   }finally{ _checking=false; }
 }
-document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ toTop(); checkForUpdate(); ensurePush(); } });
+/* 4.1 — al rientro si torna in cima solo dopo mezz'ora fuori: passare un
+   attimo su WhatsApp a copiare un nome non deve far perdere il punto. */
+let _awaySince=0;
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){ _awaySince=Date.now(); return; }
+  if(_awaySince && Date.now()-_awaySince>30*60*1000) toTop();
+  checkForUpdate(); ensurePush();
+});
 window.addEventListener('focus',()=>{ checkForUpdate(); ensurePush(); });
 
 /* feedback al tocco: micro-animazione + vibrazione leggera */
