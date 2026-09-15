@@ -877,6 +877,8 @@
   .ig-btn{display:block;width:100%;margin:24px 0 0;padding:16px;border:none;
     border-radius:14px;background:linear-gradient(135deg,#3f97ff,#1c6ff2);
     color:#fff;font-weight:800;font-size:16px;cursor:pointer}
+  .ig-or{margin:22px 2px 0;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center}
+  .ig-wait{margin:10px 2px 0;font-size:12.5px;line-height:1.5;color:var(--gold-soft);text-align:center}
   .ig-point{margin:22px auto 0;width:44px;height:44px;border-radius:50%;
     background:rgba(63,151,255,.16);border:1px solid rgba(63,151,255,.35);
     display:flex;align-items:center;justify-content:center;color:#8fc3ff;
@@ -2793,6 +2795,7 @@
     </div>
   </div>
   <div class="gate-bottom">
+    <div id="igNative"></div>
     <ol class="ig-steps" id="igSteps"></ol>
     <p class="ig-why" id="igWhy"></p>
     <a class="ig-esc" id="igEsc" onclick="instGateSkip()">Continua nel browser</a>
@@ -3721,7 +3724,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='3.8';
+const APP_VERSION='3.9';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -4037,6 +4040,18 @@ function tutFakeMd(hours){
            reminder_sent:false, lineup_open_sent:false,
            presence_remind_sent:false, lineup_remind_sent:false };
 }
+/* 3.9 — per mostrare il Centro giornata fra una giornata e l'altra si toglie
+   per un passo la giornata di prova, e si rimette al passo dopo. Le scritture
+   restano bloccate dalla rete del tutorial: premere «Apri» non apre niente. */
+let _tutMdHold=null;
+function tutNoMd(){
+  if(currentMd){ _tutMdHold=currentMd; currentMd=null; }
+  _semiInit=false; computeLock(); renderMdCenter();
+}
+function tutMdBack(){
+  if(_tutMdHold){ currentMd=_tutMdHold; _tutMdHold=null; }
+  computeLock(); renderAll();
+}
 /* sposta il fischio d'inizio: e' il trucco che permette di far vedere in
    sequenza fasi che nella vita vera distano giorni (sondaggio a +60h,
    formazioni a +30h, voti a -3h). */
@@ -4132,9 +4147,21 @@ function tutStepsAdmin(){ return [
  {v:'settings', nav:'page-admin', el:'#rowRules',
   ttl:'Le regole',
   tx:"Qui scegli come parte ogni giornata: da sola, sempre allo stesso orario, oppure quando la programmi tu."},
+ {v:'settings', nav:'page-quando', el:'#schedBox',
+  ttl:'Apertura della giornata',
+  tx: schedDraft.auto_open
+    ? "Sei in <b>automatica</b>: stesso giorno e ora ogni settimana, la giornata si apre da sola 72h prima. Per saltare una settimana passa a Semi-automatica."
+    : "Sei in <b>semi-automatica</b>: ogni settimana scegli tu quando si gioca, dal Centro giornata. Se giocate sempre allo stesso orario, passa ad Automatica."},
+ {v:'settings', nav:'page-giornata', el:'#mdcPrimary',
+  before:()=>tutNoMd(),
+  ttl: schedDraft.auto_open ? 'Prima dell\u2019apertura' : 'Programma la partita',
+  tx: schedDraft.auto_open
+    ? "Fra una giornata e l\u2019altra qui vedi quando si aprir\u00e0 la prossima. Se serve prima, c\u2019\u00e8 \u00abApri subito\u00bb."
+    : "Qui scegli data e ora della prossima partita e, se li segni tu, chi gioca. Oltre le 72h la giornata aspetta e si apre da sola."},
  {v:'settings', nav:'page-giornata', el:'#mdcSteps',
+  before:()=>tutMdBack(),
   ttl:'Centro giornata',
-  tx:"La sequenza della giornata. Sotto, l\u2019azione che serve adesso."},
+  tx:"A giornata aperta, qui c\u2019\u00e8 la sequenza delle fasi. Sotto, l\u2019azione che serve adesso."},
  {v:'settings', nav:'page-giornata', el:'#presCard',
   before:()=>{ const c=document.getElementById('presCard'); if(c){ c.style.display='block'; c.classList.add('open'); } },
   ttl:'Chi gioca',
@@ -4440,9 +4467,13 @@ function fcCanInstall(){
      modalita' desktop non ce l'hanno, pur essendo tablet che installano
      benissimo. Guardo invece se ho riconosciuto un browser per cui so
      scrivere le istruzioni. */
-  return fcBrowser()!=='desktop';
+  const b=fcBrowser();
+  if(b==='desktop-firefox') return false;
+  if(b==='mac-safari') return fcSafariMajor()>=17;
+  return true;   // telefoni, tablet e computer con Chrome o Edge
 }
-function fcIsIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent||''); }
+/* 3.9 — anche l'iPad che si presenta come Mac (Safari in versione desktop) */
+function fcIsIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent||'') || fcIsIOSDevice(); }
 
 /* I simboli disegnati invece che descritti: «Condividi» non vuol dire niente
    finche' non vedi il quadrato con la freccia che devi cercare in basso. */
@@ -4478,9 +4509,20 @@ function fcBrowser(){
   if(fcIsIOS())                   return 'ios-safari';
   if(/EdgA\//i.test(u))           return 'edge-android';
   if(/OPR\/|Opera/i.test(u))      return 'opera-android';
-  if(/Firefox\//i.test(u))        return 'firefox-android';
+  if(/Firefox\//i.test(u) && /Android/i.test(u)) return 'firefox-android';
   if(/Android/i.test(u))          return 'chrome-android';
+  /* 3.9 — computer: Firefox non installa, Safari su Mac si' (dalla 17, «Aggiungi al Dock»),
+     Chrome ed Edge si', col prompt */
+  if(/Firefox\//i.test(u))        return 'desktop-firefox';
+  if(/Macintosh/i.test(u) && /Safari/i.test(u) && !/Chrome|Chromium|Edg\/|OPR\//i.test(u)) return 'mac-safari';
   return 'desktop';
+}
+/* i browser che sanno aprire la finestra di installazione da soli */
+function fcNativeCapable(){
+  return ['chrome-android','samsung','edge-android','opera-android','desktop'].includes(fcBrowser());
+}
+function fcSafariMajor(){
+  const m=/Version\/(\d+)/.exec(navigator.userAgent||''); return m?parseInt(m[1],10):0;
 }
 function fcBrowserNome(){
   return {samsung:'Samsung Internet','ios-firefox':'Firefox','ios-chrome':'Chrome',
@@ -4562,6 +4604,13 @@ function igStepsHTML(){
          + apri;
   }
 
+  if(b==='mac-safari'){
+    return igLi('bars','Apri il menu <b>File</b> in alto',
+                'Nella barra dei menu del Mac, accanto a Safari.')
+         + igLi('plus','Scegli <b>Aggiungi al Dock</b>',
+                'Oppure il pulsante <b>Condividi</b> \u203a <b>Aggiungi al Dock</b>. Poi conferma con <b>Aggiungi</b>.')
+         + igLi('app','Apri FantaCalcetto dal Dock');
+  }
   if(b==='desktop'){
     return igLi('inst','Clicca l\u2019icona di installazione nella barra dell\u2019indirizzo',
                 'A destra dell\u2019indirizzo: uno schermo con una freccia verso il basso.')
@@ -4611,12 +4660,14 @@ function igActionHTML(){
    Su iPhone il pulsante non puo' esistere: Safari non ha nessun modo di
    avviare l'installazione da una pagina. */
 let _igCtx={lg:null, info:false};
+let _igWaitTap=false;
 let fcInstalledElsewhere=false;
 function igPaint(){
   const T=document.getElementById('igTitle'), L=document.getElementById('igLega'),
         S=document.getElementById('igSteps'), W=document.getElementById('igWhy');
   if(!T||!L||!S||!W) return;
   const c=_igCtx||{}, dentro=fcInAppBrowser();
+  { const N0=document.getElementById('igNative'); if(N0) N0.innerHTML=''; }
   const nome=(!c.info && c.lg && c.lg.name) ? esc(c.lg.name) : '';
   if(!dentro && !fcInstallPrompt && fcInstalledElsewhere){
     T.textContent='L\u2019app \u00e8 gi\u00e0 installata';
@@ -4626,6 +4677,7 @@ function igPaint(){
     S.innerHTML=''; W.innerHTML='';
     return;
   }
+  const N=document.getElementById('igNative');
   if(!dentro && fcInstallPrompt){
     T.textContent='Installa l\u2019app';
     L.innerHTML=(nome?'Sei stato invitato in <b>'+nome+'</b>.<br>':'')
@@ -4635,7 +4687,18 @@ function igPaint(){
     W.innerHTML='<button class="ig-btn" onclick="fcDoInstall()">Installa l\u2019app</button>';
     return;
   }
-  T.textContent = dentro ? 'Apri in '+(fcIsIOS()?'Safari':'Chrome') : 'Aggiungila alla Home';
+  /* 3.9 — dove il browser sa installare da solo il pulsante c'e' SUBITO.
+     La finestra di sistema pero' la decide il browser: Chrome la concede solo
+     dopo un tocco e qualche secondo sul sito (conta anche il tempo passato
+     sulla vetrina). Se si preme prima, si spiega e restano i passi dal menu;
+     appena il browser e' pronto, il pulsante apre la finestra. */
+  if(!dentro && N && fcNativeCapable()){
+    N.innerHTML='<button class="ig-btn" style="margin-top:6px" onclick="fcDoInstall()">Installa l\u2019app</button>'
+      +(_igWaitTap?'<p class="ig-wait">Il browser la sta ancora preparando: tra pochi secondi il pulsante funziona. Intanto puoi farlo dal menu.</p>':'')
+      +'<p class="ig-or">oppure dal menu</p>';
+  }
+  const pc=['desktop','mac-safari'].includes(fcBrowser());
+  T.textContent = dentro ? 'Apri in '+(fcIsIOS()?'Safari':'Chrome') : (pc ? 'Installala sul computer' : 'Aggiungila alla Home');
   if(c.info){
     L.textContent = dentro
       ? 'Da qui non si pu\u00f2 installare: bastano due tocchi per uscire.'
@@ -4807,7 +4870,12 @@ function fcInAppBrowser(){
 }
 
 async function fcDoInstall(){
-  if(!fcInstallPrompt){ openInstallHelp(); return; }
+  if(!fcInstallPrompt){
+    const g=document.getElementById('instGate');
+    if(g && !g.classList.contains('hidden')){ _igWaitTap=true; igPaint(); return; }
+    openInstallHelp(); return;
+  }
+  _igWaitTap=false;
   const p=fcInstallPrompt; fcInstallPrompt=null;
   let esito='';
   try{ p.prompt(); const r=await p.userChoice; esito=(r&&r.outcome)||''; }catch(_){ }
@@ -5415,14 +5483,21 @@ function heroState(){
   if(md && ph===1){
     // solo a chi il sondaggio riguarda davvero: ha risposto «ci sono» ed e' un giocatore
     if(presencePollOpen() && iPlay)
-      return {ttl:'Ci sei \u2014 <span class="hot">ci vediamo l\u00ec</span>', cta:'Guarda chi ha risposto \u2192',
-              fn:"heroScrollTo('homePresence')", note:'Le formazioni aprono a sondaggio chiuso.'};
+      return canOp()
+        ? {ttl:'Ci sei \u2014 <span class="hot">ci vediamo l\u00ec</span>', cta:'Guarda chi ha risposto \u2192',
+           fn:'openPresCard()', note:'Le formazioni aprono a sondaggio chiuso.'}
+        : {ttl:'Ci sei \u2014 <span class="hot">ci vediamo l\u00ec</span>', cta:'Cambia la tua risposta \u2192',
+           fn:"heroScrollTo('homePresence')", note:'Le formazioni aprono a sondaggio chiuso.'};
     // manager senza personaggio, o sondaggio spento: per lui adesso non c'e' niente da fare
     return {ttl:'Si raccolgono le <span class="hot">presenze</span>', cta:'Vedi la classifica \u2192',
             fn:"go('classifica')", note:'Le formazioni aprono quando si sa chi gioca.'};
   }
 
   if(md && ph===2){
+    const _g=presGateReason();
+    if(_g && !canOp())
+      return {ttl:'Formazioni <span class="hot">in attesa</span>', cta:'Vedi la classifica \u2192',
+              fn:"go('classifica')", note:_g+'. Si aprono appena l\u2019admin segna chi gioca.'};
     const n=Object.keys(lineup||{}).length;
     if(n<5)
       return {ttl:'Pronto a <span class="hot">schierare?</span>', cta:'Schiera la formazione \u2192',
@@ -7187,7 +7262,7 @@ function renderSemiPres(){
     <div class="presgrid">${rows.map(p=>`<div class="prescell${_semiPres.has(p.id)?' on':''}" onclick="toggleSemiPres(${p.id})">`
       +`<span class="pc-av">${avatarImg(p.avatar,26)}</span><span class="pc-nm">${esc(p.name)}</span><span class="pc-tk">\u2713</span></div>`).join('')}</div>
     <p class="vs" style="color:${ok?'var(--muted)':'var(--gold-soft)'};font-size:12px;margin:9px 2px 0;line-height:1.5">${ok
-      ? 'Restano come rosa prevista anche per le prossime giornate.'
+      ? 'La prossima volta li ritrovi gi\u00e0 segnati: cambi solo chi manca.'
       : 'Ne servono almeno '+MIN_PRESENT+'. Puoi aprire lo stesso: le formazioni restano chiuse finch\u00e9 non li segni, e l\u2019app te lo ricorda.'}</p>`;
 }
 function toggleSemiPres(id){
@@ -7402,6 +7477,7 @@ async function confirmMatchday(skipPoll){
 /* skipPoll=true (apertura «Apri subito»): salta il sondaggio presenze, formazioni aperte da subito,
    e disarma le due push legate al ciclo presenze (promemoria sondaggio / formazioni aperte). */
 async function createMatchday(kickoffISO, skipPoll){
+  if(typeof TUT!=='undefined' && TUT){ toast('Nel tutorial non si apre niente: \u00e8 solo una prova'); return; }
   /* 3.8 — si passa da plan_matchday: decide lei se aprire adesso o a -72h,
      e salva i presenti scelti. Se l'SQL non c'e' ancora, strada vecchia. */
   await loadSeason();
@@ -9603,8 +9679,8 @@ function renderPresence(){
     }
     box.innerHTML=presGridHTML(players, id=>!!presentId(id));
   }else{
-    if(ttl)ttl.textContent='Presenze previste (prossima giornata)';
-    if(hint)hint.textContent='Imposta chi giocherà di solito: all\'apertura della prossima giornata i presenti vengono precompilati da qui (poi li potrai ritoccare).';
+    if(ttl)ttl.textContent='Chi gioca di solito';
+    if(hint)hint.textContent='Li segni tu. Alla prossima giornata risultano gi\u00e0 presenti, e li ritocchi se qualcuno manca.';
     box.innerHTML=presGridHTML(players, id=>plannedPresent.has(id));
   }
 }
