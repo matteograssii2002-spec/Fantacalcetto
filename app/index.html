@@ -3721,7 +3721,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='3.7';
+const APP_VERSION='3.8';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -3778,11 +3778,29 @@ function presencePollOpen(){
   if(!t || t.presenceClose==null) return true;   // senza kickoff: sondaggio sempre aperto (fallback)
   return Date.now() < t.presenceClose;
 }
+/* 3.8 — FORMAZIONI SOLO CON ALMENO 5 PRESENTI
+   Con meno di 5 presenti nessuno riesce a completare una formazione, quindi
+   le formazioni restano chiuse finche' l'admin non li segna. Con il portiere
+   fisso serve anche un POR tra i presenti. Lo stesso controllo (senza il POR)
+   lo fa il database con la policy «lineup gate». */
+const MIN_PRESENT=5;
+function presGateReason(){
+  if(!currentMd || currentMd.status==='closed') return '';
+  if(Number(currentMd.id)<0) return '';   // giornata del tutorial
+  const n=mdPresent.size;
+  if(n<MIN_PRESENT) return n===0 ? 'In attesa dei presenti: li segna l\u2019admin'
+                                 : 'In attesa dei presenti: '+n+' di almeno '+MIN_PRESENT;
+  if(gkFixed && !players.some(p=>p.role==='POR' && mdPresent.has(p.id)))
+    return 'Manca un portiere tra i presenti';
+  return '';
+}
 /* messaggio del perché le formazioni sono bloccate */
 function lineupBlockReason(){
   if(!currentMd) return 'Nessuna giornata aperta';
   if(currentMd.status==='closed') return 'Giornata conclusa';
   if(presencePollOpen()) return 'Prima il sondaggio presenze: le formazioni si aprono 36h prima del via';
+  { const g=presGateReason(); const t=mdTimes(currentMd);
+    if(g && !(t && t.lineupLock!==Infinity && Date.now()>=t.lineupLock)) return g; }
   return 'Formazioni bloccate';
 }
 function fmt(ms){ if(ms<0)ms=0; const d=Math.floor(ms/86400000),h=Math.floor(ms%86400000/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000),p=n=>String(n).padStart(2,'0'); return (d>0?d+'g ':'')+`${p(h)}:${p(m)}:${p(s)}`; }
@@ -6767,9 +6785,22 @@ async function loadSchedule(){
     }
   }catch(_){}
   schedDraft={...leagueSched};
+  await loadPlanned();
   renderOpenMode();
   renderGkMode();
   renderPresenceMode();
+}
+
+/* 3.8 — giornata programmata oltre le 72h (semi-automatica) */
+let plannedMd=null;   // {kickoff:Date, skip_poll:bool} | null
+async function loadPlanned(){
+  plannedMd=null;
+  try{
+    const {data,error}=await sb.rpc('get_planned_matchday');
+    const r=(!error && data && data[0]) ? data[0] : null;
+    if(r && r.kickoff) plannedMd={kickoff:new Date(r.kickoff), skip_poll:!!r.skip_poll};
+  }catch(_){ }
+  try{ if(typeof renderMdCenter==='function') renderMdCenter(); }catch(_){ }
 }
 
 /* ===== Crediti giocatori: metodo + sondaggio valori interno ===== */
@@ -7058,6 +7089,7 @@ function renderOpenNowChoice(){
     openNowPoll=false;
     box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12px;margin:12px 2px 0;line-height:1.5">In questa lega le presenze le segni tu: le formazioni si aprono subito, tra i presenti che segni. Per farle segnare ai giocatori: Regole della lega \u203a Presenze.</p>`;
     if(btn) btn.textContent = schedDraft.auto_open ? '\u26a1 Apri subito' : '\ud83d\udcc5 Apri la giornata';
+    if(!schedDraft.auto_open) renderSemiPres();
     return;
   }
   const gap=openNowPollGap();
@@ -7078,6 +7110,7 @@ function renderOpenNowChoice(){
   if(btn) btn.textContent = !schedDraft.auto_open
     ? (openNowPoll ? "\ud83d\udcc5 Apri e chiedi chi c'\u00e8" : '\ud83d\udcc5 Apri la giornata')
     : (openNowPoll ? "\ud83d\uddf3\ufe0f Apri e chiedi chi c'\u00e8" : '\u26a1 Apri subito');
+  if(!schedDraft.auto_open) renderSemiPres();
 }
 function refreshOpenNowHint(){const h=document.getElementById('openNowHint'); if(h)h.textContent=openNowHintText();}
 function openNowMatchday(){
@@ -7095,6 +7128,7 @@ function openNowMatchday(){
    semi-automatica la scheda non si apre mai, quindi non convivono. */
 let _semiKick='', _semiInit=false, _semiPollTouched=false;
 function semiSuggestKick(){
+  if(plannedMd) return toLocalInput(plannedMd.kickoff);
   /* stesso giorno e ora dell'ultima giornata, alla prossima occorrenza */
   const last = (currentMd && currentMd.kickoff) ? new Date(currentMd.kickoff)
              : (matchdaysList && matchdaysList[0] && matchdaysList[0].kickoff ? new Date(matchdaysList[0].kickoff) : null);
@@ -7104,12 +7138,69 @@ function semiSuggestKick(){
   if(schedDraft.weekday!=null && schedDraft.time) return toLocalInput(nextWeeklyKickoffLocal(schedDraft.weekday,schedDraft.time));
   return defaultKickoff();
 }
+/* chi sceglie i presenti all'apertura: l'admin, se non c'e' il sondaggio */
+let _semiPres=null;
+function semiNeedsPicker(){ return !presenceSelf || !openNowPoll; }
 function semiOpenHTML(){
-  if(!_semiInit){ _semiKick=semiSuggestKick(); openNowPoll=!!presenceSelf; _semiPollTouched=false; _semiInit=true; }
-  return `<div class="field-lab" style="margin-top:14px">Data e ora della prossima partita</div>
+  if(!_semiInit){
+    _semiKick=semiSuggestKick(); openNowPoll=!!presenceSelf; _semiPollTouched=false;
+    _semiPres=new Set(plannedPresent); _semiInit=true;
+  }
+  let h='';
+  if(plannedMd){
+    const op=new Date(plannedMd.kickoff.getTime()-72*HOUR);
+    h+=`<div class="mdc-note ok" style="margin-top:12px">\ud83d\udcc5 <b>Programmata: ${fmtDayTime(plannedMd.kickoff)}</b>. Si apre da sola ${fmtDayTime(op)}, 72h prima. Qui sotto puoi cambiarla.</div>
+      <button class="set-btn" style="margin-top:10px" onclick="cancelPlanned()">Annulla la programmazione</button>`;
+  }
+  h+=`<div class="field-lab" style="margin-top:14px">Data e ora della ${plannedMd?'partita':'prossima partita'}</div>
     <input class="ob-input" type="datetime-local" id="mdKick" value="${_semiKick}" oninput="_semiKick=this.value;renderOpenNowChoice()" style="padding:13px;font-size:15px">
+    <p class="vs" id="semiWhen" style="color:var(--muted);font-size:12px;margin:8px 2px 0;line-height:1.5"></p>
     <div id="mdPollChoice"></div>
+    <div id="semiPres"></div>
     <button class="save" id="mdOpenBtn" style="margin-top:14px" onclick="confirmMatchday(!openNowPoll)">\ud83d\udcc5 Apri la giornata</button>`;
+  return h;
+}
+function semiWhenText(){
+  const el=document.getElementById('mdKick'); if(!el||!el.value) return '';
+  const k=new Date(el.value).getTime(), now=Date.now();
+  if(isNaN(k) || k<=now) return '\u26a0\ufe0f La partita deve essere nel futuro.';
+  if(k-now>72*HOUR) return 'Mancano pi\u00f9 di 72h: la giornata si aprir\u00e0 da sola '+fmtDayTime(new Date(k-72*HOUR))+'.';
+  if(k-now>PRESENCE_CLOSE_BEFORE && presenceSelf) return 'Si apre subito.';
+  return 'Si apre subito, dritta alle formazioni.';
+}
+function renderSemiPres(){
+  const box=document.getElementById('semiPres'); if(!box) return;
+  const w=document.getElementById('semiWhen'); if(w) w.textContent=semiWhenText();
+  const btn=document.getElementById('mdOpenBtn');
+  if(btn){
+    const el=document.getElementById('mdKick');
+    const far = el && el.value && (new Date(el.value).getTime()-Date.now()>72*HOUR);
+    if(far) btn.textContent='\ud83d\udcc5 Programma la giornata';
+  }
+  if(!semiNeedsPicker()){ box.innerHTML=''; return; }
+  if(!_semiPres) _semiPres=new Set(plannedPresent);
+  const rows=players.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'it',{sensitivity:'base'}));
+  const n=rows.filter(p=>_semiPres.has(p.id)).length;
+  const ok=n>=MIN_PRESENT;
+  box.innerHTML=`<div class="field-lab" style="margin-top:15px">Chi gioca</div>
+    <div class="presbar"><span>Presenti <b>${n}</b> di ${rows.length}</span></div>
+    <div class="presgrid">${rows.map(p=>`<div class="prescell${_semiPres.has(p.id)?' on':''}" onclick="toggleSemiPres(${p.id})">`
+      +`<span class="pc-av">${avatarImg(p.avatar,26)}</span><span class="pc-nm">${esc(p.name)}</span><span class="pc-tk">\u2713</span></div>`).join('')}</div>
+    <p class="vs" style="color:${ok?'var(--muted)':'var(--gold-soft)'};font-size:12px;margin:9px 2px 0;line-height:1.5">${ok
+      ? 'Restano come rosa prevista anche per le prossime giornate.'
+      : 'Ne servono almeno '+MIN_PRESENT+'. Puoi aprire lo stesso: le formazioni restano chiuse finch\u00e9 non li segni, e l\u2019app te lo ricorda.'}</p>`;
+}
+function toggleSemiPres(id){
+  if(!_semiPres) _semiPres=new Set();
+  if(_semiPres.has(id)) _semiPres.delete(id); else _semiPres.add(id);
+  renderSemiPres();
+}
+async function cancelPlanned(){
+  if(!confirm('Annullare la giornata programmata?')) return;
+  const {error}=await sb.rpc('cancel_planned_matchday');
+  if(error){ toast(errText(error)); return; }
+  plannedMd=null; _semiInit=false; renderMdCenter(); renderHero();
+  toast('Programmazione annullata');
 }
 function goSemiOpen(){
   go('settings'); setNav('page-giornata');
@@ -7311,6 +7402,42 @@ async function confirmMatchday(skipPoll){
 /* skipPoll=true (apertura «Apri subito»): salta il sondaggio presenze, formazioni aperte da subito,
    e disarma le due push legate al ciclo presenze (promemoria sondaggio / formazioni aperte). */
 async function createMatchday(kickoffISO, skipPoll){
+  /* 3.8 — si passa da plan_matchday: decide lei se aprire adesso o a -72h,
+     e salva i presenti scelti. Se l'SQL non c'e' ancora, strada vecchia. */
+  await loadSeason();
+  if(currentSeason && currentSeason.status==='open' && Number(currentSeason.mds_total||0)>=38){
+    toast('Stagione al completo (38/38). Chiudi la stagione per iniziarne una nuova.');
+    return;
+  }
+  /* in automatica «Apri subito» apre sempre adesso: resta la strada diretta */
+  if(!schedDraft.auto_open){
+    const semi=true;
+    const pick=(semi && semiNeedsPicker() && _semiPres) ? Array.from(_semiPres) : null;
+    let r=null;
+    try{ r=await sb.rpc('plan_matchday',{p_kickoff:kickoffISO, p_skip_poll:!!skipPoll, p_players:pick}); }catch(e){ r={error:e}; }
+    const miss = r && r.error && /plan_matchday|function|schema cache/i.test(String(r.error.message||''));
+    if(r && !r.error && r.data){
+      const d=r.data;
+      if(pick) plannedPresent=new Set(pick);
+      _semiPres=null;
+      if(d.planned){
+        await loadPlanned(); renderAll(); openSettings();
+        toast('Programmata: si apre da sola '+fmtDayTime(new Date(new Date(d.kickoff).getTime()-72*HOUR)));
+        return;
+      }
+      plannedMd=null;
+      const {data:row}=await sb.from('matchdays').select('*').eq('id',d.id).maybeSingle();
+      await afterMatchdayCreated(row||{id:d.id,label:d.label,kickoff:kickoffISO,status:'open',skip_poll:!!d.skip_poll}, !!d.skip_poll);
+      return;
+    }
+    if(r && r.error && !miss){
+      const m=String(r.error.message||'');
+      if(/matchday_open/.test(m)) toast('C\'\u00e8 gi\u00e0 una giornata aperta');
+      else if(/kickoff_past/.test(m)) toast('La partita deve essere nel futuro');
+      else toast(errText(r.error));
+      return;
+    }
+  }
   await loadSeason();   // numerazione per stagione, sempre aggiornata
   const seasonOpen = currentSeason && currentSeason.status==='open';
   const base = seasonOpen ? (currentSeason.mds_total||0) : 0;   // stagione chiusa/assente -> nuova stagione, riparte da 1
@@ -7329,6 +7456,9 @@ async function createMatchday(kickoffISO, skipPoll){
     if(!error) toast('Aperta, ma manca skip_poll: esegui apri_subito.sql');
   }
   if(error){toast('Errore giornata: '+error.message);return;}
+  await afterMatchdayCreated(data, skipPoll);
+}
+async function afterMatchdayCreated(data, skipPoll){
   currentMd=data; lineup={}; captain=null; myVotes={}; averages={}; adminStats={}; myNom={mvp:'',sega:''}; mvpPid=0; segaPid=0; formModule='1-2-2'; SLOTS=MODULES[formModule].slots;
   mdPresent=new Set();      // nuova giornata: nessuno preselezionato, l'admin sceglie chi gioca
   await loadSeason();       // la giornata può aver fatto partire una nuova stagione
@@ -7338,11 +7468,14 @@ async function createMatchday(kickoffISO, skipPoll){
   // il messaggio deve dire la verità su QUESTA giornata: con il sondaggio aperto
   // «schiera la formazione» sarebbe un invito a fare una cosa ancora impossibile.
   const withPoll = presenceSelf && !skipPoll;
+  const ready = !presGateReason();
   toast(withPoll ? ('Aperta '+data.label+' \ud83d\uddf3\ufe0f Sondaggio presenze aperto')
-                 : ('Aperta '+data.label+' \u26a1 Ora segna chi gioca'));
+                 : ready ? ('Aperta '+data.label+' \u26bd Formazioni aperte')
+                         : ('Aperta '+data.label+' \u26a1 Ora segna chi gioca'));
   pushNotify(data.label+' aperta! \u26bd', withPoll
     ? "Di' se ci sei: il sondaggio presenze \u00e8 aperto."
-    : "Schiera la tua formazione prima del fischio d'inizio.");
+    : ready ? "Schiera la tua formazione prima del fischio d'inizio."
+            : "Le formazioni si aprono appena l'admin segna chi gioca.");
 }
 function clearRoundLocal(){
   lineup={}; captain=null; formModule='1-2-2'; SLOTS=MODULES[formModule].slots;   // campo
@@ -7437,7 +7570,8 @@ async function confirmEditKickoff(){
 function computeLock(){
   const t=mdTimes(currentMd), now=Date.now(), closed=!!(currentMd&&currentMd.status==='closed');
   const presPhase = presenceSelf && !!t && t.presenceClose!=null && now<t.presenceClose && !closed;  // modalità giocatori: formazioni bloccate finché il sondaggio presenze è aperto
-  lineupLocked = !currentMd || closed || presPhase || (!!t && t.lineupLock!==Infinity && now>=t.lineupLock);
+  lineupLocked = !currentMd || closed || presPhase || (!!t && t.lineupLock!==Infinity && now>=t.lineupLock)
+              || !!presGateReason();
   votesLocked  = !currentMd || closed || !t || (!!t.voteOpen && now<t.voteOpen) || (now>t.voteClose);
 }
 function statsOpen(){
@@ -7503,6 +7637,7 @@ function startCountdown(){
         if(closed){ll.textContent=lab+' · conclusa';lt.textContent='🔒';}
         else if(!t||t.lineupLock===Infinity){ll.textContent=lab+' · formazioni aperte';lt.textContent='∞';}
         else if(presenceSelf&&t.presenceClose!=null&&now<t.presenceClose){ll.textContent=lab+' · sondaggio presenze · formazioni tra';lt.textContent=fmt(t.presenceClose-now);}
+        else if(now<t.lineupLock && presGateReason()){ll.textContent=lab+' · in attesa dei presenti';lt.textContent='\u23f3';}
         else if(now<t.lineupLock){ll.textContent=lab+' · le formazioni si bloccano tra';lt.textContent=fmt(t.lineupLock-now);}
         else {ll.textContent=lab+' · formazioni bloccate';lt.textContent='🔒';}
       }
@@ -7590,9 +7725,9 @@ const HERO_TODO={
   open:  {ttl:'Nessuna giornata <span class="hot">in programma</span>',
           cta:'\ud83d\udcc5 Programma la prossima →',
           note:"Aprila adesso scegliendo data e ora, oppure imposta il giorno fisso in Regole della lega."},
-  pres:  {ttl:'Nessuno risulta <span class="hot">presente</span>',
+  pres:  {ttl:'Mancano i <span class="hot">presenti</span>',
           cta:'\ud83d\udfe2 Segna chi gioca \u2192',
-          note:'Le formazioni sono aperte ma la lista dei presenti \u00e8 vuota: finch\u00e9 resta cos\u00ec nessuno pu\u00f2 schierare.'},
+          note:'Le formazioni si aprono quando ci sono almeno 5 presenti. Finch\u00e9 non li segni, nessuno pu\u00f2 schierare.'},
   panel: {ttl:'Partita <span class="hot">in corso</span>',
           cta:'\ud83d\udcca Inserisci i risultati →',
           note:'Gol, assist ed esito: puoi segnarli dal vivo o tutti insieme a fine partita.'},
@@ -7608,6 +7743,7 @@ function heroTodoKey(){
      il compito compare solo se l'apertura manca o e' in ritardo */
   if(k==='open' && schedDraft.auto_open && schedDraft.weekday!=null && schedDraft.time
      && autoOpenOverdueMs()<=25*MIN) return '';
+  if(k==='open' && !schedDraft.auto_open && plannedMd) return '';   // gia' programmata
   if(k==='close' && mdPhaseIdx()!==5) return '';     // a voti ancora aperti ci pensa la chiusura automatica
   return k;
 }
@@ -7636,7 +7772,7 @@ function openRecapCurrent(){ if(currentMd) openRecap(currentMd.id,false); }
    normale, la partita e' gia' iniziata e' troppo tardi per stare addosso. */
 function noPresences(){
   return !!(currentMd && currentMd.status!=='closed' && canOp()
-            && mdPhaseIdx()===2 && mdPresent.size===0);
+            && mdPhaseIdx()===2 && !!presGateReason());
 }
 function openPresCard(){
   go('settings'); setNav('page-giornata');
@@ -7750,7 +7886,7 @@ function renderMdCenter(){
   // il riquadro di stato viene PRIMA del pulsante: spiega la situazione, poi propone la mossa
   let h='';
   if(key==='open') h+=autoOpenStatusHTML();
-  if(key==='pres') h+=`<div class="mdc-note warn">\u26a0\ufe0f <b>Nessun presente.</b> Le formazioni sono aperte ma nessuno pu\u00f2 schierare. Segna chi gioca.</div>`;
+  if(key==='pres') h+=`<div class="mdc-note warn">\u26a0\ufe0f <b>${esc(presGateReason())}.</b> Le formazioni restano chiuse finch\u00e9 non segni almeno ${MIN_PRESENT} presenti${gkFixed?', portiere compreso':''}.</div>`;
   const semi = key==='open' && !schedDraft.auto_open && !seasonBreak()
                && !(currentSeason && currentSeason.status==='open' && Number(currentSeason.mds_total||0)>=38);
   if(semi) h+=semiOpenHTML();
