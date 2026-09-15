@@ -597,8 +597,10 @@
   .save:disabled{opacity:.4;box-shadow:none;cursor:not-allowed}
 
   .countdown{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#10294d,#0a1830);border:1px solid var(--line-strong);border-radius:16px;padding:14px 16px;margin-top:6px}
-  .countdown .cl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
-  .countdown .cl b{display:block;color:var(--text);font-size:13px;text-transform:none;letter-spacing:0;margin-top:3px;font-weight:600}
+  .countdown .cl{min-width:0;padding-right:12px}
+  .countdown .cl span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .countdown .cl b{display:block;color:var(--text);font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:16px;font-weight:700;letter-spacing:-.01em;text-transform:none;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .countdown .ct{flex:0 0 auto}
   .countdown .ct{font-family:'JetBrains Mono';font-weight:700;font-size:22px;color:var(--accent-soft)}
 
   .vcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:14px}
@@ -3355,27 +3357,38 @@
         </div>
         <div class="mdc-steps" id="mdcSteps"></div>
         <div id="mdcPrimary"></div>
-        <div class="acc gold" id="mdAdvCard">
-          <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🛠️</span>Azioni avanzate</span><span class="acc-chev">▾</span></button>
-          <div class="acc-body">
-            <div id="mdActions"></div>
-          </div>
-        </div>
       </div>
-      <div class="acc gold" id="voteCard" style="display:none">
-        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🗳️</span><span>Chi può votare</span></span><span class="acc-chev">▾</span></button>
-        <div class="acc-body">
-          <p class="vs" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Chi gioca e chi amministra vota già. Aggiungi chi c'è ma non scende in campo.</p>
-          <div id="voterList"></div>
-        </div>
-      </div>
-      <div class="acc gold" id="presCard">
-        <button class="acc-head" onclick="toggleAcc(this)"><span class="acc-ttl"><span class="ic">🟢</span><span id="presTitle">Chi gioca questa giornata</span></span><span class="acc-chev">▾</span></button>
-        <div class="acc-body">
-          <p class="vs" id="presHint" style="color:var(--muted);margin-bottom:9px;font-size:12.5px">Tocca per segnare presente/assente.</p>
-          <div id="presList"></div>
-        </div>
-      </div>
+      <!-- 4.1 — pagine a parte, come nel resto delle impostazioni. Gli id
+           presCard / voteCard / mdAdvCard restano sulle RIGHE: il codice che le
+           mostra o nasconde per ruolo e fase continua a funzionare uguale. -->
+      <div class="set-sec gold" id="mdMoreSec"><span class="ic">📋</span>Gestisci la giornata</div>
+      <button class="navrow gold" id="presCard" onclick="setNav('page-md-pres')"><span class="ic">🟢</span><span class="lab"><span id="presTitle">Presenze</span><small id="presSub">—</small></span><span class="go">›</span></button>
+      <button class="navrow gold" id="voteCard" style="display:none" onclick="setNav('page-md-voti')"><span class="ic">🗳️</span><span class="lab">Chi può votare<small id="voteSub">Chi c’è ma non gioca</small></span><span class="go">›</span></button>
+      <button class="navrow gold" id="mdAdvCard" onclick="setNav('page-md-azioni')"><span class="ic">🛠️</span><span class="lab">Azioni avanzate<small id="advSub">Orario, chiusura, annullamento</small></span><span class="go">›</span></button>
+    </div>
+
+    <!-- ===== CENTRO GIORNATA › PRESENZE ===== -->
+    <div class="setpage" id="page-md-pres">
+      <button class="subback" onclick="setNav('page-giornata')">‹ Centro giornata</button>
+      <div class="section-h"><h2 id="presPageTitle">Presenze</h2></div>
+      <p class="setintro" id="presHint">Tocca per segnare presente o assente.</p>
+      <div class="set-card" id="presPageCard"><div id="presList"></div></div>
+    </div>
+
+    <!-- ===== CENTRO GIORNATA › CHI PUÒ VOTARE ===== -->
+    <div class="setpage" id="page-md-voti">
+      <button class="subback" onclick="setNav('page-giornata')">‹ Centro giornata</button>
+      <div class="section-h"><h2>Chi può votare</h2></div>
+      <p class="setintro">Chi gioca e chi amministra vota già. Aggiungi chi c’è ma non scende in campo: vale solo per questa giornata.</p>
+      <div class="set-card" id="voterPageCard"><div id="voterList"></div></div>
+    </div>
+
+    <!-- ===== CENTRO GIORNATA › AZIONI AVANZATE ===== -->
+    <div class="setpage" id="page-md-azioni">
+      <button class="subback" onclick="setNav('page-giornata')">‹ Centro giornata</button>
+      <div class="section-h"><h2>Azioni avanzate</h2></div>
+      <p class="setintro">Per gli imprevisti. Il resto la giornata lo fa da sola.</p>
+      <div class="set-card" id="mdActionsCard"><div id="mdActions"></div></div>
     </div>
 
     <!-- ===== STAGIONE ===== -->
@@ -3411,7 +3424,7 @@
       <div class="section-h"><h2>Apertura della giornata</h2></div>
       <p class="setintro">Come parte ogni giornata. Dopo l’apertura presenze, formazioni, promemoria, voti e chiusura vanno da soli in tutti e due i casi.</p>
       <div class="set-card"><div id="schedBox"></div></div>
-      <p class="setintro" style="margin-top:12px">Per spostare <b>solo questa</b> giornata: Centro giornata › Modifica orario.</p>
+      <p class="setintro" style="margin-top:12px">Per spostare <b>solo questa</b> giornata: Centro giornata › Azioni avanzate › Modifica orario.</p>
     </div>
 
     <!-- ===== REGOLA: PRESENZE ===== -->
@@ -3743,7 +3756,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='4.0';
+const APP_VERSION='4.1';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -3810,20 +3823,19 @@ function presGateReason(){
   if(!currentMd || currentMd.status==='closed') return '';
   if(Number(currentMd.id)<0) return '';   // giornata del tutorial
   const n=mdPresent.size;
-  if(n<MIN_PRESENT) return n===0 ? 'In attesa dei presenti: li segna l\u2019admin'
-                                 : 'In attesa dei presenti: '+n+' di almeno '+MIN_PRESENT;
+  if(n<MIN_PRESENT) return n===0 ? 'Nessun presente segnato' : 'Presenti: '+n+' su '+MIN_PRESENT;
   if(gkFixed && !players.some(p=>p.role==='POR' && mdPresent.has(p.id)))
-    return 'Manca un portiere tra i presenti';
+    return 'Manca il portiere';
   return '';
 }
 /* messaggio del perché le formazioni sono bloccate */
 function lineupBlockReason(){
   if(!currentMd) return 'Nessuna giornata aperta';
   if(currentMd.status==='closed') return 'Giornata conclusa';
-  if(presencePollOpen()) return 'Prima il sondaggio presenze: le formazioni si aprono 36h prima del via';
+  if(presencePollOpen()) return 'Sondaggio presenze in corso';
   { const g=presGateReason(); const t=mdTimes(currentMd);
     if(g && !(t && t.lineupLock!==Infinity && Date.now()>=t.lineupLock)) return g; }
-  return 'Formazioni bloccate';
+  return 'Formazioni chiuse';
 }
 function fmt(ms){ if(ms<0)ms=0; const d=Math.floor(ms/86400000),h=Math.floor(ms%86400000/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000),p=n=>String(n).padStart(2,'0'); return (d>0?d+'g ':'')+`${p(h)}:${p(m)}:${p(s)}`; }
 let obAvatar=null, myRole='ATT', setAvatarDraft=null, editDraft=null;
@@ -3960,8 +3972,7 @@ let TUT=null, _tutSnap=null, _sbReal=null, _tutRaf=null, _tutLastBox='';
    non risponde. Qui dentro si disegna una versione finta con i nomi della
    giornata di prova: tre righe bloccate (giocano) e tre libere. */
 function tutVoteDemo(){
-  const c=document.getElementById('voteCard'); if(!c) return;
-  c.style.display='block'; c.classList.add('open');
+  const c=document.getElementById('voteCard'); if(c) c.style.display='';
   const box=document.getElementById('voterList'); if(!box) return;
   const nm=(players||[]).slice(0,6).map(p=>p.name);
   if(!nm.length) return;
@@ -4182,13 +4193,21 @@ function tutStepsAdmin(){ return [
   ttl:'Centro giornata',
   tx:"A giornata aperta, qui c\u2019\u00e8 la sequenza delle fasi. Sotto, l\u2019azione che serve adesso."},
  {v:'settings', nav:'page-giornata', el:'#presCard',
-  before:()=>{ const c=document.getElementById('presCard'); if(c){ c.style.display='block'; c.classList.add('open'); } },
+  before:()=>{ const c=document.getElementById('presCard'); if(c) c.style.display=''; renderPresence(); },
+  ttl:'Gestisci la giornata',
+  tx:"Presenze, chi vota e azioni avanzate: ognuna apre la sua pagina."},
+ {v:'settings', nav:'page-md-pres', el:'#presPageCard',
+  before:()=>{ renderPresence(); },
   ttl:'Chi gioca',
   tx:"Segni tu chi c\u2019\u00e8, se qualcuno non ha risposto. Puoi correggere fino al blocco formazioni."},
- {v:'settings', nav:'page-giornata', el:'#voteCard',
+ {v:'settings', nav:'page-md-voti', el:'#voterPageCard',
   before:()=>tutVoteDemo(),
   ttl:'Chi pu\u00f2 votare',
   tx:"Votano chi gioca e chi amministra. Se qualcuno viene solo a guardare, aggiungilo qui: vale <b>solo per questa giornata</b>."},
+ {v:'settings', nav:'page-md-azioni', el:'#mdActionsCard',
+  before:()=>renderMdCenter(),
+  ttl:'Azioni avanzate',
+  tx:"Modifica orario, chiusura anticipata, annullamento. Servono solo per gli imprevisti."},
  {v:'voti', el:'#adminCard', before:()=>tutKick(-3),
   ttl:'I risultati',
   tx:"Gol, assist e chi ha vinto. \u00c8 l\u2019unica cosa da fare ogni settimana."},
@@ -5504,7 +5523,7 @@ function heroState(){
     const _g=presGateReason();
     if(_g && !canOp())
       return {ttl:'Formazioni <span class="hot">in attesa</span>', cta:'Vedi la classifica \u2192',
-              fn:"go('classifica')", note:_g+'. Si aprono appena l\u2019admin segna chi gioca.'};
+              fn:"go('classifica')", note:_g+'. Aspettiamo l\u2019admin.'};
     const n=Object.keys(lineup||{}).length;
     if(n<5)
       return {ttl:'Pronto a <span class="hot">schierare?</span>', cta:'Schiera la formazione \u2192',
@@ -7314,7 +7333,7 @@ function renderPresenceMode(){
   // card admin "presenze": in modalità admin sempre; in modalità giocatori come OVERRIDE quando c'è una giornata aperta
   const pc=document.getElementById('presCard');
   const showPres = canOp() && (!presenceSelf || (currentMd && currentMd.status!=='closed'));
-  if(pc) pc.style.display=showPres?'block':'none';
+  if(pc) pc.style.display=showPres?'':'none';
   // interruttore nelle impostazioni
   const sw=document.getElementById('presModeSw');
   if(sw){
@@ -7712,24 +7731,30 @@ function startCountdown(){
     }
     const vl=document.getElementById('cdLabel'),vt=document.getElementById('cdTime');
     const ll=document.getElementById('lsLabel'),lt=document.getElementById('lsTime');
+    /* 4.1 — due righe: la giornata piccola sopra, lo stato in chiaro sotto.
+       Prima era una frase unica in maiuscolo che andava a capo a caso. */
+    const put=(el,tm,head,tx,time)=>{
+      if(!el||!tm) return;
+      const html='<span>'+esc(head)+'</span><b>'+esc(tx)+'</b>';
+      if(el.innerHTML!==html) el.innerHTML=html;
+      tm.textContent=time;
+    };
     if(!currentMd){
-      if(vl){vl.textContent='Nessuna giornata aperta';vt.textContent='—';}
-      if(ll){ll.textContent='Nessuna giornata aperta';lt.textContent='—';}
+      put(vl,vt,'FantaCalcetto','Nessuna giornata aperta','\u2014');
+      put(ll,lt,'FantaCalcetto','Nessuna giornata aperta','\u2014');
     } else {
-      if(ll&&lt){
-        if(closed){ll.textContent=lab+' · conclusa';lt.textContent='🔒';}
-        else if(!t||t.lineupLock===Infinity){ll.textContent=lab+' · formazioni aperte';lt.textContent='∞';}
-        else if(presenceSelf&&t.presenceClose!=null&&now<t.presenceClose){ll.textContent=lab+' · sondaggio presenze · formazioni tra';lt.textContent=fmt(t.presenceClose-now);}
-        else if(now<t.lineupLock && presGateReason()){ll.textContent=lab+' · in attesa dei presenti';lt.textContent='\u23f3';}
-        else if(now<t.lineupLock){ll.textContent=lab+' · le formazioni si bloccano tra';lt.textContent=fmt(t.lineupLock-now);}
-        else {ll.textContent=lab+' · formazioni bloccate';lt.textContent='🔒';}
-      }
-      if(vl&&vt){
-        if(closed){vl.textContent=lab+' · voti chiusi';vt.textContent='🔒';}
-        else if(t&&!!t.voteOpen&&now<t.voteOpen){vl.textContent=lab+' · i voti aprono tra';vt.textContent=fmt(t.voteOpen-now);}
-        else if(t&&now<=t.voteClose){vl.textContent=lab+' · i voti chiudono tra';vt.textContent=fmt(t.voteClose-now);}
-        else {vl.textContent=lab+' · voti chiusi';vt.textContent='🔒';}
-      }
+      if(closed)                                   put(ll,lt,lab,'Giornata conclusa','\ud83d\udd12');
+      else if(!t||t.lineupLock===Infinity)         put(ll,lt,lab,'Formazioni aperte','\u221e');
+      else if(presenceSelf&&t.presenceClose!=null&&now<t.presenceClose)
+                                                   put(ll,lt,lab,'Formazioni aprono tra',fmt(t.presenceClose-now));
+      else if(now<t.lineupLock && presGateReason()) put(ll,lt,lab,'In attesa dei presenti','\u23f3');
+      else if(now<t.lineupLock)                    put(ll,lt,lab,'Formazioni chiudono tra',fmt(t.lineupLock-now));
+      else                                         put(ll,lt,lab,'Formazioni chiuse','\ud83d\udd12');
+
+      if(closed)                                   put(vl,vt,lab,'Voti chiusi','\ud83d\udd12');
+      else if(t&&!!t.voteOpen&&now<t.voteOpen)     put(vl,vt,lab,'Voti aprono tra',fmt(t.voteOpen-now));
+      else if(t&&now<=t.voteClose)                 put(vl,vt,lab,'Voti chiudono tra',fmt(t.voteClose-now));
+      else                                         put(vl,vt,lab,'Voti chiusi','\ud83d\udd12');
     }
     if(canOp()){
       renderLiveOpenBtn();
@@ -7785,7 +7810,8 @@ function mdcPrimaryKey(){
   if(i<0) return 'open';
   // formazioni aperte con la lista dei presenti vuota: LA cosa da fare non e'
   // spostare l'orario, e' dire chi gioca — altrimenti non schiera nessuno.
-  if(i===1||i===2) return noPresences() ? 'pres' : 'kick';
+  // 4.1 — modificare l'orario e' un imprevisto: sta nelle Azioni avanzate
+  if(i===1||i===2) return noPresences() ? 'pres' : 'ok';
   if(i===3) return 'panel';
   // a voti aperti: se i risultati non sono ancora stati salvati l'azione è
   // inserirli, non chiudere. Chiudere senza esiti manda in classifica una
@@ -7858,13 +7884,11 @@ function noPresences(){
             && mdPhaseIdx()===2 && !!presGateReason());
 }
 function openPresCard(){
-  go('settings'); setNav('page-giornata');
+  go('settings');
   const c=document.getElementById('presCard');
-  if(!c) return;
-  c.style.display='block';          // in modalita' giocatori applyProfile la nasconde
-  c.classList.add('open');
-  setTimeout(()=>{ try{ c.scrollIntoView({behavior:'smooth',block:'center'}); }
-                   catch(_){ try{ c.scrollIntoView(); }catch(__){ } } }, 240);
+  if(c) c.style.display='';          // in modalita' giocatori applyProfile la nasconde
+  renderPresence();
+  setNav('page-md-pres');
 }
 /* ---------- PERCHE' NON C'E' NESSUNA GIORNATA ----------
    Prima, a giornata assente, l'app non diceva niente. Ma «non succede niente»
@@ -7969,13 +7993,14 @@ function renderMdCenter(){
   // il riquadro di stato viene PRIMA del pulsante: spiega la situazione, poi propone la mossa
   let h='';
   if(key==='open') h+=autoOpenStatusHTML();
-  if(key==='pres') h+=`<div class="mdc-note warn">\u26a0\ufe0f <b>${esc(presGateReason())}.</b> Le formazioni restano chiuse finch\u00e9 non segni almeno ${MIN_PRESENT} presenti${gkFixed?', portiere compreso':''}.</div>`;
+  if(key==='pres') h+=`<div class="mdc-note warn">\u26a0\ufe0f <b>${esc(presGateReason())}.</b> Formazioni chiuse finch\u00e9 non ne segni ${MIN_PRESENT}${gkFixed?', portiere compreso':''}.</div>`;
   const semi = key==='open' && !schedDraft.auto_open && !seasonBreak()
                && !(currentSeason && currentSeason.status==='open' && Number(currentSeason.mds_total||0)>=38);
   if(semi) h+=semiOpenHTML();
   else h+=mdActionHTML(key,14);
   if(key==='open' && !semi && schedDraft.auto_open) h+=`<p class="vs" id="openNowHint" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${openNowHintText()}</p>`;
   if(key==='open')  h+=`<button class="set-btn" style="margin-top:10px" onclick="setNav('page-quando')">\u2699\ufe0f Metodo di apertura</button>`;
+  if(key==='ok') h+=`<div class="mdc-note ok">\u2705 <b>Tutto in regola.</b> La giornata va avanti da sola: qui sotto trovi presenze, votanti e azioni avanzate.</div>`;
   if(key==='close') h+=`<p class="vs" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${closeMdHintText()}</p>`;
   h+=autoHealthHTML();   // in coda: e' contesto, non un'azione
   pr.innerHTML=h;
@@ -7988,10 +8013,12 @@ function renderMdActions(primary){
   const live=!!(currentMd && currentMd.status!=='closed');
   const rest=[];
   if(live){
-    if(primary!=='kick')  rest.push('kick');
+    rest.push('kick');
     if(primary!=='close') rest.push('close');
   }
-  let h=rest.map(k=>mdActionHTML(k)).join('');
+  let h=rest.map((k,j)=>mdActionHTML(k, j?10:0)).join('');
+  if(!live && !currentMd) h='<div class="vs" style="color:var(--muted)">Nessuna giornata aperta.</div>';
+  const row=document.getElementById('mdAdvCard'); if(row) row.style.display=currentMd?'':'none';
   if(currentMd) h+=`<button class="logout" style="border-color:rgba(255,90,90,.45);color:#ff9a9a;margin-top:10px" onclick="resetMatchday()">\ud83d\uddd1\ufe0f Annulla questa giornata</button>`;
   ma.innerHTML=h;
 }
@@ -8158,7 +8185,7 @@ function applyProfile(){
   renderCampoTeam();
   document.getElementById('adminCard').style.display=canOp()?'block':'none';               // Bonus/Malus (operatore)
   const mgc=document.getElementById('manageCard'); if(mgc)mgc.style.display=profile.is_admin?'':'none';       // listone (solo proprietario)
-  const pc=document.getElementById('presCard'); if(pc)pc.style.display=(canOp()&&!presenceSelf)?'block':'none';
+  const pc=document.getElementById('presCard'); if(pc)pc.style.display=(canOp()&&!presenceSelf)?'':'none';
   const vtc=document.getElementById('voterCard'); if(vtc)vtc.style.display=canOp()?'':'none';
   const mtc=document.getElementById('maintCard'); if(mtc)mtc.style.display=isSuperAdmin()?'':'none';   // app offline: solo super-admin, non gli admin delle altre leghe
   const vcc=document.getElementById('viceCard'); if(vcc)vcc.style.display=profile.is_admin?'':'none';     // gestione vice (solo proprietario)
@@ -9672,24 +9699,29 @@ function renderPresence(){
   const box=document.getElementById('presList'); if(!box)return;
   const pc=document.getElementById('presCard');
   const showPres = canOp() && (!presenceSelf || (currentMd && currentMd.status!=='closed'));
-  if(pc) pc.style.display=showPres?'block':'none';
+  if(pc) pc.style.display=showPres?'':'none';
   if(!showPres) return;
-  const ttl=document.getElementById('presTitle'), hint=document.getElementById('presHint');
+  const hint=document.getElementById('presHint');
   const liveMd = currentMd && currentMd.status!=='closed';   // giornata aperta -> presenze della giornata; altrimenti rosa prevista
+  let ttlTx, subTx;
   if(liveMd){
-    if(presenceSelf){
-      if(ttl)ttl.textContent='Presenze — correggi';
-      if(hint)hint.textContent='Correggi chi c\'è fino al blocco formazioni, anche chi non ha votato.';
-    }else{
-      if(ttl)ttl.textContent='Chi gioca questa giornata';
-      if(hint)hint.textContent='Tocca per segnare presente/assente.';
-    }
+    const n=players.filter(p=>!!presentId(p.id)).length;
+    ttlTx='Presenze';
+    subTx = n ? (n===1?'1 presente':n+' presenti') : 'Nessun presente';
+    if(n && n<MIN_PRESENT) subTx+=' \u00b7 ne servono '+MIN_PRESENT;
+    if(hint)hint.textContent = presenceSelf
+      ? 'Correggi chi c\u2019\u00e8 fino al blocco formazioni, anche chi non ha risposto.'
+      : 'Tocca per segnare presente o assente. Le formazioni si aprono da '+MIN_PRESENT+' presenti.';
     box.innerHTML=presGridHTML(players, id=>!!presentId(id));
   }else{
-    if(ttl)ttl.textContent='Chi gioca di solito';
+    const n=players.filter(p=>plannedPresent.has(p.id)).length;
+    ttlTx='Chi gioca di solito';
+    subTx = n ? n+' segnati per la prossima' : 'Nessuno segnato';
     if(hint)hint.textContent='Li segni tu. Alla prossima giornata risultano gi\u00e0 presenti, e li ritocchi se qualcuno manca.';
     box.innerHTML=presGridHTML(players, id=>plannedPresent.has(id));
   }
+  const t1=document.getElementById('presTitle'), t2=document.getElementById('presPageTitle'), sb2=document.getElementById('presSub');
+  if(t1) t1.textContent=ttlTx; if(t2) t2.textContent=ttlTx; if(sb2) sb2.textContent=subTx;
 }
 /* Griglia delle presenze. L'ordine e' ALFABETICO, non per id: chi cerca una
    persona la cerca per nome, e l'ordine di inserimento nel database non
