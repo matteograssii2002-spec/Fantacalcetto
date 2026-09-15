@@ -928,7 +928,7 @@ async function loadLeagueDetail(id){
       <h2>Come \u00e8 impostata</h2>
       ${kv('Apertura', l.auto_open
           ? ('automatica \u00b7 ogni '+(l.auto_weekday!=null?WD[l.auto_weekday]:'?')+' alle '+String(l.auto_time||'').slice(0,5))
-          : '<span style="color:var(--gold-soft)">in pausa</span>')}
+          : 'semi-automatica \u00b7 la programma l\'admin')}
       ${kv('Presenze', l.presence_self?'le segnano i giocatori':'le segna l\'admin')}
       ${kv('Portiere', l.gk_fixed?'fisso (ruolo POR)':'a rotazione')}
       ${kv('Crediti', l.credit_mode==='poll'?'da sondaggio':'a mano')}
@@ -976,8 +976,61 @@ async function loadLeagueDetail(id){
       </div>`).join(''):'<div class="empty">Nessuna stagione.</div>'}
     </div>
 
+    <div class="card" id="rmBox"><h2>Account rimossi</h2><div class="empty">Carico…</div></div>
+
     ${dangerHTML(l.id, l.name)}
   `;
+  loadRemoved(l.id);
+}
+/* ---------- 3.7 · ACCOUNT RIMOSSI ----------
+   Chi cancella il proprio account resta nella lega come profilo anonimo, perche'
+   voti, formazioni e rettifiche delle stagioni chiuse sono appesi a quella riga.
+   Se invece il profilo non ha lasciato nessuna traccia (un account di prova),
+   si puo' cancellare davvero. La decisione non si prende a occhio: la prende
+   sa_purge_profile(), che conta le tracce e rifiuta se ne trova anche una. */
+const TRACE_LABEL={
+  'votes.voter_id':'voti dati', 'lineups.manager_id':'formazioni',
+  'nominations.voter_id':'nomine MVP', 'standings_adjustments.manager_id':'rettifiche di classifica',
+  'matchday_voters.profile_id':'abilitazioni al voto', 'vice_admins.user_id':'vice admin',
+  'pro_orders':'ordini Pro', 'giocatore':'storico della card giocatore'
+};
+function traceText(t){
+  const k=Object.keys(t||{});
+  if(!k.length) return '';
+  return k.map(x=>(TRACE_LABEL[x]||x)+': '+t[x]).join(' \u00b7 ');
+}
+async function loadRemoved(leagueId){
+  const box=document.getElementById('rmBox'); if(!box) return;
+  let data=null, error=null;
+  try{ const r=await sb.rpc('sa_removed_profiles',{p_league:leagueId}); data=r.data; error=r.error; }
+  catch(e){ error=e; }
+  if(error){
+    box.innerHTML='<h2>Account rimossi</h2><div class="empty">Serve <span class="num">pulizia_account.sql</span>.</div>';
+    return;
+  }
+  const list=Array.isArray(data)?data:[];
+  box.innerHTML='<h2>Account rimossi <span class="rt">'+list.length+'</span></h2>'
+    +(list.length?list.map(m=>{
+      const tr=traceText(m.tracce);
+      return `<div class="mrow">
+        <div class="mi"><b>${esc(m.team_name||'\u2014')}</b>
+          <small>${esc(m.player_name||'')} \u00b7 rimosso ${ago(m.deleted_at)}</small>
+          <small style="display:block;margin-top:3px">${tr?('\ud83d\udd12 '+esc(tr)):'Nessuna traccia: si pu\u00f2 eliminare'}</small></div>
+        <div class="mr">${tr?'<span class="pill i">resta</span>'
+          :`<button class="btn danger sm" onclick="purgeProfile('${m.id}',${leagueId})">Elimina</button>`}</div>
+      </div>`;}).join('')
+    :'<div class="empty">Nessun account rimosso.</div>')
+    +'<p class="note">Si elimina per sempre solo un account senza voti, formazioni, nomine, rettifiche n\u00e9 ordini. Gli altri restano anonimi: servono alle classifiche.</p>';
+}
+async function purgeProfile(id, leagueId){
+  if(!confirm('Eliminare definitivamente questo account?\n\nSpariscono profilo e accesso. Resta una riga nel registro delle eliminazioni.')) return;
+  let data=null, error=null;
+  try{ const r=await sb.rpc('sa_purge_profile',{p_id:id}); data=r.data; error=r.error; }
+  catch(e){ error=e; }
+  if(error){ toast('Errore: '+String(error.message||error).slice(0,120)); return; }
+  if(data && data.ok){ toast('Account eliminato'); }
+  else { toast('Non eliminato: '+(traceText(data&&data.tracce)||(data&&data.motivo)||'motivo sconosciuto')); }
+  loadRemoved(leagueId);
 }
 /* IL PIANO — la console vecchia aveva un solo interruttore, «Segna come
    pagante», che scriveva `is_paid`. Ma il modello commerciale vive sulla

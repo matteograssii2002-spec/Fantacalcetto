@@ -66,5 +66,12 @@
       "form_factor": "narrow",
       "label": "La classifica della lega"
     }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://www.fantacalcettoitalia.it/app/manifest.webmanifest"
+    }
   ]
 }

@@ -44,7 +44,7 @@
 <link rel="apple-touch-icon" href="/icon-512.png?v=4">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png?v=4">
 <link rel="shortcut icon" href="/icon-512.png?v=4">
-<link rel="manifest" href="manifest.webmanifest?v=5">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- media="print" + onload: il browser lo scarica senza fermare il disegno della
@@ -2951,10 +2951,10 @@
   <!-- STEP 0 · Apertura -->
   <div class="obstep on" id="suStep0">
     <h1>📅 Apertura<br>della giornata</h1>
-    <p style="color:var(--muted);font-size:13.5px;margin:0 2px 16px;line-height:1.5">Quando si apre la giornata per schierare la formazione.</p>
+    <p style="color:var(--muted);font-size:13.5px;margin:0 2px 16px;line-height:1.5">Come parte ogni giornata. Si cambia quando vuoi da Regole della lega.</p>
     <div class="ed-sw" id="suOpen">
-      <button class="styb" data-v="manual" onclick="suSet('open','manual')">Manuale</button>
       <button class="styb" data-v="auto" onclick="suSet('open','auto')">Automatica</button>
+      <button class="styb" data-v="manual" onclick="suSet('open','manual')">Semi-automatica</button>
     </div>
     <p class="rule-hint" id="suOpenHint"></p>
     <div id="suAutoBox" style="display:none;margin-top:14px">
@@ -3204,7 +3204,7 @@
       <div class="section-h"><h2>Amministra la lega</h2></div>
       <p class="setintro">Solo tu vedi questa pagina.</p>
       <button class="navrow gold adminRow" id="rowLeague" onclick="setNav('page-lega')"><span class="ic">👥</span><span class="lab">Le persone<small id="admPeopleSub">Inviti, giocatori, avvisi, permessi</small></span><span class="go">›</span></button>
-      <button class="navrow gold ownerRow" id="rowRules" onclick="setNav('page-regole')"><span class="ic">⚙️</span><span class="lab">Le regole del gioco<small>Quando giocate, presenze, portiere, crediti</small></span><span class="go">›</span></button>
+      <button class="navrow gold ownerRow" id="rowRules" onclick="setNav('page-regole')"><span class="ic">⚙️</span><span class="lab">Le regole del gioco<small>Apertura giornata, presenze, portiere, crediti</small></span><span class="go">›</span></button>
       <button class="navrow gold ownerRow" onclick="setNav('page-stagione')"><span class="ic">📅</span><span class="lab">Stagione<small id="admSeaSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold ownerRow" onclick="setNav('page-manutenzione')"><span class="ic">🛟</span><span class="lab">Aiuto e manutenzione<small>Segnala un problema, ricalcola il recap</small></span><span class="go">›</span></button>
     </div>
@@ -3375,7 +3375,7 @@
       <button class="subback" onclick="setNav('page-admin')">‹ Amministra</button>
       <div class="section-h"><h2>Regole della lega</h2></div>
       <p class="setintro">Valgono per tutte le giornate. Per quella in corso vai nel <b>Centro giornata</b>.</p>
-      <button class="navrow gold" id="schedCard" onclick="setNav('page-quando')"><span class="ic">🗓️</span><span class="lab">Quando giocate di solito<small id="schedSub">—</small></span><span class="go">›</span></button>
+      <button class="navrow gold" id="schedCard" onclick="setNav('page-quando')"><span class="ic">🗓️</span><span class="lab">Apertura della giornata<small id="schedSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="presModeCard" onclick="setNav('page-presenze')"><span class="ic">🙋</span><span class="lab">Presenze<small id="presModeSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="gkCard" onclick="setNav('page-portiere')"><span class="ic">🧤</span><span class="lab">Modalità portiere<small id="gkSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="creditRow" onclick="setNav('page-crediti')"><span class="ic">💰</span><span class="lab">Crediti dei giocatori<small id="creditSub">—</small></span><span class="go">›</span></button>
@@ -3386,8 +3386,8 @@
          giornata in corso). Il contenitore si chiama schedBox, non più mdOpenBox. -->
     <div class="setpage" id="page-quando">
       <button class="subback" onclick="setNav('page-regole')">‹ Regole della lega</button>
-      <div class="section-h"><h2>Quando giocate di solito</h2></div>
-      <p class="setintro">Giorno e ora abituali. La giornata si apre da sola 72h prima.</p>
+      <div class="section-h"><h2>Apertura della giornata</h2></div>
+      <p class="setintro">Come parte ogni giornata. Dopo l’apertura presenze, formazioni, promemoria, voti e chiusura vanno da soli in tutti e due i casi.</p>
       <div class="set-card"><div id="schedBox"></div></div>
       <p class="setintro" style="margin-top:12px">Per spostare <b>solo questa</b> giornata: Centro giornata › Modifica orario.</p>
     </div>
@@ -3721,7 +3721,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='3.6';
+const APP_VERSION='3.7';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -4112,8 +4112,8 @@ function tutStepsAdmin(){ return [
   ttl:'Invita',
   tx:"Qui c\u2019\u00e8 il link da mandare nel gruppo. Fallo per primo."},
  {v:'settings', nav:'page-admin', el:'#rowRules',
-  ttl:'Quando giocate',
-  tx:"Imposta giorno e ora. Da l\u00ec le giornate si aprono da sole."},
+  ttl:'Le regole',
+  tx:"Qui scegli come parte ogni giornata: da sola, sempre allo stesso orario, oppure quando la programmi tu."},
  {v:'settings', nav:'page-giornata', el:'#mdcSteps',
   ttl:'Centro giornata',
   tx:"La sequenza della giornata. Sotto, l\u2019azione che serve adesso."},
@@ -4580,6 +4580,81 @@ function igActionHTML(){
   }
   return '';
 }
+/* ---------- 3.7 · IL PULSANTE «INSTALLA» ----------
+   Il pulsante esisteva gia', ma non si vedeva quasi mai. La schermata viene
+   disegnata all'apertura, e Chrome offre l'installazione (beforeinstallprompt)
+   solo DOPO: quando la persona ha toccato la pagina e ci e' rimasta almeno
+   30 secondi, in questa visita o in una precedente. Il disegno era gia' fatto
+   coi passi a mano e nessuno lo rifaceva. Adesso la schermata si ridisegna da
+   sola quando il browser cambia idea.
+   Seconda cosa: se l'app e' gia' installata Chrome l'evento non lo manda
+   proprio, e la schermata mostrava i passi per installare una cosa che c'e'
+   gia'. Adesso lo riconosce e dice di aprirla dall'icona.
+   Su iPhone il pulsante non puo' esistere: Safari non ha nessun modo di
+   avviare l'installazione da una pagina. */
+let _igCtx={lg:null, info:false};
+let fcInstalledElsewhere=false;
+function igPaint(){
+  const T=document.getElementById('igTitle'), L=document.getElementById('igLega'),
+        S=document.getElementById('igSteps'), W=document.getElementById('igWhy');
+  if(!T||!L||!S||!W) return;
+  const c=_igCtx||{}, dentro=fcInAppBrowser();
+  const nome=(!c.info && c.lg && c.lg.name) ? esc(c.lg.name) : '';
+  if(!dentro && !fcInstallPrompt && fcInstalledElsewhere){
+    T.textContent='L\u2019app \u00e8 gi\u00e0 installata';
+    L.innerHTML=(nome?'Sei stato invitato in <b>'+nome+'</b>.<br>':'')
+      +'Aprila dall\u2019icona <b>FantaCalcetto</b> sulla Home: l\u00ec hai schermo intero e notifiche.'
+      +(nome?'<br>Poi cerca questo nome.':'');
+    S.innerHTML=''; W.innerHTML='';
+    return;
+  }
+  if(!dentro && fcInstallPrompt){
+    T.textContent='Installa l\u2019app';
+    L.innerHTML=(nome?'Sei stato invitato in <b>'+nome+'</b>.<br>':'')
+      +'Un tocco e l\u2019icona \u00e8 sulla Home, con schermo intero e <b>notifiche</b>.'
+      +(nome?'<br>Dopo l\u2019installazione cerca questo nome.':'');
+    S.innerHTML='';
+    W.innerHTML='<button class="ig-btn" onclick="fcDoInstall()">Installa l\u2019app</button>';
+    return;
+  }
+  T.textContent = dentro ? 'Apri in '+(fcIsIOS()?'Safari':'Chrome') : 'Aggiungila alla Home';
+  if(c.info){
+    L.textContent = dentro
+      ? 'Da qui non si pu\u00f2 installare: bastano due tocchi per uscire.'
+      : 'Ci vuole un minuto: icona sua, schermo intero, notifiche.';
+  }else{
+    L.innerHTML = nome
+      ? 'Sei stato invitato in <b>'+nome+'</b><br>Dopo l\u2019installazione cerca questo nome.'
+      : 'Ci vuole un minuto: icona sua, schermo intero e <b>notifiche</b> quando si apre una giornata.';
+  }
+  S.innerHTML=igStepsHTML();
+  W.innerHTML=igWhyHTML()+igActionHTML();
+}
+/* ridisegna solo se la schermata e' a vista */
+function igRefresh(){
+  const g=document.getElementById('instGate');
+  if(g && !g.classList.contains('hidden')) igPaint();
+}
+/* L'app installata lascia un segno. Su Android l'app e Chrome condividono la
+   memoria, quindi Chrome lo ritrova; su iPhone no, e li' il segno non conta. */
+function fcMarkStandalone(){
+  try{ if(fcIsStandalone()) localStorage.setItem('fc_pwa_seen', String(Date.now())); }catch(_){ }
+}
+async function fcCheckInstalled(){
+  let hint=false;
+  try{ hint = !fcIsIOSDevice() && !!localStorage.getItem('fc_pwa_seen'); }catch(_){ }
+  /* prova certa, dove il browser la offre (Chrome su Android): il manifest
+     dichiara se stesso in related_applications */
+  try{
+    if(navigator.getInstalledRelatedApps){
+      const list=await navigator.getInstalledRelatedApps();
+      if(list && list.some(a=>a && a.platform==='webapp')) hint=true;
+    }
+  }catch(_){ }
+  /* se nel frattempo Chrome ha offerto l'installazione, l'app non c'e' */
+  fcInstalledElsewhere = hint && !fcInstallPrompt;
+  igRefresh();
+}
 /* quando arrivo dal link d'invito e non ho l'app: si passa di qui */
 /* Da 3.6 la schermata pu\u00f2 comparire anche a chi \u00e8 gi\u00e0 dentro con la sessione
    salvata: in quel caso \u00abContinua nel browser\u00bb non deve buttarlo sul login, ma
@@ -4590,14 +4665,8 @@ function showInstGate(lg, resume){
   hideSplash();
   ['welcome','gate','league','onboard'].forEach(id=>{const e=document.getElementById(id); if(e)e.classList.add('hidden');});
   document.getElementById('igBar').style.display='none';
-  document.getElementById('igTitle').textContent='Aggiungila alla Home';
-  // il nome della lega e' l'unica cosa in piu' che resta: dopo l'installazione
-  // va cercato a mano, perche' il link non sopravvive (iOS installa la start_url)
-  document.getElementById('igLega').innerHTML = (lg && lg.name)
-    ? 'Sei stato invitato in <b>'+esc(lg.name)+'</b><br>Dopo l\u2019installazione cerca questo nome.'
-    : 'Ci vuole un minuto: icona sua, schermo intero e <b>notifiche</b> quando si apre una giornata.';
-  document.getElementById('igSteps').innerHTML=igStepsHTML();
-  document.getElementById('igWhy').innerHTML=igWhyHTML()+igActionHTML();
+  _igCtx={lg:lg||null, info:false};
+  igPaint();
   const e2=document.getElementById('igEsc');
   e2.textContent='Continua nel browser';
   e2.setAttribute('onclick','instGateSkip()');
@@ -4622,13 +4691,8 @@ function instGateSkipped(){
 function openInstallHelp(){
   dismissHomeBanner();
   document.getElementById('igBar').style.display='';
-  const _dentro=fcInAppBrowser();
-  document.getElementById('igTitle').textContent=_dentro?'Apri in '+(fcIsIOS()?'Safari':'Chrome'):'Aggiungila alla Home';
-  document.getElementById('igLega').textContent=_dentro
-    ? 'Da qui non si pu\u00f2 installare: bastano due tocchi per uscire.'
-    : 'Ci vuole un minuto: icona sua, schermo intero, notifiche.';
-  document.getElementById('igSteps').innerHTML=igStepsHTML();
-  document.getElementById('igWhy').innerHTML=igWhyHTML()+igActionHTML();
+  _igCtx={lg:null, info:true};
+  igPaint();
   const esc=document.getElementById('igEsc');
   esc.textContent='Ho capito';
   esc.setAttribute('onclick','closeInstallHelp()');
@@ -4688,6 +4752,10 @@ function dismissHomeBanner(){
 let fcInstallPrompt=null;
 window.addEventListener('beforeinstallprompt', e=>{
   e.preventDefault(); fcInstallPrompt=e;
+  /* l'evento arriva solo se l'app NON e' installata: il segno era vecchio */
+  fcInstalledElsewhere=false;
+  try{ localStorage.removeItem('fc_pwa_seen'); }catch(_){ }
+  try{ igRefresh(); }catch(_){ }
   /* L'evento puo' arrivare dopo l'avvio, quando la decisione «si puo'
      installare?» e' gia' stata presa col no. E' il caso dei tablet che si
      dichiarano computer. Riprovo il banner, ma non la schermata piena: farla
@@ -4696,6 +4764,9 @@ window.addEventListener('beforeinstallprompt', e=>{
 });
 window.addEventListener('appinstalled', ()=>{
   fcInstallPrompt=null;
+  fcInstalledElsewhere=true;
+  try{ localStorage.setItem('fc_pwa_seen', String(Date.now())); }catch(_){ }
+  try{ igRefresh(); }catch(_){ }
   try{ fcSyncInstallBar(); syncInstallRow(); }catch(_){ }
   try{ localStorage.setItem('fc_home_banner', String(Date.now())); }catch(_){ }
 });
@@ -4720,8 +4791,16 @@ function fcInAppBrowser(){
 async function fcDoInstall(){
   if(!fcInstallPrompt){ openInstallHelp(); return; }
   const p=fcInstallPrompt; fcInstallPrompt=null;
-  try{ p.prompt(); await p.userChoice; }catch(_){ }
+  let esito='';
+  try{ p.prompt(); const r=await p.userChoice; esito=(r&&r.outcome)||''; }catch(_){ }
   dismissHomeBanner();
+  /* accettato: la schermata dice di aprirla dall'icona. Rifiutato: il
+     prompt non si puo' riusare, tornano i passi a mano. */
+  if(esito==='accepted'){
+    fcInstalledElsewhere=true;
+    try{ localStorage.setItem('fc_pwa_seen', String(Date.now())); }catch(_){ }
+  }
+  igRefresh();
 }
 
 /* Su Android l'intent apre davvero Chrome. Su iPhone non esiste un modo
@@ -4977,6 +5056,8 @@ async function boot(){
     const _q=new URLSearchParams(location.search);
     if(_h.get('type')==='recovery'||_q.get('type')==='recovery'){ _recoveryLink=true; _gateAwaitNewPw=true; }
   }catch(_){ }
+  fcMarkStandalone();
+  fcCheckInstalled();   // non aspetta: se cambia qualcosa la schermata si ridisegna
   sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
   spTo(10);
   if('serviceWorker' in navigator){ try{
@@ -5031,10 +5112,20 @@ async function boot(){
     showWelcome();
   }
 }
+/* 3.7 — le letture che non dipendono l'una dall'altra partono insieme.
+   Prima erano una dozzina in fila: ognuna aspettava la precedente anche
+   quando non ne aveva bisogno. L'ordine che conta resta:
+     1) profilo (senza, non si sa nemmeno in che lega sei)
+     2) lega, stagione, rosa, loghi, rosa prevista
+     3) classifica e giornata, che hanno bisogno della stagione.
+   La barra di avanzamento sale solo, quindi l'ordine di arrivo non la sposta
+   indietro. */
 async function afterLogin(){
-  await loadAvatars();  spTo(34);
-  await loadLogos();    spTo(41);
-  profile=await loadProfile(); spTo(49);
+  await Promise.all([
+    loadAvatars().then(()=>spTo(30)),
+    loadLogos().then(()=>spTo(36)),
+    loadProfile().then(p=>{ profile=p; spTo(49); })
+  ]);
   document.getElementById('gate').classList.add('hidden');
   document.getElementById('welcome').classList.add('hidden');
   if(!profile){
@@ -5063,13 +5154,17 @@ async function afterLogin(){
   else {
     document.getElementById('onboard').classList.add('hidden');
     document.getElementById('league').classList.add('hidden');
-    await loadMyLeague();   spTo(58);
-    await loadTeamLogos();  spTo(64);
-    await loadSeason();     spTo(70);
-    await loadPlayers();    spTo(78);
-    await loadStandings();  spTo(85);
-    await loadMatchdayData(); spTo(92);
-    await loadPlannedPresences(); spTo(96);
+    await Promise.all([
+      loadMyLeague().then(()=>spTo(56)),
+      loadTeamLogos().then(()=>spTo(60)),
+      loadSeason().then(()=>spTo(68)),
+      loadPlayers().then(()=>spTo(74)),
+      loadPlannedPresences().then(()=>spTo(78))
+    ]);
+    await Promise.all([
+      loadStandings().then(()=>spTo(86)),
+      loadMatchdayData().then(()=>spTo(96))
+    ]);
     applyProfile(); renderAll();
     // rete di sicurezza regole lega: se ho appena creato la lega ma l'onboarding si era
     // interrotto prima di impostare le regole, le richiedo comunque adesso (finché non le salvo).
@@ -5421,8 +5516,8 @@ function renderRulesSetup(){
   const WD=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
   document.querySelectorAll('#suOpen button').forEach(b=>b.classList.toggle('on',b.dataset.v===setupRules.open));
   document.getElementById('suOpenHint').textContent = setupRules.open==='auto'
-    ? 'La giornata si apre da sola 48h prima del via.'
-    : 'Apri tu la giornata quando vuoi.';
+    ? 'Giorno e ora fissi. Ogni settimana la giornata si apre da sola 72h prima e l\'app fa tutto il resto.'
+    : 'Giorno e ora li scegli tu ogni settimana, dal Centro giornata. Da l\u00ec l\'app fa tutto il resto.';
   document.getElementById('suAutoBox').style.display = setupRules.open==='auto'?'block':'none';
   document.getElementById('suDays').innerHTML = SU_DAYS.map(d=>`<div class="preschip ${setupRules.weekday===d?'on':''}" onclick="suPickDay(${d})">${WD[d]}</div>`).join('');
   document.querySelectorAll('#suGk button').forEach(b=>b.classList.toggle('on',b.dataset.v===setupRules.gk));
@@ -5707,14 +5802,19 @@ function applyMaintenance(){
   }
   renderMaintBtn();
 }
+/* 3.7 — niente piu' canale Realtime per la manutenzione. Era aperto da ogni
+   utente per tutto il tempo e ascoltava due tabelle SENZA filtro: ogni cambio
+   di qualunque lega arrivava a tutti. E' il primo tetto vero del piano
+   Supabase (connessioni contemporanee). La manutenzione si scopre lo stesso:
+   quando l'app torna in primo piano e ogni 5 minuti mentre e' aperta.
+   Il nome resta perche' lo chiama l'avvio. */
+let _maintT=null;
 function subscribeMaintenance(){
-  if(maintChannel){sb.removeChannel(maintChannel);maintChannel=null;}
-  // un solo canale, due tabelle: a ogni cambio ricarico lo stato corretto (anche per il "buttafuori" live)
-  maintChannel=sb.channel('maint')
-    .on('postgres_changes',{event:'*',schema:'public',table:'app_state'},()=>loadMaintenance())
-    .on('postgres_changes',{event:'*',schema:'public',table:'app_global'},()=>loadMaintenance())
-    .subscribe();
+  if(maintChannel){ try{ sb.removeChannel(maintChannel); }catch(_){ } maintChannel=null; }
+  if(_maintT) clearInterval(_maintT);
+  _maintT=setInterval(()=>{ if(!document.hidden && profile) loadMaintenance(); }, 5*MIN);
 }
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && profile && sb) loadMaintenance(); });
 async function setMaintenance(on){
   const {error}=await sb.from('app_state').update({maintenance:on}).eq('league_id',profile.league_id);
   if(error){toast(errText(error));return;}
@@ -6547,11 +6647,11 @@ async function loadMatchdayData(){
   await loadMatchdaysList();
   lineup={}; captain=null; myVotes={}; averages={}; adminStats={}; myNom={mvp:'',sega:''}; mvpPid=0; segaPid=0; formModule='1-2-2'; SLOTS=MODULES[formModule].slots; voteDirty=false;
   if(currentMd){
-    await loadLineup(); await loadMyVotes(); await loadAverages();
-    await loadMatchStats(); await loadMyNom(); await loadMvpSega();
+    await Promise.all([loadLineup(), loadMyVotes(), loadAverages(),
+                       loadMatchStats(), loadMyNom(), loadMvpSega()]);
     subscribeLive();
   }
-  await loadMdPresent(); await loadPlayerStats(); await loadCanVote();
+  await Promise.all([loadMdPresent(), loadPlayerStats(), loadCanVote()]);
   ensureStats();
 }
 async function loadMatchday(){
@@ -6611,6 +6711,26 @@ function subscribeLive(){
     .on('postgres_changes',{event:'*',schema:'public',table:'matchday_players',filter:f},schedulePresence)
     .subscribe();
 }
+/* 3.7 — il canale della giornata resta aperto solo con l'app in primo piano.
+   In background non serve a niente (lo schermo non si aggiorna) e occupa una
+   connessione. Al rientro, se l'assenza e' stata lunga, si rileggono i dati
+   che il canale avrebbe portato, poi si riapre. */
+let _hiddenAt=0;
+document.addEventListener('visibilitychange', ()=>{
+  if(!sb) return;
+  if(document.hidden){
+    _hiddenAt=Date.now();
+    if(voteChannel){ try{ sb.removeChannel(voteChannel); }catch(_){ } voteChannel=null; }
+    return;
+  }
+  if(!currentMd || voteChannel) return;
+  const away=_hiddenAt ? Date.now()-_hiddenAt : 0;
+  subscribeLive();
+  if(away>60000 && currentMd.status!=='closed'){
+    refreshLive().catch(()=>{});
+    refreshPresence().catch(()=>{});
+  }
+});
 let presT=null;
 function schedulePresence(){clearTimeout(presT);presT=setTimeout(refreshPresence,300);}
 async function refreshPresence(){
@@ -6818,20 +6938,23 @@ function schedHintText(){
 function renderOpenMode(){
   const box=document.getElementById('schedBox'); if(!box) return;
   const on=!!schedDraft.auto_open;
-  let html=`<div class="ed-lab" style="margin-bottom:9px">🤖 Apertura automatica</div>
+  /* 3.7 — non piu' «attiva / in pausa» ma due metodi. La pausa era una
+     semi-automatica senza nome: nessuna giornata parte da sola, e l'admin la
+     apre quando vuole. */
+  let html=`<div class="ed-lab" style="margin-bottom:9px">Metodo di apertura</div>
     <div class="ed-sw" style="margin-bottom:12px">
-      <button class="styb ${on?'on':''}" onclick="setAutoOpen(true)">🟢 Attiva</button>
-      <button class="styb ${!on?'on':''}" onclick="setAutoOpen(false)">⏸️ In pausa</button>
+      <button class="styb ${on?'on':''}" onclick="setAutoOpen(true)">\ud83e\udd16 Automatica</button>
+      <button class="styb ${!on?'on':''}" onclick="setAutoOpen(false)">\ud83d\uddd3\ufe0f Semi-automatica</button>
     </div>`;
   if(!on){
-    const when = schedDraft.weekday!=null ? ` (${WD_LABELS[schedDraft.weekday]} ${schedDraft.time||''})` : '';
-    html+=`<p class="vs" style="color:var(--muted);font-size:12.5px;margin:0 0 4px;line-height:1.5">Apertura automatica <b style="color:var(--gold-soft)">in pausa</b>: nessuna giornata parte finché non riattivi.${when}</p>`;
-    if(currentMd && currentMd.status!=='closed'){
-      html+=`<p class="vs" style="color:#ff9a9a;font-size:12px;margin:9px 0 0;line-height:1.5">⚠️ «${currentMd.label}» è ancora aperta: puoi chiuderla o annullarla dal <b>Centro giornata</b>.</p>`;
+    html+=`<p class="vs" style="color:var(--muted);font-size:12.5px;margin:0 0 4px;line-height:1.5">Ogni settimana scegli tu giorno e ora della partita dal <b>Centro giornata</b>. La giornata si apre in quel momento e da l\u00ec va avanti da sola.</p>
+      <button class="set-btn" style="margin-top:12px" onclick="setNav('page-giornata')">\ud83d\udcc5 Vai al Centro giornata</button>`;
+    if(schedDraft.weekday!=null){
+      html+=`<p class="vs" style="color:var(--muted);font-size:11.5px;margin:10px 2px 0;line-height:1.5">Giorno fisso salvato: ${WD_LABELS[schedDraft.weekday]} ${schedDraft.time||''}. Torna su Automatica per riusarlo.</p>`;
     }
     box.innerHTML=html; renderRuleRows(); return;
   }
-  html+=`<p class="vs" style="color:var(--muted);font-size:12px;margin:0 0 12px;line-height:1.5">Giorno e ora del match. La giornata si apre da sola <b>72h prima</b>.</p>
+  html+=`<p class="vs" style="color:var(--muted);font-size:12px;margin:0 0 12px;line-height:1.5">Stesso giorno e stessa ora ogni settimana. La giornata si apre da sola <b>72h prima</b>. Per saltare una settimana passa a Semi-automatica.</p>
     <div class="field-lab">Giorno della partita</div>
     <div class="preschips" style="margin-bottom:12px">`+
     WD_ORDER.map(d=>`<div class="preschip ${schedDraft.weekday===d?'on':''}" onclick="pickSchedDay(${d})">${WD_LABELS[d]}</div>`).join('')+
@@ -6850,8 +6973,8 @@ function renderRuleRows(){
   const set=(id,tx)=>{const e=document.getElementById(id); if(e)e.textContent=tx;};
   const wd=schedDraft.weekday, tm=schedDraft.time||'20:00';
   set('schedSub', schedDraft.auto_open
-    ? (wd!=null ? 'Ogni '+WD_LABELS[wd]+' alle '+tm+' \u00b7 apertura automatica' : 'Automatica \u00b7 manca giorno e ora')
-    : (wd!=null ? 'In pausa \u00b7 '+WD_LABELS[wd]+' '+tm : 'Non programmato'));
+    ? (wd!=null ? 'Automatica \u00b7 ogni '+WD_LABELS[wd]+' alle '+tm : 'Automatica \u00b7 manca giorno e ora')
+    : 'Semi-automatica \u00b7 giorno e ora li scegli tu');
   set('presModeSub', presenceSelf?'Le segnano i giocatori':'Le segni tu');
   set('gkSub', gkFixed?'In porta solo chi ha ruolo Portiere':'In porta pu\u00f2 andare chiunque');
   set('creditSub', creditMode==='poll'
@@ -6874,28 +6997,22 @@ async function saveSchedule(){
   const ok=await applyAutoOpen(true);
   if(ok){ renderOpenMode(); toast('Programmazione salvata ✅'); }
 }
-/* interruttore ON/OFF dell'apertura automatica.
-   OFF: prima mette in pausa (auto_open=false, così il cron NON riapre), poi offre di annullare l'eventuale giornata già aperta. */
+/* Cambio di metodo. Passare a semi-automatica non tocca la giornata in corso:
+   prosegue da sola come prima, semplicemente la prossima non partira' da sola. */
 async function setAutoOpen(on){
   if(on===!!schedDraft.auto_open) return;
   if(on){
-    if(schedDraft.weekday==null){ schedDraft.auto_open=true; renderOpenMode(); toast('Scegli giorno e ora, poi «Salva programmazione»'); return; }
+    if(schedDraft.weekday==null){ schedDraft.auto_open=true; renderOpenMode(); toast('Scegli giorno e ora, poi \u00abSalva programmazione\u00bb'); return; }
     const ok=await applyAutoOpen(true);
-    if(ok){ renderOpenMode(); toast('Apertura automatica attiva 🟢'); }
+    if(ok){ renderOpenMode(); renderMdCenter(); toast('Apertura automatica \ud83e\udd16'); }
     return;
   }
   const hasOpen = currentMd && currentMd.status!=='closed';
   const ok=await applyAutoOpen(false);
   if(!ok) return;
-  renderOpenMode();
-  if(hasOpen){
-    if(confirm('Apertura automatica in pausa: non partirà nessuna nuova giornata.\n\nMa «'+currentMd.label+'» è già aperta. Vuoi annullarla adesso?')){
-      const {error}=await sb.rpc('reset_matchday',{md:currentMd.id});
-      if(error){ toast(errText(error)); return; }
-      await loadMatchdayData(); await loadSeason(); await loadStandings(); renderAll(); openSettings();
-      toast('In pausa e giornata annullata ✅');
-    } else { toast('Apertura automatica in pausa ⏸️'); }
-  } else { toast('Apertura automatica in pausa ⏸️'); }
+  renderOpenMode(); renderMdCenter();
+  toast(hasOpen ? ('Semi-automatica. \u00ab'+currentMd.label+'\u00bb prosegue normalmente')
+                : 'Semi-automatica: la prossima la programmi dal Centro giornata');
 }
 
 /* ---------- APRI SUBITO (senza aspettare le 72h del cron) ----------
@@ -6917,7 +7034,7 @@ function openNowHintText(){
    cosi' nascerebbe gia' chiuso. In quel caso l'opzione resta a schermo ma
    spenta, col motivo scritto sotto. */
 let openNowPoll=false;
-function pickOpenNowPoll(on){ openNowPoll=!!on; renderOpenNowChoice(); }
+function pickOpenNowPoll(on){ openNowPoll=!!on; _semiPollTouched=true; renderOpenNowChoice(); }
 /* quanto durerebbe il sondaggio con l'orario scelto adesso (negativo = impossibile) */
 function openNowPollGap(){
   const el=document.getElementById('mdKick'); if(!el||!el.value) return null;
@@ -6939,13 +7056,14 @@ function renderOpenNowChoice(){
   // Lega in modalità admin: il sondaggio non esiste per definizione, niente da scegliere.
   if(!presenceSelf){
     openNowPoll=false;
-    box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12px;margin:12px 2px 0;line-height:1.5">In questa lega le presenze le segni tu, all\u2019apertura della giornata. Per farle segnare ai giocatori: Regole della lega \u203a Presenze.</p>`;
-    if(btn) btn.textContent='\u26a1 Apri subito';
+    box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12px;margin:12px 2px 0;line-height:1.5">In questa lega le presenze le segni tu: le formazioni si aprono subito, tra i presenti che segni. Per farle segnare ai giocatori: Regole della lega \u203a Presenze.</p>`;
+    if(btn) btn.textContent = schedDraft.auto_open ? '\u26a1 Apri subito' : '\ud83d\udcc5 Apri la giornata';
     return;
   }
   const gap=openNowPollGap();
   const can=(gap!=null && gap>0);
   if(!can) openNowPoll=false;
+  else if(!schedDraft.auto_open && !_semiPollTouched) openNowPoll=true;   // semi: il sondaggio e' la norma
   let hint;
   if(!can) hint="\u26a0\ufe0f Il sondaggio presenze chiude <b>36h prima</b> del fischio d'inizio: con questo orario nascerebbe gi\u00e0 chiuso. Per chiedere le presenze sposta la partita pi\u00f9 in l\u00e0.";
   else if(openNowPoll) hint='Ognuno dice se c\'\u00e8 dalla Home. Il sondaggio resta aperto <b>'+durLabel(gap)+'</b>, poi si aprono le formazioni. Puoi comunque correggere le presenze quando vuoi.';
@@ -6957,12 +7075,48 @@ function renderOpenNowChoice(){
       <button class="styb ${openNowPoll?'':'on'}" onclick="pickOpenNowPoll(false)">\u270d\ufe0f Le segno io</button>
     </div>
     <p class="vs" style="color:${can?'var(--muted)':'var(--gold-soft)'};font-size:12px;margin:10px 2px 0;line-height:1.5">${hint}</p>`;
-  if(btn) btn.textContent = openNowPoll ? "\ud83d\uddf3\ufe0f Apri e chiedi chi c'\u00e8" : '\u26a1 Apri subito';
+  if(btn) btn.textContent = !schedDraft.auto_open
+    ? (openNowPoll ? "\ud83d\udcc5 Apri e chiedi chi c'\u00e8" : '\ud83d\udcc5 Apri la giornata')
+    : (openNowPoll ? "\ud83d\uddf3\ufe0f Apri e chiedi chi c'\u00e8" : '\u26a1 Apri subito');
 }
 function refreshOpenNowHint(){const h=document.getElementById('openNowHint'); if(h)h.textContent=openNowHintText();}
 function openNowMatchday(){
   if(currentMd && currentMd.status!=='closed'){ toast('C\'è già una giornata aperta'); return; }
+  /* semi-automatica: la programmazione sta nel Centro giornata, a vista */
+  if(!schedDraft.auto_open){ goSemiOpen(); return; }
   openMatchdaySheet(true);   // scheda con data/ora precompilata e modificabile
+}
+/* ---------- 3.7 · SEMI-AUTOMATICA ----------
+   L'admin sceglie giorno e ora della partita ogni settimana, direttamente nel
+   Centro giornata (niente scheda a comparsa). La giornata si apre in quel
+   momento; da li' sondaggio, formazioni, promemoria, voti e chiusura sono gli
+   stessi dell'automatica, perche' dipendono tutti dal fischio d'inizio.
+   Gli id mdKick / mdPollChoice / mdOpenBtn sono gli stessi della scheda: in
+   semi-automatica la scheda non si apre mai, quindi non convivono. */
+let _semiKick='', _semiInit=false, _semiPollTouched=false;
+function semiSuggestKick(){
+  /* stesso giorno e ora dell'ultima giornata, alla prossima occorrenza */
+  const last = (currentMd && currentMd.kickoff) ? new Date(currentMd.kickoff)
+             : (matchdaysList && matchdaysList[0] && matchdaysList[0].kickoff ? new Date(matchdaysList[0].kickoff) : null);
+  if(last && !isNaN(last)){
+    return toLocalInput(nextWeeklyKickoffLocal(last.getDay(), pad2(last.getHours())+':'+pad2(last.getMinutes())));
+  }
+  if(schedDraft.weekday!=null && schedDraft.time) return toLocalInput(nextWeeklyKickoffLocal(schedDraft.weekday,schedDraft.time));
+  return defaultKickoff();
+}
+function semiOpenHTML(){
+  if(!_semiInit){ _semiKick=semiSuggestKick(); openNowPoll=!!presenceSelf; _semiPollTouched=false; _semiInit=true; }
+  return `<div class="field-lab" style="margin-top:14px">Data e ora della prossima partita</div>
+    <input class="ob-input" type="datetime-local" id="mdKick" value="${_semiKick}" oninput="_semiKick=this.value;renderOpenNowChoice()" style="padding:13px;font-size:15px">
+    <div id="mdPollChoice"></div>
+    <button class="save" id="mdOpenBtn" style="margin-top:14px" onclick="confirmMatchday(!openNowPoll)">\ud83d\udcc5 Apri la giornata</button>`;
+}
+function goSemiOpen(){
+  go('settings'); setNav('page-giornata');
+  setTimeout(()=>{
+    const el=document.getElementById('mdKick'); if(!el) return;
+    try{ el.scrollIntoView({behavior:'smooth',block:'center'}); }catch(_){ }
+  }, 240);
 }
 
 /* ---------- MODALITÀ PORTIERE (rotazione / fisso) ---------- */
@@ -7128,6 +7282,7 @@ function renderHomePresence(){
 }
 
 function openMatchdaySheet(now){
+  if(!schedDraft.auto_open && canOp()){ goSemiOpen(); return; }
   const q=!!now;
   openNowPoll=false;
   document.getElementById('sheetTitle').textContent = q?'Apri subito la giornata':'Apri nuova giornata';
@@ -7148,8 +7303,10 @@ function openMatchdaySheet(now){
 async function confirmMatchday(skipPoll){
   const v=document.getElementById('mdKick').value;
   if(!v){toast('Scegli data e ora');return;}
+  if(new Date(v).getTime() <= Date.now()+LINEUP_LOCK_BEFORE){ toast('La partita deve essere nel futuro'); return; }
   closeSheet();
   await createMatchday(new Date(v).toISOString(), !!skipPoll);
+  _semiInit=false;   // la prossima volta si riparte dal suggerimento
 }
 /* skipPoll=true (apertura «Apri subito»): salta il sondaggio presenze, formazioni aperte da subito,
    e disarma le due push legate al ciclo presenze (promemoria sondaggio / formazioni aperte). */
@@ -7243,7 +7400,7 @@ async function closeMatchday(){
 async function resetMatchday(){
   if(!currentMd)return;
   let msg='Annullo «'+currentMd.label+'» ed elimino i suoi dati (formazioni, voti). Si torna alla giornata precedente.';
-  if(leagueSched.auto_open){ msg+='\n\n⚠️ L\'apertura automatica è ATTIVA: se siamo già nelle 72h prima del match, la giornata può riaprirsi da sola entro pochi minuti. Per evitarlo, metti prima «In pausa» l\'apertura automatica (in Impostazioni → Apertura automatica).'; }
+  if(leagueSched.auto_open){ msg+='\n\n⚠️ L\'apertura automatica è ATTIVA: se siamo già nelle 72h prima del match, la giornata può riaprirsi da sola entro pochi minuti. Per evitarlo, passa prima a «Semi-automatica» (Regole della lega → Apertura della giornata).'; }
   msg+='\n\nConfermi?';
   if(!confirm(msg))return;
   const {error}=await sb.rpc('reset_matchday',{md:currentMd.id});
@@ -7447,6 +7604,10 @@ function heroTodoKey(){
   if(!canOp() || seasonBreak()) return '';
   const k=mdcPrimaryKey();
   if(!HERO_TODO[k]) return '';                       // kick / recap: non sono compiti
+  /* in automatica, fra una giornata e l'altra, l'admin non ha niente da fare:
+     il compito compare solo se l'apertura manca o e' in ritardo */
+  if(k==='open' && schedDraft.auto_open && schedDraft.weekday!=null && schedDraft.time
+     && autoOpenOverdueMs()<=25*MIN) return '';
   if(k==='close' && mdPhaseIdx()!==5) return '';     // a voti ancora aperti ci pensa la chiusura automatica
   return k;
 }
@@ -7454,7 +7615,10 @@ function heroAdminTodo(){
   const k=heroTodoKey(); if(!k) return null;
   const spec=HERO_TODO[k], act=MD_ACTIONS[k];
   return {
-    key:k, ttl:spec.ttl, note:spec.note, fn:act.fn,
+    key:k, ttl:spec.ttl, fn:act.fn,
+    note:(k==='open' && !schedDraft.auto_open)
+      ? "Scegli giorno e ora della prossima partita: il resto lo fa l'app."
+      : spec.note,
     cta:spec.cta.replace('{LAB}', currentMd?currentMd.label:'giornata'),
     solo: (k!=='panel') || mdPhaseIdx()===3          // a voti aperti il giocatore vota: il compito admin resta secondario
   };
@@ -7552,9 +7716,9 @@ function autoOpenStatusHTML(){
   if(currentSeason && currentSeason.status==='open' && Number(currentSeason.mds_total||0)>=38)
     return box('warn',"\u26a0\ufe0f <b>Stagione al completo (38/38)</b>: non ci stanno altre giornate. Chiudi la stagione per iniziarne una nuova.");
   if(!schedDraft.auto_open)
-    return box('warn',"\u23f8\ufe0f <b>Apertura automatica in pausa</b>: nessuna giornata partir\u00e0 da sola. Riattivala in \u00abQuando giocate di solito\u00bb, oppure aprine una adesso qui sotto.");
+    return box('ok',"\ud83d\uddd3\ufe0f <b>Apertura semi-automatica.</b> Scegli quando si gioca: la giornata si apre subito e da l\u00ec va avanti da sola.");
   if(schedDraft.weekday==null || !schedDraft.time)
-    return box('warn',"\u26a0\ufe0f <b>Manca il giorno o l'ora della partita</b>: senza quelli l'apertura automatica non pu\u00f2 funzionare. Impostali in \u00abQuando giocate di solito\u00bb.");
+    return box('warn',"\u26a0\ufe0f <b>Manca il giorno o l'ora della partita</b>: senza quelli l'apertura automatica non pu\u00f2 funzionare. Impostali in Regole della lega \u203a Apertura della giornata.");
   const k=nextWeeklyKickoffLocal(schedDraft.weekday,schedDraft.time);
   const op=new Date(k.getTime()-72*HOUR);
   const late=autoOpenOverdueMs();
@@ -7587,12 +7751,16 @@ function renderMdCenter(){
   let h='';
   if(key==='open') h+=autoOpenStatusHTML();
   if(key==='pres') h+=`<div class="mdc-note warn">\u26a0\ufe0f <b>Nessun presente.</b> Le formazioni sono aperte ma nessuno pu\u00f2 schierare. Segna chi gioca.</div>`;
-  h+=mdActionHTML(key,14);
-  if(key==='open')  h+=`<p class="vs" id="openNowHint" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${openNowHintText()}</p>`
-    +`<button class="set-btn" style="margin-top:10px" onclick="setNav('page-quando')">\ud83d\uddd3\ufe0f Quando giocate di solito</button>`;
+  const semi = key==='open' && !schedDraft.auto_open && !seasonBreak()
+               && !(currentSeason && currentSeason.status==='open' && Number(currentSeason.mds_total||0)>=38);
+  if(semi) h+=semiOpenHTML();
+  else h+=mdActionHTML(key,14);
+  if(key==='open' && !semi && schedDraft.auto_open) h+=`<p class="vs" id="openNowHint" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${openNowHintText()}</p>`;
+  if(key==='open')  h+=`<button class="set-btn" style="margin-top:10px" onclick="setNav('page-quando')">\u2699\ufe0f Metodo di apertura</button>`;
   if(key==='close') h+=`<p class="vs" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${closeMdHintText()}</p>`;
   h+=autoHealthHTML();   // in coda: e' contesto, non un'azione
   pr.innerHTML=h;
+  if(semi) renderOpenNowChoice();
   renderMdActions(key);
 }
 /* «Azioni avanzate»: tutto quello che NON è già l'azione primaria. */
@@ -10623,15 +10791,33 @@ window.addEventListener('load',()=>setTimeout(toTop,0));
 window.addEventListener('pageshow',toTop);
 
 /* auto-aggiornamento: se cambia il file su Vercel, ricarica al rientro nell'app (niente togli/rimetti dalla home) */
+/* 3.7 — prima a ogni rientro si riscaricava l'app intera (quasi 1 MB) solo
+   per confrontarla con quella aperta. Ora si chiede solo l'intestazione:
+   l'impronta (ETag) cambia a ogni pubblicazione su Vercel. Se il server non
+   la mandasse, si torna al confronto completo di prima.
+   Le richieste con ?_v= il service worker le lascia passare in rete (sw.js). */
 let _bootHtml=null;
-async function _fetchSelf(){ try{ const r=await fetch(location.pathname+'?_v='+Date.now(),{cache:'no-store'}); return await r.text(); }catch(_){ return null; } }
+async function _fetchSelf(){
+  const url=location.pathname+'?_v='+Date.now();
+  try{
+    const h=await fetch(url,{method:'HEAD',cache:'no-store'});
+    const tag=h.ok ? (h.headers.get('etag')||'') : '';
+    if(tag) return 'etag:'+tag.replace(/^W\//,'');
+  }catch(_){ }
+  try{ const r=await fetch(url,{cache:'no-store'}); return await r.text(); }catch(_){ return null; }
+}
 _fetchSelf().then(t=>{_bootHtml=t;});
 let _checking=false;
 async function checkForUpdate(){
   if(_checking) return; _checking=true;
   try{
     const t=await _fetchSelf();
-    if(t){ if(_bootHtml==null){ _bootHtml=t; } else if(t!==_bootHtml){ location.reload(); return; } }
+    if(t){
+      if(_bootHtml==null){ _bootHtml=t; }
+      /* si confrontano solo cose dello stesso tipo: impronta con impronta */
+      else if(t.startsWith('etag:')!==String(_bootHtml).startsWith('etag:')){ }
+      else if(t!==_bootHtml){ location.reload(); return; }
+    }
   }finally{ _checking=false; }
 }
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ toTop(); checkForUpdate(); ensurePush(); } });
