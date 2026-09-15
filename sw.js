@@ -10,7 +10,7 @@
      La copia si usa SOLO quando la rete fallisce: la regola dell'HTML fresca
      non cambia.
 */
-const SW_VERSION = '2026-09-13-offline-a';   // cambia questa stringa a OGNI deploy
+const SW_VERSION = '2026-09-15-v37';   // cambia questa stringa a OGNI deploy
 const CACHE      = 'fc-shell-' + SW_VERSION;
 
 /* Il minimo per far partire l'app senza rete. La libreria di Supabase sta in un
@@ -116,6 +116,10 @@ self.addEventListener('fetch', event => {
 
   // I pochi file dell'ossatura: prima la cache (istantanei), poi si aggiornano di
   // nascosto per la volta dopo. Tutto il resto passa liscio come prima.
+  /* 3.7 — con un parametro in coda (?_v=… del controllo aggiornamenti) si va
+     in rete: prima la cache rispondeva con la copia vecchia, e l'app credeva
+     di dover ricaricare anche quando era gia' aggiornata. */
+  if (url.origin === self.location.origin && url.search) return;
   const chiave = SHELL.find(u => u === url.href || u === url.pathname);
   if (!chiave) return;
 
