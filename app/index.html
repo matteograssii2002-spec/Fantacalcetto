@@ -1029,6 +1029,18 @@
   #teamAv{font-size:28px}
   .stat-id b{font-family:'Bricolage Grotesque';font-weight:800;font-size:18px;display:block;letter-spacing:-.01em}
   .stat-id span{font-size:12px;color:var(--muted)}
+  /* 4.2 — riga sotto il nome: etichette piccole in grassetto */
+  #statRole,#teamSub{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:5px}
+  .stat-id .sid-tag{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;letter-spacing:.05em;
+    line-height:1;padding:4px 8px;border-radius:7px;border:1px solid transparent;text-transform:uppercase}
+  .stat-id .sid-tag i{font-style:normal;font-size:8px}
+  .stat-id .sid-tag.role{font-family:'JetBrains Mono';letter-spacing:.08em;color:var(--accent-soft);background:rgba(63,151,255,.14);border-color:rgba(63,151,255,.32)}
+  .stat-id .sid-tag.role.r-por{color:var(--gold-soft);background:rgba(255,194,61,.13);border-color:rgba(255,194,61,.34)}
+  .stat-id .sid-tag.form.up{color:var(--green);background:rgba(47,217,138,.13);border-color:rgba(47,217,138,.34)}
+  .stat-id .sid-tag.form.down{color:var(--red);background:rgba(255,93,107,.13);border-color:rgba(255,93,107,.34)}
+  .stat-id .sid-tag.form.flat{color:var(--accent-soft);background:rgba(63,151,255,.12);border-color:rgba(63,151,255,.30)}
+  .stat-id .sid-tag.coach{color:var(--gold-soft);background:rgba(255,194,61,.13);border-color:rgba(255,194,61,.34)}
+  .stat-id .sid-name{font-size:12.5px;font-weight:800;color:var(--text);letter-spacing:-.005em}
   .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
   .stat-box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 13px;text-align:center}
   .stat-box .v{font-family:'JetBrains Mono';font-weight:700;font-size:22px;letter-spacing:-.02em;display:inline-block;position:relative}
@@ -1110,26 +1122,40 @@
      va letta senza cercarla. I record (re della giornata, balzi, giornate da
      leader) sono aneddoti, e come tali stanno in chip, non in box da 60px. */
   #teamGrid{display:block}
-  .tm-hero{background:rgba(255,194,61,.07);border-radius:18px;padding:15px 16px}
+  .tm-hero{position:relative;overflow:hidden;border-radius:20px;padding:14px 16px 16px;
+    background:linear-gradient(150deg,rgba(255,194,61,.20),rgba(255,194,61,.05) 45%,rgba(16,36,67,.55));
+    border:1px solid rgba(255,194,61,.30);box-shadow:0 10px 28px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.06)}
+  .tm-hero::before{content:"";position:absolute;right:-50px;top:-70px;width:190px;height:190px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,194,61,.24),transparent 68%);pointer-events:none}
+  .tm-hero>*{position:relative}
+  .tm-eye{font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-soft);opacity:.85;margin-bottom:9px}
   .tm-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
-  .tm-pos{font-family:'JetBrains Mono';font-weight:700;font-size:38px;line-height:.9;color:var(--gold);letter-spacing:-.03em}
+  .tm-pos{font-family:'JetBrains Mono';font-weight:700;font-size:44px;line-height:.9;color:var(--gold);letter-spacing:-.03em;text-shadow:0 0 26px rgba(255,194,61,.35)}
   .tm-pos u{text-decoration:none;font-size:.42em;vertical-align:super;margin-left:1px}
   .tm-pos s{text-decoration:none;display:block;font-family:'Hanken Grotesk';font-size:11.5px;color:var(--muted);font-weight:600;margin-top:7px;letter-spacing:0}
   .tm-pts{text-align:right;flex:none}
-  .tm-pts b{font-family:'JetBrains Mono';font-weight:700;font-size:24px;line-height:1;display:block;letter-spacing:-.02em}
+  .tm-pts b{font-family:'JetBrains Mono';font-weight:700;font-size:26px;line-height:1;display:block;letter-spacing:-.02em}
   .tm-pts span{font-size:11.5px;color:var(--muted);font-weight:600;display:block;margin-top:5px}
-  .tm-track{margin-top:14px;height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
-  .tm-track i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold),#f0c674)}
+  .tm-track{margin-top:15px;height:8px;border-radius:999px;background:rgba(0,0,0,.25);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.3)}
+  .tm-track i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#f0a92e,var(--gold),#ffe29a);box-shadow:0 0 10px rgba(255,194,61,.55)}
   .tm-chips{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}
   /* dispari: l'ultimo occupa tutta la riga invece di lasciare un buco */
   .tm-chips>.tm-rec:last-child:nth-child(odd){grid-column:1 / -1}
-  .tm-rec{display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.05);border-radius:14px;padding:11px 13px;min-width:0}
-  .tm-rec .ic{font-size:19px;line-height:1;flex:none}
+  .tm-rec{--tc:255,194,61;display:flex;align-items:center;gap:11px;min-width:0;border-radius:16px;padding:11px 12px;
+    background:linear-gradient(155deg,rgba(var(--tc),.14),rgba(16,36,67,.45) 70%);border:1px solid rgba(var(--tc),.26)}
+  .tm-rec.t-amber{--tc:255,160,60}
+  .tm-rec.t-red{--tc:255,93,107}
+  .tm-rec.t-green{--tc:47,217,138}
+  .tm-rec.t-blue{--tc:63,151,255}
+  .tm-rec .ic{flex:none;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-size:18px;line-height:1;
+    background:rgba(var(--tc),.18);box-shadow:inset 0 0 0 1px rgba(var(--tc),.30)}
   .tm-rec .tx{min-width:0;flex:1}
-  .tm-rec .tv{display:block;font-family:'JetBrains Mono';font-weight:700;font-size:17px;line-height:1;color:var(--gold-soft);letter-spacing:-.02em}
+  .tm-rec .tv{display:block;font-family:'JetBrains Mono';font-weight:700;font-size:19px;line-height:1;color:rgb(var(--tc));letter-spacing:-.02em}
+  .tm-rec.z{background:rgba(255,255,255,.035);border-color:var(--line)}
+  .tm-rec.z .ic{filter:grayscale(1);opacity:.5;background:rgba(255,255,255,.05);box-shadow:none}
   .tm-rec.z .tv{color:var(--muted)}
   .tm-rec .tv small{font-family:'Hanken Grotesk';font-size:11px;font-weight:600;color:var(--muted);letter-spacing:0}
-  .tm-rec .tk{display:block;font-size:11px;color:var(--muted);font-weight:600;margin-top:5px;
+  .tm-rec .tk{display:block;font-size:10.5px;color:var(--muted);font-weight:700;margin-top:5px;
               overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* ---- ANDAMENTO VOTI (grafichino stagione) ---- */
   .vtrend{margin-top:15px;background:linear-gradient(165deg,rgba(63,151,255,.10),rgba(16,36,67,.55));
@@ -2906,7 +2932,7 @@
     <h1>Come vuoi giocare?</h1>
     <div class="ed-sw" id="obMode" style="gap:10px;margin-bottom:6px">
       <button class="styb" data-m="campo" style="flex:1;padding:14px">🏃 Gioco anche in campo</button>
-      <button class="styb" data-m="manager" style="flex:1;padding:14px">👔 Solo manager</button>
+      <button class="styb" data-m="manager" style="flex:1;padding:14px">👔 Solo allenatore</button>
     </div>
     <p class="vs" id="obModeHint" style="color:var(--muted);margin:0 2px 14px;font-size:12.5px">Scegli un'opzione, poi premi Avanti.</p>
     <div class="gate-status" id="obStatusMode"></div>
@@ -3758,7 +3784,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='4.1';
+const APP_VERSION='4.2';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -4041,7 +4067,7 @@ function tutDemoCards(){
       pc.style.display='flex';
     }
     if(mc){
-      mc.innerHTML=hcardHTML({wm:'\ud83d\udc54', eye:'Da manager', ttl:'Terzo posto',
+      mc.innerHTML=hcardHTML({wm:'\ud83d\udc54', eye:'Da allenatore', ttl:'Terzo posto',
         sub:'A 12,5 punti dalla vetta',
         facts:[rvFactHTML('\ud83c\udfc6','3\u00b0','In classifica'), rvFactHTML('\ud83d\udc51','\u00d72','Re della giornata')],
         go:'Vedi la tua squadra'});
@@ -7443,8 +7469,8 @@ function renderHomeBcards(force){
       else                    facts.push(rvFactHTML('📊',fmtPts(st.points||0),'Punti stagione'));
       mc.innerHTML=hcardHTML({
         wm: card.headline?card.headline.icon:'👔',
-        eye:'Da manager',
-        ttl: started?(card.headline?card.headline.text:'Manager'):'Manager',
+        eye:'Da allenatore',
+        ttl: started?(card.headline?card.headline.text:'Allenatore'):'Allenatore',
         sub: started?(card.headline?card.headline.sub:''):'La classifica parte dalla prima giornata chiusa',
         facts: facts,
         prog: nextBarHTML(card.next),
@@ -8100,12 +8126,12 @@ document.querySelectorAll('#obMode button').forEach(b=>b.onclick=()=>{
   document.getElementById('obCharTitle').textContent=isCampo?'Il tuo personaggio':'Il tuo nome';
   document.getElementById('obPlayerLab').textContent=isCampo?'Nome del personaggio':'Il tuo nome';
   document.getElementById('playerInput').placeholder=isCampo?'Es. Bomber Cris':'Es. Giulio';
-  document.getElementById('obModeHint').textContent=isCampo?'Sarai nel listone e gli altri potranno schierarti.':'Avrai una squadra da fanta-manager, senza essere schierabile in campo.';
+  document.getElementById('obModeHint').textContent=isCampo?'Sarai nel listone e gli altri potranno schierarti.':'Avrai una squadra da allenare, senza essere schierabile in campo.';
   obClearErr();
   // NON avanza in automatico: l'utente sceglie con calma e poi preme "Avanti"
 });
 function obNextFromMode(){
-  if(!playMode){ obErr('obStatusMode','Scegli come vuoi giocare: in campo oppure solo manager.'); return; }
+  if(!playMode){ obErr('obStatusMode','Scegli come vuoi giocare: in campo oppure solo allenatore.'); return; }
   obClearErr();
   obGo(1);
 }
@@ -8319,7 +8345,7 @@ function bachecaHTML(card, opts){
   if(opts.includeManager && card.manager && card.manager.ok){
     const mb=(card.manager.badges||[]);
     if(mb.length){
-      h+=`<div class="bch-mgr"><div class="bm-lab">👔 Da manager</div>`+
+      h+=`<div class="bch-mgr"><div class="bm-lab">👔 Da allenatore</div>`+
         mb.map(b=>`<span class="bch-chip">${esc(b.label)}${b.value?` ×${b.value}`:''}</span>`).join('')+
         `</div>`;
     }
@@ -9224,6 +9250,15 @@ function playerStatsGridHTML(s,mx){
     <div class="pg-bars">${bar('gol','⚽ Gol',gol,maxG)}${bar('ass','🎯 Assist',ass,maxA)}</div>
     <div class="pg-note">Barre rapportate al migliore della lega \u00b7 ${esc(scopeLabel(cardScope))}</div>`;
 }
+/* sigla del ruolo + stato di forma nel suo colore (stessi colori di fcFormColor) */
+function statHeadTagsHTML(role,forma){
+  const r=(role==='POR'||role==='DIF'||role==='ATT')?role:'DIF';
+  const f=forma||'Costante';
+  const k=f==='In forma'?'up':(f==='In calo'?'down':'flat');
+  const sym=k==='up'?'\u25b2':(k==='down'?'\u25bc':'\u25a0');
+  return `<span class="sid-tag role r-${r.toLowerCase()}" title="${roleLabel(r)}">${r}</span>`+
+         `<span class="sid-tag form ${k}"><i>${sym}</i>${esc(f)}</span>`;
+}
 function openPlayerStats(id){
   const p=players.find(x=>x.id===id); if(!p)return;
   const s=playerStats[id]||{presences:0,gol:0,assist:0,voto:6,forma:'Costante'};
@@ -9233,7 +9268,7 @@ function openPlayerStats(id){
   _bestVoteTxt='\u2014'; _avgVote=null; _avgVoteReady=false; _lastPlayerCard=null;
   document.getElementById('statAv').innerHTML=avatarImg(p.avatar,50);
   document.getElementById('statName').textContent=p.name;
-  document.getElementById('statRole').textContent=roleLabel(p.role)+' \u00b7 '+s.forma;
+  document.getElementById('statRole').innerHTML=statHeadTagsHTML(p.role,s.forma);
   _statCardId=id;
   renderCardScopeBar('player');
   paintPlayerGrid(id,null);
@@ -9419,7 +9454,7 @@ function teamStatsGridHTML(card){
   if(allT){
     /* Di sempre non esiste «la posizione»: esistono i punti totali e il posto
        piu' alto mai raggiunto. Quelli comandano il riquadro. */
-    h=`<div class="tm-hero"><div class="tm-top">
+    h=`<div class="tm-hero"><div class="tm-eye">Di sempre</div><div class="tm-top">
         <div class="tm-pos">${st.best_pos||'\u2014'}${st.best_pos?'<u>\u00b0</u>':''}<s>miglior posizione</s></div>
         <div class="tm-pts"><b>${fmtPts(st.points||0)}</b><span>punti in ${card.seasons_n||allSeasons.length} stagioni</span></div>
       </div></div>`;
@@ -9427,7 +9462,7 @@ function teamStatsGridHTML(card){
     // 1) La posizione è l'unica cosa che un manager cerca davvero: si legge subito,
     //    con la barra che dice quanto sei in alto senza dover contare le squadre.
     const started=seasonHasClosed(cardScope);
-    h=`<div class="tm-hero"><div class="tm-top">
+    h=`<div class="tm-hero"><div class="tm-eye">Posizione in classifica</div><div class="tm-top">
       <div class="tm-pos">${(started&&pos)?pos:'—'}${(started&&pos)?'<u>°</u>':''}<s>${started?(tot?('su '+tot+' squadre'):'in classifica'):'nessuna giornata chiusa'}</s></div>
       <div class="tm-pts"><b>${fmtPts(st.points||0)}</b><span>punti${card.season_no?' · Stagione '+card.season_no:''}</span></div>
     </div>`;
@@ -9440,14 +9475,14 @@ function teamStatsGridHTML(card){
   // 2) I record: riquadri di uguale misura su due colonne. Le chip a larghezza
   //    variabile andavano a capo in modo casuale e sembravano sbilenche.
   //    Quelli ancora a zero restano visibili ma spenti: sono obiettivi, non risultati.
-  const rec=(ic,val,lab,zero)=>`<div class="tm-rec${zero?' z':''}"><span class="ic">${ic}</span>
+  const rec=(ic,val,lab,zero,tone)=>`<div class="tm-rec t-${tone||'gold'}${zero?' z':''}"><span class="ic">${ic}</span>
       <span class="tx"><span class="tv">${val}</span><span class="tk">${lab}</span></span></div>`;
   const recs=[];
-  if(st.best_pos && !allT) recs.push(rec('🥇',st.best_pos+'°','Miglior posizione'));
-  recs.push(rec('👑','×'+(st.wins||0),'Re della giornata',!st.wins));
-  recs.push(rec('🚩','×'+(st.leader_days||0),'Giornate da leader',!st.leader_days));
-  recs.push(rec('📈','+'+(st.best_climb||0),'Miglior balzo',!st.best_climb));
-  if(st.best_md!=null) recs.push(rec('🏅',fmtPts(st.best_md)+'<small> pts</small>','Miglior giornata'));
+  if(st.best_pos && !allT) recs.push(rec('🥇',st.best_pos+'°','Miglior posizione',false,'gold'));
+  recs.push(rec('👑','×'+(st.wins||0),'Re della giornata',!st.wins,'amber'));
+  recs.push(rec('🚩','×'+(st.leader_days||0),'Giornate da leader',!st.leader_days,'red'));
+  recs.push(rec('📈','+'+(st.best_climb||0),'Miglior balzo',!st.best_climb,'green'));
+  if(st.best_md!=null) recs.push(rec('🏅',fmtPts(st.best_md)+'<small> pts</small>','Miglior giornata',false,'blue'));
   h+=`<div class="tm-chips">${recs.join('')}</div>`;
   return h;
 }
@@ -9509,7 +9544,7 @@ function refreshTeamCard(managerId){
     if(_teamCardId!==managerId || cardScope!==scope) return;
     if(!card||card.error){ document.getElementById('teamName').textContent='Squadra'; document.getElementById('teamBacheca').innerHTML='<div class="bch-empty">Scheda non disponibile.</div>'; return; }
     document.getElementById('teamName').textContent=card.team_name||card.player_name||'Squadra';
-    document.getElementById('teamSub').textContent=card.player_name&&card.team_name?('Manager: '+card.player_name):'Manager';
+    document.getElementById('teamSub').innerHTML='<span class="sid-tag coach">Allenatore</span>'+(card.player_name&&card.team_name?'<span class="sid-name">'+esc(card.player_name)+'</span>':'');
     document.getElementById('teamGrid').innerHTML=teamStatsGridHTML(card);
     /* I TRAGUARDI sono cumulativi per definizione (\u00abcecchino: 40 gol in
        totale\u00bb): sulla scheda giocatore restavano cambiando stagione, su quella
@@ -10144,7 +10179,7 @@ function renderVoti(){
   const pres=players.filter(isPresent);
   const allowed=canIVote();
   const dis=(votesLocked||!allowed)?'disabled':'';
-  const noteV=(!allowed&&currentMd&&!votesLocked)?'<div class="vs" style="color:#b89a6a;margin:0 0 8px">🔒 Votano solo i giocatori di questa giornata. Se fai solo il manager, l\'admin può abilitarti.</div>':'';
+  const noteV=(!allowed&&currentMd&&!votesLocked)?'<div class="vs" style="color:#b89a6a;margin:0 0 8px">🔒 Votano solo i giocatori di questa giornata. Se fai solo l\'allenatore, l\'admin può abilitarti.</div>':'';
   const showAvg=false;   // media voti NON visibile durante la votazione (nemmeno all'admin): si vede solo dopo la chiusura
   document.getElementById('voteList').innerHTML=noteV+(pres.length?pres.map(p=>{
     const a=averages[p.id];
@@ -10807,7 +10842,7 @@ function openSettings(){
   setLogoDraft=profile.logo||null;
   const isPlayer=profile.is_player!==false;
   document.getElementById('setTeamName').textContent=profile.team_name;
-  document.getElementById('setPlayerName').textContent=(isPlayer?'Giocatore: ':'Manager · ')+profile.player_name;
+  document.getElementById('setPlayerName').textContent=(isPlayer?'Giocatore: ':'Allenatore · ')+profile.player_name;
   document.getElementById('setPlayerCardLab').textContent=isPlayer?'Nome personaggio':'Il tuo nome';
   document.getElementById('setAvatarCard').style.display=isPlayer?'block':'none';
   document.getElementById('setNameInput').value=profile.team_name;
@@ -10861,7 +10896,7 @@ function renderProfHero(){
   }
   if(lg) lg.innerHTML=(setLogoDraft && isPlayer && setAvatarDraft)?logoImg(setLogoDraft,24):'';
   if(tm) tm.textContent=((ni&&ni.value.trim())||profile.team_name||'La tua squadra');
-  if(pl) pl.textContent=(isPlayer?'Giocatore \u00b7 ':'Manager \u00b7 ')+((pi&&pi.value.trim())||profile.player_name||'');
+  if(pl) pl.textContent=(isPlayer?'Giocatore \u00b7 ':'Allenatore \u00b7 ')+((pi&&pi.value.trim())||profile.player_name||'');
 }
 ['setNameInput','setPlayerInput'].forEach(id=>{ const e=document.getElementById(id); if(e) e.addEventListener('input',renderProfHero); });
 document.getElementById('setSaveBtn').onclick=async function(){

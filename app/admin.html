@@ -952,7 +952,7 @@ async function loadLeagueDetail(id){
       <h2>Membri <span class="rt">${mem.length}</span></h2>
       ${mem.length?mem.map(m=>`<div class="mrow">
         <div class="mi">
-          <b>${esc(m.team_name||'\u2014')} ${m.is_admin?'<span class="pill p">admin</span>':''}${m.is_player===false?'<span class="pill i">manager</span>':''}</b>
+          <b>${esc(m.team_name||'\u2014')} ${m.is_admin?'<span class="pill p">admin</span>':''}${m.is_player===false?'<span class="pill i">allenatore</span>':''}</b>
           <small>${esc(m.player_name||'')} \u00b7 ${esc(m.email||'\u2014')}</small>
         </div>
         <div class="mr">${m.has_push?'\ud83d\udd14':'<span style="opacity:.45">\ud83d\udd15</span>'}<br>${m.last_seen?ago(m.last_seen):'mai visto'}</div>
