@@ -1286,6 +1286,10 @@
   /* pagina formazione di giornata */
   #teamLineupPage .tlp-title,#bmPage .tlp-title{font-family:'Bricolage Grotesque';font-weight:800;font-size:23px;letter-spacing:-.01em;margin:2px 2px 4px}
   #teamLineupPage .shint,#bmPage .shint{font-size:13px;color:var(--muted);margin:0 2px 16px;line-height:1.5}
+  /* 4.4 — avviso: c'e' una formazione sul telefono che il server non ha mai ricevuto */
+  .lineup-warn{display:none;background:rgba(255,120,120,.1);border:1px solid rgba(255,120,120,.4);
+    border-radius:13px;padding:12px 14px;margin:0 0 10px;font-size:13px;line-height:1.5;color:#ffd7d7}
+  .lineup-warn b{color:#fff}
   /* 4.3 — pagina «Bonus e malus» in sola lettura */
   .bm-sum{display:flex;gap:8px;flex-wrap:wrap;margin:0 2px 14px}
   .bm-sum span{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12.5px;font-weight:700;color:var(--text)}
@@ -3210,6 +3214,7 @@
       <div class="mark m-halfway"></div><div class="mark m-circle"></div><div class="mark m-spot"></div>
     </div>
     <p class="hint">Tocca uno slot per scegliere. Tocca uno schierato per renderlo <b style="color:var(--gold)">capitano</b> o rimuoverlo.</p>
+    <div class="lineup-warn" id="lineupWarn"></div>
     <button class="save" id="saveBtn" disabled>Conferma formazione</button>
   </section>
 
@@ -3820,7 +3825,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='4.3';
+const APP_VERSION='4.4';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -6874,14 +6879,59 @@ async function loadMatchday(){
   const {data}=await sb.from('matchdays').select('*').order('id',{ascending:false}).limit(1);
   currentMd=(data&&data[0])?data[0]:null;
 }
+/* COPIA LOCALE DELLA FORMAZIONE (4.4).
+   Una formazione persa non deve costringere nessuno a rifarla a memoria: a ogni
+   tentativo di conferma la squadra scelta resta anche sul telefono. Se alla
+   riapertura il server non ha niente per una giornata ancora aperta, il campo si
+   ripopola con quella copia e compare un avviso rosso: i giocatori sono gia' al
+   loro posto, basta toccare Conferma. La copia sparisce appena il server
+   conferma di avere le cinque righe. */
+let lineupUnsaved=false;
+function lineupDraftKey(){ return currentMd?('fc_lin_'+currentMd.id):null; }
+function lineupDraftSave(){
+  const k=lineupDraftKey(); if(!k)return;
+  try{ localStorage.setItem(k, JSON.stringify({lineup:lineup, captain:captain, module:formModule, at:Date.now()})); }catch(_){ }
+}
+function lineupDraftClear(){
+  const k=lineupDraftKey(); if(!k)return;
+  try{ localStorage.removeItem(k); }catch(_){ }
+}
+function lineupDraftRestore(){
+  const k=lineupDraftKey(); if(!k)return false;
+  try{
+    const raw=localStorage.getItem(k); if(!raw)return false;
+    const d=JSON.parse(raw);
+    if(!d||!d.lineup||Object.keys(d.lineup).length<5)return false;
+    // i giocatori devono esistere ancora ed essere presenti in questa giornata
+    const ids=Object.values(d.lineup);
+    if(!ids.every(id=>players.some(p=>p.id===id&&isPresent(p))))return false;
+    if(d.module&&MODULES[d.module]){ formModule=d.module; SLOTS=MODULES[formModule].slots; }
+    lineup=Object.assign({},d.lineup); captain=d.captain||null;
+    lineupUnsaved=true;
+    return true;
+  }catch(_){ return false; }
+}
+function renderLineupWarn(){
+  const w=document.getElementById('lineupWarn'); if(!w)return;
+  if(!lineupUnsaved){ w.style.display='none'; w.innerHTML=''; return; }
+  w.style.display='block';
+  w.innerHTML=lineupLocked
+    ? '<b>Questa formazione non è mai arrivata al server.</b> È rimasta solo sul telefono e ormai le formazioni sono chiuse: avvisa l\'amministratore.'
+    : '<b>Questa formazione non è mai arrivata al server.</b> L\'abbiamo ritrovata sul telefono e rimessa in campo: controllala e tocca <b>Conferma formazione</b>.';
+}
 async function loadLineup(){
   if(!currentMd)return;
   formModule='1-2-2'; SLOTS=MODULES[formModule].slots;
-  if(currentMd.status==='closed'){ lineup={}; captain=null; return; }   // giornata chiusa: campo azzerato (lo storico resta in Lega)
+  lineupUnsaved=false;
+  if(currentMd.status==='closed'){ lineup={}; captain=null; lineupDraftClear(); return; }   // giornata chiusa: campo azzerato (lo storico resta in Lega)
   const {data:lm}=await sb.from('lineup_modules').select('module').eq('matchday_id',currentMd.id).eq('manager_id',user.id).maybeSingle();
   if(lm&&MODULES[lm.module]){formModule=lm.module;SLOTS=MODULES[formModule].slots;}
-  const {data}=await sb.from('lineups').select('*').eq('matchday_id',currentMd.id).eq('manager_id',user.id);
+  const {data,error}=await sb.from('lineups').select('*').eq('matchday_id',currentMd.id).eq('manager_id',user.id);
   (data||[]).forEach(r=>{lineup[r.slot]=r.player_id;if(r.is_captain)captain=r.slot;});
+  // il server ha la formazione: la copia sul telefono non serve piu'
+  if(data&&data.length){ lineupDraftClear(); return; }
+  // il server non ha niente e la lettura e' andata a buon fine: recupero la copia
+  if(!error) lineupDraftRestore();
 }
 async function loadMyVotes(){
   if(!currentMd)return;
@@ -10096,7 +10146,7 @@ function renderPitch(){
       :`<div class="disc"><span class="plus">+</span></div><div class="tag empty">${isPor?'POR 🧤':s.label}</div>`;
     pitch.appendChild(el);
   });
-  updateBudget(); updateScores();
+  updateBudget(); updateScores(); renderLineupWarn();
 }
 function costOf(pid){const p=players.find(x=>x.id===pid);return p&&p.cost!=null?p.cost:PRICE;}
 function lineupSpent(){return Object.values(lineup).reduce((s,pid)=>s+costOf(pid),0);}
@@ -10247,6 +10297,7 @@ document.getElementById('saveBtn').onclick=async function(){
   if(!captain){toast('👑 Scegli il capitano prima di confermare');return;}
   const mdId=currentMd.id;
   const rows=Object.entries(lineup).map(([slot,pid])=>({slot,player_id:pid,is_captain:captain===slot}));
+  lineupDraftSave();   // prima di provare: se qualcosa va storto, la squadra non si perde
   this.disabled=true; this.textContent='Salvataggio…';
   let err=null;
   try{
@@ -10270,10 +10321,19 @@ document.getElementById('saveBtn').onclick=async function(){
     const {data,error:ce}=await sb.from('lineups').select('slot,is_captain').eq('matchday_id',mdId).eq('manager_id',user.id);
     if(!ce){ saved=(data||[]).length; capOk=(data||[]).some(r=>r.is_captain); }
   }catch(_){ }
-  this.disabled=false; updateBudget();
-  if(saved===5 && capOk){ toast('Formazione salvata ✓'); return; }
+  if(saved===5 && capOk){
+    lineupUnsaved=false; lineupDraftClear();
+    this.disabled=false; updateBudget(); renderLineupWarn();
+    toast('Formazione salvata ✓'); return;
+  }
+  lineupUnsaved=true;
+  this.disabled=false; updateBudget(); renderLineupWarn();
+  const em=String((err&&err.message)||'');
+  if(/row-level security|violates row level|42501|permission denied/i.test(em)){
+    toast('Le formazioni di questa giornata sono chiuse.'); return;
+  }
   if(err){ toast(errText(err)); return; }
-  if(saved<0){ toast('⚠️ Non riesco a confermare il salvataggio. Controlla la connessione e riprova.'); return; }
+  if(saved<0){ toast('⚠️ Non riesco a confermare il salvataggio. Controlla la connessione.'); return; }
   toast('⚠️ Formazione NON salvata ('+saved+'/5). Riprova.');
 };
 
@@ -11178,6 +11238,12 @@ function errText(e){
     return 'Quella persona non \u00e8 un membro attivo della lega.';
   if(/not_authenticated|no_profile/i.test(m))
     return 'Sessione non valida: esci e rientra.';
+  /* 4.4 — errori con un nome, alzati da save_lineup */
+  if(/need_five_slots/i.test(m))   return 'Servono cinque giocatori schierati.';
+  if(/need_one_captain/i.test(m))  return 'Serve un capitano, e uno solo.';
+  if(/lineup_not_saved/i.test(m))  return 'Il salvataggio non \u00e8 andato a buon fine: la formazione \u00e8 rimasta com\u2019era. Riprova.';
+  if(/no_matchday/i.test(m))       return 'Nessuna giornata aperta.';
+  if(/not_logged_in/i.test(m))     return 'Sessione non valida: esci e rientra.';
   if(/row-level security|violates row level|42501|permission denied/i.test(m))
     return 'Il database non ti riconosce come amministratore di questa lega. Segnalacelo da Impostazioni \u203a Aiuto e manutenzione.';
   if(/duplicate key|already exists|23505/i.test(m))
