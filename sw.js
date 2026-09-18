@@ -10,7 +10,7 @@
      La copia si usa SOLO quando la rete fallisce: la regola dell'HTML fresca
      non cambia.
 */
-const SW_VERSION = '2026-09-18-v39';   // cambia questa stringa a OGNI deploy
+const SW_VERSION = '2026-09-18-v40';   // cambia questa stringa a OGNI deploy
 const CACHE      = 'fc-shell-' + SW_VERSION;
 
 /* Il minimo per far partire l'app senza rete. La libreria di Supabase sta in un
