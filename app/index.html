@@ -3825,7 +3825,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='4.4';
+const APP_VERSION='4.5';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -4024,6 +4024,7 @@ let _avTries=0,_avBusy=false;
 function ensureAvatars(){
   if(_avBusy||_avTries>=3||avatars.length||typeof sb==='undefined'||!sb) return;
   _avBusy=true; _avTries++;
+  try{ localStorage.removeItem(AV_KEY); }catch(_){ }   // la copia non serve: e' vuota o rotta
   loadAvatars().then(()=>{
     _avBusy=false;
     if(avatars.length){ try{ renderAll(); }catch(_){ } }
@@ -6406,31 +6407,70 @@ async function saveMyPassword(){
   toast('Password salvata \u2705');
 }
 
-async function loadAvatars(){
+/* ELENCO AVATAR E LOGHI — in cache sul telefono (4.5).
+   Prima ogni apertura dell'app chiedeva allo Storage l'elenco completo di due
+   bucket, e aspettava la risposta prima di mostrare qualsiasi cosa. Sono file
+   che cambiano un paio di volte l'anno: con mille persone che aprono l'app
+   ogni giorno diventano migliaia di chiamate al giorno per sapere una cosa che
+   si sapeva gia', piu' due attese sul percorso di avvio.
+   Ora l'elenco resta sul telefono per sei ore. Se c'e' una copia si parte da
+   quella senza aspettare niente; se e' scaduta si ricontrolla in sottofondo e,
+   solo se e' cambiato qualcosa, si ridisegna. La prima apertura e' identica a
+   prima. */
+const BUCKET_TTL=6*3600*1000;
+function bucketCacheRead(key){
   try{
-    const {data,error}=await sb.storage.from('avatars').list('',{limit:1000,sortBy:{column:'name',order:'asc'}});
-    if(error) throw error;
-    avatars=(data||[]).filter(f=>/\.(png|jpe?g|webp|gif)$/i.test(f.name))
-      .map(f=>{
-        const base=sb.storage.from('avatars').getPublicUrl(f.name).data.publicUrl;
-        const ver=f.updated_at||f.created_at||(f.metadata&&f.metadata.lastModified)||'';
-        return {name:f.name, url: ver ? base+'?v='+encodeURIComponent(ver) : base};
-      });
-  }catch(e){ avatars=[]; }
+    const raw=localStorage.getItem(key); if(!raw) return null;
+    const c=JSON.parse(raw);
+    if(!c||!Array.isArray(c.list)||!c.list.length) return null;
+    return c;
+  }catch(_){ return null; }
+}
+function bucketCacheWrite(key,list){
+  try{ localStorage.setItem(key, JSON.stringify({at:Date.now(), list:list})); }catch(_){ }
+}
+async function bucketList(bucket,re){
+  const {data,error}=await sb.storage.from(bucket).list('',{limit:1000,sortBy:{column:'name',order:'asc'}});
+  if(error) throw error;
+  return (data||[]).filter(f=>re.test(f.name)).map(f=>{
+    const base=sb.storage.from(bucket).getPublicUrl(f.name).data.publicUrl;
+    const ver=f.updated_at||f.created_at||(f.metadata&&f.metadata.lastModified)||'';
+    return {name:f.name, url: ver ? base+'?v='+encodeURIComponent(ver) : base};
+  });
+}
+const AV_KEY='fc_bucket_avatars', LG_KEY='fc_bucket_loghi';
+const AV_RE=/\.(png|jpe?g|webp|gif)$/i, LG_RE=/\.(png|jpe?g|webp|gif|svg)$/i;
+function bucketRevalidate(bucket,re,key,apply){
+  bucketList(bucket,re).then(list=>{
+    if(!list.length) return;
+    const before=JSON.stringify((bucketCacheRead(key)||{}).list||[]);
+    bucketCacheWrite(key,list);
+    if(JSON.stringify(list)!==before){ apply(list); try{ if(profile) renderAll(); }catch(_){ } }
+  }).catch(()=>{});
+}
+async function loadAvatars(){
+  const c=bucketCacheRead(AV_KEY);
+  if(c){
+    avatars=c.list;
+    if(avatars.length && !obAvatar) obAvatar=avatars[0].name;
+    if(Date.now()-(c.at||0) >= BUCKET_TTL) bucketRevalidate('avatars',AV_RE,AV_KEY,l=>{avatars=l;});
+    return;
+  }
+  try{ avatars=await bucketList('avatars',AV_RE); if(avatars.length) bucketCacheWrite(AV_KEY,avatars); }
+  catch(e){ avatars=[]; }
   if(avatars.length && !obAvatar) obAvatar=avatars[0].name;
 }
 /* Carica i loghi-squadra dal bucket "loghi" (stessa logica degli avatar). */
 async function loadLogos(){
-  try{
-    const {data,error}=await sb.storage.from('loghi').list('',{limit:200,sortBy:{column:'name',order:'asc'}});
-    if(error) throw error;
-    logos=(data||[]).filter(f=>/\.(png|jpe?g|webp|gif|svg)$/i.test(f.name))
-      .map(f=>{
-        const base=sb.storage.from('loghi').getPublicUrl(f.name).data.publicUrl;
-        const ver=f.updated_at||f.created_at||(f.metadata&&f.metadata.lastModified)||'';
-        return {name:f.name, url: ver ? base+'?v='+encodeURIComponent(ver) : base};
-      });
-  }catch(e){ logos=[]; }
+  const c=bucketCacheRead(LG_KEY);
+  if(c){
+    logos=c.list;
+    if(logos.length && !obLogo) obLogo=logos[0].name;
+    if(Date.now()-(c.at||0) >= BUCKET_TTL) bucketRevalidate('loghi',LG_RE,LG_KEY,l=>{logos=l;});
+    return;
+  }
+  try{ logos=await bucketList('loghi',LG_RE); if(logos.length) bucketCacheWrite(LG_KEY,logos); }
+  catch(e){ logos=[]; }
   if(logos.length && !obLogo) obLogo=logos[0].name;
 }
 /* Mappa manager_id -> nome logo per tutte le squadre della propria lega (per classifica/home/schede). */
