@@ -1270,17 +1270,39 @@
     font-size:12.5px;padding:0;cursor:pointer;touch-action:manipulation}
   .plan-seats.full{border-color:rgba(255,194,61,.45)}
   .bch-page{z-index:90}
-  .bch-page-bar{position:sticky;top:0;z-index:2;display:flex;align-items:center;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:linear-gradient(180deg,var(--bg),rgba(8,14,26,.85) 70%,transparent);backdrop-filter:blur(6px)}
-  .bch-back{background:var(--surface2);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:14px;padding:9px 15px 9px 11px;border-radius:12px;cursor:pointer}
-  .bch-back:active{transform:scale(.97)}
+  /* 4.3 — la barra era sticky CON backdrop-filter. Su iOS il rettangolo dei tocchi
+     del livello composito resta indietro finche' non si scorre: il pulsante
+     «‹ Indietro» sembrava morto (si premeva e non succedeva niente), e bastava
+     scorrere la pagina per farlo tornare vivo. Tolto il blur, la barra non prende
+     piu' tocchi e il pulsante ha un livello suo: il tocco arriva sempre. */
+  .bch-page-bar{position:sticky;top:0;z-index:2;display:flex;align-items:center;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:linear-gradient(180deg,var(--bg) 42%,rgba(8,14,26,.92) 80%,transparent);pointer-events:none}
+  .bch-back{pointer-events:auto;transform:translateZ(0);touch-action:manipulation;background:var(--surface2);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:14px;padding:9px 15px 9px 11px;border-radius:12px;cursor:pointer}
+  .bch-back:active{transform:translateZ(0) scale(.97)}
   .bch-page-inner{max-width:var(--maxw);margin:0 auto;padding:6px 18px calc(40px + env(safe-area-inset-bottom))}
   .bch-page .stat-head{margin-bottom:16px}
   .bch-page .stat-av{width:64px;height:64px}
   .bch-page #teamAv{font-size:32px}
   .bch-page .stat-id b{font-size:21px}
   /* pagina formazione di giornata */
-  #teamLineupPage .tlp-title{font-family:'Bricolage Grotesque';font-weight:800;font-size:23px;letter-spacing:-.01em;margin:2px 2px 4px}
-  #teamLineupPage .shint{font-size:13px;color:var(--muted);margin:0 2px 16px;line-height:1.5}
+  #teamLineupPage .tlp-title,#bmPage .tlp-title{font-family:'Bricolage Grotesque';font-weight:800;font-size:23px;letter-spacing:-.01em;margin:2px 2px 4px}
+  #teamLineupPage .shint,#bmPage .shint{font-size:13px;color:var(--muted);margin:0 2px 16px;line-height:1.5}
+  /* 4.3 — pagina «Bonus e malus» in sola lettura */
+  .bm-sum{display:flex;gap:8px;flex-wrap:wrap;margin:0 2px 14px}
+  .bm-sum span{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12.5px;font-weight:700;color:var(--text)}
+  .bm-sum span i{font-style:normal;color:var(--muted);font-weight:600}
+  .bm-row{display:flex;align-items:center;gap:11px;padding:10px 4px;border-bottom:1px solid var(--line)}
+  .bm-row:last-child{border-bottom:none}
+  .bm-av{width:40px;border-radius:10px;overflow:hidden;background:var(--surface2);flex:none;line-height:0}
+  .bm-av img{width:40px;height:auto;display:block;border-radius:10px}
+  .bm-id{flex:1;min-width:0}
+  .bm-id b{display:block;font-size:15.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bm-ev{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+  .bm-ev i{font-style:normal;font-size:12px;font-weight:700;background:var(--surface2);border:1px solid var(--line);border-radius:7px;padding:2px 6px;color:var(--text)}
+  .bm-ev i.neg{color:#ffb3b3;border-color:rgba(255,120,120,.3)}
+  .bm-ev i.none{color:var(--muted);font-weight:600;background:none;border:none;padding:2px 0}
+  .bm-res{flex:none;font-size:11px;font-weight:800;letter-spacing:.04em;border-radius:8px;padding:5px 8px;background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
+  .bm-res.win{color:var(--green);border-color:rgba(80,200,120,.38)}
+  .bm-res.lose{color:#ffb3b3;border-color:rgba(255,120,120,.32)}
   /* ---- HOME: le schede «Statistiche» usano lo STESSO componente di «Rivivi»
      (.rvcard): stessa forma, stessa griglia di dati, stessa riga d'apertura.
      Prima erano due linguaggi diversi impilati a 40px di distanza. ---- */
@@ -3200,6 +3222,8 @@
       <div id="voteList"></div>
       <div class="vote-req" id="voteReq" style="display:none"></div>
     </div>
+    <button class="set-btn" id="bmOpenBtn" onclick="openBonusMalus()" style="margin-top:12px">📋 Bonus e malus della giornata</button>
+    <div class="vs" style="color:var(--muted);margin-top:7px;font-size:12.5px">Gol, assist, gol subiti e cartellini di ogni giocatore, per votare sui numeri e non a memoria.</div>
     <div class="admin-card" id="adminCard" style="display:none">
       <span class="admin-badge">🔒 Solo amministratore</span>
       <h3 style="font-family:'Bricolage Grotesque';font-size:15px;margin-bottom:4px">Bonus / Malus partita</h3>
@@ -3617,6 +3641,18 @@
       <div id="tlpList"></div>
     </div>
   </div>
+  <!-- BONUS E MALUS DELLA GIORNATA — sola lettura, la vedono tutti -->
+  <div class="overlay hidden bch-page" id="bmPage">
+    <div class="bch-page-bar">
+      <button class="bch-back" onclick="closeBonusMalus()" aria-label="Indietro">‹ Indietro</button>
+    </div>
+    <div class="bch-page-inner">
+      <h3 class="tlp-title">Bonus e malus</h3>
+      <p class="shint" id="bmHint"></p>
+      <div class="bm-sum" id="bmSum"></div>
+      <div id="bmList"></div>
+    </div>
+  </div>
   <div id="tut">
     <div class="tut-bk" id="tutT"></div><div class="tut-bk" id="tutB"></div>
     <div class="tut-bk" id="tutL"></div><div class="tut-bk" id="tutR"></div>
@@ -3784,7 +3820,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='4.2';
+const APP_VERSION='4.3';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -3955,10 +3991,43 @@ function renderModulePicker(){
   } else if(info){ info.style.display='none'; }
 }
 
+/* 4.3 — prima, se l'elenco degli avatar non arrivava o una singola immagine non
+   si scaricava, restava il riquadro col «?» fino alla chiusura dell'app. Ora:
+   1) la singola immagine riprova due volte da sola prima di arrendersi;
+   2) se l'elenco e' vuoto lo si richiede in sottofondo e, appena arriva, si
+      ridisegna tutto. Nessuno deve piu' chiudere e riaprire l'app. */
+function avatarPh(px){
+  return `<div style="width:${px}px;height:${Math.round(px*1.1)}px;border-radius:8px;background:var(--surface2);display:grid;place-items:center;color:var(--muted);font-size:${Math.round(px*.4)}px">?</div>`;
+}
+function fcImgRetry(img){
+  try{
+    const n=+(img.getAttribute('data-try')||0);
+    if(n<2){
+      const base=(img.getAttribute('data-src')||img.src||'').split('#')[0].split(/[?&]r=/)[0];
+      if(!base) return;
+      img.setAttribute('data-src',base);
+      img.setAttribute('data-try',n+1);
+      setTimeout(()=>{ try{ img.src=base+(base.indexOf('?')<0?'?':'&')+'r='+Date.now(); }catch(_){ } }, 500*(n+1));
+      return;
+    }
+    img.onerror=null; img.removeAttribute('onerror');
+    img.style.background='var(--surface2)';
+    img.style.minHeight=Math.round((img.clientWidth||38)*1.1)+'px';
+  }catch(_){ }
+}
+let _avTries=0,_avBusy=false;
+function ensureAvatars(){
+  if(_avBusy||_avTries>=3||avatars.length||typeof sb==='undefined'||!sb) return;
+  _avBusy=true; _avTries++;
+  loadAvatars().then(()=>{
+    _avBusy=false;
+    if(avatars.length){ try{ renderAll(); }catch(_){ } }
+  }).catch(()=>{ _avBusy=false; });
+}
 function avatarImg(name,px){
   const a=avatars.find(x=>x.name===name);
-  return a?`<img src="${a.url}" alt="" style="width:${px}px;height:auto;border-radius:8px;display:block" draggable="false">`
-          :`<div style="width:${px}px;height:${Math.round(px*1.1)}px;border-radius:8px;background:var(--surface2);display:grid;place-items:center;color:var(--muted);font-size:${Math.round(px*.4)}px">?</div>`;
+  if(!a){ if(name) ensureAvatars(); return avatarPh(px); }
+  return `<img src="${a.url}" alt="" style="width:${px}px;height:auto;border-radius:8px;display:block" draggable="false" onerror="fcImgRetry(this)">`;
 }
 /* logo squadra: box quadrato px×px, immagine SEMPRE intera (contain) e mai tagliata.
    Se la squadra non ha ancora scelto un logo -> segnaposto discreto della stessa misura. */
@@ -6334,7 +6403,7 @@ async function saveMyPassword(){
 
 async function loadAvatars(){
   try{
-    const {data,error}=await sb.storage.from('avatars').list('',{limit:200,sortBy:{column:'name',order:'asc'}});
+    const {data,error}=await sb.storage.from('avatars').list('',{limit:1000,sortBy:{column:'name',order:'asc'}});
     if(error) throw error;
     avatars=(data||[]).filter(f=>/\.(png|jpe?g|webp|gif)$/i.test(f.name))
       .map(f=>{
@@ -6343,7 +6412,7 @@ async function loadAvatars(){
         return {name:f.name, url: ver ? base+'?v='+encodeURIComponent(ver) : base};
       });
   }catch(e){ avatars=[]; }
-  if(avatars.length) obAvatar=avatars[0].name;
+  if(avatars.length && !obAvatar) obAvatar=avatars[0].name;
 }
 /* Carica i loghi-squadra dal bucket "loghi" (stessa logica degli avatar). */
 async function loadLogos(){
@@ -6889,6 +6958,7 @@ function scheduleLive(){clearTimeout(liveT);liveT=setTimeout(refreshLive,300);}
 async function refreshLive(){
   await loadAverages(); await loadMatchStats(); await loadMvpSega();
   refreshAvgLabels(); renderMvpSegaHint(); updateScores();
+  if(bmIsOpen()) renderBonusMalus();
   await loadStandings(); renderLB(); renderMini();
 }
 function refreshAvgLabels(){ /* media voti nascosta durante la votazione: nessun aggiornamento a schermo */ }
@@ -10022,7 +10092,7 @@ function renderPitch(){
     el.className=`slot ${cap?'captain':''} ${isPor?'por':''}`;
     el.style.left=s.x+'%';el.style.top=s.y+'%';el.onclick=()=>slotTap(s.key);
     el.innerHTML=filled
-      ?`<div class="pawn">${avatarImg(p.avatar,104)}<span class="cap">C</span></div><div class="tag">${p.name}</div><div class="scoreline" id="sl-${s.key}"></div><div class="evs" id="ev-${s.key}"></div>`
+      ?`<div class="pawn">${avatarImg(p.avatar,104)}<span class="cap">C</span><span class="yc" id="yc-${s.key}" style="display:none"></span></div><div class="tag">${p.name}<span id="tg-${s.key}"></span></div><div class="scoreline" id="sl-${s.key}"></div><div class="evs" id="ev-${s.key}"></div>`
       :`<div class="disc"><span class="plus">+</span></div><div class="tag empty">${isPor?'POR 🧤':s.label}</div>`;
     pitch.appendChild(el);
   });
@@ -10100,11 +10170,19 @@ function updateScores(){
   const sub=document.getElementById('ptSub');
   if(sub)sub.textContent=mb?`modulo ${formModule}: parti da ${mb>0?'+':''}${mb}`:`modulo ${formModule} · nessun bonus`;
   SLOTS.forEach(s=>{const el=document.getElementById('sl-'+s.key);const ev=document.getElementById('ev-'+s.key);const pid=lineup[s.key];
-    if(!el)return; if(!pid){el.innerHTML='';if(ev)ev.innerHTML='';return;}
+    /* 4.3 — il cartellino giallo e la coppa MVP c'erano solo nel campo di sola
+       lettura (formazione dentro la classifica di giornata). Sul proprio campo
+       mancavano: stessi dati, due disegni diversi. Ora si aggiornano qui, cosi'
+       arrivano anche dal vivo quando l'admin carica i bonus. */
+    const yc=document.getElementById('yc-'+s.key), tg=document.getElementById('tg-'+s.key);
+    if(!el)return;
+    if(!pid){el.innerHTML='';if(ev)ev.innerHTML='';if(yc)yc.style.display='none';if(tg)tg.textContent='';return;}
     const r=computeScore(pid,s.key,mvp); total+=r.score;
     const evs=statIcons(r);
     const cls=r.voto>=6?'hi':'lo';
     el.innerHTML=`<span class="voto ${cls}">${r.voto.toFixed(1)}</span>`;
+    if(yc){ const g=r.gi||0; yc.style.display=g?'grid':'none'; yc.textContent=g>1?String(g):''; }
+    if(tg){ tg.textContent=(mvp&&pid===mvp)?' 🏆':''; }
     if(ev){ ev.innerHTML=evs; ev.style.cssText=evsStyle(evs); }});
   document.getElementById('ptTotal').textContent=total.toFixed(1);
 }
@@ -10148,20 +10226,55 @@ function openCaptainSheet(key){
 }
 function setCaptain(key){captain=key;closeSheet();renderPitch()}
 function removePlayer(key){delete lineup[key];if(captain===key)captain=null;closeSheet();renderPitch()}
+/* SALVATAGGIO FORMAZIONE (rifatto in 4.3).
+   Com'era: cancella le righe vecchie, poi inserisci le nuove, poi di' «salvata».
+   Due difetti gravi:
+   a) le due operazioni erano separate. Se la connessione cadeva tra l'una e
+      l'altra, la formazione precedente era gia' cancellata e la nuova non
+      arrivava mai: risultato, nessuna formazione;
+   b) «Formazione salvata ✓» compariva senza che nessuno avesse mai controllato
+      che sul database ci fosse davvero qualcosa. Da qui il caso di chi ha visto
+      la conferma e poi si e' ritrovato senza squadra.
+   Com'e' ora: una sola chiamata `save_lineup` che fa tutto dentro una
+   transazione (o non cambia niente, o cambia tutto), poi una CONTROPROVA che
+   rilegge le righe dal database. Il messaggio verde arriva solo se le cinque
+   righe ci sono davvero. */
 document.getElementById('saveBtn').onclick=async function(){
   if(this.disabled)return;
   if(!currentMd){toast('Nessuna giornata aperta');return;}
   if(lineupLocked){toast('Formazioni bloccate');return;}
   if(Object.keys(lineup).length<5){toast('Schiera 5 giocatori');return;}
   if(!captain){toast('👑 Scegli il capitano prima di confermare');return;}
-  this.disabled=true;
-  await sb.from('lineups').delete().eq('matchday_id',currentMd.id).eq('manager_id',user.id);
-  const rows=Object.entries(lineup).map(([slot,pid])=>({matchday_id:currentMd.id,manager_id:user.id,slot,player_id:pid,is_captain:captain===slot}));
-  const {error}=await sb.from('lineups').insert(rows);
-  if(!error){ await sb.from('lineup_modules').upsert({matchday_id:currentMd.id,manager_id:user.id,module:formModule},{onConflict:'matchday_id,manager_id'}); }
-  this.disabled=false;
-  if(error){toast(errText(error));updateBudget();return;}
-  toast('Formazione salvata ✓');
+  const mdId=currentMd.id;
+  const rows=Object.entries(lineup).map(([slot,pid])=>({slot,player_id:pid,is_captain:captain===slot}));
+  this.disabled=true; this.textContent='Salvataggio…';
+  let err=null;
+  try{
+    const {error}=await sb.rpc('save_lineup',{p_md:mdId,p_rows:rows,p_module:formModule});
+    if(error) err=error;
+  }catch(e){ err=e; }
+  // Se il database non ha ancora la funzione, si usa la vecchia strada.
+  if(err && /save_lineup|PGRST202|schema cache|does not exist|non esiste/i.test(String((err&&err.message)||'')+' '+String((err&&err.code)||''))){
+    err=null;
+    try{
+      const {error:de}=await sb.from('lineups').delete().eq('matchday_id',mdId).eq('manager_id',user.id);
+      if(de) throw de;
+      const {error:ie}=await sb.from('lineups').insert(rows.map(r=>({matchday_id:mdId,manager_id:user.id,slot:r.slot,player_id:r.player_id,is_captain:r.is_captain})));
+      if(ie) throw ie;
+      await sb.from('lineup_modules').upsert({matchday_id:mdId,manager_id:user.id,module:formModule},{onConflict:'matchday_id,manager_id'});
+    }catch(e2){ err=e2; }
+  }
+  // CONTROPROVA: rileggo dal database prima di dire che e' andata bene.
+  let saved=-1, capOk=false;
+  try{
+    const {data,error:ce}=await sb.from('lineups').select('slot,is_captain').eq('matchday_id',mdId).eq('manager_id',user.id);
+    if(!ce){ saved=(data||[]).length; capOk=(data||[]).some(r=>r.is_captain); }
+  }catch(_){ }
+  this.disabled=false; updateBudget();
+  if(saved===5 && capOk){ toast('Formazione salvata ✓'); return; }
+  if(err){ toast(errText(err)); return; }
+  if(saved<0){ toast('⚠️ Non riesco a confermare il salvataggio. Controlla la connessione e riprova.'); return; }
+  toast('⚠️ Formazione NON salvata ('+saved+'/5). Riprova.');
 };
 
 /* ---------- VOTI ---------- */
@@ -10701,6 +10814,62 @@ function closeTeamLineupPage(){
   const pg=document.getElementById('teamLineupPage'); if(pg) pg.classList.add('hidden');
 }
 
+/* ---------- BONUS E MALUS DELLA GIORNATA (sola lettura, per tutti) ----------
+   Gli stessi numeri del pannello dell'admin, ma senza un solo pulsante che li
+   cambi: chi vota ha bisogno di sapere quanti gol e quanti assist ha fatto ogni
+   giocatore, e andarli a cercare nelle formazioni degli altri era scomodo. */
+const BM_FIELDS=[
+  {k:'gol',    e:'⚽',  lab:'gol'},
+  {k:'assist', e:'👟',  lab:'assist'},
+  {k:'gs',     e:'🔴',  lab:'gol subiti', neg:true},
+  {k:'rp',     e:'🙌',  lab:'rig. parati'},
+  {k:'og',     e:'🅰️',  lab:'autogol',    neg:true},
+  {k:'rs',     e:'🚫',  lab:'rig. sbagliati', neg:true},
+  {k:'gi',     e:'🟨',  lab:'gialli',     neg:true}
+];
+async function openBonusMalus(){
+  const pg=document.getElementById('bmPage'); if(!pg)return;
+  renderBonusMalus();
+  pg.classList.remove('hidden'); pg.scrollTop=0;
+  try{ await loadMatchStats(); await loadMvpSega(); renderBonusMalus(); }catch(_){ }
+}
+function closeBonusMalus(){
+  const pg=document.getElementById('bmPage'); if(pg) pg.classList.add('hidden');
+}
+function bmIsOpen(){
+  const pg=document.getElementById('bmPage');
+  return !!(pg && !pg.classList.contains('hidden'));
+}
+function renderBonusMalus(){
+  const hint=document.getElementById('bmHint'), sum=document.getElementById('bmSum'), list=document.getElementById('bmList');
+  if(!list||!hint||!sum)return;
+  if(!currentMd){ hint.textContent=''; sum.innerHTML=''; list.innerHTML='<div class="empty-note">Nessuna giornata aperta.</div>'; return; }
+  const pres=players.filter(isPresent);
+  if(!pres.length){ hint.textContent=currentMd.label||''; sum.innerHTML=''; list.innerHTML='<div class="empty-note">Nessun giocatore presente in questa giornata.</div>'; return; }
+  const st=adminStats||{};
+  const zero={gol:0,assist:0,og:0,gs:0,rs:0,rp:0,gi:0,esito:''};
+  const val=p=>Object.assign({},zero,st[p.id]||{});
+  const tot=k=>pres.reduce((n,p)=>n+(val(p)[k]||0),0);
+  const any=pres.some(p=>{const a=val(p); return BM_FIELDS.some(f=>a[f.k]>0)||a.esito;});
+  hint.textContent=(currentMd.label||'')+' · sola lettura'+(any?'':' — l\'amministratore non ha ancora caricato i dati della partita.');
+  sum.innerHTML=any
+    ? `<span>⚽ <i>gol</i> ${tot('gol')}</span><span>👟 <i>assist</i> ${tot('assist')}</span><span>🟨 <i>gialli</i> ${tot('gi')}</span>`
+    : '';
+  list.innerHTML=pres.map(p=>{
+    const a=val(p);
+    const chips=BM_FIELDS.filter(f=>(a[f.k]||0)>0)
+      .map(f=>`<i class="${f.neg?'neg':''}">${f.e} ${a[f.k]}</i>`).join('');
+    const res=a.esito==='V'?'<span class="bm-res win">VINTA</span>'
+            :(a.esito==='S'?'<span class="bm-res lose">PERSA</span>'
+            :(any?'<span class="bm-res">PARI</span>':''));
+    return `<div class="bm-row">
+      <div class="bm-av">${avatarImg(p.avatar,40)}</div>
+      <div class="bm-id"><b>${p.name}${(mvpPid&&p.id===mvpPid)?' 🏆':''}</b>
+        <div class="bm-ev">${chips||'<i class="none">nessun bonus</i>'}</div></div>
+      ${res}</div>`;
+  }).join('');
+}
+
 /* ---------- SETTINGS ---------- */
 function toggleAcc(head){ const a=head.closest('.acc'); if(a)a.classList.toggle('open'); }
 /* SWIPE DAL BORDO PER TORNARE INDIETRO.
@@ -10713,7 +10882,7 @@ const EDGE_ZONE=26, EDGE_MIN=64;
 let _edgeX=null,_edgeY=null;
 function edgeBackTarget(){
   // 1) una pagina a schermo intero aperta ha la precedenza
-  const overlays=[['teamLineupPage','.bch-back'],['bachecaPage','.bch-back'],['proPage','.bch-back']];
+  const overlays=[['bmPage','.bch-back'],['teamLineupPage','.bch-back'],['bachecaPage','.bch-back'],['proPage','.bch-back']];
   for(const [id,sel] of overlays){
     const p=document.getElementById(id);
     if(p && !p.classList.contains('hidden')){ const b=p.querySelector(sel); if(b) return b; }
@@ -10788,7 +10957,7 @@ document.addEventListener('touchend',e=>{
   });
   const mo=new MutationObserver(queue);
   function watch(){
-    ['proPage','bachecaPage','teamLineupPage','v-settings'].forEach(id=>{
+    ['proPage','bachecaPage','teamLineupPage','bmPage','v-settings'].forEach(id=>{
       const el=document.getElementById(id);
       if(el) mo.observe(el,{attributes:true,attributeFilter:['class']});
     });
