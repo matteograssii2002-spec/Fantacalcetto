@@ -10,7 +10,7 @@
      La copia si usa SOLO quando la rete fallisce: la regola dell'HTML fresca
      non cambia.
 */
-const SW_VERSION = '2026-09-18-v41';   // cambia questa stringa a OGNI deploy
+const SW_VERSION = '2026-09-20-v42';   // cambia questa stringa a OGNI deploy
 const CACHE      = 'fc-shell-' + SW_VERSION;
 
 /* IMMAGINI DI AVATAR E LOGHI — cache a parte, che sopravvive ai deploy.
