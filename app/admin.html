@@ -165,6 +165,35 @@
   .bar .bf{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--accent-soft));transition:width .5s ease}
   .bar.g .bf{background:linear-gradient(90deg,var(--green),#7ee6b6)}
   .bar.o .bf{background:linear-gradient(90deg,var(--gold),var(--gold-soft))}
+  /* --- dettaglio per persona e per giornata (console 2.1) --- */
+  .prow{border-bottom:1px solid var(--line)}
+  .prow:last-child{border-bottom:none}
+  .phead{display:flex;align-items:center;gap:9px;padding:10px 0;cursor:pointer}
+  .phead:hover b{color:var(--accent-soft)}
+  .pinfo{flex:1;min-width:0}
+  .pinfo b{display:block;font-size:13.5px;font-weight:700}
+  .pinfo small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ptags{flex:none;display:flex;align-items:center;gap:5px}
+  .tg{font-size:10px;font-weight:800;padding:3px 7px;border-radius:7px;white-space:nowrap;
+    background:rgba(138,163,194,.13);color:var(--muted)}
+  .tg.ok{background:rgba(55,201,138,.15);color:var(--green)}
+  .tg.warn{background:rgba(255,184,77,.15);color:var(--amber)}
+  .tg.bad{background:rgba(255,107,107,.16);color:var(--red)}
+  .tg.mono{font-family:'JetBrains Mono',monospace}
+  .pbody{display:none;padding:2px 0 12px}
+  .prow.on .pbody{display:block}
+  .drow{display:flex;gap:9px;align-items:baseline;font-size:11.5px;color:var(--muted);
+    padding:6px 0 6px 11px;border-left:2px solid var(--line)}
+  .drow b{font-family:'JetBrains Mono',monospace;color:var(--text);font-weight:700;flex:none}
+  .drow span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .drow.dead{opacity:.5}
+  .fltr{display:flex;gap:7px;margin:2px 0 12px}
+  .fltr button{font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:8px;cursor:pointer;
+    background:transparent;border:1px solid var(--line);color:var(--muted)}
+  .fltr button.on{background:rgba(61,139,255,.14);border-color:rgba(61,139,255,.4);color:var(--accent-soft)}
+  .qbad{color:var(--red);font-weight:700}
+  .qwarn{color:var(--amber);font-weight:700}
   .vrow{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:6px 0;border-top:1px solid var(--line)}
   .vrow:first-child{border-top:none}
   .vrow b{font-family:'JetBrains Mono',monospace;font-weight:800}
@@ -948,24 +977,14 @@ async function loadLeagueDetail(id){
       <p class="note">Azzera i flag di invio: al giro successivo (max 10 minuti) il cron rimanda quelli scaduti. Non tocca nessun dato di gioco.</p>
     </div>`:`<div class="card"><h2>Giornata in corso</h2><div class="empty">Nessuna giornata aperta.</div></div>`}
 
-    <div class="card">
-      <h2>Membri <span class="rt">${mem.length}</span></h2>
-      ${mem.length?mem.map(m=>`<div class="mrow">
-        <div class="mi">
-          <b>${esc(m.team_name||'\u2014')} ${m.is_admin?'<span class="pill p">admin</span>':''}${m.is_player===false?'<span class="pill i">allenatore</span>':''}</b>
-          <small>${esc(m.player_name||'')} \u00b7 ${esc(m.email||'\u2014')}</small>
-        </div>
-        <div class="mr">${m.has_push?'\ud83d\udd14':'<span style="opacity:.45">\ud83d\udd15</span>'}<br>${m.last_seen?ago(m.last_seen):'mai visto'}</div>
-      </div>`).join(''):'<div class="empty">Nessun membro.</div>'}
+    <div class="card" id="peopleBox">
+      <h2>Persone <span class="rt">${mem.length}</span></h2>
+      <div class="skel">Carico&hellip;</div>
     </div>
 
-    <div class="card">
-      <h2>Ultime giornate <span class="rt">${mds.length}</span></h2>
-      ${mds.length?mds.map(m=>`<div class="mrow">
-        <div class="mi"><b>${esc(m.label||('#'+m.id))} ${m.status!=='closed'?'<span class="pill a">viva</span>':''}</b>
-          <small>${dt(m.kickoff)} \u00b7 ${m.presenti||0} presenti \u00b7 ${m.voti||0} voti${m.closed_at?(' \u00b7 chiusa '+ago(m.closed_at)):''}</small></div>
-        <div class="mr num">#${m.id}</div>
-      </div>`).join(''):'<div class="empty">Nessuna giornata.</div>'}
+    <div class="card" id="mdBox">
+      <h2>Giornate</h2>
+      <div class="skel">Carico&hellip;</div>
     </div>
 
     <div class="card">
@@ -981,6 +1000,189 @@ async function loadLeagueDetail(id){
     ${dangerHTML(l.id, l.name)}
   `;
   loadRemoved(l.id);
+  loadPeople(l.id);
+  loadMatchdayQuality(l.id);
+}
+
+/* ---------- PERSONE DELLA LEGA (console 2.1) ----------
+   La domanda a cui risponde: «chi, di preciso». Prima si vedeva solo il totale
+   di chi aveva le notifiche, e un numero non si puo' andare a chiamare.
+
+   Sulla versione, un avvertimento che vale la pena tenere a mente: il database
+   registra una riga per DISPOSITIVO, non per persona. Un portatile aperto una
+   volta a giugno e mai piu' resta li' con la sua versione vecchia per sempre.
+   Qui la versione di una persona e' quella del dispositivo che ha usato per
+   ultimo, e aprendo la riga si vedono tutti i suoi dispositivi con la data:
+   cosi' si distingue chi e' davvero indietro da chi ha solo un computer morto
+   in cantina. */
+let peopleData=null, peopleFilter='tutte';
+
+async function loadPeople(leagueId){
+  const box=document.getElementById('peopleBox'); if(!box) return;
+  let data=null, error=null;
+  try{ const r=await sb.rpc('sa_league_people',{p_league:leagueId}); data=r.data; error=r.error; }
+  catch(e){ error=e; }
+  if(error||!data||data.error){
+    const msg=(error&&(error.message||error.hint))||(data&&data.error)||'';
+    box.innerHTML='<h2>Persone</h2><div class="empty">Dettaglio non disponibile. '
+      +(msg?('<br><span class="num" style="font-size:12px">'+esc(String(msg).slice(0,180))+'</span>')
+           :'Serve <span class="num">6_console_dettagli.sql</span>.')+'</div>';
+    return;
+  }
+  peopleData=data; peopleFilter='tutte';
+  renderPeople();
+}
+
+function personProblems(m, latest){
+  const p=[];
+  if(!m.push_state) p.push('notifiche');
+  if(!m.standalone) p.push('home');
+  const v=m.version_best||m.version;
+  if(latest && v && verKey(v)<verKey(latest)) p.push('versione');
+  if(!m.version && !m.devices) p.push('mai aperta');
+  return p;
+}
+function verKey(v){
+  if(!v) return 0;
+  const p=String(v).split('.');
+  const nn=i=>parseInt(String(p[i]||'').replace(/[^0-9]/g,''),10)||0;
+  return nn(0)*1000000+nn(1)*1000+nn(2);
+}
+
+function renderPeople(){
+  const box=document.getElementById('peopleBox'); if(!box||!peopleData) return;
+  const mem=peopleData.members||[];
+  const latest=peopleData.latest_version||null;
+  const md=peopleData.matchday||null;
+  const tot=mem.length;
+
+  const nHome=mem.filter(m=>m.standalone).length;
+  const nPush=mem.filter(m=>m.push_state).length;
+  const nVer =latest?mem.filter(m=>verKey(m.version_best||m.version)>=verKey(latest)).length:0;
+  const rotti=mem.filter(m=>personProblems(m,latest).length);
+
+  const mostra=peopleFilter==='sistemare'?rotti:mem;
+
+  let h='<h2>Persone <span class="rt">'+tot+'</span></h2>';
+
+  h+=bar('g','App sulla Home', nHome, tot,
+         nHome<tot?'Su iPhone senza icona sulla Home le notifiche non arrivano proprio.':'')
+   + bar('','Notifiche accese', nPush, tot,
+         nPush<tot?(tot-nPush)+(tot-nPush===1?' persona non riceve niente.':' persone non ricevono niente.'):'')
+   + (latest?bar('o','Sulla versione '+esc(latest), nVer, tot,
+         nVer<tot?'Prende la versione nuova alla prima apertura con la rete.':''):'');
+
+  h+='<div class="fltr">'
+   + '<button class="'+(peopleFilter==='tutte'?'on':'')+'" onclick="setPeopleFilter(\'tutte\')">Tutte ('+tot+')</button>'
+   + '<button class="'+(peopleFilter==='sistemare'?'on':'')+'" onclick="setPeopleFilter(\'sistemare\')">Da sistemare ('+rotti.length+')</button>'
+   + '</div>';
+
+  if(md) h+='<p class="note" style="margin:-4px 0 10px">«Schierata» e «ha votato» si riferiscono a '+esc(md.label||('#'+md.id))+'.</p>';
+
+  if(!mostra.length){
+    h+='<div class="empty">'+(peopleFilter==='sistemare'?'Nessuno da sistemare. \ud83d\udc4c':'Nessun membro.')+'</div>';
+    box.innerHTML=h; return;
+  }
+
+  h+=mostra.map(m=>{
+    const prob=personProblems(m,latest);
+    const v=m.version_best||m.version;
+    const vecchia=latest&&v&&verKey(v)<verKey(latest);
+    const tags=
+        '<span class="tg '+(m.push_state?'ok':'bad')+'">'+(m.push_state?'\ud83d\udd14':'\ud83d\udd15')+'</span>'
+      + '<span class="tg '+(m.standalone?'ok':'warn')+'">'+(m.standalone?'\ud83d\udcf2':'\ud83c\udf10')+'</span>'
+      + '<span class="tg mono '+(v?(vecchia?'warn':'ok'):'bad')+'">'+esc(v||'mai')+'</span>';
+    const sub=[
+      esc(m.player_name||''),
+      esc(m.email||'\u2014'),
+      m.lineup_ok?'schierata':'non schierata',
+      m.voted?'ha votato':'non ha votato'
+    ].filter(Boolean).join(' \u00b7 ');
+
+    let body='';
+    const dl=Array.isArray(m.device_list)?m.device_list:[];
+    if(dl.length){
+      body+=dl.map(d=>{
+        const g=d.last_seen?Math.round((Date.now()-new Date(d.last_seen).getTime())/86400000):null;
+        const morto=(g!=null&&g>30);
+        return '<div class="drow'+(morto?' dead':'')+'">'
+          +'<b>'+esc(d.version||'?')+'</b>'
+          +'<span>'+esc(d.platform||'?')+' \u00b7 '+esc(d.browser||'?')
+          +(d.standalone?' \u00b7 sulla Home':' \u00b7 dal browser')
+          +' \u00b7 notifiche '+esc(d.push||'?')+'</span>'
+          +'<b style="color:var(--muted);font-weight:600">'+(d.last_seen?ago(d.last_seen):'\u2014')
+          +(morto?' \u26a0\ufe0f':'')+'</b></div>';
+      }).join('');
+      if(dl.some(d=>d.last_seen&&(Date.now()-new Date(d.last_seen).getTime())>30*86400000))
+        body+='<p class="note" style="margin:8px 0 0">\u26a0\ufe0f = dispositivo fermo da oltre un mese. Se la versione vecchia \u00e8 solo l\u00ec, la persona non \u00e8 indietro: lo \u00e8 un apparecchio che non usa pi\u00f9.</p>';
+    } else {
+      body+='<div class="drow">Nessun dispositivo registrato: non ha mai aperto l\u2019app dalla versione 3.5 in poi.</div>';
+    }
+    if(prob.length) body+='<p class="note" style="margin:8px 0 0">Da sistemare: '+esc(prob.join(', '))+'.</p>';
+
+    return '<div class="prow" id="pr-'+esc(m.id)+'">'
+      +'<div class="phead" onclick="togglePerson(\''+esc(m.id)+'\')">'
+        +'<div class="pinfo"><b>'+esc(m.team_name||'\u2014')+' '
+          +(m.is_admin?'<span class="pill p">admin</span>':'')
+          +(m.is_player===false?'<span class="pill i">allenatore</span>':'')
+          +'</b><small>'+sub+'</small></div>'
+        +'<div class="ptags">'+tags+'</div>'
+      +'</div><div class="pbody">'+body+'</div></div>';
+  }).join('');
+
+  box.innerHTML=h;
+}
+function setPeopleFilter(f){ peopleFilter=f; renderPeople(); }
+function togglePerson(id){
+  const el=document.getElementById('pr-'+id);
+  if(el) el.classList.toggle('on');
+}
+
+/* ---------- QUALITA' DELLE GIORNATE (console 2.1) ----------
+   Una giornata chiusa con zero gol e zero assist quasi mai e' una partita
+   finita a reti bianche: e' l'admin che non ha compilato il pannello bonus.
+   Senza quei numeri i voti restano voti e basta, la classifica perde senso, e
+   dal di fuori non se ne accorge nessuno. Qui si vede a colpo d'occhio. */
+async function loadMatchdayQuality(leagueId){
+  const box=document.getElementById('mdBox'); if(!box) return;
+  let data=null, error=null;
+  try{ const r=await sb.rpc('sa_league_matchdays',{p_league:leagueId}); data=r.data; error=r.error; }
+  catch(e){ error=e; }
+  if(error||!data||data.error||!Array.isArray(data)){
+    const msg=(error&&(error.message||error.hint))||(data&&data.error)||'';
+    box.innerHTML='<h2>Giornate</h2><div class="empty">Dettaglio non disponibile. '
+      +(msg?('<br><span class="num" style="font-size:12px">'+esc(String(msg).slice(0,180))+'</span>')
+           :'Serve <span class="num">6_console_dettagli.sql</span>.')+'</div>';
+    return;
+  }
+  if(!data.length){ box.innerHTML='<h2>Giornate</h2><div class="empty">Nessuna giornata.</div>'; return; }
+
+  const senzaBonus=data.filter(m=>m.status==='closed' && (m.gol+m.assist+m.gol_subiti+m.gialli+m.extra)===0).length;
+
+  let h='<h2>Giornate <span class="rt">'+data.length+'</span></h2>';
+  if(senzaBonus) h+='<p class="note" style="margin:-2px 0 12px"><span class="qbad">\u26a0\ufe0f '+senzaBonus+'</span> '
+    +(senzaBonus===1?'giornata chiusa senza':'giornate chiuse senza')+' nessun bonus inserito: voti presi, ma gol e assist mai compilati.</p>';
+
+  h+=data.map(m=>{
+    const chiusa=m.status==='closed';
+    const eventi=m.gol+m.assist+m.gol_subiti+m.gialli+m.extra;
+    const bonus=eventi>0
+      ? '\u26bd '+m.gol+' \u00b7 \ud83d\udc5f '+m.assist+' \u00b7 \ud83d\udd34 '+m.gol_subiti+' \u00b7 \ud83d\udfe8 '+m.gialli
+      : (chiusa?'<span class="qbad">nessun bonus inserito</span>':'<span class="qwarn">bonus non ancora inseriti</span>');
+    const note=[];
+    if(chiusa && m.esiti===0)  note.push('<span class="qwarn">esiti V/S mancanti</span>');
+    if(chiusa && m.mvp===0 && m.nomine>0) note.push('<span class="qwarn">MVP non assegnato</span>');
+    if(chiusa && m.schierate<m.membri) note.push((m.membri-m.schierate)+' senza formazione');
+    if(chiusa && m.votanti<m.presenti) note.push((m.presenti-m.votanti)+' non hanno votato');
+    return '<div class="mrow"><div class="mi">'
+      +'<b>'+esc(m.label||('#'+m.id))+' '+(chiusa?'':'<span class="pill a">viva</span>')+'</b>'
+      +'<small>'+dt(m.kickoff)+' \u00b7 '+(m.presenti||0)+' presenti \u00b7 '
+      +(m.schierate||0)+'/'+(m.membri||0)+' schierate \u00b7 '+(m.votanti||0)+' votanti ('+(m.voti||0)+' voti)</small>'
+      +'<small style="margin-top:3px">'+bonus+(note.length?(' \u00b7 '+note.join(' \u00b7 ')):'')+'</small>'
+      +'</div><div class="mr num">#'+m.id+'</div></div>';
+  }).join('');
+
+  box.innerHTML=h;
 }
 /* ---------- 3.7 · ACCOUNT RIMOSSI ----------
    Chi cancella il proprio account resta nella lega come profilo anonimo, perche'
