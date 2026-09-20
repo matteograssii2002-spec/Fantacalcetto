@@ -321,6 +321,15 @@
       <div id="attBody"><div class="skel">Controllo&hellip;</div></div>
     </div>
 
+    <!-- 4.7 — SOVRACCARICHI. Ogni volta che l'app sbatte contro un limite dei
+         servizi (connessioni finite, troppe richieste, database lento, quota
+         mensile) scrive una riga. Qui si vede se sta capitando spesso: e' il
+         segnale per decidere di pagare PRIMA che qualcuno resti a piedi. -->
+    <div class="card" id="ovlCard">
+      <h2>Sovraccarichi <span class="rt" id="ovlCount"></span></h2>
+      <div id="ovlBody"><div class="skel">Carico&hellip;</div></div>
+    </div>
+
     <div class="card" id="liveCard" style="display:none">
       <h2>Giornate vive adesso <span class="rt" id="liveCount"></span></h2>
       <div id="liveBody"></div>
@@ -494,13 +503,14 @@ async function loadAll(silent){
   const b=document.getElementById('refBtn'); b.textContent='\u2026'; b.disabled=true;
   /* quattro chiamate in parallelo, ognuna col suo paracadute: se una manca la
      console non deve spegnersi, deve solo mostrare un po' meno. */
-  const [ov, he, lg, pl, ck, ad] = await Promise.all([
+  const [ov, he, lg, pl, ck, ad, inc] = await Promise.all([
     sb.rpc('sa_overview').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_health').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_leagues_full').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_plans').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_checks').then(r=>r.error?null:r.data).catch(()=>null),
-    sb.rpc('sa_adoption').then(r=>r.error?null:r.data).catch(()=>null)
+    sb.rpc('sa_adoption').then(r=>r.error?null:r.data).catch(()=>null),
+    sb.rpc('sa_incidents',{p_hours:168}).then(r=>r.error?null:r.data).catch(()=>null)
   ]);
   if(ov) paintOverview(ov);
   health=he;
@@ -508,6 +518,7 @@ async function loadAll(silent){
   document.getElementById('sqlWarn').style.display  = hasNewRpc?'none':'flex';
   document.getElementById('sqlWarnB').style.display = pl?'none':'flex';
   renderChecks(ck);
+  renderOverloads(inc);
   renderAdoption(ad);
   if(lg){ leagues=lg||[]; }
   else {
@@ -617,6 +628,55 @@ function renderChecks(list){
   if(cnt) cnt.textContent = male? (male+' da guardare') : (giallo? (giallo+' da tenere d\u2019occhio') : 'tutto a posto');
   const card=document.getElementById('chkCard');
   if(card) card.style.borderColor = male?'rgba(255,107,107,.40)':(giallo?'rgba(255,184,77,.36)':'var(--line)');
+}
+
+/* ---------- SOVRACCARICHI ----------
+   Sette giorni di righe, raggruppate per tipo. Il colore dice quanto e' grave:
+   rosso se qualcuno e' stato respinto all'ingresso o se il database ha rifiutato
+   connessioni, giallo per il resto. Zero righe = niente da fare, ed e' la
+   risposta piu' utile di tutte. */
+const OVL_NOMI={
+  connessioni_finite:  ['Connessioni del database finite','Il piano non regge le persone collegate insieme.'],
+  ingresso_bloccato:   ['Persone respinte all\u2019ingresso','Erano gi\u00e0 troppe dentro: l\u2019app le ha fermate sulla schermata di avvio.'],
+  troppe_richieste:    ['Troppe richieste','Il servizio ha rallentato le chiamate dell\u2019app.'],
+  database_lento:      ['Query oltre il tempo massimo','Il database non ha fatto in tempo a rispondere.'],
+  quota_superata:      ['Limite mensile raggiunto','Traffico o spazio del piano gratuito esauriti.'],
+  servizio_ko:         ['Servizio non raggiungibile','Il database ha risposto con un errore suo.'],
+  realtime_ko:         ['Aggiornamenti dal vivo caduti','Il canale della giornata non si \u00e8 agganciato.']
+};
+const OVL_GRAVI=['connessioni_finite','ingresso_bloccato','quota_superata'];
+function renderOverloads(rows){
+  const body=document.getElementById('ovlBody'), cnt=document.getElementById('ovlCount');
+  const card=document.getElementById('ovlCard');
+  if(!body) return;
+  if(rows==null){
+    body.innerHTML='<div class="skel">Registro non disponibile. Esegui <span class="num">sovraccarico.sql</span>.</div>';
+    if(cnt) cnt.textContent='';
+    if(card) card.style.borderColor='var(--line)';
+    return;
+  }
+  const list=Array.isArray(rows)?rows:[];
+  if(!list.length){
+    body.innerHTML='<div class="chk ok"><i></i><div><b>Nessun sovraccarico</b>'
+      +'<span>Negli ultimi 7 giorni l\u2019app non ha mai sbattuto contro un limite dei servizi.</span></div></div>';
+    if(cnt) cnt.textContent='tutto a posto';
+    if(card) card.style.borderColor='var(--line)';
+    return;
+  }
+  const grave=list.some(r=>OVL_GRAVI.indexOf(r.kind)>=0);
+  const ord=list.slice().sort((a,b)=>(Number(b.n)||0)-(Number(a.n)||0));
+  body.innerHTML=ord.map(r=>{
+    const nome=OVL_NOMI[r.kind]||[r.kind,''];
+    const cls=OVL_GRAVI.indexOf(r.kind)>=0?'bad':'warn';
+    const quando=r.last_at?new Date(r.last_at).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+    const chi=(Number(r.persone)||0);
+    return '<div class="chk '+cls+'"><i></i><div><b>'+esc(nome[0])+' \u00b7 <span class="num">'+(Number(r.n)||0)+'</span></b>'
+      +'<span>'+esc(nome[1])+(chi?(' \u2014 '+chi+(chi===1?' persona':' persone')):'')
+      +(quando?(' \u2014 ultimo '+esc(quando)):'')+'</span></div></div>';
+  }).join('');
+  const tot=list.reduce((s,r)=>s+(Number(r.n)||0),0);
+  if(cnt) cnt.textContent=tot+' in 7 giorni';
+  if(card) card.style.borderColor=grave?'rgba(255,107,107,.40)':'rgba(255,184,77,.36)';
 }
 
 /* ---------- COME VIENE USATA ----------

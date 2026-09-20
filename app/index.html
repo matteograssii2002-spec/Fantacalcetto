@@ -86,6 +86,17 @@
 
   .overlay{position:fixed;top:0;left:0;right:0;height:var(--app-h,100dvh);z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(130% 70% at 50% 0%, rgba(63,151,255,.22), transparent 60%),var(--bg);transition:opacity .35s}
   .overlay.hidden{opacity:0;pointer-events:none}
+  /* 4.6 — IL BUG DEL TASTO «INDIETRO» CHE NON RISPONDEVA.
+     .overlay.hidden spegne i tocchi, ma .bch-back li riaccendeva con
+     pointer-events:auto — e un figlio puo' riaccenderli anche dentro un
+     genitore spento. Le pagine a schermo intero stanno una dopo l'altra nel
+     markup e hanno lo stesso z-index: il pulsante INVISIBILE dell'ultima
+     (bacheca) e quello della pagina Pro (z-index piu' alto) si sedevano
+     esattamente sopra il pulsante della pagina aperta e si prendevano il tocco.
+     Il corpo delle pagine chiuse era davvero spento, quindi lo scorrimento
+     continuava a funzionare: sembrava rotto solo il pulsante.
+     Questa riga chiude la questione per tutte le pagine, anche quelle future. */
+  .overlay.hidden,.overlay.hidden *{pointer-events:none!important}
 
   /* ---- SPLASH / schermata di caricamento — entrata dinamica a sequenza ---- */
   #splash{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:0;
@@ -170,6 +181,12 @@
     background:radial-gradient(120% 62% at 50% 30%, rgba(63,151,255,.20), transparent 64%),var(--bg);
     opacity:0;transition:opacity .35s ease}
   #offline.on{opacity:1}
+  /* 4.7 — stessa impaginazione della schermata «nessuna connessione»: chi la
+     vede riconosce subito che e' un muro dell'app, non un errore suo. */
+  #busy{position:fixed;top:0;bottom:0;left:0;right:0;z-index:1399;display:none;flex-direction:column;
+    background:radial-gradient(120% 62% at 50% 30%, rgba(255,194,61,.16), transparent 64%),var(--bg);
+    opacity:0;transition:opacity .35s ease}
+  #busy.on{opacity:1}
   .off-inner{max-width:var(--maxw);width:100%;margin:0 auto;flex:1;min-height:0;display:flex;flex-direction:column;
     justify-content:center;
     padding:calc(26px + env(safe-area-inset-top)) 24px calc(32px + env(safe-area-inset-bottom))}
@@ -665,6 +682,9 @@
   .vcard-h h3{margin:0}
   .vsend{background:linear-gradient(135deg,var(--accent),#1c6ff2);color:#fff;font-weight:800;font-size:13px;border:none;padding:9px 15px;border-radius:11px;cursor:pointer;white-space:nowrap;box-shadow:0 8px 20px -8px rgba(63,151,255,.6)}
   .vsend:disabled{opacity:.6}
+  /* 4.6 — «manca qualcosa» non e' «non si puo' premere»: il pulsante resta vivo
+     e al tocco spiega cosa manca. Spento e muto non lo capiva nessuno. */
+  .vsend.notready{opacity:.62;box-shadow:none}
   .vsend.dirty{animation:vpulse 1.2s ease-in-out infinite}
   @keyframes vpulse{0%,100%{box-shadow:0 8px 20px -8px rgba(63,151,255,.55)}50%{box-shadow:0 9px 26px -6px rgba(255,194,61,.85)}}
   .voteinp{appearance:none;-webkit-appearance:none;background:var(--bg2);border:1.5px solid var(--line-strong);color:var(--text);font-family:'JetBrains Mono';font-weight:800;font-size:17px;text-align:center;border-radius:10px;padding:8px 4px;width:66px}
@@ -674,6 +694,15 @@
   .mvpstar.on{filter:none;opacity:1;border-color:var(--gold);background:rgba(255,194,61,.16);box-shadow:inset 0 0 0 1px rgba(255,194,61,.45)}
   .mvpstar:active{transform:scale(.92)}
   .mvpstar:disabled{opacity:.35;cursor:default}
+  /* 4.6 — l'MVP e' obbligatorio, ma la coppa e' piccola e sta a sinistra di ogni
+     riga: chi non l'ha notata non sa dove guardare. Quando si prova a inviare
+     senza, le coppe si accendono per un attimo. */
+  .mvpstar.ask{animation:mvpask 1.05s ease-in-out 2}
+  @keyframes mvpask{
+    0%,100%{filter:grayscale(1);opacity:.5;transform:scale(1);border-color:var(--line-strong);background:var(--bg2)}
+    45%{filter:none;opacity:1;transform:scale(1.16);border-color:var(--gold);background:rgba(255,194,61,.24)}
+  }
+  @media (prefers-reduced-motion: reduce){ .mvpstar.ask{animation:none;filter:none;opacity:1;border-color:var(--gold)} }
   .vote-req{color:#b89a6a;font-size:12.5px;margin-top:12px;line-height:1.5;padding-top:10px;border-top:1px solid var(--line)}
   .arow+.arow{border-top:1px solid rgba(255,194,61,.12)}
   .arow .an{flex:1;font-weight:600;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -2834,6 +2863,29 @@
 </div>
 <div id="maintBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:70;background:#b3261e;color:#fff;font-size:12.5px;font-weight:700;text-align:center;padding:6px 10px;align-items:center;justify-content:center;gap:6px">⚙️ Manutenzione attiva — solo tu vedi l'app</div>
 
+<!-- 4.7 — SOVRACCARICO. Due livelli: la barra (qualcosa non e' riuscito, l'app
+     resta usabile) e la schermata piena (non si entra proprio, i server sono al
+     completo). In tutti e due i casi parte una riga nel registro incidenti, che
+     il super-admin vede in console. -->
+<div id="busyBar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:71;background:#8a5a00;color:#fff;font-size:12.5px;font-weight:700;text-align:center;padding:6px 10px;align-items:center;justify-content:center;gap:6px">⏳ Servizio sovraccarico — qualche operazione può non riuscire</div>
+
+<div id="busy">
+  <div class="off-inner">
+    <div class="off-icon">
+      <img class="off-squad" src="squadra.webp?v=1" alt="" loading="eager" decoding="async"
+           onerror="this.classList.add('noimg')">
+    </div>
+    <div class="off-mid">
+      <h1 class="off-h" id="busyH">Server al completo</h1>
+      <p class="off-sub" id="busySub">In questo momento ci sono troppe persone collegate.<br>Riprova fra qualche minuto: appena si libera un posto entri.</p>
+    </div>
+    <div class="off-actions">
+      <button class="ob-btn" id="busyBtn" onclick="retryBusy()">Riprova</button>
+      <div class="off-status" id="busyStatus"></div>
+    </div>
+  </div>
+</div>
+
 <!-- WELCOME · prima schermata (nessuna sessione): scegli il percorso -->
 <div class="overlay hidden" id="welcome"><div class="ob-inner wc-center">
   <div class="wc-top">
@@ -3368,7 +3420,7 @@
             <span class="rg-op">+</span>
             <span class="rg-chip"><b>±</b><small>bonus e malus</small></span>
           </div>
-          <p class="rg-note">Capitano e MVP raddoppiano solo il voto, non i bonus.</p>
+          <p class="rg-note">Il capitano raddoppia solo il voto, non i bonus. L’MVP vale +3, come un gol.</p>
         </div>
 
         <div class="rg-sec g"><span class="dot"></span>Bonus</div>
@@ -3378,6 +3430,7 @@
           <div class="rg-t g"><span class="ic">🙌</span><span class="v">+3</span><span class="l">Rigore parato</span></div>
           <div class="rg-t g"><span class="ic">✅</span><span class="v">+2</span><span class="l">Squadra vince</span></div>
           <div class="rg-t g wide"><span class="ic">🧤</span><span class="v">+3</span><span class="l">Porta inviolata<small>solo portiere</small></span></div>
+          <div class="rg-t g wide"><span class="ic">🏆</span><span class="v">+3</span><span class="l">MVP della giornata<small>il più votato della lega, uno solo per tutti</small></span></div>
         </div>
 
         <div class="rg-sec r"><span class="dot"></span>Malus</div>
@@ -3391,14 +3444,14 @@
 
         <div class="rg-sec au"><span class="dot"></span>Moltiplicatori</div>
         <div class="rg-grid">
-          <div class="rg-t au"><span class="ic cap"><b>C</b></span><span class="v">×2</span><span class="l">Capitano<small>sul voto</small></span></div>
-          <div class="rg-t au"><span class="ic">🏆</span><span class="v">×2</span><span class="l">MVP<small>sul voto</small></span></div>
+          <div class="rg-t au wide"><span class="ic cap"><b>C</b></span><span class="v">×2</span><span class="l">Capitano<small>raddoppia il voto, non i bonus</small></span></div>
         </div>
+        <p class="rg-note">Il +3 dell’MVP resta fuori dal raddoppio: un capitano che è anche MVP fa <b>voto ×2 + 3</b>, non (voto + 3) ×2.</p>
 
         <div class="rg-ex">
           <div class="rg-ex-k">Esempio</div>
-          <div class="rg-ex-t">Capitano con voto 7, un gol, squadra vincente</div>
-          <div class="rg-ex-calc"><span>7 × 2</span><i>+</i><span>3</span><i>+</i><span>2</span><i>=</i><b>19</b></div>
+          <div class="rg-ex-t">Capitano con voto 8, eletto MVP della giornata</div>
+          <div class="rg-ex-calc"><span>8 × 2</span><i>+</i><span>3</span><i>=</i><b>19</b></div>
         </div>
       </div>
     </div>
@@ -3825,7 +3878,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='4.5';
+const APP_VERSION='4.7';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -5222,9 +5275,13 @@ function fcPushState(){
   }catch(_){ return 'non_supportate'; }
 }
 let _lastTouch=0;
-function touchDevice(force){
+function touchDevice(force, minuti){
   if(!sb||!user) return;
-  if(!force && (Date.now()-_lastTouch) < 30*60*1000) return;   // al massimo ogni mezz'ora
+  /* 4.7 — la finestra e' un parametro: il giro dei 5 minuti serve a sapere
+     quante persone sono DENTRO adesso, che e' il numero su cui si regge il
+     tetto in ingresso (capacity_status). Una riga aggiornata ogni mezz'ora
+     non basta per quello. */
+  if(!force && (Date.now()-_lastTouch) < (minuti||30)*60*1000) return;
   _lastTouch=Date.now();
   try{
     sb.rpc('touch_device',{
@@ -5376,6 +5433,11 @@ async function afterLogin(){
       loadPlayers().then(()=>spTo(74)),
       loadPlannedPresences().then(()=>spTo(78))
     ]);
+    /* 4.7 — il muro in ingresso sta QUI: dopo il profilo (serve a sapere se e'
+       il super-admin) e prima di caricare tutto il resto, cosi' se siamo al
+       completo non si spreca nemmeno una chiamata. */
+    if(await capacityGate()) return;
+    await loadScoringRules();          // quali stagioni usano la regola MVP vecchia
     await Promise.all([
       loadStandings().then(()=>spTo(86)),
       loadMatchdayData().then(()=>spTo(96))
@@ -6034,7 +6096,11 @@ let _maintT=null;
 function subscribeMaintenance(){
   if(maintChannel){ try{ sb.removeChannel(maintChannel); }catch(_){ } maintChannel=null; }
   if(_maintT) clearInterval(_maintT);
-  _maintT=setInterval(()=>{ if(!document.hidden && profile) loadMaintenance(); }, 5*MIN);
+  _maintT=setInterval(()=>{
+    if(document.hidden || !profile) return;
+    loadMaintenance();
+    touchDevice(false, 5);   // battito: tiene aggiornato "quanti siamo dentro adesso"
+  }, 5*MIN);
 }
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && profile && sb) loadMaintenance(); });
 async function setMaintenance(on){
@@ -7015,7 +7081,16 @@ function subscribeLive(){
     .on('postgres_changes',{event:'*',schema:'public',table:'match_stats',filter:f},scheduleLive)
     .on('postgres_changes',{event:'*',schema:'public',table:'nominations',filter:f},scheduleLive)
     .on('postgres_changes',{event:'*',schema:'public',table:'matchday_players',filter:f},schedulePresence)
-    .subscribe();
+    /* 4.7 — se il canale non si aggancia (tetto di connessioni del piano
+       raggiunto, servizio giu') l'app continua a funzionare, ma i voti degli
+       altri non arrivano piu' da soli: va detto, e va messo a registro. */
+    .subscribe((status)=>{
+      if(status==='CHANNEL_ERROR' || status==='TIMED_OUT'){
+        fcOverload('realtime_ko','canale giornata '+(currentMd?currentMd.id:'?')+' \u2014 '+status);
+      }else if(status==='SUBSCRIBED'){
+        busyBar(false);
+      }
+    });
 }
 /* 3.7 — il canale della giornata resta aperto solo con l'app in primo piano.
    In background non serve a niente (lo schermo non si aggiorna) e occupa una
@@ -8178,16 +8253,29 @@ function renderMdCenter(){
   }).join('');
   // l'azione del momento, da sola, con la sua spiegazione
   const key=mdcPrimaryKey();
+  /* 4.7 — DOPO LA CHIUSURA IL RIQUADRO DELLA PROSSIMA SPARIVA.
+     currentMd resta sempre l'ultima giornata, anche quando e' chiusa: la fase
+     diventava 6, la chiave 'recap', e il blocco per programmare la prossima
+     (che si mostrava solo con chiave 'open') non compariva piu'. In automatica
+     non si notava — la giornata si apre da sola — ma in SEMI-automatica non
+     c'era piu' nessun posto da cui programmarla: si vedeva una volta sola,
+     alla nascita della lega, e mai piu'.
+     Ora una giornata chiusa vale come «niente in corso»: resta il pagellone,
+     e sotto torna il riquadro della prossima. */
+  const finita  = mdPhaseIdx()===6;            // l'ultima giornata e' archiviata
+  const prossima = (key==='open' || finita);   // si puo' programmare/aprire la prossima
   // il riquadro di stato viene PRIMA del pulsante: spiega la situazione, poi propone la mossa
   let h='';
-  if(key==='open') h+=autoOpenStatusHTML();
+  if(prossima) h+=autoOpenStatusHTML();
   if(key==='pres') h+=`<div class="mdc-note warn">\u26a0\ufe0f <b>${esc(presGateReason())}.</b> Formazioni chiuse finch\u00e9 non ne segni ${MIN_PRESENT}${gkFixed?', portiere compreso':''}.</div>`;
-  const semi = key==='open' && !schedDraft.auto_open && !seasonBreak()
+  const semi = prossima && !schedDraft.auto_open && !seasonBreak()
                && !(currentSeason && currentSeason.status==='open' && Number(currentSeason.mds_total||0)>=38);
+  if(finita) h+=mdActionHTML('recap',14);                 // il pagellone resta a portata di mano
   if(semi) h+=semiOpenHTML();
-  else h+=mdActionHTML(key,14);
-  if(key==='open' && !semi && schedDraft.auto_open) h+=`<p class="vs" id="openNowHint" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${openNowHintText()}</p>`;
-  if(key==='open')  h+=`<button class="set-btn" style="margin-top:10px" onclick="setNav('page-quando')">\u2699\ufe0f Metodo di apertura</button>`;
+  else if(key!=='recap') h+=mdActionHTML(key, finita?10:14);
+  else if(prossima) h+=mdActionHTML('open',10);           // automatica: si puo' comunque aprire subito
+  if(prossima && !semi && schedDraft.auto_open) h+=`<p class="vs" id="openNowHint" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${openNowHintText()}</p>`;
+  if(prossima)  h+=`<button class="set-btn" style="margin-top:10px" onclick="setNav('page-quando')">\u2699\ufe0f Metodo di apertura</button>`;
   if(key==='ok') h+=`<div class="mdc-note ok">\u2705 <b>Tutto in regola.</b> La giornata va avanti da sola: qui sotto trovi presenze, votanti e azioni avanzate.</div>`;
   if(key==='close') h+=`<p class="vs" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${closeMdHintText()}</p>`;
   h+=autoHealthHTML();   // in coda: e' contesto, non un'azione
@@ -10204,18 +10292,48 @@ function updateBudget(){
   btn.textContent=n===5?(captain?'Conferma formazione ✓':'👑 Scegli il capitano'):`Mancano ${5-n} giocatori`;
 }
 function avgFor(id){return averages[id]?averages[id].v:6;}
-function scoreOf(pid,slot,isCaptain,avgMap,statsMap,mvp){
+/* 4.7 — L'MVP NON RADDOPPIA PIU' IL VOTO: VALE +3 FISSO.
+   Prima capitano e MVP si moltiplicavano fra loro: sulla stessa persona il voto
+   valeva x4, cioe' piu' di otto gol. Una scelta sola decideva la giornata e i
+   gol contavano meno di chi aveva indovinato il capitano.
+   Adesso il capitano raddoppia il voto e l'MVP aggiunge 3 punti, come un gol.
+   Il +3 sta FUORI dal moltiplicatore: voto 8, capitano e MVP fa 8x2+3 = 19,
+   non (8+3)x2 = 22.
+   Le stagioni gia' archiviate prima del cambio tengono la regola vecchia:
+   l'elenco arriva dal database (get_scoring_rules), non e' scritto qui. */
+const MVP_BONUS = 3;
+/* Il valore di partenza e' la regola VECCHIA, non la nuova: se l'SQL di questa
+   versione non e' ancora stato eseguito, la classifica la calcola ancora il
+   database con il x2, e i due devono dire lo stesso numero. Appena
+   get_scoring_rules() risponde, comanda lei. */
+let scoringDefault = 'x2';
+let scoringRules   = {};               // season_id -> 'x2' (vecchia) | 'plus3' (nuova)
+function mvpRuleFor(seasonId){
+  const r = scoringRules[String(seasonId)];
+  return (r==='x2'||r==='plus3') ? r : scoringDefault;
+}
+async function loadScoringRules(){
+  try{
+    const {data,error}=await sb.rpc('get_scoring_rules');
+    if(error || !data) return;         // SQL non ancora eseguito: si resta alla vecchia
+    const m={}; (data||[]).forEach(r=>{ m[String(r.season_id)]=r.mvp_rule; });
+    scoringRules=m; scoringDefault='plus3';
+  }catch(_){ }
+}
+function scoreOf(pid,slot,isCaptain,avgMap,statsMap,mvp,seasonId){
   const st=statsMap[pid]||{gol:0,assist:0,og:0,gs:0,rs:0,rp:0,gi:0,esito:''},isPor=slot==='g1';
   const voto=avgMap[pid]?avgMap[pid].v:6;
-  const mult=(mvp===pid?2:1)*(isCaptain?2:1);   // capitano e MVP raddoppiano SOLO il voto
+  const isMvp=(mvp===pid), vecchia=(mvpRuleFor(seasonId)==='x2');
+  const mult=(isCaptain?2:1)*((vecchia&&isMvp)?2:1);   // il capitano raddoppia SOLO il voto
   let bonus=st.gol*3+st.assist*2-st.og*3-(st.rs||0)*3+(st.rp||0)*3-(st.gi||0)*0.5,gs=st.gs||0;
   if(st.esito==='V')bonus+=2; else if(st.esito==='S')bonus-=1;
   if(isPor)bonus+=(gs===0?3:-gs);
+  if(isMvp && !vecchia) bonus+=MVP_BONUS;              // +3 fuori dal moltiplicatore
   const s=voto*mult+bonus;
   return {score:s,voto,gol:st.gol,assist:st.assist,og:st.og,rs:st.rs||0,rp:st.rp||0,gi:st.gi||0,gs,isPor};
 }
 function computeScore(pid,slotKey,mvp){
-  return scoreOf(pid,slotKey,captain===slotKey,averages,adminStats,mvp);
+  return scoreOf(pid,slotKey,captain===slotKey,averages,adminStats,mvp,currentMd?currentMd.season_id:null);
 }
 // Icone evento sul campo: ⚽ gol · 👟 assist · 🅰️ autogol · 🚫 rigore sbagliato · 🙌 rigore parato · 🧤 imbattuto / 🔴 gol subiti (solo portiere)
 function statIcons(r){
@@ -10614,7 +10732,11 @@ function updateSubmitBtn(){
   const allowed=currentMd&&!votesLocked&&canIVote();
   b.style.display=allowed?'inline-flex':'none';
   const st=voteStatus();
-  b.disabled=!st.ok;
+  /* 4.6 — il pulsante NON si spegne piu'. Da spento non diceva niente: si
+     toccava, non succedeva nulla e non si capiva perche'. Ora il tocco arriva
+     a submitVotes(), che risponde dicendo cosa manca. */
+  b.disabled=false;
+  b.classList.toggle('notready',!st.ok);
   b.classList.toggle('dirty',voteDirty&&st.ok);
   const vr=document.getElementById('voteReq');
   if(vr){
@@ -10622,11 +10744,20 @@ function updateSubmitBtn(){
     else{
       const bits=[];
       if(st.missing.length) bits.push('manca il voto a <b>'+st.missing.slice(0,4).map(esc).join(', ')+(st.missing.length>4?` e altri ${st.missing.length-4}`:'')+'</b>');
-      if(st.needMvp) bits.push('scegli l\'<b>MVP</b> 🏆');
+      if(st.needMvp) bits.push('tocca la 🏆 accanto al giocatore da nominare <b>MVP</b>');
       vr.innerHTML='Per inviare: '+bits.join(' · ');
       vr.style.display='block';
     }
   }
+}
+/* 4.6 — quando manca l'MVP, le coppe si illuminano e la lista torna sulla prima:
+   il messaggio dice cosa fare, questo dice dove. */
+function askMvp(){
+  const stars=document.querySelectorAll('#voteList .mvpstar');
+  if(!stars.length) return;
+  stars.forEach(s=>{ s.classList.remove('ask'); void s.offsetWidth; s.classList.add('ask'); });
+  setTimeout(()=>stars.forEach(s=>s.classList.remove('ask')),2400);
+  try{ stars[0].scrollIntoView({block:'center',behavior:'smooth'}); }catch(_){ }
 }
 function onVote(id,val){
   if(votesLocked)return;
@@ -10644,7 +10775,7 @@ async function submitVotes(){
   const st=voteStatus();
   if(!st.ok){
     if(st.missing.length) toast('Vota tutti prima di inviare (manca: '+st.missing.slice(0,3).join(', ')+(st.missing.length>3?'…':'')+')');
-    else if(st.needMvp) toast('Scegli l\'MVP 🏆 prima di inviare');
+    else if(st.needMvp){ toast('Per inviare i voti serve l\'MVP: tocca la 🏆 accanto a un giocatore.'); askMvp(); }
     updateSubmitBtn();
     return;
   }
@@ -10860,11 +10991,11 @@ async function openTeamLineup(managerId, teamName){
   const bySlot={}; lns.forEach(r=>bySlot[r.slot]=r);
   const getp=(s)=>{ const r=bySlot[s.key]; if(!r)return null;
     const p=players.find(x=>x.id===r.player_id);
-    const sc=scoreOf(r.player_id,s.key,r.is_captain,avg,stats,mvp);
+    const sc=scoreOf(r.player_id,s.key,r.is_captain,avg,stats,mvp,mdObj?mdObj.season_id:null);
     return {p,sc,cap:!!r.is_captain,mvp:r.player_id===mvp}; };
   const mb=MODULES[mod]?MODULES[mod].bonus:0;
   let tot=mb;
-  lns.forEach(r=>{ tot+=scoreOf(r.player_id,r.slot,r.is_captain,avg,stats,mvp).score; });
+  lns.forEach(r=>{ tot+=scoreOf(r.player_id,r.slot,r.is_captain,avg,stats,mvp,mdObj?mdObj.season_id:null).score; });
   document.getElementById('tlpHint').innerHTML=`Modulo <b>${mod}</b> · Totale <b>${tot.toFixed(1)}</b> pt`;
   const order={a1:1,a2:2,a3:3,d1:4,d2:5,d3:6,g1:7};
   const rowsList=lns.slice().sort((x,y)=>(order[x.slot]||9)-(order[y.slot]||9)).map(r=>{
@@ -10980,21 +11111,68 @@ function toggleAcc(head){ const a=head.closest('.acc'); if(a)a.classList.toggle(
    che vivono dentro il contenuto (caroselli, scelta stagione, campo/punti). */
 const EDGE_ZONE=26, EDGE_MIN=64;
 let _edgeX=null,_edgeY=null;
-function edgeBackTarget(){
-  // 1) una pagina a schermo intero aperta ha la precedenza
-  const overlays=[['bmPage','.bch-back'],['teamLineupPage','.bch-back'],['bachecaPage','.bch-back'],['proPage','.bch-back']];
-  for(const [id,sel] of overlays){
-    const p=document.getElementById(id);
-    if(p && !p.classList.contains('hidden')){ const b=p.querySelector(sel); if(b) return b; }
+/* 4.6 — UN SOLO ELENCO DI PAGINE DA CHIUDERE.
+   Prima l'elenco stava scritto a mano e ne teneva quattro: foglio a comparsa,
+   pagellone, pannelli dal vivo (bonus/malus dell'admin, valutazione giocatori),
+   avviso notifiche e tutorial restavano fuori, e li' «indietro» non faceva
+   niente — o, dove il tasto e' di sistema, usciva dall'app.
+   L'ordine qui sotto e' quello di sovrapposizione (z-index): si chiude sempre
+   la cosa piu' in alto. Chi aggiunge una pagina nuova aggiunge una riga qui e
+   ha finito: pulsante, gesto e tasto di sistema la trovano tutti e tre. */
+const BACK_LAYERS=[
+  {id:'tut',            on:el=>el.classList.contains('on')&&!!TUT, close:()=>tutQuit()},          // 1200
+  {id:'pushModal',      on:el=>el.classList.contains('open'),    close:()=>closePushPrompt()},     //  611
+  {id:'sheet',          on:el=>el.classList.contains('open'),    close:()=>closeSheet()},          //  601
+  {id:'pag',            on:el=>el.classList.contains('open'),    close:()=>closeRecap()},          //  500
+  {id:'valuePoll',      on:el=>el.classList.contains('open'),    close:()=>closeValuePoll()},      //  120
+  {id:'liveStats',      on:el=>el.classList.contains('open'),    close:()=>closeLiveStats()},      //  120
+  {id:'proPage',        on:el=>!el.classList.contains('hidden'), close:()=>closePro()},            //   95
+  {id:'bachecaPage',    on:el=>!el.classList.contains('hidden'), close:()=>closeBacheca()},        //   90
+  {id:'teamLineupPage', on:el=>!el.classList.contains('hidden'), close:()=>closeTeamLineupPage()}, //   90
+  {id:'bmPage',         on:el=>!el.classList.contains('hidden'), close:()=>closeBonusMalus()}      //   90
+];
+/* Cosa fare per tornare indietro, oppure null se non c'e' niente da chiudere.
+   Non tocca niente: serve anche solo per sapere se c'e' o no. */
+function backAction(){
+  for(const L of BACK_LAYERS){
+    const el=document.getElementById(L.id);
+    let open=false;
+    try{ open = !!(el && L.on(el)); }catch(_){ open=false; }
+    if(open) return L.close;
   }
-  // 2) altrimenti la sotto-pagina delle Impostazioni, se non siamo gia' alla radice
+  // poi la sotto-pagina delle Impostazioni, se non siamo gia' alla radice
   const wrap=document.getElementById('v-settings');
   if(wrap && wrap.classList.contains('active')){
-    const cur=document.querySelector('.setpage.on');
-    if(cur && cur.id!=='setMenu'){ const b=cur.querySelector('.subback'); if(b) return b; }
+    const cur=document.querySelector('#v-settings .setpage.on');
+    if(cur && cur.id!=='setMenu'){ const b=cur.querySelector('.subback'); if(b) return ()=>b.click(); }
   }
   return null;
 }
+function goBack(){
+  const a=backAction();
+  if(!a) return false;
+  try{ a(); }catch(_){ }
+  return true;
+}
+/* Chi si prende «indietro»:
+   · iPhone con l'app sulla Home: non esistono ne' tasto ne' cronologia di
+     sistema, quindi resta lo swipe dal bordo qui sotto.
+   · tutto il resto (Android, iPhone dentro Safari, computer): un tasto indietro
+     vero c'e', quindi si usa la cronologia (blocco piu' sotto) e lo swipe
+     nostro si spegne — se restassero accesi tutti e due, un solo gesto
+     chiuderebbe due pagine in un colpo.
+   Prima la cronologia era esclusa su TUTTO iOS: in Safari il tasto indietro
+   usciva dall'app invece di chiudere la pagina aperta. */
+const FC_IOS=(function(){
+  try{
+    const ua=navigator.userAgent||'', pf=navigator.platform||'';
+    return /iPhone|iPad|iPod/.test(ua)||/iPhone|iPad|iPod/.test(pf)||(/Mac/.test(pf)&&(navigator.maxTouchPoints||0)>1);
+  }catch(_){ return false; }
+})();
+const FC_HISTORY_BACK=(function(){
+  try{ if(!window.history || typeof history.pushState!=='function') return false; }catch(_){ return false; }
+  try{ return !(FC_IOS && fcIsStandalone()); }catch(_){ return !FC_IOS; }
+})();
 document.addEventListener('touchstart',e=>{
   if(e.touches.length!==1){ _edgeX=null; return; }
   const t=e.touches[0];
@@ -11005,37 +11183,36 @@ document.addEventListener('touchend',e=>{
   if(_edgeX==null) return;
   const t=(e.changedTouches&&e.changedTouches[0]); const x0=_edgeX,y0=_edgeY; _edgeX=null;
   if(!t) return;
+  if(FC_HISTORY_BACK) return;                                // ci pensa il tasto di sistema
   const dx=t.clientX-x0, dy=t.clientY-y0;
   if(dx<EDGE_MIN || Math.abs(dy)>Math.abs(dx)*0.7) return;   // dev'essere orizzontale e deciso
-  const b=edgeBackTarget();
-  if(b){ try{ b.click(); }catch(_){ } }
+  goBack();
 },{passive:true});
+/* Se il dito viene interrotto (chiamata, notifica, gesto preso dal sistema) la
+   partenza va buttata: senza questo restava buona e il tocco dopo poteva
+   valere come «indietro». */
+document.addEventListener('touchcancel',()=>{ _edgeX=null; },{passive:true});
 
 /* INDIETRO SU ANDROID (sessione 68).
    Su Android il gesto dal bordo e il tasto indietro appartengono al SISTEMA: in
    una PWA senza cronologia chiudono l'app invece della pagina aperta, e lo swipe
    qui sopra non arriva nemmeno (il sistema si prende il gesto).
    Soluzione: finche' c'e' qualcosa da chiudere (le stesse pagine dello swipe,
-   edgeBackTarget) si tiene UNA voce di cronologia «sentinella». Il sistema la
+   backAction) si tiene UNA voce di cronologia «sentinella». Il sistema la
    consuma -> popstate -> si preme il nostro «‹ Indietro». Se la pagina si chiude
    col pulsante, la sentinella si ritira da sola, in silenzio.
    Se e' aperto il pannello di pagamento, «indietro» chiude quello e basta.
    SOLO fuori da iOS: su iPhone lo swipe e' gia' gestito sopra, e una cronologia
    attiverebbe anche quello di iOS, chiudendo la pagina due volte. */
 (function(){
-  let IOS=false;
-  try{
-    const ua=navigator.userAgent||'', pf=navigator.platform||'';
-    IOS=/iPhone|iPad|iPod/.test(ua)||/iPhone|iPad|iPod/.test(pf)||(/Mac/.test(pf)&&(navigator.maxTouchPoints||0)>1);
-  }catch(_){ }
-  if(IOS || !window.history || typeof history.pushState!=='function') return;
+  if(!FC_HISTORY_BACK) return;
   let silent=false, queued=false;
   const hasSentinel=()=>{ try{ return !!(history.state && history.state.fcBack); }catch(_){ return false; } };
   const lemonOpen=()=>!!document.querySelector('iframe[src*="lemonsqueezy.com"]');
   function sync(){
     queued=false;
     if(silent) return;
-    const t=edgeBackTarget();
+    const t=backAction();
     if(t && !hasSentinel()){
       try{ history.pushState({fcBack:1},''); }catch(_){ }
     }else if(!t && hasSentinel()){
@@ -11051,13 +11228,13 @@ document.addEventListener('touchend',e=>{
       try{ proRestoreScroll(); }catch(_){ }
       queue(); return;
     }
-    const b=edgeBackTarget();
-    if(b){ try{ b.click(); }catch(_){ } }
+    goBack();
     queue();
   });
   const mo=new MutationObserver(queue);
   function watch(){
-    ['proPage','bachecaPage','teamLineupPage','bmPage','v-settings'].forEach(id=>{
+    // le stesse pagine dell'elenco qui sopra, piu' la radice delle Impostazioni
+    BACK_LAYERS.map(L=>L.id).concat(['v-settings']).forEach(id=>{
       const el=document.getElementById(id);
       if(el) mo.observe(el,{attributes:true,attributeFilter:['class']});
     });
@@ -11261,9 +11438,129 @@ async function deletePlayer(id){
    «new row violates row-level security policy for table "matchdays"».
    Una stringa cosi' non dice a nessuno cosa fare — e soprattutto non dice che
    il problema si risolve solo segnalandolo. */
+/* ═══ 4.7 — QUANDO L'APP NON CE LA FA ═══════════════════════════════════════
+   Un limite del servizio sfondato (troppe persone collegate, database che
+   rifiuta, canale che non si aggancia) non e' un errore dell'utente e non va
+   raccontato come tale: va detto a lui in chiaro, e va scritto nel registro
+   che il super-admin legge in console. Cosi' si vede se comincia a succedere
+   spesso e si decide di pagare prima che qualcuno resti a piedi.
+   Vale per QUALSIASI limite, non solo per le connessioni: basta che l'errore
+   sia riconosciuto qui sotto. */
+const _incLast={};
+function fcIncident(kind, detail){
+  try{
+    const now=Date.now();
+    if(_incLast[kind] && now-_incLast[kind] < 5*60*1000) return;   // una ogni 5 min per tipo
+    _incLast[kind]=now;
+    if(!sb) return;
+    /* a prova di proiettile: se anche la segnalazione fallisce si tace. Non
+       deve mai peggiorare la situazione che sta segnalando. */
+    sb.rpc('log_incident',{p_kind:String(kind).slice(0,40),
+                           p_detail:String(detail||'').slice(0,300),
+                           p_version:APP_VERSION}).then(()=>{},()=>{});
+  }catch(_){ }
+}
+/* Riconosce gli errori che NON dipendono da chi li riceve. Torna il nome del
+   problema, oppure null se e' un errore normale. */
+function overloadKind(e){
+  const m=String((e&&e.message)||e||'');
+  const c=String((e&&e.code)||'');
+  /* supabase-js mette il codice dove capita: a volte in .status, a volte in
+     .code come stringa di tre cifre, a volte e' il codice di PostgreSQL. */
+  let s=Number((e&&e.status)||(e&&e.statusCode)||0);
+  if(!s && /^[1-5][0-9][0-9]$/.test(c)) s=Number(c);
+  if(c==='53300' || c==='53400' ||
+     /too many (connections|clients)|remaining connection slots/i.test(m))   return 'connessioni_finite';
+  if(c==='57014' || /statement timeout|canceling statement/i.test(m))        return 'database_lento';
+  if(s===429 || /rate ?limit|too many requests/i.test(m))                    return 'troppe_richieste';
+  if(s===413 || /over the (egress|bandwidth)|quota exceeded|payload too large/i.test(m)) return 'quota_superata';
+  if(s>=500 && s<=599)                                                       return 'servizio_ko';
+  if(/service unavailable|bad gateway|gateway timeout/i.test(m))             return 'servizio_ko';
+  return null;
+}
+const OVERLOAD_TXT={
+  troppe_richieste:   'Troppe richieste in questo momento. Aspetta qualche secondo e riprova.',
+  connessioni_finite: 'I server sono al completo in questo momento. Riprova fra qualche minuto: non hai perso niente.',
+  database_lento:     'Il database sta impiegando troppo. Riprova fra poco: non hai perso niente.',
+  quota_superata:     'Il servizio ha raggiunto un limite mensile. Lo stiamo gia\u2019 vedendo: riprova piu\u2019 tardi.',
+  servizio_ko:        'Il servizio non risponde in questo momento. Riprova fra qualche minuto: non hai perso niente.',
+  realtime_ko:        'Gli aggiornamenti dal vivo sono sospesi: i voti degli altri compaiono riaprendo la pagina.'
+};
+let _busyBarT=null;
+function busyBar(on, txt){
+  const b=document.getElementById('busyBar'); if(!b) return;
+  if(_busyBarT){ clearTimeout(_busyBarT); _busyBarT=null; }
+  if(!on){ b.style.display='none'; return; }
+  b.textContent='\u23f3 '+(txt||'Servizio sovraccarico \u2014 qualche operazione pu\u00f2 non riuscire');
+  b.style.display='flex';
+  _busyBarT=setTimeout(()=>{ b.style.display='none'; _busyBarT=null; }, 90000);
+}
+/* Un solo punto per: segnalare, avvisare, mostrare la barra. */
+function fcOverload(kind, detail){
+  fcIncident(kind, detail);
+  busyBar(true, OVERLOAD_TXT[kind]||null);
+  return OVERLOAD_TXT[kind]||OVERLOAD_TXT.servizio_ko;
+}
+/* ═══ MURO IN INGRESSO ══════════════════════════════════════════════════════
+   Se siamo gia' al tetto, il modo peggiore di dirlo e' farlo entrare e poi
+   lasciarlo davanti a pulsanti che non rispondono. Meglio fermarlo qui, con
+   una frase che spiega, e farlo riprovare. Il super-admin entra sempre. */
+let _busyOn=false, _busyT=null;
+function showBusy(h, sub){
+  if(_busyOn) return; _busyOn=true;
+  hideSplash();
+  const o=document.getElementById('busy'); if(!o) return;
+  if(h)   { const e=document.getElementById('busyH');   if(e) e.textContent=h; }
+  if(sub) { const e=document.getElementById('busySub'); if(e) e.innerHTML=sub; }
+  o.style.display='flex';
+  requestAnimationFrame(()=>o.classList.add('on'));
+  if(_busyT) clearInterval(_busyT);
+  _busyT=setInterval(()=>{ if(!document.hidden) retryBusy(true); }, 30000);  // riprova da sola
+}
+function hideBusy(){
+  if(!_busyOn) return; _busyOn=false;
+  if(_busyT){ clearInterval(_busyT); _busyT=null; }
+  const o=document.getElementById('busy'); if(!o) return;
+  o.classList.remove('on');
+  setTimeout(()=>{ if(!_busyOn) o.style.display='none'; }, 400);
+}
+async function retryBusy(silent){
+  const st=document.getElementById('busyStatus'), b=document.getElementById('busyBtn');
+  if(!silent){ if(b){ b.disabled=true; b.textContent='Controllo\u2026'; } if(st) st.textContent=''; }
+  const c=await capacityCheck();
+  if(!silent && b){ b.disabled=false; b.textContent='Riprova'; }
+  if(c.pieno){ if(st) st.textContent='Ancora al completo. Riprovo da solo fra poco.'; return; }
+  hideBusy();
+  try{ location.reload(); }catch(_){ }
+}
+/* Chiede al database quanti siamo dentro adesso e qual e' il tetto. Se la
+   funzione non c'e' ancora (SQL non eseguito) si fa finta di niente: mai
+   bloccare l'app per un controllo che non risponde. */
+async function capacityCheck(){
+  try{
+    const {data,error}=await sb.rpc('capacity_status');
+    if(error || !data || !data[0]) return {pieno:false};
+    const r=data[0];
+    return {pieno:!!r.pieno, dentro:r.dentro, tetto:r.tetto, motivo:r.motivo};
+  }catch(_){ return {pieno:false}; }
+}
+async function capacityGate(){
+  if(isSuperAdmin()) return false;                 // il super-admin entra sempre
+  const c=await capacityCheck();
+  if(!c.pieno) return false;
+  fcIncident('ingresso_bloccato','dentro '+c.dentro+' su '+c.tetto);
+  showBusy(c.motivo ? 'Servizio al completo' : 'Server al completo',
+           (c.motivo ? esc(c.motivo) : 'In questo momento ci sono troppe persone collegate.')
+           +'<br>Riprova fra qualche minuto: appena si libera un posto entri.');
+  return true;
+}
 function errText(e){
   const m=String((e&&e.message)||e||'');
   const c=String((e&&e.code)||'');
+  /* 4.7 — prima di tutto: e' un limite del servizio? Allora non si scrive un
+     messaggio tecnico, si segnala e si dice che non e' colpa sua. */
+  const ov=overloadKind(e);
+  if(ov) return fcOverload(ov, m);
   /* Cancellazione account e passaggio di lega: il database alza errori con un
      codice stabile, il testo tecnico non va mostrato a nessuno. */
   if(c==='FC020' || /must_transfer_ownership/i.test(m))
