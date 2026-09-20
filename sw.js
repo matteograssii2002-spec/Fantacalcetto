@@ -10,8 +10,26 @@
      La copia si usa SOLO quando la rete fallisce: la regola dell'HTML fresca
      non cambia.
 */
-const SW_VERSION = '2026-09-18-v40';   // cambia questa stringa a OGNI deploy
+const SW_VERSION = '2026-09-18-v41';   // cambia questa stringa a OGNI deploy
 const CACHE      = 'fc-shell-' + SW_VERSION;
+
+/* IMMAGINI DI AVATAR E LOGHI — cache a parte, che sopravvive ai deploy.
+   Arrivano dallo Storage di Supabase, che le serve con un'ora di validita': ogni
+   dispositivo se le riscaricava tutte una volta all'ora di utilizzo. Sono ~1,2 MB
+   di avatar e altrettanti di loghi, e ogni byte scaricato pesa sul traffico
+   mensile del piano — è la voce che consuma di più, di gran lunga.
+   L'indirizzo di ogni file porta gia' in coda ?v=<data di modifica>: cambia solo
+   se il file cambia davvero. Quindi la copia si puo' tenere per sempre e servire
+   senza nemmeno chiedere alla rete. Quando un avatar viene sostituito cambia
+   l'indirizzo, e la copia nuova si scarica da sola.
+   Il nome della cache NON contiene SW_VERSION di proposito: un deploy dell'app
+   non deve buttare via immagini ancora buone. */
+const MEDIA      = 'fc-media-v1';
+const MEDIA_MAX  = 160;   // oltre questo numero di file si riparte puliti
+function isMedia(url){
+  return /\/storage\/v1\/object\/public\/(avatars|loghi)\//.test(url.pathname)
+      && /\.(png|jpe?g|webp|gif|svg)$/i.test(url.pathname);
+}
 
 /* Il minimo per far partire l'app senza rete. La libreria di Supabase sta in un
    CDN: senza di lei lo script muore prima di poter mostrare qualunque cosa. */
@@ -56,6 +74,12 @@ self.addEventListener('activate', e => {
   e.waitUntil((async () => {
     const nomi = await caches.keys();
     await Promise.all(nomi.map(n => (n.startsWith('fc-shell-') && n !== CACHE) ? caches.delete(n) : null));
+    // potatura: le versioni vecchie degli avatar restano li' per sempre, altrimenti
+    try{
+      const mc = await caches.open(MEDIA);
+      const keys = await mc.keys();
+      if (keys.length > MEDIA_MAX) await Promise.all(keys.map(k => mc.delete(k)));
+    }catch(_){ }
     await self.clients.claim();
   })());
 });
@@ -110,6 +134,21 @@ self.addEventListener('fetch', event => {
         if (any) return any;
         return new Response(OFFLINE_HTML, { headers:{ 'Content-Type':'text/html; charset=utf-8' } });
       }
+    })());
+    return;
+  }
+
+  // Avatar e loghi: prima la copia locale, e se non c'e' si scarica una volta sola.
+  if (isMedia(url)) {
+    event.respondWith((async () => {
+      try{
+        const cache = await caches.open(MEDIA);
+        const hit = await cache.match(req);
+        if (hit) return hit;
+        const res = await fetch(req);
+        if (res && res.ok) { try{ await cache.put(req, res.clone()); }catch(_){ } }
+        return res;
+      }catch(_){ return fetch(req); }
     })());
     return;
   }
