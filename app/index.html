@@ -3069,9 +3069,10 @@
   <!-- STEP 0 · come vuoi giocare -->
   <div class="obstep on" id="obStepMode">
     <h1>Come vuoi giocare?</h1>
-    <div class="ed-sw" id="obMode" style="gap:10px;margin-bottom:6px">
-      <button class="styb" data-m="campo" style="flex:1;padding:14px">🏃 Gioco anche in campo</button>
-      <button class="styb" data-m="manager" style="flex:1;padding:14px">👔 Solo allenatore</button>
+    <div class="ed-sw" id="obMode" style="flex-direction:column;gap:10px;margin-bottom:6px">
+      <button class="styb" data-m="campo" style="width:100%;padding:14px">⚽ Giocatore e allenatore</button>
+      <button class="styb" data-m="manager" style="width:100%;padding:14px">👔 Solo allenatore</button>
+      <button class="styb" data-m="player" style="width:100%;padding:14px">🏃 Solo giocatore</button>
     </div>
     <p class="vs" id="obModeHint" style="color:var(--muted);margin:0 2px 14px;font-size:12.5px">Scegli un'opzione, poi premi Avanti.</p>
     <div class="gate-status" id="obStatusMode"></div>
@@ -3430,7 +3431,14 @@
           <span class="ph-player" id="phPlayer">—</span>
         </div>
       </div>
-      <div class="set-card"><h3 data-ic="🛡️">Nome squadra</h3><input class="ob-input" id="setNameInput" maxlength="24" autocomplete="off"></div>
+      <div class="set-card" id="setTeamCard"><h3 data-ic="🛡️">Nome squadra</h3><input class="ob-input" id="setNameInput" maxlength="24" autocomplete="off"></div>
+      <!-- 5.1 — chi è entrato come «solo giocatore» non ha una squadra. Qui,
+           quando gli viene voglia, se la crea senza rifare l'account. -->
+      <div class="set-card" id="noTeamCard" style="display:none"><h3 data-ic="🛡️">La tua squadra</h3>
+        <p class="vs" style="color:var(--muted);font-size:12.5px;line-height:1.5;margin:0 0 10px">Sei entrato come solo giocatore: hai il tuo personaggio e le tue statistiche, ma non una squadra da schierare. Creandola entri anche in classifica, dalla prossima giornata.</p>
+        <input class="ob-input" id="newTeamInput" maxlength="24" autocomplete="off" placeholder="Nome della squadra">
+        <button class="set-btn" style="margin-top:10px" onclick="createMyTeam()">🛡️ Crea la mia squadra</button>
+      </div>
       <div class="set-card"><h3 data-ic="✍️" id="setPlayerCardLab">Nome personaggio</h3><input class="ob-input" id="setPlayerInput" maxlength="16" autocomplete="off"></div>
       <div class="set-card" id="setAvatarCard"><h3 data-ic="🧍">Avatar</h3>
         <button type="button" class="disc-head" id="avDiscHead" onclick="toggleDisc('av')">
@@ -3966,7 +3974,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='5.0';
+const APP_VERSION='5.1';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -4040,6 +4048,7 @@ function presGateReason(){
 }
 /* messaggio del perché le formazioni sono bloccate */
 function lineupBlockReason(){
+  if(!amManager()) return 'Non hai una squadra: puoi guardare, non schierare';
   if(!currentMd) return 'Nessuna giornata aperta';
   if(currentMd.status==='closed') return 'Giornata conclusa';
   if(presencePollOpen()) return 'Sondaggio presenze in corso';
@@ -5823,6 +5832,12 @@ function heroState(){
   if(typeof creditMode!=='undefined' && creditMode==='poll' && valuePollOpen && !valuePollVoted)
     return {ttl:'Quanto <span class="hot">valgono?</span>', cta:'Valuta i giocatori \u2192',
             fn:'openValuePoll()', note:'I tuoi voti decidono quanto costa ognuno in crediti.'};
+
+  /* 5.1 — solo giocatore: durante formazioni e partita non ha niente da
+     schierare, quindi la Home lo manda dove per lui c'è qualcosa da vedere. */
+  if(!amManager() && md && (ph===2||ph===3))
+    return {ttl:'Si gioca \u2014 <span class="hot">tu ci sei</span>', cta:'Vedi i giocatori \u2192',
+            fn:"go('mercato')", note:'Non hai una squadra da schierare: qui trovi valori e statistiche di tutti.'};
 
   if(md && ph===1){
     // solo a chi il sondaggio riguarda davvero: ha risposto «ci sono» ed e' un giocatore
@@ -8095,12 +8110,21 @@ async function confirmEditKickoff(){
   await loadMatchdaysList(); renderAll();
   toast('Orario aggiornato 🕑');
 }
+/* ---------- 5.1 · CHI HA UNA SQUADRA E CHI NO ----------
+   `is_manager=false` è chi è entrato come «solo giocatore». Vede tutta l'app
+   come gli altri — listone, statistiche, voti, presenze, bacheca — ma non ha
+   una rosa da schierare, quindi il campo per lui è in sola lettura e in
+   classifica non compare. Il valore di riserva è `true`: se l'SQL non fosse
+   ancora stato eseguito, la colonna non esiste, e tutti restano allenatori
+   esattamente come prima. */
+function amManager(){ return !(profile && profile.is_manager===false); }
 function computeLock(){
   const t=mdTimes(currentMd), now=Date.now(), closed=!!(currentMd&&currentMd.status==='closed');
   const presPhase = presenceSelf && !!t && t.presenceClose!=null && now<t.presenceClose && !closed;  // modalità giocatori: formazioni bloccate finché il sondaggio presenze è aperto
   lineupLocked = !currentMd || closed || presPhase || (!!t && t.lineupLock!==Infinity && now>=t.lineupLock)
               || !!presGateReason();
   votesLocked  = !currentMd || closed || !t || (!!t.voteOpen && now<t.voteOpen) || (now>t.voteClose);
+  if(!amManager()) lineupLocked = true;   // solo giocatore: il campo è da guardare, non da schierare
 }
 function statsOpen(){
   // L'admin puo' inserire bonus/malus solo da quando si aprono i voti (kickoff + 1h) in poi.
@@ -8581,11 +8605,14 @@ function obErr(boxId,msg,fieldId){
   if(fieldId){ const f=document.getElementById(fieldId); if(f){ f.classList.add('bad'); try{f.focus();}catch(_){} } }
 }
 function obNextFromChar(){
-  const isCampo=playMode==='campo';
+  const isCampo=(playMode==='campo'||playMode==='player');
   const pname=document.getElementById('playerInput').value.trim();
   if(isCampo&&!obAvatar){obErr('obStatusChar','Scegli un avatar per il tuo personaggio.');return;}
   if(!pname){obErr('obStatusChar',isCampo?'Inserisci il nome del personaggio.':'Inserisci il tuo nome.','playerInput');return;}
   obClearErr();
+  /* 5.1 — «solo giocatore» non ha una squadra da chiamare: il passo del nome
+     squadra e del logo non esiste, e da qui si crea direttamente il profilo. */
+  if(playMode==='player'){ obCreate(document.getElementById('obNextChar')); return; }
   obGo(2);
 }
 document.querySelectorAll('#obRole button').forEach(b=>b.onclick=()=>{myRole=b.dataset.r;document.querySelectorAll('#obRole button').forEach(x=>x.classList.toggle('on',x===b));});
@@ -8593,31 +8620,42 @@ let playMode=null;
 document.querySelectorAll('#obMode button').forEach(b=>b.onclick=()=>{
   playMode=b.dataset.m;
   document.querySelectorAll('#obMode button').forEach(x=>x.classList.toggle('on',x===b));
-  const isCampo=playMode==='campo';
+  /* 5.1 — tre modi di stare in una lega:
+       campo   = gioca e allena (com'è sempre stato)
+       manager = solo allenatore: squadra sì, personaggio no
+       player  = solo giocatore: personaggio sì, squadra no — niente classifica */
+  const isCampo=(playMode==='campo'||playMode==='player');   // ha un personaggio nel listone
   document.getElementById('obAvatarWrap').style.display=isCampo?'block':'none';
   document.getElementById('obRoleRow').style.display=isCampo?'block':'none';
   document.getElementById('obCharTitle').textContent=isCampo?'Il tuo personaggio':'Il tuo nome';
   document.getElementById('obPlayerLab').textContent=isCampo?'Nome del personaggio':'Il tuo nome';
   document.getElementById('playerInput').placeholder=isCampo?'Es. Bomber Cris':'Es. Giulio';
-  document.getElementById('obModeHint').textContent=isCampo?'Sarai nel listone e gli altri potranno schierarti.':'Avrai una squadra da allenare, senza essere schierabile in campo.';
+  document.getElementById('obModeHint').textContent =
+      playMode==='player'  ? 'Sarai nel listone e gli altri ti schiereranno. Niente squadra da allenare: ti restano le tue statistiche, i voti e la presenza.'
+    : playMode==='manager' ? 'Avrai una squadra da allenare, senza essere schierabile in campo.'
+    :                        'Hai un personaggio nel listone e una squadra da schierare.';
+  { const nb=document.getElementById('obNextChar');
+    if(nb) nb.textContent = playMode==='player' ? 'Crea il profilo \u2192' : 'Avanti \u2192'; }
   obClearErr();
   // NON avanza in automatico: l'utente sceglie con calma e poi preme "Avanti"
 });
 function obNextFromMode(){
-  if(!playMode){ obErr('obStatusMode','Scegli come vuoi giocare: in campo oppure solo allenatore.'); return; }
+  if(!playMode){ obErr('obStatusMode','Scegli come vuoi stare nella lega: giocatore e allenatore, solo allenatore oppure solo giocatore.'); return; }
   obClearErr();
   obGo(1);
 }
-document.getElementById('obBtn').onclick=async function(){
-  const btn=this;
-  if(!playMode){obErr('obStatusMode','Scegli prima come vuoi giocare.'); obGo(0); return;}
+document.getElementById('obBtn').onclick=function(){ obCreate(this); };
+async function obCreate(btn){
+  if(!btn) btn=document.getElementById('obBtn');
+  if(!playMode){obErr('obStatusMode','Scegli prima come vuoi stare nella lega.'); obGo(0); return;}
   if(!pendingLeague){ toast('Scegli prima una lega'); showLeague(); return; }
-  const isCampo=playMode==='campo';
-  const team=document.getElementById('teamInput').value.trim();
+  const soloPlayer=(playMode==='player');
+  const isCampo=(playMode==='campo'||soloPlayer);
+  const team=soloPlayer?'':document.getElementById('teamInput').value.trim();
   const pname=document.getElementById('playerInput').value.trim();
   if(isCampo&&!obAvatar){obErr('obStatusChar','Scegli un avatar per il tuo personaggio.'); obGo(1); return;}
   if(!pname){obErr('obStatusChar',isCampo?'Inserisci il nome del personaggio.':'Inserisci il tuo nome.','playerInput'); obGo(1); return;}
-  if(!team){obErr('obStatusTeam','Inserisci il nome della squadra.','teamInput');return;}
+  if(!soloPlayer && !team){obErr('obStatusTeam','Inserisci il nome della squadra.','teamInput');return;}
   obClearErr();
   const _label=btn.textContent;
   btn.disabled=true; btn.textContent='Creazione…';
@@ -8626,10 +8664,19 @@ document.getElementById('obBtn').onclick=async function(){
     //    l'aveva già creato (retry dopo un intoppo), non richiamiamo onboard_join.
     let prof = await loadProfile();
     if(!prof){
-      const {error:e1}=await withTimeout(sb.rpc('onboard_join',{
-        p_league:pendingLeague.id, p_password:pendingLeague.password,
-        p_team:team, p_player:pname, p_role:myRole, p_avatar:isCampo?obAvatar:'', p_is_player:isCampo
-      }), 15000, 'onboard_join');
+      /* 5.1 — «solo giocatore» passa da onboard_solo_player, che chiama
+         onboard_join e poi mette is_manager=false. Se quell'SQL non fosse
+         ancora stato eseguito la chiamata fallisce e lo diciamo chiaramente,
+         invece di creare un profilo a metà. */
+      const {error:e1}= soloPlayer
+        ? await withTimeout(sb.rpc('onboard_solo_player',{
+            p_league:pendingLeague.id, p_password:pendingLeague.password,
+            p_player:pname, p_role:myRole, p_avatar:obAvatar
+          }), 15000, 'onboard_solo_player')
+        : await withTimeout(sb.rpc('onboard_join',{
+            p_league:pendingLeague.id, p_password:pendingLeague.password,
+            p_team:team, p_player:pname, p_role:myRole, p_avatar:isCampo?obAvatar:'', p_is_player:isCampo
+          }), 15000, 'onboard_join');
       if(e1){
         const m=e1.message||'';
         const _cd=String(e1.code||'')+' '+String(e1.details||'')+' '+String(e1.hint||'');
@@ -8642,10 +8689,13 @@ document.getElementById('obBtn').onclick=async function(){
           try{ await sb.rpc('log_join_attempt',{p_league:pendingLeague.id,p_name:pname}); }catch(_){ }
           return;
         }
-        if(m.includes('team_taken')) obErr('obStatusTeam','Questo nome squadra è già in uso in questa lega.','teamInput');
+        const _box = soloPlayer ? 'obStatusChar' : 'obStatusTeam';
+        if(/onboard_solo_player|PGRST202|schema cache/i.test(m+' '+_cd))
+          obErr('obStatusChar','La modalit\u00e0 «solo giocatore» non \u00e8 ancora attiva su questa lega. Scegli un\u2019altra opzione o avvisa l\u2019amministratore.');
+        else if(m.includes('team_taken')) obErr(_box, soloPlayer?'Prova a cambiare il nome del personaggio.':'Questo nome squadra \u00e8 gi\u00e0 in uso in questa lega.', soloPlayer?'playerInput':'teamInput');
         else if(m.includes('player_taken')){ obErr('obStatusChar','Questo nome giocatore è già in uso in questa lega.','playerInput'); obGo(1); }
         else if(m.includes('password')){ toast('Password della lega errata'); showLeague(); }
-        else obErr('obStatusTeam','Errore profilo: '+m);
+        else obErr(_box,'Errore profilo: '+m);
         return;   // il finally riabilita il pulsante
       }
       prof = await loadProfile();
@@ -8670,7 +8720,7 @@ document.getElementById('obBtn').onclick=async function(){
   }finally{
     btn.disabled=false; btn.textContent=_label;   // il pulsante non resta MAI bloccato
   }
-};
+}
 
 /* ---------- NAV / RENDER ---------- */
 const _tabY={};
@@ -11549,9 +11599,15 @@ function openSettings(){
   setLogoDraft=profile.logo||null;
   const isPlayer=profile.is_player!==false;
   document.getElementById('setTeamName').textContent=profile.team_name;
-  document.getElementById('setPlayerName').textContent=(isPlayer?'Giocatore: ':'Allenatore · ')+profile.player_name;
+  document.getElementById('setPlayerName').textContent=(!amManager()?'Giocatore \u00b7 ':(isPlayer?'Giocatore: ':'Allenatore \u00b7 '))+profile.player_name;
   document.getElementById('setPlayerCardLab').textContent=isPlayer?'Nome personaggio':'Il tuo nome';
   document.getElementById('setAvatarCard').style.display=isPlayer?'block':'none';
+  { /* 5.1 — senza squadra: via il nome squadra e il logo, dentro il riquadro per crearla */
+    const mgr=amManager();
+    const tc=document.getElementById('setTeamCard');  if(tc) tc.style.display=mgr?'':'none';
+    const lc=document.getElementById('setLogoCard');  if(lc) lc.style.display=(mgr&&isPlayer)?'':'none';
+    const nt=document.getElementById('noTeamCard');   if(nt) nt.style.display=mgr?'none':'';
+  }
   document.getElementById('setNameInput').value=profile.team_name;
   document.getElementById('setPlayerInput').value=profile.player_name;
   document.getElementById('setPreview').innerHTML=isPlayer?avatarImg(profile.avatar,50):(profile.logo?logoImg(profile.logo,56):'<span class="prof-emo">👔</span>');
@@ -11617,6 +11673,26 @@ document.getElementById('setSaveBtn').onclick=async function(){
   profile=await loadProfile(); await loadTeamLogos(); await loadPlayers(); await loadStandings();
   applyProfile(); renderAll(); openSettings(); toast('Modifiche salvate');
 };
+/* 5.1 — da «solo giocatore» a giocatore + allenatore, senza rifare l'account:
+   il profilo è lo stesso, cambia solo il nome squadra e il flag. Le giornate
+   già chiuse restano senza di lui in classifica: non aveva una squadra. */
+async function createMyTeam(){
+  const el=document.getElementById('newTeamInput');
+  const nome=(el&&el.value||'').trim();
+  if(!nome){ toast('Scrivi il nome della squadra'); if(el) el.focus(); return; }
+  if(!confirm('Creare la squadra «'+nome+'»?\n\nDalla prossima giornata schieri la formazione ed entri in classifica.')) return;
+  const {error}=await sb.rpc('create_my_team',{p_team:nome});
+  if(error){
+    const m=String(error.message||'');
+    if(m.includes('team_taken')) toast('Questo nome squadra è già in uso nella lega');
+    else if(/create_my_team|PGRST202|schema cache/i.test(m)) toast('Funzione non ancora attiva: avvisa l\u2019amministratore');
+    else toast(errText(error));
+    return;
+  }
+  profile=await loadProfile();
+  await loadStandings(); applyProfile(); renderAll(); openSettings();
+  toast('Squadra creata \u2713 Ora puoi schierare');
+}
 document.getElementById('logoutBtn').onclick=async()=>{
   if(!confirm('Vuoi uscire dall\'account?\n\nPer rientrare ti serviranno la tua email e la tua password. Se non ricordi la password puoi reimpostarla dalla schermata di accesso.')) return;
   await sb.auth.signOut(); location.reload();
