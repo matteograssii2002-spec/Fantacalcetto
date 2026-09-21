@@ -54,9 +54,11 @@
 <style>
   :root{--bg:#0a1626;--bg2:#0e1d34;--surface:#15294b;--surface2:#1f3a6c;--line:rgba(150,185,240,.07);--line-strong:rgba(150,185,240,.15);
     --text:#eef4fd;--muted:#9bb2d6;--accent:#3f97ff;--accent-soft:#7ec2ff;--accent-deep:#1c6ff2;--gold:#ffc23d;--gold-soft:#ffd470;--green:#2fd98a;--red:#ff5d6b;--neutral:#e8eef9;--maxw:460px;
-    /* colore della parola "Calcetto" nel logotipo: allineato all'argento dello stemma.
-       Se un giorno lo si rivuole azzurro basta rimettere var(--accent-soft) qui. */
-    --brand-mark:#dbe5f6;
+    /* Colore della parola "Calcetto" nel logotipo. Era un argento azzurrato
+       (#dbe5f6): sugli schermi AMOLED dei Samsung, che saturano, si legge
+       azzurro e non bianco. Ora e' bianco puro ovunque.
+       Se un giorno lo si rivuole azzurro basta rimettere var(--accent-soft). */
+    --brand-mark:#ffffff;
     --shadow-card:0 12px 34px -24px rgba(0,8,24,.9);--shadow-pop:0 18px 44px -22px rgba(0,8,24,.85)}
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -3175,10 +3177,10 @@
   <!-- STEP 2 · Presenze -->
   <div class="obstep" id="suStep2">
     <h1>🙋 Presenze</h1>
-    <p style="color:var(--muted);font-size:13.5px;margin:0 2px 16px;line-height:1.5">Chi segna chi c'è a ogni partita.</p>
+    <p style="color:var(--muted);font-size:13.5px;margin:0 2px 16px;line-height:1.5">Chi segna le presenze di ogni giornata.</p>
     <div class="ed-sw" id="suPres">
-      <button class="styb" data-v="admin" onclick="suSet('pres','admin')">Admin</button>
-      <button class="styb" data-v="players" onclick="suSet('pres','players')">Giocatori</button>
+      <button class="styb" data-v="admin" onclick="suSet('pres','admin')">Le segno io</button>
+      <button class="styb" data-v="players" onclick="suSet('pres','players')">Le segnano i giocatori</button>
     </div>
     <p class="rule-hint" id="suPresHint"></p>
     <div class="ob-navrow">
@@ -3333,14 +3335,15 @@
   <section class="view" id="v-voti">
     <div class="section-h"><h2>Voti</h2></div>
     <div class="countdown"><div class="cl" id="cdLabel">Giornata</div><div class="ct" id="cdTime">—</div></div>
+    <!-- 4.9 — i numeri della partita servono PRIMA di votare, non dopo: la riga
+         stava in fondo alla pagina, sotto ai voti, e chi votava non la vedeva. -->
+    <button class="navrow t-blue" id="bmOpenBtn" onclick="openBonusMalus()" style="margin:0 0 14px"><span class="ic">📋</span><span class="lab">Guarda com’è andata la partita<small>Gol, assist, gol subiti e cartellini di ogni giocatore: vota sui numeri, non a memoria.</small></span><span class="go">›</span></button>
     <div class="vcard">
       <div class="vcard-h"><h3>Vota i giocatori</h3><button class="vsend" id="submitVotesBtn" onclick="submitVotes()" style="display:none">Invia voti</button></div>
       <p class="vs">Vota da 1 a 10 ogni giocatore. Tocca la 🏆 per l'<b>MVP</b>, poi <b>Invia voti</b> per salvare.</p>
       <div id="voteList"></div>
       <div class="vote-req" id="voteReq" style="display:none"></div>
     </div>
-    <button class="set-btn" id="bmOpenBtn" onclick="openBonusMalus()" style="margin-top:12px">📋 Bonus e malus della giornata</button>
-    <div class="vs" style="color:var(--muted);margin-top:7px;font-size:12.5px">Gol, assist, gol subiti e cartellini di ogni giocatore, per votare sui numeri e non a memoria.</div>
     <div class="admin-card" id="adminCard" style="display:none">
       <span class="admin-badge">🔒 Solo amministratore</span>
       <h3 style="font-family:'Bricolage Grotesque';font-size:15px;margin-bottom:4px">Bonus / Malus partita</h3>
@@ -3540,7 +3543,7 @@
            che le mostra o nasconde per ruolo e fase continua a funzionare. -->
       <div class="set-sec gold" id="mdMoreSec"><span class="ic">📋</span>Gestisci la giornata</div>
       <button class="navrow gold" id="presCard" onclick="setNav('page-md-pres')"><span class="ic">🟢</span><span class="lab"><span id="presTitle">Presenze</span><small id="presSub">—</small></span><span class="go">›</span></button>
-      <button class="navrow gold" id="voteCard" style="display:none" onclick="setNav('page-md-voti')"><span class="ic">🗳️</span><span class="lab">Chi può votare<small id="voteSub">Chi c’è ma non gioca</small></span><span class="go">›</span></button>
+      <button class="navrow gold" id="voteCard" style="display:none" onclick="setNav('page-md-voti')"><span class="ic">🗳️</span><span class="lab">Chi può votare<small id="voteSub">Chi è presente ma non gioca</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="mdFasiCard" onclick="setNav('page-md-fasi')"><span class="ic">🧭</span><span class="lab">Come procede<small id="fasiSub">Le tappe della giornata</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="mdAdvCard" onclick="setNav('page-md-azioni')"><span class="ic">🛠️</span><span class="lab">Azioni avanzate<small id="advSub">Orario, chiusura, annullamento</small></span><span class="go">›</span></button>
     </div>
@@ -3558,7 +3561,7 @@
     <div class="setpage" id="page-md-apri">
       <button class="subback" onclick="setNav('page-giornata')">‹ Centro giornata</button>
       <div class="section-h"><h2 id="semiTitle">Programma la giornata</h2></div>
-      <p class="setintro">Scegli quando si gioca e chi c’è. Da lì in poi fa tutto l’app.</p>
+      <p class="setintro">Scegli quando si gioca e chi è presente. Da lì in poi fa tutto l’app.</p>
       <div class="set-card"><div id="semiOpenBox"></div></div>
     </div>
 
@@ -3574,7 +3577,7 @@
     <div class="setpage" id="page-md-voti">
       <button class="subback" onclick="setNav('page-giornata')">‹ Centro giornata</button>
       <div class="section-h"><h2>Chi può votare</h2></div>
-      <p class="setintro">Chi gioca e chi amministra vota già. Aggiungi chi c’è ma non scende in campo: vale solo per questa giornata.</p>
+      <p class="setintro">Chi gioca e chi amministra vota già. Aggiungi chi è presente ma non scende in campo: vale solo per questa giornata.</p>
       <div class="set-card" id="voterPageCard"><div id="voterList"></div></div>
     </div>
 
@@ -3626,13 +3629,13 @@
     <div class="setpage" id="page-presenze">
       <button class="subback" onclick="setNav('page-regole')">‹ Regole della lega</button>
       <div class="section-h"><h2>Presenze</h2></div>
-      <p class="setintro">Chi segna i presenti di ogni giornata.</p>
+      <p class="setintro">Chi segna le presenze di ogni giornata.</p>
       <div class="set-card">
         <div class="ed-sw" id="presModeSw" style="margin:2px 0 8px">
-          <button class="styb" data-self="0" onclick="setPresenceMode(false)">🙋 Admin</button>
-          <button class="styb" data-self="1" onclick="setPresenceMode(true)">👥 Giocatori</button>
+          <button class="styb" data-self="0" onclick="setPresenceMode(false)">✍️ Le segno io</button>
+          <button class="styb" data-self="1" onclick="setPresenceMode(true)">👥 Le segnano i giocatori</button>
         </div>
-        <p class="vs" id="presModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">Sei tu a segnare chi c'è, dal Centro giornata.</p>
+        <p class="vs" id="presModeHint" style="color:var(--muted);font-size:12px;line-height:1.5">Le presenze le segni tu, dal Centro giornata.</p>
       </div>
     </div>
 
@@ -3640,7 +3643,7 @@
     <div class="setpage" id="page-portiere">
       <button class="subback" onclick="setNav('page-regole')">‹ Regole della lega</button>
       <div class="section-h"><h2>Modalità portiere</h2></div>
-      <p class="setintro">Chi può occupare lo slot di portiere nelle formazioni.</p>
+      <p class="setintro">Chi può essere schierato in porta.</p>
       <div class="set-card">
         <div class="ed-sw" id="gkModeSw" style="margin:2px 0 8px">
           <button class="styb" data-fixed="0" onclick="setGkMode(false)">🔄 Rotazione</button>
@@ -3963,7 +3966,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='4.8';
+const APP_VERSION='4.9';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -5961,8 +5964,8 @@ function renderRulesSetup(){
     : 'In porta può andare chiunque, a turno.';
   document.querySelectorAll('#suPres button').forEach(b=>b.classList.toggle('on',b.dataset.v===setupRules.pres));
   document.getElementById('suPresHint').textContent = setupRules.pres==='players'
-    ? 'I giocatori si segnano da soli dalla Home.'
-    : 'Segni tu chi c\'è prima di ogni partita.';
+    ? 'Ogni giocatore segna la propria presenza dalla Home.'
+    : 'Segni tu le presenze prima di ogni partita.';
   document.querySelectorAll('#suCredit button').forEach(b=>b.classList.toggle('on',b.dataset.v===setupRules.credit));
   document.getElementById('suCreditHint').textContent = setupRules.credit==='poll'
     ? 'I membri votano i giocatori e l\'app propone i crediti.'
@@ -7602,7 +7605,7 @@ function renderOpenNowChoice(){
   // Lega in modalità admin: il sondaggio non esiste per definizione, niente da scegliere.
   if(!presenceSelf){
     openNowPoll=false;
-    box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12px;margin:12px 2px 0;line-height:1.5">In questa lega le presenze le segni tu: le formazioni si aprono subito, tra i presenti che segni. Per farle segnare ai giocatori: Regole della lega \u203a Presenze.</p>`;
+    box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12px;margin:12px 2px 0;line-height:1.5">In questa lega le presenze le segni tu: le formazioni si aprono subito con i presenti che hai segnato. Per farle segnare ai giocatori: Regole della lega \u203a Presenze.</p>`;
     if(btn) btn.textContent = schedDraft.auto_open ? '\u26a1 Apri subito' : '\ud83d\udcc5 Apri la giornata';
     if(!schedDraft.auto_open) renderSemiPres();
     return;
@@ -7613,18 +7616,18 @@ function renderOpenNowChoice(){
   else if(!schedDraft.auto_open && !_semiPollTouched) openNowPoll=true;   // semi: il sondaggio e' la norma
   let hint;
   if(!can) hint="\u26a0\ufe0f Il sondaggio presenze chiude <b>36h prima</b> del fischio d'inizio: con questo orario nascerebbe gi\u00e0 chiuso. Per chiedere le presenze sposta la partita pi\u00f9 in l\u00e0.";
-  else if(openNowPoll) hint='Ognuno dice se c\'\u00e8 dalla Home. Il sondaggio resta aperto <b>'+durLabel(gap)+'</b>, poi si aprono le formazioni. Puoi comunque correggere le presenze quando vuoi.';
-  else hint="Niente sondaggio: le formazioni si aprono subito e i presenti li segni tu in \u00abChi gioca questa giornata\u00bb.";
+  else if(openNowPoll) hint='Ogni giocatore segna la propria presenza dalla Home. Il sondaggio resta aperto <b>'+durLabel(gap)+'</b>, poi si aprono le formazioni. Puoi correggere le presenze quando vuoi.';
+  else hint='Niente sondaggio: le formazioni si aprono subito e le presenze le segni tu, qui sotto.';
   box.innerHTML=`
     <div class="field-lab" style="margin-top:15px">Le presenze</div>
     <div class="ed-sw">
-      <button class="styb ${openNowPoll?'on':''}" ${can?'':'disabled'} onclick="pickOpenNowPoll(true)">\ud83d\uddf3\ufe0f Chiedi chi c'\u00e8</button>
+      <button class="styb ${openNowPoll?'on':''}" ${can?'':'disabled'} onclick="pickOpenNowPoll(true)">\ud83d\udc65 Le segnano i giocatori</button>
       <button class="styb ${openNowPoll?'':'on'}" onclick="pickOpenNowPoll(false)">\u270d\ufe0f Le segno io</button>
     </div>
     <p class="vs" style="color:${can?'var(--muted)':'var(--gold-soft)'};font-size:12px;margin:10px 2px 0;line-height:1.5">${hint}</p>`;
   if(btn) btn.textContent = !schedDraft.auto_open
-    ? (openNowPoll ? "\ud83d\udcc5 Apri e chiedi chi c'\u00e8" : '\ud83d\udcc5 Apri la giornata')
-    : (openNowPoll ? "\ud83d\uddf3\ufe0f Apri e chiedi chi c'\u00e8" : '\u26a1 Apri subito');
+    ? (openNowPoll ? '\ud83d\udcc5 Apri con il sondaggio presenze' : '\ud83d\udcc5 Apri la giornata')
+    : (openNowPoll ? '\ud83d\uddf3\ufe0f Apri con il sondaggio presenze' : '\u26a1 Apri subito');
   if(!schedDraft.auto_open) renderSemiPres();
 }
 function refreshOpenNowHint(){const h=document.getElementById('openNowHint'); if(h)h.textContent=openNowHintText();}
@@ -7720,8 +7723,10 @@ async function cancelPlanned(){
 function goSemiOpen(){
   /* 4.8 — apre la pagina «Programma la giornata». _semiInit a false: alla
      riapertura la data proposta si ricalcola invece di restare quella vista la
-     volta prima (che magari e' gia' passata). */
-  go('settings');
+     volta prima (che magari e' gia' passata).
+     4.9 — go('settings') azzera il percorso: si chiama solo se si arriva da
+     fuori (Home), altrimenti «indietro» perderebbe il Centro giornata. */
+  if(!inSettings()) go('settings');
   _semiInit=false;
   renderSemiOpenPage();
   setNav('page-md-apri');
@@ -7757,8 +7762,8 @@ function renderPresenceMode(){
     sw.querySelectorAll('button').forEach(b=>b.classList.toggle('on',(b.dataset.self==='1')===presenceSelf));
     const h=document.getElementById('presModeHint');
     if(h) h.textContent=presenceSelf
-      ? 'I giocatori si segnano da soli dalla Home. Puoi correggerli dal Centro giornata.'
-      : 'Segni tu chi c\'è, dal Centro giornata.';
+      ? 'Ogni giocatore segna la propria presenza dalla Home. Puoi correggerle dal Centro giornata.'
+      : 'Le presenze le segni tu, dal Centro giornata.';
   }
   renderRuleRows();
   renderPresence();
@@ -8219,7 +8224,7 @@ function renderMatchday(){
    stessa schermata, una volta come primaria e una dentro la fisarmonica. */
 const MD_ACTIONS={
   open:   {cls:'save',    ic:'\u26a1', lab:'Apri subito la giornata',  fn:'openNowMatchday()'},
-  pres:   {cls:'save',    ic:'\ud83d\udfe2', lab:'Segna chi gioca questa giornata', fn:'openPresCard()'},
+  pres:   {cls:'save',    ic:'\ud83d\udfe2', lab:'Segna le presenze di questa giornata', fn:'openPresCard()'},
   kick:   {cls:'set-btn', ic:'\ud83d\udd51', lab:'Modifica orario di questa giornata', fn:'openEditKickoffSheet()'},
   panel:  {cls:'save',    ic:'\ud83d\udcca', lab:'Apri pannello partita',   fn:'openLiveStats()'},
   close:  {cls:'save',    ic:'\ud83c\udfc1', lab:'Chiudi la giornata adesso', fn:'closeMatchday()'},
@@ -8309,7 +8314,7 @@ function noPresences(){
             && mdPhaseIdx()===2 && !!presGateReason());
 }
 function openPresCard(){
-  go('settings');
+  if(!inSettings()) go('settings');
   const c=document.getElementById('presCard');
   if(c) c.style.display='';          // in modalita' giocatori applyProfile la nasconde
   renderPresence();
@@ -8461,7 +8466,9 @@ function renderMdCenter(){
   let h='';
   if(prossima) h+=autoOpenStatusHTML();
   if(key==='pres') h+=`<div class="mdc-note warn">\u26a0\ufe0f <b>${esc(presGateReason())}.</b> Formazioni chiuse finch\u00e9 non ne segni ${MIN_PRESENT}${gkFixed?', portiere compreso':''}.</div>`;
-  if(finita) h+=mdActionHTML('recap',14);
+  /* 4.9 — «Vedi il pagellone» non sta piu' qui: il Centro giornata serve a
+     mandare avanti la giornata, e il pagellone si legge dalla Home o dalla
+     classifica. Una riga in meno da saltare ogni volta. */
   /* 4.8 — in semi-automatica il modulo (data, presenze, elenco giocatori) non
      sta piu' qui dentro: qui c'e' il pulsante, il modulo ha la sua pagina. */
   if(semi) h+=`<button class="save" style="margin-top:${finita?10:14}px" onclick="goSemiOpen()">\ud83d\udcc5 ${plannedMd?'Cambia la programmazione':'Programma la giornata'} \u2192</button>`;
@@ -8668,6 +8675,12 @@ document.getElementById('obBtn').onclick=async function(){
 
 /* ---------- NAV / RENDER ---------- */
 const _tabY={};
+/* 4.9 — siamo gia' dentro le Impostazioni? Serve a non azzerare il percorso
+   di navigazione quando una scorciatoia apre una pagina che e' li' accanto. */
+function inSettings(){
+  const v=document.getElementById('v-settings');
+  return !!(v && v.classList.contains('active'));
+}
 function go(v){
   const was=document.querySelector('.view.active');
   const wasV=was ? was.id.replace(/^v-/,'') : null;
@@ -11475,6 +11488,43 @@ document.addEventListener('touchcancel',()=>{ _edgeX=null; },{passive:true});
    L'animazione d'ingresso va nel verso giusto: da destra avanti, da sinistra
    indietro. */
 const _setStack=[];
+/* ---------- 4.9 · «INDIETRO» TORNA DA DOVE SI E' ARRIVATI ----------
+   Ogni sotto-pagina aveva la destinazione scritta a mano nel pulsante: da
+   «Metodo di apertura» si finiva sempre in Regole della lega, anche entrandoci
+   dal Centro giornata. Il percorso vero pero' e' gia' in _setStack (serve per
+   ricordare la posizione dello scorrimento), quindi basta leggerlo: indietro
+   riporta alla pagina PRECEDENTE, con il suo nome scritto sul pulsante.
+   La destinazione scritta a mano resta come rete di sicurezza per quando si
+   arriva a una pagina senza percorso alle spalle (dalla Home, da un avviso). */
+function setPageTitle(id){
+  if(id==='setMenu') return 'Impostazioni';
+  const el=document.getElementById(id);
+  const h=el && el.querySelector('.section-h h2');
+  const t=h?String(h.textContent||'').trim():'';
+  return t||'Indietro';
+}
+function setBack(){
+  const prev=_setStack.length?_setStack[_setStack.length-1].id:null;
+  setNav(prev||'setMenu');
+}
+function syncSubback(id){
+  const el=document.getElementById(id); if(!el) return;
+  const prev=_setStack.length?_setStack[_setStack.length-1].id:null;
+  el.querySelectorAll('.subback').forEach(b=>{
+    if(b.dataset.home==null){                       // la destinazione scritta nel markup
+      b.dataset.home=b.getAttribute('onclick')||'';
+      b.dataset.homeLab=b.textContent;
+    }
+    if(prev){
+      b.textContent='\u2039 '+setPageTitle(prev);
+      b.onclick=setBack;                            // sostituisce l'onclick del markup
+    }else{
+      b.textContent=b.dataset.homeLab;
+      b.onclick=null;
+      if(b.dataset.home) b.setAttribute('onclick', b.dataset.home);
+    }
+  });
+}
 function _scrollY(){
   const a=document.getElementById('scrollwrap');
   return a ? a.scrollTop : (window.scrollY||0);
@@ -11500,6 +11550,7 @@ function setNav(id){
   document.querySelectorAll('#v-settings .setpage').forEach(p=>p.classList.remove('on','back'));
   const el=document.getElementById(id);
   if(el){ if(back) el.classList.add('back'); el.classList.add('on'); }
+  syncSubback(id);
   if(back){
     _scrollTo(y);
     requestAnimationFrame(()=>_scrollTo(y));   // dopo il disegno, se l'altezza e' cambiata
@@ -11943,15 +11994,15 @@ async function checkForUpdate(){
 }
 /* 4.1 — al rientro si torna in cima solo dopo mezz'ora fuori: passare un
    attimo su WhatsApp a copiare un nome non deve far perdere il punto.
-   4.8 — E dopo mezz'ora l'app non «riprende» piu': RIPARTE. Chi non chiude mai
+   4.8 — E dopo un quarto d'ora l'app non «riprende» piu': RIPARTE. Chi non chiude mai
    le applicazioni si ritrovava, giorni dopo, esattamente la schermata di
    allora: classifica vecchia, giornata sbagliata, aggiornamenti mai scaricati.
    Ripartire e' quello che farebbe chiunque riaprendo l'app, e costa un secondo.
-   Sotto la mezz'ora non cambia niente: si esce un attimo e si torna al punto.
+   Sotto il quarto d'ora non cambia niente: si esce un attimo e si torna al punto.
    Tre eccezioni, tutte casi in cui ricaricare farebbe danno: senza rete (si
    ripartirebbe nella schermata offline), prima di essere entrati (si perde
    quello che si sta scrivendo) e durante il tutorial. */
-const COLD_RESTART_AFTER=30*60*1000;
+const COLD_RESTART_AFTER=15*60*1000;
 function _canColdRestart(){
   try{
     if(typeof profile==='undefined' || !profile) return false;

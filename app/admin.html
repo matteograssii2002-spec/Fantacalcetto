@@ -1097,7 +1097,7 @@ function personProblems(m, latest){
   const p=[];
   if(!m.push_state) p.push('notifiche');
   if(!m.standalone) p.push('home');
-  const v=m.version_best||m.version;
+  const v=personVersion(m);
   if(latest && v && verKey(v)<verKey(latest)) p.push('versione');
   if(!m.version && !m.devices) p.push('mai aperta');
   return p;
@@ -1107,6 +1107,44 @@ function verKey(v){
   const p=String(v).split('.');
   const nn=i=>parseInt(String(p[i]||'').replace(/[^0-9]/g,''),10)||0;
   return nn(0)*1000000+nn(1)*1000+nn(2);
+}
+/* ---------- I DISPOSITIVI FANTASMA ----------
+   Il database tiene una riga per DISPOSITIVO, e un dispositivo nasce ogni volta
+   che cambia la memoria del browser: lo stesso iPhone ne fa due (Safari e app
+   sulla Home), un computer usato una sera e mai piu' ne lascia uno per sempre.
+   Quelle righe restano ferme alla versione di quel giorno, e la console diceva
+   che la persona era «indietro» mostrando un 3.7 di mesi prima accanto a
+   qualcuno che sta usando l'app aggiornata in quel momento.
+   Regola: un dispositivo fermo da piu' di un mese non conta piu' come suo, e
+   tra due righe dello stesso apparecchio (stessa piattaforma e stesso browser)
+   vale solo la piu' recente. La versione di una persona e' la piu' alta tra i
+   dispositivi ancora vivi. */
+const DEV_FERMO=30*86400000;
+function devEta(d){
+  const t=d && d.last_seen ? new Date(d.last_seen).getTime() : 0;
+  return t ? (Date.now()-t) : Infinity;
+}
+function devVivi(m){
+  const dl=Array.isArray(m&&m.device_list)?m.device_list:[];
+  const vivi=dl.filter(d=>devEta(d)<=DEV_FERMO);
+  const base=vivi.length?vivi:[];          // nessuno vivo: la persona non ha dispositivi attuali
+  /* stessa piattaforma + stesso browser = stesso apparecchio: tengo la riga
+     vista piu' di recente e butto i doppioni della memoria vecchia. */
+  const per={};
+  base.forEach(d=>{
+    const k=(d.platform||'?')+'|'+(d.browser||'?');
+    if(!per[k] || devEta(d)<devEta(per[k])) per[k]=d;
+  });
+  return Object.keys(per).map(k=>per[k]).sort((a,b)=>devEta(a)-devEta(b));
+}
+function personVersion(m){
+  const vivi=devVivi(m);
+  if(vivi.length){
+    let best=null;
+    vivi.forEach(d=>{ if(d.version && verKey(d.version)>verKey(best||'')) best=d.version; });
+    if(best) return best;
+  }
+  return m ? (m.version_best||m.version||null) : null;
 }
 
 function renderPeople(){
@@ -1118,7 +1156,7 @@ function renderPeople(){
 
   const nHome=mem.filter(m=>m.standalone).length;
   const nPush=mem.filter(m=>m.push_state).length;
-  const nVer =latest?mem.filter(m=>verKey(m.version_best||m.version)>=verKey(latest)).length:0;
+  const nVer =latest?mem.filter(m=>verKey(personVersion(m))>=verKey(latest)).length:0;
   const rotti=mem.filter(m=>personProblems(m,latest).length);
 
   const mostra=peopleFilter==='sistemare'?rotti:mem;
@@ -1146,7 +1184,7 @@ function renderPeople(){
 
   h+=mostra.map(m=>{
     const prob=personProblems(m,latest);
-    const v=m.version_best||m.version;
+    const v=personVersion(m);
     const vecchia=latest&&v&&verKey(v)<verKey(latest);
     const tags=
         '<span class="tg '+(m.push_state?'ok':'bad')+'">'+(m.push_state?'\ud83d\udd14':'\ud83d\udd15')+'</span>'
@@ -1161,20 +1199,22 @@ function renderPeople(){
 
     let body='';
     const dl=Array.isArray(m.device_list)?m.device_list:[];
-    if(dl.length){
-      body+=dl.map(d=>{
-        const g=d.last_seen?Math.round((Date.now()-new Date(d.last_seen).getTime())/86400000):null;
-        const morto=(g!=null&&g>30);
-        return '<div class="drow'+(morto?' dead':'')+'">'
+    const vivi=devVivi(m);
+    const nascosti=dl.length-vivi.length;
+    if(vivi.length){
+      body+=vivi.map(d=>
+        '<div class="drow">'
           +'<b>'+esc(d.version||'?')+'</b>'
           +'<span>'+esc(d.platform||'?')+' \u00b7 '+esc(d.browser||'?')
           +(d.standalone?' \u00b7 sulla Home':' \u00b7 dal browser')
           +' \u00b7 notifiche '+esc(d.push||'?')+'</span>'
-          +'<b style="color:var(--muted);font-weight:600">'+(d.last_seen?ago(d.last_seen):'\u2014')
-          +(morto?' \u26a0\ufe0f':'')+'</b></div>';
-      }).join('');
-      if(dl.some(d=>d.last_seen&&(Date.now()-new Date(d.last_seen).getTime())>30*86400000))
-        body+='<p class="note" style="margin:8px 0 0">\u26a0\ufe0f = dispositivo fermo da oltre un mese. Se la versione vecchia \u00e8 solo l\u00ec, la persona non \u00e8 indietro: lo \u00e8 un apparecchio che non usa pi\u00f9.</p>';
+          +'<b style="color:var(--muted);font-weight:600">'+(d.last_seen?ago(d.last_seen):'\u2014')+'</b></div>').join('');
+      if(nascosti>0)
+        body+='<p class="note" style="margin:8px 0 0">'+nascosti+(nascosti===1
+          ? ' dispositivo fermo da oltre un mese non \u00e8 in elenco: non conta per la versione.'
+          : ' dispositivi fermi da oltre un mese non sono in elenco: non contano per la versione.')+'</p>';
+    } else if(dl.length){
+      body+='<div class="drow">Nessun dispositivo aperto nell\u2019ultimo mese ('+dl.length+' fermi da prima).</div>';
     } else {
       body+='<div class="drow">Nessun dispositivo registrato: non ha mai aperto l\u2019app dalla versione 3.5 in poi.</div>';
     }
