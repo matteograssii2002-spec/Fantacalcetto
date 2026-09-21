@@ -251,6 +251,26 @@
   .sect{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;
     color:var(--muted);margin:20px 2px 10px}
   .ok-note{color:var(--green);font-size:13px;padding:10px 2px;line-height:1.5}
+  /* --- Scheda «Oggi»: una riga per argomento, il contenuto si apre toccando.
+     Prima erano cinque riquadri aperti uno sotto l'altro: per sapere se andava
+     tutto bene bisognava leggere tre schermate, e la risposta («tutto a posto»)
+     era la stessa in tre punti diversi. Adesso la riga dice lo stato, e i
+     dettagli stanno dietro il tocco. --- */
+  .orow{width:100%;display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;color:var(--text);
+    font-family:inherit;background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    padding:13px 14px;margin-bottom:10px}
+  .orow:active{background:var(--surface2)}
+  .orow .oi{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:18px;
+    background:rgba(255,255,255,.05);border:1px solid var(--line)}
+  .orow .ol{flex:1;min-width:0}
+  .orow .ol b{display:block;font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+  .orow .ol small{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4}
+  .orow .rt{display:inline-block;margin-top:6px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:999px;
+    background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--accent-soft)}
+  .orow .rt:empty{display:none}
+  .orow .oc{flex:none;color:var(--muted);font-size:18px;line-height:1}
+  #pageDetail h1{margin-bottom:4px}
+  #pageDetail .dtsub{color:var(--muted);font-size:13px;line-height:1.55;margin:0 2px 14px}
 </style>
 </head>
 <body>
@@ -311,35 +331,6 @@
 
   <!-- ============ OGGI ============ -->
   <div class="tabpane on" id="paneOggi">
-    <div class="card" id="chkCard">
-      <h2>Controlli <span class="rt" id="chkCount"></span></h2>
-      <div id="chkBody"><div class="skel">Controllo&hellip;</div></div>
-    </div>
-
-    <div class="card" id="attCard">
-      <h2>Serve un occhio <span class="rt" id="attCount"></span></h2>
-      <div id="attBody"><div class="skel">Controllo&hellip;</div></div>
-    </div>
-
-    <!-- 4.7 — SOVRACCARICHI. Ogni volta che l'app sbatte contro un limite dei
-         servizi (connessioni finite, troppe richieste, database lento, quota
-         mensile) scrive una riga. Qui si vede se sta capitando spesso: e' il
-         segnale per decidere di pagare PRIMA che qualcuno resti a piedi. -->
-    <div class="card" id="ovlCard">
-      <h2>Sovraccarichi <span class="rt" id="ovlCount"></span></h2>
-      <div id="ovlBody"><div class="skel">Carico&hellip;</div></div>
-    </div>
-
-    <div class="card" id="liveCard" style="display:none">
-      <h2>Giornate vive adesso <span class="rt" id="liveCount"></span></h2>
-      <div id="liveBody"></div>
-    </div>
-
-    <div class="card">
-      <h2>Come viene usata <span class="rt" id="adoBase"></span></h2>
-      <div id="adoBars"><div class="skel">Carico&hellip;</div></div>
-    </div>
-
     <div class="card">
       <h2>Colpo d&rsquo;occhio</h2>
       <div class="grid">
@@ -350,8 +341,14 @@
         <div class="stat green"><b id="uAct">&ndash;</b><span>Attive (30g)</span></div>
         <div class="stat green"><b id="uAct7">&ndash;</b><span>Attive (7g)</span></div>
       </div>
-      <div id="adoVers" style="margin-top:14px"></div>
     </div>
+
+    <div class="sect">Stato dell&rsquo;app</div>
+    <button class="orow" id="chkCard" onclick="openDetail('chk')"><span class="oi">&#129658;</span><span class="ol"><b>Controlli</b><small>Se tutto quello che deve girare sta girando</small><span class="rt" id="chkCount"></span></span><span class="oc">&rsaquo;</span></button>
+    <button class="orow" id="attCard" onclick="openDetail('att')"><span class="oi">&#128064;</span><span class="ol"><b>Serve un occhio</b><small>Leghe con qualcosa di storto</small><span class="rt" id="attCount"></span></span><span class="oc">&rsaquo;</span></button>
+    <button class="orow" id="ovlCard" onclick="openDetail('ovl')"><span class="oi">&#128201;</span><span class="ol"><b>Limiti dei servizi</b><small>Quando l&rsquo;app non ce la fa: connessioni, richieste, quota</small><span class="rt" id="ovlCount"></span></span><span class="oc">&rsaquo;</span></button>
+    <button class="orow" id="liveCard" style="display:none" onclick="openDetail('live')"><span class="oi">&#9917;</span><span class="ol"><b>Giornate vive adesso</b><small>Aperte in questo momento, in tutte le leghe</small><span class="rt" id="liveCount"></span></span><span class="oc">&rsaquo;</span></button>
+    <button class="orow" onclick="openDetail('ado')"><span class="oi">&#128242;</span><span class="ol"><b>Come viene usata</b><small>App sulla Home, notifiche, versione</small><span class="rt" id="adoBase"></span></span><span class="oc">&rsaquo;</span></button>
   </div>
 
   <!-- ============ LEGHE ============ -->
@@ -408,6 +405,34 @@
     </div>
   </div>
 </div>
+</div>
+
+<!-- ========================= DETTAGLIO DI UNA RIGA DI «OGGI» =========================
+     Un solo contenitore: i riquadri restano quelli di prima, con gli stessi id,
+     e si mostra quello scelto. Cosi' le funzioni che li riempiono non cambiano
+     di una riga. -->
+<div class="page" id="pageDetail">
+  <div class="wrap" style="padding-top:max(14px,env(safe-area-inset-top))">
+    <button class="back" onclick="closeDetail()">&lsaquo; Oggi</button>
+    <h1 id="dtTitle">&mdash;</h1>
+    <p class="dtsub" id="dtSub">&mdash;</p>
+    <div class="dtsec" id="dt-chk" style="display:none">
+      <div class="card"><div id="chkBody"><div class="skel">Controllo&hellip;</div></div></div>
+    </div>
+    <div class="dtsec" id="dt-att" style="display:none">
+      <div class="card"><div id="attBody"><div class="skel">Controllo&hellip;</div></div></div>
+    </div>
+    <div class="dtsec" id="dt-ovl" style="display:none">
+      <div class="card"><div id="ovlBody"><div class="skel">Carico&hellip;</div></div></div>
+    </div>
+    <div class="dtsec" id="dt-live" style="display:none">
+      <div class="card"><div id="liveBody"></div></div>
+    </div>
+    <div class="dtsec" id="dt-ado" style="display:none">
+      <div class="card"><div id="adoBars"><div class="skel">Carico&hellip;</div></div></div>
+      <div class="card"><div id="adoVers"></div></div>
+    </div>
+  </div>
 </div>
 
 <!-- ========================= DETTAGLIO LEGA ========================= -->
@@ -602,6 +627,33 @@ function paintMoney(ov){
   document.getElementById('fSlots').innerHTML=sl;
 }
 
+/* ---------- LE RIGHE DI «OGGI» SI APRONO ----------
+   Il titolo e la spiegazione stanno qui, non nel markup: sono la risposta alla
+   domanda «cosa sto guardando», che e' la prima cosa che serve entrando. */
+const DETAILS={
+  chk: {t:'Controlli',
+        s:'Le cose che devono girare da sole: il timer che apre le giornate, le funzioni del database, le notifiche, il checkout. Se una non risponde, qui si vede subito quale.'},
+  att: {t:'Serve un occhio',
+        s:'Le leghe con qualcosa di storto in questo momento: giornate ferme, promemoria non partiti, tetto dei membri raggiunto. Tocca una riga per aprire la lega.'},
+  ovl: {t:'Limiti dei servizi',
+        s:'Quante volte, negli ultimi 7 giorni, l\u2019app ha sbattuto contro un limite dei servizi che usa: connessioni del database finite, troppe richieste insieme, quota mensile esaurita. Non sono errori di programmazione: sono i confini del piano gratuito. Se questi numeri crescono, conviene passare a un piano a pagamento prima che qualcuno resti fuori.'},
+  live:{t:'Giornate vive adesso',
+        s:'Le giornate aperte in questo momento in tutte le leghe, con la fase in cui sono e i promemoria che dovevano partire.'},
+  ado: {t:'Come viene usata',
+        s:'Quante persone hanno davvero l\u2019app sulla Home, quante hanno le notifiche accese e quante sono sulla versione pi\u00f9 recente. La base del conto \u00e8 chi ha aperto l\u2019app almeno una volta da quando la misuriamo.'}
+};
+function openDetail(k){
+  const d=DETAILS[k]; if(!d) return;
+  document.getElementById('dtTitle').textContent=d.t;
+  document.getElementById('dtSub').textContent=d.s;
+  document.querySelectorAll('#pageDetail .dtsec').forEach(s=>{ s.style.display=(s.id==='dt-'+k)?'':'none'; });
+  const p=document.getElementById('pageDetail');
+  p.classList.add('on'); p.scrollTop=0;
+}
+function closeDetail(){
+  const p=document.getElementById('pageDetail'); if(p) p.classList.remove('on');
+}
+
 /* ---------- I CONTROLLI ----------
    Il semaforo vecchio metteva a schermo quello che rispondeva il database, che
    era anche giusto ma illeggibile: «errore: Timeout of 5000 ms reached...» sotto
@@ -636,13 +688,13 @@ function renderChecks(list){
    connessioni, giallo per il resto. Zero righe = niente da fare, ed e' la
    risposta piu' utile di tutte. */
 const OVL_NOMI={
-  connessioni_finite:  ['Connessioni del database finite','Il piano non regge le persone collegate insieme.'],
-  ingresso_bloccato:   ['Persone respinte all\u2019ingresso','Erano gi\u00e0 troppe dentro: l\u2019app le ha fermate sulla schermata di avvio.'],
-  troppe_richieste:    ['Troppe richieste','Il servizio ha rallentato le chiamate dell\u2019app.'],
-  database_lento:      ['Query oltre il tempo massimo','Il database non ha fatto in tempo a rispondere.'],
-  quota_superata:      ['Limite mensile raggiunto','Traffico o spazio del piano gratuito esauriti.'],
-  servizio_ko:         ['Servizio non raggiungibile','Il database ha risposto con un errore suo.'],
-  realtime_ko:         ['Aggiornamenti dal vivo caduti','Il canale della giornata non si \u00e8 agganciato.']
+  connessioni_finite:  ['Connessioni del database finite','Troppe persone collegate nello stesso momento: il piano non regge.'],
+  ingresso_bloccato:   ['Persone respinte all\u2019ingresso','Erano gi\u00e0 troppe dentro e l\u2019app le ha fermate sulla schermata di avvio.'],
+  troppe_richieste:    ['Troppe richieste insieme','Supabase ha rallentato di proposito le chiamate dell\u2019app.'],
+  database_lento:      ['Il database non ha risposto in tempo','La richiesta ha superato il tempo massimo ed \u00e8 stata annullata.'],
+  quota_superata:      ['Quota mensile del piano esaurita','Traffico o spazio del piano gratuito finiti per questo mese.'],
+  servizio_ko:         ['Servizio non raggiungibile','Il database ha risposto con un errore suo, non dell\u2019app.'],
+  realtime_ko:         ['Aggiornamenti dal vivo caduti','Il canale che aggiorna voti e presenze in tempo reale non si \u00e8 agganciato.']
 };
 const OVL_GRAVI=['connessioni_finite','ingresso_bloccato','quota_superata'];
 function renderOverloads(rows){
@@ -650,15 +702,15 @@ function renderOverloads(rows){
   const card=document.getElementById('ovlCard');
   if(!body) return;
   if(rows==null){
-    body.innerHTML='<div class="skel">Registro non disponibile. Esegui <span class="num">sovraccarico.sql</span>.</div>';
+    body.innerHTML='<div class="skel">Registro non disponibile: manca <span class="num">sovraccarico.sql</span> nel database.</div>';
     if(cnt) cnt.textContent='';
     if(card) card.style.borderColor='var(--line)';
     return;
   }
   const list=Array.isArray(rows)?rows:[];
   if(!list.length){
-    body.innerHTML='<div class="chk ok"><i></i><div><b>Nessun sovraccarico</b>'
-      +'<span>Negli ultimi 7 giorni l\u2019app non ha mai sbattuto contro un limite dei servizi.</span></div></div>';
+    body.innerHTML='<div class="chk ok"><i></i><div><b>Nessun limite raggiunto</b>'
+      +'<span>Negli ultimi 7 giorni l\u2019app non ha mai sbattuto contro un limite dei servizi: il piano attuale sta reggendo.</span></div></div>';
     if(cnt) cnt.textContent='tutto a posto';
     if(card) card.style.borderColor='var(--line)';
     return;
@@ -788,7 +840,7 @@ function renderLive(h){
   const card=document.getElementById('liveCard'), body=document.getElementById('liveBody');
   const list=(h&&h.live_matchdays)||[];
   if(!list.length){ card.style.display='none'; return; }
-  card.style.display='block';
+  card.style.display='';
   document.getElementById('liveCount').textContent=list.length;
   body.innerHTML=list.map(m=>{
     const late=flagList(m).some(f=>f.late);

@@ -3479,7 +3479,7 @@
           <div class="rg-formula">
             <span class="rg-chip"><b>Voto</b><small>media ricevuta</small></span>
             <span class="rg-op">×</span>
-            <span class="rg-chip au"><b>×2</b><small>capitano · MVP</small></span>
+            <span class="rg-chip au"><b>×2</b><small>solo capitano</small></span>
             <span class="rg-op">+</span>
             <span class="rg-chip"><b>±</b><small>bonus e malus</small></span>
           </div>
@@ -3966,7 +3966,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='4.9';
+const APP_VERSION='5.0';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -5591,7 +5591,6 @@ async function afterLogin(){
        il super-admin) e prima di caricare tutto il resto, cosi' se siamo al
        completo non si spreca nemmeno una chiamata. */
     if(await capacityGate()) return;
-    await loadScoringRules();          // quali stagioni usano la regola MVP vecchia
     await Promise.all([
       loadStandings().then(()=>spTo(86)),
       loadMatchdayData().then(()=>spTo(96))
@@ -10526,43 +10525,32 @@ function updateBudget(){
   btn.textContent=n===5?(captain?'Conferma formazione ✓':'👑 Scegli il capitano'):`Mancano ${5-n} giocatori`;
 }
 function avgFor(id){return averages[id]?averages[id].v:6;}
-/* 4.7 — L'MVP NON RADDOPPIA PIU' IL VOTO: VALE +3 FISSO.
-   Prima capitano e MVP si moltiplicavano fra loro: sulla stessa persona il voto
-   valeva x4, cioe' piu' di otto gol. Una scelta sola decideva la giornata e i
-   gol contavano meno di chi aveva indovinato il capitano.
-   Adesso il capitano raddoppia il voto e l'MVP aggiunge 3 punti, come un gol.
-   Il +3 sta FUORI dal moltiplicatore: voto 8, capitano e MVP fa 8x2+3 = 19,
-   non (8+3)x2 = 22.
-   Le stagioni gia' archiviate prima del cambio tengono la regola vecchia:
-   l'elenco arriva dal database (get_scoring_rules), non e' scritto qui. */
+/* ---------- L'MVP VALE +3, SEMPRE E OVUNQUE ----------
+   Com'era prima: capitano e MVP si moltiplicavano fra loro, e sulla stessa
+   persona il voto valeva x4 — piu' di otto gol. Una scelta sola decideva la
+   giornata e i gol contavano meno di chi aveva indovinato il capitano. Da 4.7
+   il capitano raddoppia il voto e l'MVP aggiunge 3 punti, come un gol, FUORI
+   dal moltiplicatore: voto 8, capitano e MVP fa 8x2+3 = 19, non (8+3)x2 = 22.
+   4.9 — Il cambio aveva lasciato un'eccezione: le stagioni gia' archiviate
+   tenevano il x2, e la regola andava chiesta al database stagione per stagione
+   (get_scoring_rules). Due regole in circolazione significano due modi di
+   leggere una classifica, e chi guarda l'albo d'oro non ha nessun modo di
+   sapere quale valeva quando. Adesso il regolamento e' UNO: tutte le stagioni,
+   passate e future, contano l'MVP +3. Le stagioni vecchie sono state
+   ricalcolate nel database con la stessa regola (seasons.mvp_rule = 'plus3'),
+   quindi qui non c'e' piu' niente da chiedere e da distinguere.
+   Il parametro seasonId resta nella firma: lo passano una trentina di punti,
+   e toglierlo sarebbe trenta modifiche senza guadagno. */
 const MVP_BONUS = 3;
-/* Il valore di partenza e' la regola VECCHIA, non la nuova: se l'SQL di questa
-   versione non e' ancora stato eseguito, la classifica la calcola ancora il
-   database con il x2, e i due devono dire lo stesso numero. Appena
-   get_scoring_rules() risponde, comanda lei. */
-let scoringDefault = 'x2';
-let scoringRules   = {};               // season_id -> 'x2' (vecchia) | 'plus3' (nuova)
-function mvpRuleFor(seasonId){
-  const r = scoringRules[String(seasonId)];
-  return (r==='x2'||r==='plus3') ? r : scoringDefault;
-}
-async function loadScoringRules(){
-  try{
-    const {data,error}=await sb.rpc('get_scoring_rules');
-    if(error || !data) return;         // SQL non ancora eseguito: si resta alla vecchia
-    const m={}; (data||[]).forEach(r=>{ m[String(r.season_id)]=r.mvp_rule; });
-    scoringRules=m; scoringDefault='plus3';
-  }catch(_){ }
-}
 function scoreOf(pid,slot,isCaptain,avgMap,statsMap,mvp,seasonId){
   const st=statsMap[pid]||{gol:0,assist:0,og:0,gs:0,rs:0,rp:0,gi:0,esito:''},isPor=slot==='g1';
   const voto=avgMap[pid]?avgMap[pid].v:6;
-  const isMvp=(mvp===pid), vecchia=(mvpRuleFor(seasonId)==='x2');
-  const mult=(isCaptain?2:1)*((vecchia&&isMvp)?2:1);   // il capitano raddoppia SOLO il voto
+  const isMvp=(mvp===pid);
+  const mult=(isCaptain?2:1);                          // il capitano raddoppia SOLO il voto
   let bonus=st.gol*3+st.assist*2-st.og*3-(st.rs||0)*3+(st.rp||0)*3-(st.gi||0)*0.5,gs=st.gs||0;
   if(st.esito==='V')bonus+=2; else if(st.esito==='S')bonus-=1;
   if(isPor)bonus+=(gs===0?3:-gs);
-  if(isMvp && !vecchia) bonus+=MVP_BONUS;              // +3 fuori dal moltiplicatore
+  if(isMvp) bonus+=MVP_BONUS;                          // +3 fuori dal moltiplicatore
   const s=voto*mult+bonus;
   return {score:s,voto,gol:st.gol,assist:st.assist,og:st.og,rs:st.rs||0,rp:st.rp||0,gi:st.gi||0,gs,isPor};
 }
