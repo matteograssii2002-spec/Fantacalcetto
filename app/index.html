@@ -65,6 +65,9 @@
   /* gli unici elementi dove serve poter selezionare/modificare il testo */
   input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:auto;-webkit-touch-callout:default}
   html{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  /* 4.8 — su Android il "tira per aggiornare" di Chrome va spento anche su
+     <html>: su <body> da solo non basta, e la schermata si muoveva al tocco. */
+  html{overscroll-behavior-y:none;height:100%}
   body{color:var(--text);font-family:'Hanken Grotesk',sans-serif;overflow-x:hidden;overscroll-behavior-y:none;-webkit-overflow-scrolling:touch}
   /* niente barra di scorrimento stile pagina web (resta lo scroll col dito, sparisce solo la barra) */
   *{scrollbar-width:none;-ms-overflow-style:none}
@@ -822,9 +825,6 @@
   .setgrp{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:22px 4px 2px}
   /* CENTRO GIORNATA: la giornata come sequenza di fasi, con una sola azione
      principale per volta. Il resto sta sotto «Azioni avanzate». */
-  .mdc-head{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-top:12px}
-  .mdc-head b{display:block;font-family:'Bricolage Grotesque';font-weight:800;font-size:17px}
-  .mdc-head span{display:block;font-size:12.5px;color:var(--accent-soft);margin-top:3px;line-height:1.45}
   .mdc-steps{margin:14px 2px 0;padding-left:4px}
   .mdc-step{display:flex;gap:12px;align-items:flex-start;position:relative;padding-bottom:14px}
   .mdc-step:last-child{padding-bottom:0}
@@ -842,6 +842,32 @@
   /* Riquadri di stato del Centro giornata: spiegano PERCHE' siamo in questa
      situazione, prima dell'azione. Azzurro = va tutto bene, e' informazione;
      ambra = serve una mossa tua, altrimenti la lega si ferma. */
+  /* 4.8 — CENTRO GIORNATA: UNA SCHERMATA, TRE RISPOSTE.
+     Prima qui dentro stavano, una sotto l'altra: le sette tappe della giornata,
+     i riquadri di stato, il modulo per programmare la partita (data, presenze,
+     elenco di tutti i giocatori) e le azioni. Su Android erano tre schermate di
+     scorrimento e non si capiva da dove cominciare — e il modulo di apertura,
+     essendo dentro il riquadro che si ridisegna da solo ogni secondo, ogni
+     tanto si azzerava mentre lo si compilava.
+     Adesso il Centro giornata risponde a tre domande e basta: a che punto
+     siamo (intestazione), cosa devo fare adesso (una sola azione), dove sta il
+     resto (le righe in fondo). Tappe e modulo di apertura hanno una pagina
+     ciascuno, come tutto il resto delle impostazioni. */
+  .mdc-hero{background:linear-gradient(160deg,rgba(255,194,61,.10),var(--surface));
+    border:1px solid rgba(255,194,61,.26);border-radius:20px;padding:15px 16px 16px;margin-top:12px}
+  .mdc-hero .mh-top{display:flex;align-items:center;gap:10px}
+  .mdc-hero .mh-lab{flex:1;min-width:0;font-family:'Bricolage Grotesque';font-weight:800;font-size:19px;
+    letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mdc-hero .mh-badge{flex:none;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--gold-soft);background:rgba(255,194,61,.12);border:1px solid rgba(255,194,61,.30);
+    border-radius:999px;padding:5px 9px;white-space:nowrap}
+  .mdc-hero .mh-bar{height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin:13px 0 10px}
+  .mdc-hero .mh-bar i{display:block;height:100%;border-radius:999px;
+    background:linear-gradient(90deg,var(--gold),#f0c674);transition:width .45s ease}
+  .mdc-hero .mh-sub{font-size:13px;line-height:1.5;color:var(--accent-soft)}
+  .mdc-hero .mh-step{font-size:11.5px;line-height:1.5;color:var(--muted);margin-top:3px}
+  .mdc-eye{font-family:'Bricolage Grotesque';font-weight:800;font-size:11.5px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--muted);margin:18px 2px 0}
   .mdc-note{border-radius:13px;padding:11px 13px;font-size:12.5px;line-height:1.55;margin:13px 0 0}
   .mdc-note b{font-weight:700}
   .mdc-note.ok{background:rgba(63,151,255,.09);border:1px solid rgba(63,151,255,.30);color:#cfe2ff}
@@ -1320,22 +1346,31 @@
     border-radius:13px;padding:12px 14px;margin:0 0 10px;font-size:13px;line-height:1.5;color:#ffd7d7}
   .lineup-warn b{color:#fff}
   /* 4.3 — pagina «Bonus e malus» in sola lettura */
-  .bm-sum{display:flex;gap:8px;flex-wrap:wrap;margin:0 2px 14px}
-  .bm-sum span{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12.5px;font-weight:700;color:var(--text)}
-  .bm-sum span i{font-style:normal;color:var(--muted);font-weight:600}
-  .bm-row{display:flex;align-items:center;gap:11px;padding:10px 4px;border-bottom:1px solid var(--line)}
-  .bm-row:last-child{border-bottom:none}
-  .bm-av{width:40px;border-radius:10px;overflow:hidden;background:var(--surface2);flex:none;line-height:0}
-  .bm-av img{width:40px;height:auto;display:block;border-radius:10px}
+  /* 4.8 — alleggerita: via i riquadri intorno agli avatar e ai numeri. Ogni
+     riquadro era una riga in piu' da leggere, e la pagina sembrava un modulo.
+     Restano i personaggi (che sono gia' un'immagine) e i numeri in chiaro. */
+  /* 4.8 — piano B quando l'uscita verso Safari/Chrome viene bloccata */
+  .ig-out{margin-top:16px;padding-top:15px;border-top:1px solid rgba(255,255,255,.10);text-align:left}
+  .ig-out-t{font-size:12.5px;line-height:1.5;color:#9fb3cf;margin:0 0 9px}
+  .ig-out-url{font-family:'JetBrains Mono',monospace;font-size:13px;color:#eaf1fb;background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:11px 12px;word-break:break-all;-webkit-user-select:all;user-select:all}
+  .ig-out-b{margin-top:10px}
+  .bm-sum{display:flex;gap:16px;flex-wrap:wrap;margin:0 2px 16px;padding-bottom:13px;border-bottom:1px solid var(--line)}
+  .bm-sum span{font-size:13px;font-weight:800;color:var(--text);display:inline-flex;align-items:baseline;gap:5px}
+  .bm-sum span i{font-style:normal;color:var(--muted);font-weight:600;font-size:12px}
+  .bm-row{display:flex;align-items:center;gap:12px;padding:9px 2px}
+  .bm-row+.bm-row{border-top:1px solid rgba(255,255,255,.05)}
+  .bm-av{width:46px;flex:none;line-height:0}
+  .bm-av img{width:46px;height:auto;display:block;filter:drop-shadow(0 6px 8px rgba(0,0,0,.45))}
   .bm-id{flex:1;min-width:0}
   .bm-id b{display:block;font-size:15.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .bm-ev{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
-  .bm-ev i{font-style:normal;font-size:12px;font-weight:700;background:var(--surface2);border:1px solid var(--line);border-radius:7px;padding:2px 6px;color:var(--text)}
-  .bm-ev i.neg{color:#ffb3b3;border-color:rgba(255,120,120,.3)}
-  .bm-ev i.none{color:var(--muted);font-weight:600;background:none;border:none;padding:2px 0}
-  .bm-res{flex:none;font-size:11px;font-weight:800;letter-spacing:.04em;border-radius:8px;padding:5px 8px;background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
-  .bm-res.win{color:var(--green);border-color:rgba(80,200,120,.38)}
-  .bm-res.lose{color:#ffb3b3;border-color:rgba(255,120,120,.32)}
+  .bm-ev{display:flex;flex-wrap:wrap;gap:11px;margin-top:3px}
+  .bm-ev i{font-style:normal;font-size:13px;font-weight:700;color:var(--text);display:inline-flex;align-items:center;gap:3px}
+  .bm-ev i.neg{color:#ffb3b3}
+  .bm-ev i.none{color:var(--muted);font-weight:500;font-size:12px}
+  .bm-res{flex:none;font-size:10.5px;font-weight:800;letter-spacing:.06em;color:var(--muted)}
+  .bm-res.win{color:var(--green)}
+  .bm-res.lose{color:#ffb3b3}
   /* ---- HOME: le schede «Statistiche» usano lo STESSO componente di «Rivivi»
      (.rvcard): stessa forma, stessa griglia di dati, stessa riga d'apertura.
      Prima erano due linguaggi diversi impilati a 40px di distanza. ---- */
@@ -2628,6 +2663,14 @@
   .navrow .lab small{color:#9fb3cf;margin-top:3px}
   .navrow .go{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:19px;line-height:1;color:#c9dcf3;
     background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.07)}
+  /* 4.8 — LA FRECCETTA STORTA (Android). Il carattere "\203A" ha metriche
+     diverse da un font all'altro: su Roboto sta alto e spostato a sinistra, e
+     nel cerchio si vedeva storto. Adesso la freccia e' DISEGNATA (due lati di
+     un quadrato ruotato): identica su iPhone, Android e computer. */
+  .navrow .go,#setMenu .prof .pgo::after{font-size:0;color:#c9dcf3}
+  .navrow .go::after{content:"";display:block;width:7px;height:7px;margin-left:-3px;
+    border-right:2px solid currentColor;border-top:2px solid currentColor;transform:rotate(45deg)}
+  .navrow.gold .go::after{border-color:#ffe3a1}
   .navrow.t-blue{--c:63,151,255} .navrow.t-violet{--c:140,92,255} .navrow.t-gold{--c:255,194,61}
   .navrow.t-cyan{--c:46,196,255} .navrow.t-slate{--c:143,169,204} .navrow.t-green{--c:47,217,138}
   .navrow.gold{--c:255,194,61;border-color:rgba(255,194,61,.28);background:linear-gradient(160deg,rgba(255,194,61,.13),rgba(255,255,255,.02))}
@@ -2741,7 +2784,8 @@
   @media (max-width:350px){
     .navrow .ic{width:40px;height:40px;font-size:19px}
     #setMenu .prof .pgo{width:34px;height:34px;padding:0;font-size:0;display:grid;place-items:center}
-    #setMenu .prof .pgo::after{content:"\203A";font-size:20px;line-height:1}
+    #setMenu .prof .pgo::after{content:"";display:block;width:8px;height:8px;margin-left:-3px;
+      border-right:2.5px solid #fff;border-top:2.5px solid #fff;transform:rotate(45deg)}
     #setMenu .prof .pinfo .prof-kick{white-space:nowrap;letter-spacing:.1em}
     #setMenu .prof .pinfo b{font-size:19px}
     .ph-av,.ph-av .pz-stage{width:100px} .ph-team b{font-size:20px}
@@ -2768,6 +2812,7 @@
   var mvp=document.querySelector('meta[name="viewport"]');
   var BASE=mvp?mvp.getAttribute('content'):'';
   var forced=false;
+  var _andH=0, _andT0=Date.now();   // 4.8 — altezza stabile su Android (vedi sotto)
   function isStandalone(){
     try{
       if(window.navigator && window.navigator.standalone===true) return true;
@@ -2789,7 +2834,21 @@
          e' il viewport grande (senza barra indirizzi): usarlo spingeva la
          barra di navigazione sotto la UI del browser. */
       var av=window.innerHeight||de.clientHeight||(vv&&vv.height)||0;
-      if(av) de.style.setProperty('--app-h', Math.round(av)+'px');
+      /* 4.8 — LA SCHERMATA CHE SI MUOVE ALL'APERTURA (Android).
+         Mentre la barra dell'indirizzo di Chrome si ritira, innerHeight cambia
+         di 60-120px, e ogni cambiamento riscriveva --app-h: il guscio e le
+         schermate piene (splash, accesso) si allungavano e accorciavano a vista.
+         Adesso: nel primo secondo si tiene il valore PIU' ALTO visto (quello a
+         barra ritirata, cioe' l'altezza vera), poi si aggiorna solo per scarti
+         grossi - tastiera o rotazione - mai per la barra. */
+      if(av){
+        var _now=Date.now();
+        var _fermo=(_andH && (_now-_andT0)>1000 && Math.abs(av-_andH)<=140);
+        if(!_fermo){
+          _andH = ((_now-_andT0)<=1000) ? Math.max(_andH||0, av) : av;
+          de.style.setProperty('--app-h', Math.round(_andH)+'px');
+        }
+      }
       de.style.setProperty('--vp-gap','0px');
       de.classList.remove('vp-lie');
       return;
@@ -3029,7 +3088,8 @@
       <div class="avgrid disc-body" id="obGrid" style="display:none"></div>
     </div>
     <div style="margin-top:16px" id="obRoleRow"><div class="field-lab">Ruolo</div><div class="ed-sw" id="obRole">
-      <button class="styb on" data-r="ATT">Attaccante</button><button class="styb" data-r="DIF">Difensore</button></div></div>
+      <button class="styb on" data-r="ATT">Attaccante</button><button class="styb" data-r="DIF">Difensore</button><button class="styb" data-r="POR">Portiere</button></div>
+      <p class="vs" style="color:var(--muted);font-size:12px;margin:8px 2px 0;line-height:1.5">Scegli Portiere solo se giochi sempre in porta. Si cambia quando vuoi dal profilo.</p></div>
     <div style="margin-top:16px" id="obPlayerWrap"><div class="field-lab" id="obPlayerLab">Nome del personaggio</div>
       <input class="ob-input" id="playerInput" placeholder="Es. Bomber Cris" maxlength="16" autocomplete="off" oninput="obClearErr()"></div>
     <div class="gate-status" id="obStatusChar"></div>
@@ -3456,25 +3516,50 @@
       </div>
     </div>
 
-    <!-- ===== CENTRO GIORNATA ===== -->
+    <!-- ===== CENTRO GIORNATA =====
+         4.8 — tre blocchi e basta: a che punto siamo, cosa fare adesso, dove
+         sta il resto. Le tappe stanno in «Come procede» e il modulo per
+         programmare la partita in «Programma la giornata»: due pagine a parte,
+         come ogni altra cosa nelle impostazioni. -->
     <div class="setpage" id="page-giornata">
       <button class="subback" onclick="setNav('setMenu')">‹ Impostazioni</button>
       <div class="section-h"><h2>Centro giornata</h2></div>
       <div id="mdCard">
-        <div class="mdc-head">
-          <b id="mdLabel">—</b>
-          <span id="mdPhase">—</span>
+        <div class="mdc-hero">
+          <div class="mh-top">
+            <div class="mh-lab" id="mdLabel">—</div>
+            <span class="mh-badge" id="mdcBadge">—</span>
+          </div>
+          <div class="mh-bar"><i id="mdcBarFill" style="width:0%"></i></div>
+          <div class="mh-sub" id="mdPhase">—</div>
+          <div class="mh-step" id="mdcStepNo"></div>
         </div>
-        <div class="mdc-steps" id="mdcSteps"></div>
         <div id="mdcPrimary"></div>
       </div>
-      <!-- 4.1 — pagine a parte, come nel resto delle impostazioni. Gli id
-           presCard / voteCard / mdAdvCard restano sulle RIGHE: il codice che le
-           mostra o nasconde per ruolo e fase continua a funzionare uguale. -->
+      <!-- Gli id presCard / voteCard / mdAdvCard restano sulle RIGHE: il codice
+           che le mostra o nasconde per ruolo e fase continua a funzionare. -->
       <div class="set-sec gold" id="mdMoreSec"><span class="ic">📋</span>Gestisci la giornata</div>
       <button class="navrow gold" id="presCard" onclick="setNav('page-md-pres')"><span class="ic">🟢</span><span class="lab"><span id="presTitle">Presenze</span><small id="presSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="voteCard" style="display:none" onclick="setNav('page-md-voti')"><span class="ic">🗳️</span><span class="lab">Chi può votare<small id="voteSub">Chi c’è ma non gioca</small></span><span class="go">›</span></button>
+      <button class="navrow gold" id="mdFasiCard" onclick="setNav('page-md-fasi')"><span class="ic">🧭</span><span class="lab">Come procede<small id="fasiSub">Le tappe della giornata</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="mdAdvCard" onclick="setNav('page-md-azioni')"><span class="ic">🛠️</span><span class="lab">Azioni avanzate<small id="advSub">Orario, chiusura, annullamento</small></span><span class="go">›</span></button>
+    </div>
+
+    <!-- ===== CENTRO GIORNATA › COME PROCEDE ===== -->
+    <div class="setpage" id="page-md-fasi">
+      <button class="subback" onclick="setNav('page-giornata')">‹ Centro giornata</button>
+      <div class="section-h"><h2>Come procede</h2></div>
+      <p class="setintro">Le tappe di questa giornata: vanno avanti da sole, agli orari qui sotto.</p>
+      <div class="set-card"><div class="mdc-steps" id="mdcSteps"></div></div>
+      <div id="mdcHealth"></div>
+    </div>
+
+    <!-- ===== CENTRO GIORNATA › PROGRAMMA LA GIORNATA ===== -->
+    <div class="setpage" id="page-md-apri">
+      <button class="subback" onclick="setNav('page-giornata')">‹ Centro giornata</button>
+      <div class="section-h"><h2 id="semiTitle">Programma la giornata</h2></div>
+      <p class="setintro">Scegli quando si gioca e chi c’è. Da lì in poi fa tutto l’app.</p>
+      <div class="set-card"><div id="semiOpenBox"></div></div>
     </div>
 
     <!-- ===== CENTRO GIORNATA › PRESENZE ===== -->
@@ -3878,7 +3963,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='4.7';
+const APP_VERSION='4.8';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -3985,6 +4070,11 @@ function fieldAvailability(){
     if(!isPresent(p)) return;
     if(p.role==='ATT') nATT++;
     else if(p.role==='DIF') nDIF++;
+    /* 4.8 — il ruolo Portiere ora si puo' assegnare in tutte le leghe. Dove il
+       portiere NON e' fisso pero' non esiste un reparto "porta": chi ha quel
+       ruolo gioca dove serve, quindi conta come uomo di movimento. Senza questa
+       riga un POR in una lega a rotazione non era schierabile da nessuna parte. */
+    else if(p.role==='POR' && !gkFixed){ nATT++; nDIF++; }
   });
   const available=new Set();
   const missingDept = (nATT===0 || nDIF===0);
@@ -4343,11 +4433,11 @@ function tutStepsAdmin(){ return [
   ttl: schedDraft.auto_open ? 'Prima dell\u2019apertura' : 'Programma la partita',
   tx: schedDraft.auto_open
     ? "Fra una giornata e l\u2019altra qui vedi quando si aprir\u00e0 la prossima. Se serve prima, c\u2019\u00e8 \u00abApri subito\u00bb."
-    : "Qui scegli data e ora della prossima partita e, se li segni tu, chi gioca. Oltre le 72h la giornata aspetta e si apre da sola."},
- {v:'settings', nav:'page-giornata', el:'#mdcSteps',
+    : "Qui c\u2019\u00e8 il pulsante per programmare la prossima partita: dentro scegli data, ora e chi gioca. Oltre le 72h la giornata aspetta e si apre da sola."},
+ {v:'settings', nav:'page-giornata', el:'#mdFasiCard',
   before:()=>tutMdBack(),
   ttl:'Centro giornata',
-  tx:"A giornata aperta, qui c\u2019\u00e8 la sequenza delle fasi. Sotto, l\u2019azione che serve adesso."},
+  tx:"In alto vedi a che punto \u00e8 la giornata e l\u2019unica cosa da fare adesso. Qui dentro, le tappe per esteso con i loro orari."},
  {v:'settings', nav:'page-giornata', el:'#presCard',
   before:()=>{ const c=document.getElementById('presCard'); if(c) c.style.display=''; renderPresence(); },
   ttl:'Gestisci la giornata',
@@ -5071,22 +5161,83 @@ async function fcDoInstall(){
   igRefresh();
 }
 
-/* Su Android l'intent apre davvero Chrome. Su iPhone non esiste un modo
-   programmatico di uscire da una WebView: si può solo copiare l'indirizzo e
-   spiegare cosa farne. */
+/* ---------- 4.8 · USCIRE DAL BROWSER DI TIKTOK, INSTAGRAM & C. ----------
+   Il pulsante «Apri in Safari» copiava l'indirizzo e mostrava un toast. Dentro
+   TikTok quel toast non si vede nemmeno — la schermata piena gli sta sopra — e
+   da fuori il pulsante sembrava rotto: si preme e non succede niente.
+   Adesso ci prova davvero.
+   · iPhone: lo schema «x-safari-https://» e' l'unica porta che le WebView di
+     TikTok/Instagram/Facebook lasciano aperta, e apre Safari sulla stessa
+     pagina. Non e' un'API: se l'app lo blocca non arriva nessun errore, quindi
+     l'unico modo di sapere com'e' andata e' guardare se la pagina e' ancora a
+     vista dopo un secondo e mezzo.
+   · Android: intent:// SENZA package. Con «package=com.android.chrome» falliva
+     in silenzio su tutti i telefoni senza Chrome (Samsung Internet, Xiaomi...).
+     Senza package apre il browser predefinito, qualunque sia.
+   Se non si esce, compare il piano B a schermo — indirizzo grande e un pulsante
+   per copiarlo — al posto di un avviso che nessuno vede. */
+function fcCopyUrl(){
+  const url=location.href;
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(
+        ()=>toast('Indirizzo copiato \u2713'),
+        ()=>fcCopyLegacy(url));
+      return;
+    }
+  }catch(_){ }
+  fcCopyLegacy(url);
+}
+function fcCopyLegacy(url){
+  try{
+    const ta=document.createElement('textarea');
+    ta.value=url; ta.setAttribute('readonly','');
+    ta.style.cssText='position:fixed;left:-9999px;top:0';
+    document.body.appendChild(ta);
+    ta.select(); try{ ta.setSelectionRange(0,99999); }catch(_){ }
+    const ok=document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast(ok?'Indirizzo copiato \u2713':'Tieni premuto sull\u2019indirizzo per copiarlo');
+  }catch(_){ toast('Tieni premuto sull\u2019indirizzo per copiarlo'); }
+}
+function fcOutFallback(){
+  if(document.getElementById('igOut')) return;
+  const dove=fcIsIOSDevice()?'Safari':'Chrome';
+  const html='<div class="ig-out" id="igOut">'
+    +'<p class="ig-out-t">Non si \u00e8 aperto niente? Copia l\u2019indirizzo e incollalo in '+dove+':</p>'
+    +'<div class="ig-out-url">'+esc(location.host+location.pathname)+'</div>'
+    +'<button class="ig-btn ig-out-b" onclick="fcCopyUrl()">\ud83d\udccb Copia l\u2019indirizzo</button></div>';
+  const w=document.getElementById('igWhy');
+  if(w){ w.insertAdjacentHTML('beforeend', html); return; }
+  toast('Apri '+location.host+' in '+dove);
+}
 function fcOpenOutside(){
   const url=location.href;
-  if(!fcIsIOSDevice()){
-    try{
-      location.href='intent://'+location.host+location.pathname+location.search
-        +'#Intent;scheme=https;package=com.android.chrome;end';
-      return;
-    }catch(_){ }
+  const nudo=location.host+location.pathname+location.search;
+  let uscito=false;
+  const segna=()=>{ if(document.hidden) uscito=true; };
+  document.addEventListener('visibilitychange', segna);
+  const vai=u=>{ try{ window.location.href=u; }catch(_){ } };
+  if(fcIsIOSDevice()){
+    vai('x-safari-'+url);
+    setTimeout(()=>{ if(!uscito && !document.hidden){
+      try{
+        const a=document.createElement('a');
+        a.href='x-safari-'+url; a.rel='noreferrer'; a.style.display='none';
+        document.body.appendChild(a); a.click();
+        setTimeout(()=>{ try{ a.remove(); }catch(_){ } },0);
+      }catch(_){ }
+    } }, 700);
+  }else{
+    vai('intent://'+nudo+'#Intent;scheme=https;action=android.intent.action.VIEW;'
+        +'category=android.intent.category.BROWSABLE;S.browser_fallback_url='
+        +encodeURIComponent(url)+';end');
+    setTimeout(()=>{ if(!uscito && !document.hidden) vai('googlechrome://navigate?url='+encodeURIComponent(url)); }, 600);
   }
-  try{
-    navigator.clipboard.writeText(url);
-    toast('Indirizzo copiato: aprilo in '+(fcIsIOSDevice()?'Safari':'Chrome'));
-  }catch(_){ toast('Apri questo indirizzo in '+(fcIsIOSDevice()?'Safari':'Chrome')); }
+  setTimeout(()=>{
+    document.removeEventListener('visibilitychange', segna);
+    if(!uscito && !document.hidden) fcOutFallback();
+  }, 1600);
 }
 
 function maybeShowHomeBanner(){
@@ -7563,16 +7714,19 @@ async function cancelPlanned(){
   if(!confirm('Annullare la giornata programmata?')) return;
   const {error}=await sb.rpc('cancel_planned_matchday');
   if(error){ toast(errText(error)); return; }
-  plannedMd=null; _semiInit=false; renderMdCenter(); renderHero();
+  plannedMd=null; _semiInit=false; renderMdCenter(); renderSemiOpenPage(); renderHero();
   toast('Programmazione annullata');
 }
 function goSemiOpen(){
-  go('settings'); setNav('page-giornata');
-  setTimeout(()=>{
-    const el=document.getElementById('mdKick'); if(!el) return;
-    try{ el.scrollIntoView({behavior:'smooth',block:'center'}); }catch(_){ }
-  }, 240);
+  /* 4.8 — apre la pagina «Programma la giornata». _semiInit a false: alla
+     riapertura la data proposta si ricalcola invece di restare quella vista la
+     volta prima (che magari e' gia' passata). */
+  go('settings');
+  _semiInit=false;
+  renderSemiOpenPage();
+  setNav('page-md-apri');
 }
+
 
 /* ---------- MODALITÀ PORTIERE (rotazione / fisso) ---------- */
 function renderGkMode(){
@@ -7759,9 +7913,14 @@ async function confirmMatchday(skipPoll){
   const v=document.getElementById('mdKick').value;
   if(!v){toast('Scegli data e ora');return;}
   if(new Date(v).getTime() <= Date.now()+LINEUP_LOCK_BEFORE){ toast('La partita deve essere nel futuro'); return; }
+  const _ap=document.getElementById('page-md-apri');
+  const _daPagina=!!(_ap && _ap.classList.contains('on'));
   closeSheet();
   await createMatchday(new Date(v).toISOString(), !!skipPoll);
   _semiInit=false;   // la prossima volta si riparte dal suggerimento
+  // 4.8 — aperta dalla sua pagina: si torna al Centro giornata, non si resta
+  // sul modulo appena usato.
+  if(_daPagina) setNav('page-giornata');
 }
 /* skipPoll=true (apertura «Apri subito»): salta il sondaggio presenze, formazioni aperte da subito,
    e disarma le due push legate al ciclo presenze (promemoria sondaggio / formazioni aperte). */
@@ -7976,6 +8135,9 @@ function mdPhaseIdx(){
   return 5;
 }
 function mdPhaseShort(){ const i=mdPhaseIdx(); return i<0?'Nessuna giornata aperta':MD_PHASES[i].short; }
+/* 4.8 — nel Centro giornata il nome della fase sta nell'etichetta in alto a
+   destra: sotto al titolo serve solo la spiegazione, senza ripeterlo. */
+function mdPhaseDesc(){ const i=mdPhaseIdx(); return i<0?'Apri o programma la prossima partita.':MD_PHASES[i].desc; }
 function phaseLabel(){
   const i=mdPhaseIdx();
   return i<0 ? 'Nessuna giornata aperta' : (MD_PHASES[i].short+' \u00b7 '+MD_PHASES[i].desc);
@@ -8037,7 +8199,7 @@ function renderMatchday(){
   if(mc){
     mc.style.display=(canOp())?'block':'none';
     const ml=document.getElementById('mdLabel'); if(ml)ml.textContent=currentMd?currentMd.label:'Nessuna giornata aperta';
-    const mp=document.getElementById('mdPhase'); if(mp)mp.textContent=phaseLabel();
+    const mp=document.getElementById('mdPhase'); if(mp)mp.textContent=mdPhaseDesc();
     renderMdCenter();
   }
   renderOpenMode();   // vive in un'altra pagina: non dipende più da #mdCard
@@ -8235,68 +8397,125 @@ function autoOpenStatusHTML(){
   return box('ok',"\ud83e\udd16 <b>Apertura automatica attiva.</b> La prossima giornata \u00e8 "+fmtDayTime(k)+": si apre da sola "+fmtDayTime(op)+", 72h prima del fischio d'inizio. Fino ad allora \u00e8 normale che non ci sia niente.");
 }
 function renderMdCenter(){
-  const box=document.getElementById('mdcSteps'), pr=document.getElementById('mdcPrimary');
-  if(!box||!pr) return;
+  const pr=document.getElementById('mdcPrimary');
+  if(!pr) return;
   const md=currentMd, t=md?mdTimes(md):null, i=mdPhaseIdx();
   const poll = !!(presenceSelf && t && t.presenceClose);
-  // le tappe arrivano da MD_PHASES: stesso elenco della fase, nessun doppione.
-  // Il sondaggio sparisce se non previsto; «Voti chiusi» compare solo mentre ci sei.
+  /* Le tappe di QUESTA giornata, dallo stesso elenco della fase (MD_PHASES):
+     il sondaggio sparisce se non previsto, «Voti chiusi» compare solo mentre
+     ci sei. Da qui escono sia l'elenco esteso sia il «passo X di Y». */
   const steps=MD_PHASES.map((ph,k)=>({
     k, n:ph.n,
     s: k===0 ? (md?(t&&t.kickoff?("Fischio d'inizio "+fmtDayTime(new Date(t.kickoff))):'Aperta'):'Nessuna giornata aperta')
      : k===1 ? (poll?ph.desc:'Non previsto in questa giornata')
      : ph.desc
   })).filter(x=>!(x.k===1&&!poll)).filter(x=>!(x.k===5&&i!==5));
-  box.innerHTML=steps.map(x=>{
+  const pos=steps.findIndex(x=>x.k===i);
+
+  /* ---- 1. A CHE PUNTO SIAMO: etichetta, barra, una riga ----
+     Titolo e fase si scrivono QUI, non solo in renderMatchday(): la fase cambia
+     da sola con l'orologio (formazioni -> partita -> voti) e prima di 4.8 la
+     riga sotto al titolo restava indietro fino al ricaricamento successivo. */
+  const ml=document.getElementById('mdLabel');
+  if(ml) ml.textContent = md ? md.label : 'Nessuna giornata aperta';
+  const mp=document.getElementById('mdPhase');
+  if(mp) mp.textContent = mdPhaseDesc();
+  const badge=document.getElementById('mdcBadge');
+  if(badge){
+    badge.style.display=(i<0)?'none':'';        // senza giornata l'etichetta non dice niente
+    badge.textContent=(i<0)?'':MD_PHASES[i].short;
+  }
+  const fill=document.getElementById('mdcBarFill');
+  if(fill) fill.style.width = (i<0||pos<0) ? '0%' : Math.round(((pos+1)/steps.length)*100)+'%';
+  const sn=document.getElementById('mdcStepNo');
+  if(sn){
+    const quando=(t&&t.kickoff)?(' \u00b7 fischio d\u2019inizio '+fmtDayTime(new Date(t.kickoff))):'';
+    sn.textContent = (i<0||pos<0) ? '' : ('Passo '+(pos+1)+' di '+steps.length+quando);
+  }
+
+  /* ---- 2. LE TAPPE PER ESTESO: pagina «Come procede» ---- */
+  const box=document.getElementById('mdcSteps');
+  if(box) box.innerHTML=steps.map(x=>{
     const st=(i<0)?'':(x.k<i?'done':(x.k===i?'now':''));
     return `<div class="mdc-step ${st}"><span class="dot"></span><div class="tx"><b>${x.n}</b><small>${esc(x.s)}</small></div></div>`;
   }).join('');
-  // l'azione del momento, da sola, con la sua spiegazione
+  const hb=document.getElementById('mdcHealth');
+  if(hb) hb.innerHTML=autoHealthHTML();
+  const fsub=document.getElementById('fasiSub');
+  if(fsub) fsub.textContent = (i<0||pos<0) ? 'Le tappe della giornata'
+                                           : (MD_PHASES[i].short+' \u00b7 passo '+(pos+1)+' di '+steps.length);
+
+  /* ---- 3. COSA FARE ADESSO: una sola azione ---- */
   const key=mdcPrimaryKey();
   /* 4.7 — DOPO LA CHIUSURA IL RIQUADRO DELLA PROSSIMA SPARIVA.
-     currentMd resta sempre l'ultima giornata, anche quando e' chiusa: la fase
-     diventava 6, la chiave 'recap', e il blocco per programmare la prossima
-     (che si mostrava solo con chiave 'open') non compariva piu'. In automatica
-     non si notava — la giornata si apre da sola — ma in SEMI-automatica non
-     c'era piu' nessun posto da cui programmarla: si vedeva una volta sola,
-     alla nascita della lega, e mai piu'.
-     Ora una giornata chiusa vale come «niente in corso»: resta il pagellone,
-     e sotto torna il riquadro della prossima. */
-  const finita  = mdPhaseIdx()===6;            // l'ultima giornata e' archiviata
-  const prossima = (key==='open' || finita);   // si puo' programmare/aprire la prossima
-  // il riquadro di stato viene PRIMA del pulsante: spiega la situazione, poi propone la mossa
+     currentMd resta sempre l'ultima giornata, anche chiusa: la fase diventava
+     6, la chiave 'recap', e il blocco per programmare la prossima (legato alla
+     chiave 'open') non compariva piu'. In automatica non si notava, in
+     semi-automatica non c'era piu' nessun posto da cui programmare.
+     Una giornata chiusa vale come «niente in corso»: resta il pagellone, e
+     sotto torna il riquadro della prossima. */
+  const finita   = (i===6);
+  const prossima = (key==='open' || finita);
+  const semi = prossima && !schedDraft.auto_open && !seasonBreak()
+               && !(currentSeason && currentSeason.status==='open' && Number(currentSeason.mds_total||0)>=38);
   let h='';
   if(prossima) h+=autoOpenStatusHTML();
   if(key==='pres') h+=`<div class="mdc-note warn">\u26a0\ufe0f <b>${esc(presGateReason())}.</b> Formazioni chiuse finch\u00e9 non ne segni ${MIN_PRESENT}${gkFixed?', portiere compreso':''}.</div>`;
-  const semi = prossima && !schedDraft.auto_open && !seasonBreak()
-               && !(currentSeason && currentSeason.status==='open' && Number(currentSeason.mds_total||0)>=38);
-  if(finita) h+=mdActionHTML('recap',14);                 // il pagellone resta a portata di mano
-  if(semi) h+=semiOpenHTML();
+  if(finita) h+=mdActionHTML('recap',14);
+  /* 4.8 — in semi-automatica il modulo (data, presenze, elenco giocatori) non
+     sta piu' qui dentro: qui c'e' il pulsante, il modulo ha la sua pagina. */
+  if(semi) h+=`<button class="save" style="margin-top:${finita?10:14}px" onclick="goSemiOpen()">\ud83d\udcc5 ${plannedMd?'Cambia la programmazione':'Programma la giornata'} \u2192</button>`;
   else if(key!=='recap') h+=mdActionHTML(key, finita?10:14);
-  else if(prossima) h+=mdActionHTML('open',10);           // automatica: si puo' comunque aprire subito
+  else if(prossima) h+=mdActionHTML('open',10);
   if(prossima && !semi && schedDraft.auto_open) h+=`<p class="vs" id="openNowHint" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${openNowHintText()}</p>`;
-  if(prossima)  h+=`<button class="set-btn" style="margin-top:10px" onclick="setNav('page-quando')">\u2699\ufe0f Metodo di apertura</button>`;
-  if(key==='ok') h+=`<div class="mdc-note ok">\u2705 <b>Tutto in regola.</b> La giornata va avanti da sola: qui sotto trovi presenze, votanti e azioni avanzate.</div>`;
+  if(prossima) h+=`<button class="set-btn" style="margin-top:10px" onclick="setNav('page-quando')">\u2699\ufe0f Metodo di apertura</button>`;
+  if(key==='ok') h+=`<div class="mdc-note ok">\u2705 <b>Tutto in regola.</b> La giornata va avanti da sola. Qui sotto presenze, votanti e azioni avanzate.</div>`;
   if(key==='close') h+=`<p class="vs" style="color:var(--muted);font-size:12px;margin:9px 2px 0;line-height:1.5">${closeMdHintText()}</p>`;
-  h+=autoHealthHTML();   // in coda: e' contesto, non un'azione
-  pr.innerHTML=h;
-  if(semi) renderOpenNowChoice();
+  pr.innerHTML = (h && key!=='ok') ? ('<p class="mdc-eye">Cosa fare adesso</p>'+h) : h;
   renderMdActions(key);
+}
+/* ---------- LA PAGINA «PROGRAMMA LA GIORNATA» (semi-automatica) ----------
+   Stesso modulo di prima — data e ora, chi segna le presenze, chi gioca — ma
+   in una pagina sua. Due vantaggi oltre all'ordine: il Centro giornata si
+   ridisegna ogni secondo (countdown) e qui dentro azzerava quello che si stava
+   compilando; e il pulsante di apertura non finisce piu' in mezzo ad altri tre. */
+function renderSemiOpenPage(){
+  const box=document.getElementById('semiOpenBox'); if(!box) return;
+  const t=document.getElementById('semiTitle');
+  if(t) t.textContent = plannedMd ? 'Cambia la programmazione' : 'Programma la giornata';
+  box.innerHTML=semiOpenHTML();
+  renderOpenNowChoice();
 }
 /* «Azioni avanzate»: tutto quello che NON è già l'azione primaria. */
 function renderMdActions(primary){
-  const ma=document.getElementById('mdActions'); if(!ma) return;
+  const ma=document.getElementById('mdActions');
   const live=!!(currentMd && currentMd.status!=='closed');
-  const rest=[];
-  if(live){
-    rest.push('kick');
-    if(primary!=='close') rest.push('close');
+  if(ma){
+    const rest=[];
+    if(live){
+      rest.push('kick');
+      if(primary!=='close') rest.push('close');
+    }
+    let h=rest.map((k,j)=>mdActionHTML(k, j?10:0)).join('');
+    if(!live && !currentMd) h='<div class="vs" style="color:var(--muted)">Nessuna giornata aperta.</div>';
+    if(currentMd) h+=`<button class="logout" style="border-color:rgba(255,90,90,.45);color:#ff9a9a;margin-top:10px" onclick="resetMatchday()">\ud83d\uddd1\ufe0f Annulla questa giornata</button>`;
+    ma.innerHTML=h;
   }
-  let h=rest.map((k,j)=>mdActionHTML(k, j?10:0)).join('');
-  if(!live && !currentMd) h='<div class="vs" style="color:var(--muted)">Nessuna giornata aperta.</div>';
-  const row=document.getElementById('mdAdvCard'); if(row) row.style.display=currentMd?'':'none';
-  if(currentMd) h+=`<button class="logout" style="border-color:rgba(255,90,90,.45);color:#ff9a9a;margin-top:10px" onclick="resetMatchday()">\ud83d\uddd1\ufe0f Annulla questa giornata</button>`;
-  ma.innerHTML=h;
+  const row=document.getElementById('mdAdvCard');   if(row) row.style.display=currentMd?'':'none';
+  const fas=document.getElementById('mdFasiCard');  if(fas) fas.style.display=currentMd?'':'none';
+  syncMdMoreSec();
+}
+/* 4.8 — senza giornata aperta restavano in piedi il titolo «Gestisci la
+   giornata» e, sotto, il vuoto: le righe si nascondono una per una da punti
+   diversi del codice e nessuno guardava il totale. Se non ne resta nemmeno
+   una, sparisce anche il titolo. */
+function syncMdMoreSec(){
+  const sec=document.getElementById('mdMoreSec'); if(!sec) return;
+  const viva=['presCard','voteCard','mdFasiCard','mdAdvCard'].some(id=>{
+    const el=document.getElementById(id);
+    return !!(el && el.style.display!=='none');
+  });
+  sec.style.display=viva?'':'none';
 }
 
 /* ---------- ONBOARDING (wizard a più pagine) ---------- */
@@ -9921,6 +10140,7 @@ async function renderVoters(){
   if(!box) return;
   const show = canOp() && currentMd && currentMd.status!=='closed';
   if(card) card.style.display = show?'':'none';
+  if(typeof syncMdMoreSec==='function') syncMdMoreSec();
   if(!show){ box.innerHTML=''; return; }
   if(_leagueMembers==null){
     box.innerHTML='<div class="vs" style="color:var(--muted)">Carico\u2026</div>';
@@ -9993,6 +10213,7 @@ function renderPresence(){
   const pc=document.getElementById('presCard');
   const showPres = canOp() && (!presenceSelf || (currentMd && currentMd.status!=='closed'));
   if(pc) pc.style.display=showPres?'':'none';
+  if(typeof syncMdMoreSec==='function') syncMdMoreSec();
   if(!showPres) return;
   const hint=document.getElementById('presHint');
   const liveMd = currentMd && currentMd.status!=='closed';   // giornata aperta -> presenze della giornata; altrimenti rosa prevista
@@ -10271,7 +10492,7 @@ function renderPitch(){
     el.style.left=s.x+'%';el.style.top=s.y+'%';el.onclick=()=>slotTap(s.key);
     el.innerHTML=filled
       ?`<div class="pawn">${avatarImg(p.avatar,104)}<span class="cap">C</span><span class="yc" id="yc-${s.key}" style="display:none"></span></div><div class="tag">${p.name}<span id="tg-${s.key}"></span></div><div class="scoreline" id="sl-${s.key}"></div><div class="evs" id="ev-${s.key}"></div>`
-      :`<div class="disc"><span class="plus">+</span></div><div class="tag empty">${isPor?'POR 🧤':s.label}</div>`;
+      :`<div class="disc"><span class="plus">+</span></div><div class="tag empty">${s.label}</div>`;
     pitch.appendChild(el);
   });
   updateBudget(); updateScores(); renderLineupWarn();
@@ -10407,6 +10628,7 @@ function openPickerSheet(key){
     if(!isPresent(p)) return false;
     if(isPor) return gkFixed?p.role==='POR':true;       // porta: invariato
     if(free) return p.role!=='POR' || !gkFixed;          // ruoli liberi: chiunque di movimento (no POR se gk fisso)
+    if(!gkFixed && p.role==='POR') return true;          // 4.8 — rotazione: il POR gioca ovunque
     return p.role===slot.label;                          // normale: solo il ruolo dello slot
   }).sort((a,b)=>(b.cost??PRICE)-(a.cost??PRICE));
   const remaining=BUDGET-lineupSpent();
@@ -11394,8 +11616,8 @@ function renderEditForm(){
     <input class="ob-input" id="epName" placeholder="Nome giocatore" maxlength="16" value="${(editDraft.name||'').replace(/"/g,'&quot;')}" oninput="editDraft.name=this.value" style="padding:13px;font-size:15px">
     <div class="ed-row" style="margin-top:12px"><div class="ed-lab">Ruolo</div><div class="ed-sw">
       <button class="styb ${editDraft.role==='ATT'?'on':''}" onclick="editDraft.role='ATT';renderEditForm()">Attaccante</button>
-      <button class="styb ${editDraft.role==='DIF'?'on':''}" onclick="editDraft.role='DIF';renderEditForm()">Difensore</button>${gkFixed?`
-      <button class="styb ${editDraft.role==='POR'?'on':''}" onclick="editDraft.role='POR';renderEditForm()">Portiere</button>`:''}</div></div>
+      <button class="styb ${editDraft.role==='DIF'?'on':''}" onclick="editDraft.role='DIF';renderEditForm()">Difensore</button>
+      <button class="styb ${editDraft.role==='POR'?'on':''}" onclick="editDraft.role='POR';renderEditForm()">Portiere</button></div></div>
     <div class="ed-row" style="margin-top:12px"><div class="ed-lab">Crediti</div>
       <input class="ob-input" id="epCost" type="number" inputmode="numeric" min="1" max="100" value="${editDraft.cost??PRICE}" oninput="editDraft.cost=Math.max(1,Math.min(100,parseInt(this.value)||1))" style="width:96px;padding:11px;text-align:center;font-family:'JetBrains Mono';font-weight:700"></div>
     <div class="ed-row" style="margin-top:12px"><div class="ed-lab">Presenza</div><div class="ed-sw">
@@ -11720,11 +11942,34 @@ async function checkForUpdate(){
   }finally{ _checking=false; }
 }
 /* 4.1 — al rientro si torna in cima solo dopo mezz'ora fuori: passare un
-   attimo su WhatsApp a copiare un nome non deve far perdere il punto. */
-let _awaySince=0;
+   attimo su WhatsApp a copiare un nome non deve far perdere il punto.
+   4.8 — E dopo mezz'ora l'app non «riprende» piu': RIPARTE. Chi non chiude mai
+   le applicazioni si ritrovava, giorni dopo, esattamente la schermata di
+   allora: classifica vecchia, giornata sbagliata, aggiornamenti mai scaricati.
+   Ripartire e' quello che farebbe chiunque riaprendo l'app, e costa un secondo.
+   Sotto la mezz'ora non cambia niente: si esce un attimo e si torna al punto.
+   Tre eccezioni, tutte casi in cui ricaricare farebbe danno: senza rete (si
+   ripartirebbe nella schermata offline), prima di essere entrati (si perde
+   quello che si sta scrivendo) e durante il tutorial. */
+const COLD_RESTART_AFTER=30*60*1000;
+function _canColdRestart(){
+  try{
+    if(typeof profile==='undefined' || !profile) return false;
+    if(navigator.onLine===false) return false;
+    if(typeof TUT!=='undefined' && TUT) return false;
+    if(document.querySelector('iframe[src*="lemonsqueezy"], .lemonsqueezy-modal')) return false;
+  }catch(_){ return false; }
+  return true;
+}
+let _awaySince=0, _coldRestarting=false;
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){ _awaySince=Date.now(); return; }
-  if(_awaySince && Date.now()-_awaySince>30*60*1000) toTop();
+  const via=_awaySince?Date.now()-_awaySince:0;
+  if(via>COLD_RESTART_AFTER && !_coldRestarting && _canColdRestart()){
+    _coldRestarting=true;
+    try{ location.reload(); return; }catch(_){ _coldRestarting=false; }
+  }
+  if(via>30*60*1000) toTop();
   checkForUpdate(); ensurePush();
 });
 window.addEventListener('focus',()=>{ checkForUpdate(); ensurePush(); });
