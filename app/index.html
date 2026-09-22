@@ -3393,7 +3393,7 @@
     <div class="countdown"><div class="cl" id="cdLabel">Giornata</div><div class="ct" id="cdTime">—</div></div>
     <!-- 4.9 — i numeri della partita servono PRIMA di votare, non dopo: la riga
          stava in fondo alla pagina, sotto ai voti, e chi votava non la vedeva. -->
-    <button class="navrow t-blue" id="bmOpenBtn" onclick="openBonusMalus()" style="margin:0 0 14px"><span class="ic">📋</span><span class="lab">Guarda com’è andata la partita<small>Gol, assist, gol subiti e cartellini di ogni giocatore: vota sui numeri, non a memoria.</small></span><span class="go">›</span></button>
+    <button class="navrow t-blue" id="bmOpenBtn" onclick="openBonusMalus()" style="margin:0 0 14px"><span class="ic">📋</span><span class="lab">I numeri della partita<small>Gol, assist e cartellini di ogni giocatore.</small></span><span class="go">›</span></button>
     <div class="vcard">
       <div class="vcard-h"><h3>Vota i giocatori</h3><button class="vsend" id="submitVotesBtn" onclick="submitVotes()" style="display:none">Invia voti</button></div>
       <p class="vs">Vota da 1 a 10 ogni giocatore. Tocca la 🏆 per l'<b>MVP</b>, poi <b>Invia voti</b> per salvare.</p>
@@ -4041,7 +4041,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='5.4';
+const APP_VERSION='5.5';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
