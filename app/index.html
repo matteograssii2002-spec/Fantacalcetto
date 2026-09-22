@@ -63,7 +63,7 @@
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
   /* gli elementi tappabili: tap reattivo, niente zoom da doppio-tap. NON sugli altri, così lo scroll col dito resta libero ovunque (iPhone e Android) */
-  button,a,select,input,label,.opt,.pcard,.lb-row,.rule,.styb,.slot,.mrow,.cta,.preschip,.modbtn,.nav button,.set-btn,.addbtn,.mbtn,.ls-block,.ls-step,.tm-item,.avopt,.mini-row,[onclick]{touch-action:manipulation}
+  button,a,select,input,label,.opt,.pcard,.lb-row,.rule,.styb,.slot,.mrow,.cta,.preschip,.modbtn,.nav button,.set-btn,.addbtn,.mbtn,.ls-block,.ls-step,.cs-item,.avopt,.mini-row,[onclick]{touch-action:manipulation}
   /* gli unici elementi dove serve poter selezionare/modificare il testo */
   input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:auto;-webkit-touch-callout:default}
   html{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -668,16 +668,71 @@
   .modbtn.unavail{opacity:.4} .modbtn.unavail b{color:var(--muted)}
   .modbtn.unavail small{color:#8893a6}
   .mod-free-info{margin-top:9px;background:rgba(255,194,61,.1);border:1px solid rgba(255,194,61,.32);color:var(--gold-soft);font-size:12px;line-height:1.4;padding:9px 11px;border-radius:11px}
-  .tm-wrap{display:flex;gap:8px}
-  .tm-col{flex:1;min-width:0;border:2px solid var(--line-strong);border-radius:14px;padding:8px;background:var(--bg2)}
-  .tm-col.ok{border-color:var(--green)} .tm-col.bad{border-color:var(--red)}
-  .tm-head{font-weight:800;font-size:13px;margin-bottom:7px;line-height:1.2}
-  .tm-head small{display:block;color:var(--muted);font-weight:600;font-size:10.5px;margin-top:2px}
-  .tm-item{display:flex;align-items:center;gap:7px;padding:6px;border-radius:10px;background:var(--surface);margin-bottom:5px;cursor:pointer}
-  .tm-item:active{transform:scale(.97)}
-  .tm-i-info{min-width:0} .tm-i-info b{display:block;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .tm-i-info span{color:var(--muted);font-size:10.5px}
-  .tm-empty{color:var(--muted);font-size:12px;text-align:center;padding:12px 0}
+  /* ---- CREA LE SQUADRE (admin, 5.2) --------------------------------------
+     Prende il posto del CSS morto del vecchio generatore (.tm-wrap/.tm-col/
+     .tm-item, rimasti orfani a giugno). Due colonne che devono stare su un
+     iPhone stretto: l'avatar resta piccolo, il nome non va mai a capo, e il
+     numero di forza e' l'unica cosa sempre leggibile, perche' e' quella che
+     si confronta. */
+  .cs-bal{display:block;margin:2px 0 12px;padding:13px 15px 14px;border-radius:20px;
+    border:1.5px solid var(--line-strong);background:linear-gradient(160deg,#10294d,#0a1830)}
+  .cs-bal .csb-row{display:flex;align-items:center;gap:10px}
+  .cs-bal .csb-n{font-family:'JetBrains Mono';font-weight:800;font-size:23px;line-height:1;flex:none}
+  .cs-bal .csb-n.a{color:var(--accent-soft)} .cs-bal .csb-n.b{color:var(--gold)}
+  .cs-bal .csb-mid{flex:1;min-width:0;text-align:center}
+  .cs-bal .csb-lab{font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .cs-bal .csb-v{font-family:'Bricolage Grotesque';font-size:15px;margin-top:3px;line-height:1.15}
+  .cs-bal .csb-v.ok{color:var(--green)} .cs-bal .csb-v.mid{color:var(--gold-soft)} .cs-bal .csb-v.bad{color:#ffb3b3}
+  .cs-bar{display:flex;height:9px;border-radius:999px;overflow:hidden;background:rgba(0,0,0,.28);margin-top:11px;box-shadow:inset 0 1px 2px rgba(0,0,0,.35)}
+  .cs-bar i{display:block;height:100%}
+  .cs-bar i.a{background:linear-gradient(90deg,var(--accent-deep),var(--accent-soft))}
+  .cs-bar i.b{background:linear-gradient(90deg,#f0a92e,var(--gold-soft))}
+  .cs-wrap{display:flex;gap:8px}
+  .cs-col{flex:1;min-width:0;border:1.5px solid var(--line-strong);border-radius:16px;padding:9px 8px 7px;background:var(--bg2)}
+  .cs-col.a{border-color:rgba(63,151,255,.42)} .cs-col.b{border-color:rgba(255,194,61,.42)}
+  .cs-head{display:flex;align-items:baseline;justify-content:space-between;gap:5px;margin:0 2px 8px}
+  .cs-head b{font-family:'Bricolage Grotesque';font-size:13.5px;line-height:1.1;letter-spacing:.01em}
+  .cs-col.a .cs-head b{color:var(--accent-soft)} .cs-col.b .cs-head b{color:var(--gold)}
+  .cs-head s{text-decoration:none;font-family:'JetBrains Mono';font-weight:800;font-size:13.5px;color:var(--text);flex:none}
+  .cs-item{display:flex;align-items:center;gap:7px;padding:7px 6px;border-radius:11px;background:var(--surface);margin-bottom:5px;cursor:pointer;border:1.5px solid transparent;transition:transform .1s,border-color .12s,background .12s}
+  .cs-item:active{transform:scale(.97)}
+  .cs-item.sel{border-color:var(--green);background:rgba(47,217,138,.14)}
+  .cs-item.target{border-color:rgba(47,217,138,.5);border-style:dashed;background:rgba(47,217,138,.06)}
+  .csi-av{width:26px;flex:none;line-height:0;border-radius:7px;overflow:hidden;background:var(--surface2)}
+  .csi-av img{width:26px;height:auto;display:block;border-radius:7px}
+  .csi-av.ghost{display:grid;place-items:center;height:26px;font-size:13px;line-height:1}
+  .cs-item .csi-n{flex:1;min-width:0;font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cs-item .csi-f{font-family:'JetBrains Mono';font-weight:800;font-size:12.5px;color:var(--muted);flex:none}
+  .cs-tip{margin:11px 0 0;background:rgba(63,151,255,.1);border:1px solid rgba(63,151,255,.3);color:#bfdcff;font-size:12px;line-height:1.5;padding:9px 11px;border-radius:12px}
+  .cs-tip.go{background:rgba(47,217,138,.12);border-color:rgba(47,217,138,.4);color:#b9f3d6}
+  /* elenco «chi gioca stasera» */
+  .cs-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+  .cs-row .csi-av{width:34px;height:34px} .cs-row .csi-av img{width:34px} .cs-row .csi-av.ghost{height:34px;font-size:16px}
+  .cs-row .csr-n{flex:1;min-width:0;font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cs-row .csr-n small{display:block;font-weight:600;font-size:10.5px;color:var(--muted);letter-spacing:.02em}
+  .cs-row .csr-f{font-family:'JetBrains Mono';font-weight:800;font-size:16px;color:var(--gold);min-width:32px;text-align:right;flex:none}
+  .cs-row .csr-tk{width:24px;height:24px;border-radius:8px;border:1.5px solid var(--line-strong);display:grid;place-items:center;font-size:12px;color:transparent;flex:none}
+  .cs-row.on .csr-tk{background:var(--green);border-color:var(--green);color:#06301d}
+  .cs-row.off{opacity:.4}
+  .cs-row.off .csr-f{color:var(--muted)}
+  .cs-bar2{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 8px;font-size:12px;color:var(--muted)}
+  .cs-bar2 b{color:var(--text);font-family:'JetBrains Mono';font-size:13px}
+  .cs-pill{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:999px;border:1px solid var(--line-strong);color:var(--muted);white-space:nowrap}
+  .cs-pill.full{border-color:rgba(47,217,138,.45);color:#9ff0c9} .cs-pill.part{border-color:rgba(255,194,61,.45);color:var(--gold-soft)}
+  .cs-note{color:var(--muted);font-size:12.5px;line-height:1.55;padding:8px 2px 0}
+  .cs-warn{background:rgba(255,194,61,.1);border:1px solid rgba(255,194,61,.34);color:var(--gold-soft);font-size:12.5px;line-height:1.55;padding:11px 12px;border-radius:14px;margin:2px 0 12px}
+  .cs-warn b{color:var(--gold)}
+  .cs-mini{display:flex;gap:8px;margin-top:10px}
+  .cs-mini button{flex:1;background:var(--bg2);border:1.5px solid var(--line-strong);border-radius:13px;padding:11px 6px;color:var(--text);font-family:'Hanken Grotesk';font-weight:700;font-size:12.5px;cursor:pointer}
+  .cs-mini button:active{transform:scale(.97)}
+  .cs-mini button:disabled{opacity:.45}
+  /* ospite di serata: nome + quanto vale, da 1 a 10 */
+  .cs-dial{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:8px 0 4px}
+  .cs-dial button{background:var(--bg2);border:1.5px solid var(--line-strong);border-radius:12px;padding:12px 0;color:var(--muted);font-family:'JetBrains Mono';font-weight:800;font-size:15px;cursor:pointer}
+  .cs-dial button:active{transform:scale(.95)}
+  .cs-dial button.on{background:rgba(255,194,61,.18);border-color:var(--gold);color:var(--gold)}
+  .cs-del{width:30px;height:30px;border-radius:9px;background:rgba(255,93,107,.12);border:1px solid rgba(255,93,107,.35);color:#ffc9cb;font-size:13px;display:grid;place-items:center;cursor:pointer;flex:none}
+  .cs-del:active{transform:scale(.92)}
   .mv{font-family:'JetBrains Mono';font-size:11px;font-weight:800;margin-left:5px;vertical-align:middle}
   .mv.up{color:var(--green)} .mv.down{color:var(--red)}
   .votesel,.admsel{appearance:none;-webkit-appearance:none;background:var(--bg2);border:1.5px solid var(--line-strong);color:var(--text);font-family:'JetBrains Mono';font-weight:800;font-size:16px;text-align:center;border-radius:10px;cursor:pointer}
@@ -3551,6 +3606,7 @@
            che le mostra o nasconde per ruolo e fase continua a funzionare. -->
       <div class="set-sec gold" id="mdMoreSec"><span class="ic">📋</span>Gestisci la giornata</div>
       <button class="navrow gold" id="presCard" onclick="setNav('page-md-pres')"><span class="ic">🟢</span><span class="lab"><span id="presTitle">Presenze</span><small id="presSub">—</small></span><span class="go">›</span></button>
+      <button class="navrow gold" id="csCard" style="display:none" onclick="openTeamMaker()"><span class="ic">⚖️</span><span class="lab">Crea le squadre<small id="csSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="voteCard" style="display:none" onclick="setNav('page-md-voti')"><span class="ic">🗳️</span><span class="lab">Chi può votare<small id="voteSub">Chi è presente ma non gioca</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="mdFasiCard" onclick="setNav('page-md-fasi')"><span class="ic">🧭</span><span class="lab">Come procede<small id="fasiSub">Le tappe della giornata</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="mdAdvCard" onclick="setNav('page-md-azioni')"><span class="ic">🛠️</span><span class="lab">Azioni avanzate<small id="advSub">Orario, chiusura, annullamento</small></span><span class="go">›</span></button>
@@ -3911,6 +3967,17 @@
     <div class="ls-body" id="vpBody"></div>
     <div class="ls-foot" id="vpFoot"></div>
   </div>
+
+  <!-- 5.2 · CREA LE SQUADRE (admin): stessa impalcatura degli altri due
+       pannelli a schermo intero. Non salva niente sul database. -->
+  <div class="ls-open" id="teamMaker">
+    <div class="ls-head">
+      <button class="ls-back" id="csBack" onclick="closeTeamMaker()">✕</button>
+      <div class="ls-ttl"><b id="csTtlMain">Crea le squadre</b><small id="csTtlSub">—</small></div>
+    </div>
+    <div class="ls-body" id="csBody"></div>
+    <div class="ls-foot" id="csFoot"></div>
+  </div>
 </div>
 
 <!-- PAGELLONE DI FINE GIORNATA (storie a schermo intero) -->
@@ -3974,7 +4041,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='5.1';
+const APP_VERSION='5.2';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -8541,7 +8608,7 @@ function renderMdActions(primary){
    una, sparisce anche il titolo. */
 function syncMdMoreSec(){
   const sec=document.getElementById('mdMoreSec'); if(!sec) return;
-  const viva=['presCard','voteCard','mdFasiCard','mdAdvCard'].some(id=>{
+  const viva=['presCard','csCard','voteCard','mdFasiCard','mdAdvCard'].some(id=>{
     const el=document.getElementById(id);
     return !!(el && el.style.display!=='none');
   });
@@ -8763,7 +8830,7 @@ function applyProfile(){
   ['gkCard','presModeCard','schedCard','creditRow','seasonCard'].forEach(id=>{const e=document.getElementById(id); if(e)e.style.display=profile.is_admin?'':'none';});   // regole: solo proprietario
   renderRuleRows();
 }
-function renderAll(){renderHero();renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderVoters();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderSeasonRecapButton();renderHomeBcards();renderCampoTeam();renderPlanUI();}
+function renderAll(){renderHero();renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderVoters();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderSeasonRecapButton();renderHomeBcards();renderCampoTeam();renderPlanUI();renderTeamMakerRow();}
 /* striscia squadra (logo + nome) sopra il campo verde */
 function renderCampoTeam(){
   const el=document.getElementById('campoTeam'); if(!el)return;
@@ -10970,6 +11037,487 @@ async function liveConfirmSave(){
   await loadMatchStats(); await loadAverages(); updateScores();
   closeLiveStats(); toast('Dati partita salvati ✅');
 }
+
+/* ==========================================================================
+   CREA LE SQUADRE (admin) — 5.2
+
+   Il generatore era gia' esistito e fu tolto a giugno (§24.4): faceva le
+   squadre su un campo «Valore» che nessuno compilava, quindi non faceva
+   niente. Il problema pero' e' rimasto tale e quale: la mezz'ora prima della
+   partita se ne va a discutere chi sta con chi, mentre l'app ha gia' in casa
+   i numeri per deciderlo in due secondi.
+
+   Quattro scelte reggono tutto il resto.
+
+   1) NON TOCCA IL DATABASE. Nessuna tabella nuova, nessuna RPC, nessun SQL
+      da lanciare. Le squadre vivono qui dentro e in una bozza locale legata
+      alla giornata: chiudi e riapri e le ritrovi, cambi giornata e la bozza
+      vecchia si cancella da sola. Una funzione in piu' non si porta dietro
+      un pezzo d'impianto in piu'.
+
+   2) LA FORZA E' UNA STIMA, E LO DICE. Crediti, voto medio, gol e assist per
+      presenza pesano 45/30/15/10 su quello che c'e' davvero: a inizio
+      stagione esiste solo il costo e il pannello lo ammette; giornata dopo
+      giornata la stima si fa piu' precisa da sola, senza che nessuno
+      configuri niente. Ogni componente entra come scarto dalla media della
+      lega, non come numero assoluto: un gol a presenza vale in rapporto a
+      quanto segnano gli altri in QUESTA lega, non in astratto.
+
+   3) L'OSPITE STA SULLA STESSA SCALA. Chi non e' nell'app prende un voto da
+      1 a 10 dall'admin. La forza dei veri e' costruita attorno al 6, quindi
+      un 8 dato a mano e' gia' un 8 di questa lega; se pero' sfonda sopra il
+      piu' forte o sotto il piu' debole viene compresso al 40%, altrimenti un
+      solo numero gonfiato deciderebbe la partita da solo. L'ospite vive solo
+      in questa bozza: non entra nel listone, non prende voti, non esiste
+      altrove.
+
+   4) L'ULTIMA PAROLA E' DELL'ADMIN. Il pannello propone, non impone:
+      «Rigenera» gira fra le divisioni quasi equivalenti, e un tocco su due
+      giocatori li scambia. La forza delle due squadre resta sempre in alto,
+      cosi' lo scambio si vede subito se ha senso.
+   ========================================================================== */
+
+/* ---------- CREA LE SQUADRE (admin) ---------- */
+const CS_KEY='fc_cs_';          // bozza locale, una per giornata
+const CS_W={cost:45,voto:30,gol:15,ass:10};
+const CS_MINPRES=3;             // sotto le 3 presenze i numeri di campo sono rumore
+const CS_TRIES=220;             // ripartenze casuali del bilanciamento
+const CS_KEEP=10;               // quante alternative tenere per il «Rigenera»
+const CS_MIN=4;                 // sotto i 4 non ci sono due squadre
+
+let csView='setup';             // setup | guest | teams
+let csGuests=[];                // [{k,name,vote}] — esistono solo qui dentro
+let csSeq=1;
+let csOff=new Set();            // presenti che stasera non giocano (chiavi)
+let csTeams=null;               // {a:[chiave], b:[chiave]} mostrate ora
+let csAlts=[], csAltIdx=0;
+let csSel=null;                 // giocatore toccato, in attesa dello scambio
+let csHand=false;               // squadre ritoccate a mano
+let csGVote=6;
+
+/* ---------- la stima di forza ----------
+   media e scarto quadratico medio di una serie: servono a trasformare
+   crediti, voti e bonus in una cosa sola confrontabile. */
+function csMeanSd(arr){
+  const n=arr.length; if(!n) return {m:0,s:0};
+  let m=0; arr.forEach(v=>m+=v); m/=n;
+  let v2=0; arr.forEach(v=>v2+=(v-m)*(v-m));
+  return {m:m, s:Math.sqrt(v2/n)};
+}
+/* Le quattro componenti, con il modo di leggerle da un giocatore. Una
+   componente entra nel conto solo se in questa lega DISTINGUE qualcuno:
+   se tutti costano 20 il costo non dice niente e viene ignorato. */
+function csEngine(){
+  const comps=[
+    {k:'cost',w:CS_W.cost,val:p=>(p.cost==null?PRICE:Number(p.cost))},
+    {k:'voto',w:CS_W.voto,val:p=>{const s=playerStats[p.id]; return (s&&s.presences>=CS_MINPRES&&s.voto)?Number(s.voto):null;}},
+    {k:'gol', w:CS_W.gol, val:p=>{const s=playerStats[p.id]; return (s&&s.presences>=CS_MINPRES)?(Number(s.gol)||0)/s.presences:null;}},
+    {k:'ass', w:CS_W.ass, val:p=>{const s=playerStats[p.id]; return (s&&s.presences>=CS_MINPRES)?(Number(s.assist)||0)/s.presences:null;}}
+  ];
+  const stat={}, live=[];
+  comps.forEach(c=>{
+    const vals=players.map(c.val).filter(v=>v!=null&&isFinite(v));
+    const s=csMeanSd(vals); stat[c.k]=s;
+    if(vals.length>=3 && s.s>0) live.push(c.k);
+  });
+  return {comps:comps, stat:stat, live:live};
+}
+/* 6 = giocatore medio di questa lega, come un voto. 1,35 per scarto: con
+   z fermato a 2,5 il piu' forte immaginabile arriva a 9,4 e il piu' debole
+   a 2,6, cioe' dentro la scala che l'admin usa per gli ospiti. */
+function csForzaOf(p,eng){
+  let num=0,den=0;
+  eng.comps.forEach(c=>{
+    if(eng.live.indexOf(c.k)<0) return;
+    const v=c.val(p); if(v==null||!isFinite(v)) return;
+    const st=eng.stat[c.k];
+    const z=Math.max(-2.5,Math.min(2.5,(v-st.m)/st.s));
+    num+=c.w*z; den+=c.w;
+  });
+  if(!den) return 6;
+  return Math.round(Math.max(1,Math.min(10,6+1.35*(num/den)))*10)/10;
+}
+/* Quanto ci si puo' fidare: cambia solo il testo, non il calcolo. */
+function csQuality(eng){
+  const has=k=>eng.live.indexOf(k)>=0;
+  if(has('voto')&&(has('gol')||has('ass'))) return {cls:'full',lab:'stima completa',
+    tx:'Crediti, voti e numeri di campo: la divisione è la più precisa che l’app sa fare.'};
+  if(has('voto')) return {cls:'part',lab:'crediti + voti',
+    tx:'Crediti e voto medio. Con qualche giornata in più entrano anche gol e assist.'};
+  if(has('cost')) return {cls:'part',lab:'solo crediti',
+    tx:'Per ora contano solo i crediti: giornata dopo giornata entrano voti, gol e assist e la stima si affina da sola.'};
+  return {cls:'',lab:'nessun dato',
+    tx:'Tutti i giocatori valgono uguale: le squadre escono a caso. Assegna i crediti o gioca una giornata.'};
+}
+/* L'ospite: il voto dell'admin e' gia' sulla scala dei veri (entrambe centrate
+   sul 6), ma oltre gli estremi della lega lo si comprime al 40% — un 10 dato
+   di slancio non deve valere piu' del giocatore piu' forte che c'e'. */
+function csGuestForza(vote){
+  const v=Math.max(1,Math.min(10,Number(vote)||6));
+  const eng=csEngine();
+  const reals=csBase().map(p=>csForzaOf(p,eng));
+  if(!reals.length) return Math.round(v*10)/10;
+  let mx=reals[0],mn=reals[0];
+  reals.forEach(f=>{ if(f>mx)mx=f; if(f<mn)mn=f; });
+  if(v>mx) return Math.round((mx+(v-mx)*.4)*10)/10;
+  if(v<mn) return Math.round((mn-(mn-v)*.4)*10)/10;
+  return Math.round(v*10)/10;
+}
+/* Il giocatore vero piu' vicino a un certo voto: serve a dare un metro
+   all'admin mentre sceglie («8 = come Teo»), invece di un numero astratto. */
+function csNearest(f){
+  const eng=csEngine();
+  let best=null,bd=99;
+  csBase().forEach(p=>{ const d=Math.abs(csForzaOf(p,eng)-f); if(d<bd){bd=d;best=p;} });
+  return best;
+}
+
+/* ---------- chi c'e' stasera ----------
+   Giornata aperta: i presenti di quella giornata. Nessuna giornata aperta:
+   la rosa prevista, cosi' le squadre si possono provare anche prima. */
+function csBase(){
+  const live = currentMd && currentMd.status!=='closed';
+  return live ? players.filter(isPresent) : players.filter(p=>plannedPresent.has(p.id));
+}
+function csPool(){
+  const eng=csEngine();
+  const out=csBase().map(p=>({k:'p'+p.id,name:p.name,avatar:p.avatar,role:p.role||'',
+                              injured:!!p.injured,guest:false,forza:csForzaOf(p,eng)}));
+  csGuests.forEach(g=>out.push({k:g.k,name:g.name,avatar:null,role:'',injured:false,
+                                guest:true,vote:g.vote,forza:csGuestForza(g.vote)}));
+  return out;
+}
+function csPlaying(){ return csPool().filter(x=>!csOff.has(x.k)); }
+function csById(k){ return csPool().filter(x=>x.k===k)[0]||null; }
+
+/* ---------- la bozza locale ----------
+   Legata all'id della giornata: cambiando giornata la vecchia non viene
+   nemmeno letta, e all'apertura si buttano via le bozze di altre giornate
+   cosi' localStorage non si riempie di roba morta. */
+function csDraftKey(){ return CS_KEY+(currentMd?currentMd.id:'next'); }
+function csSaveDraft(){
+  try{
+    localStorage.setItem(csDraftKey(),JSON.stringify({
+      g:csGuests, seq:csSeq, off:Array.from(csOff), t:csTeams, hand:csHand}));
+  }catch(_){}
+}
+function csLoadDraft(){
+  csGuests=[]; csSeq=1; csOff=new Set(); csTeams=null; csHand=false;
+  try{
+    const mine=csDraftKey();
+    for(let i=localStorage.length-1;i>=0;i--){
+      const k=localStorage.key(i);
+      if(k && k.indexOf(CS_KEY)===0 && k!==mine) localStorage.removeItem(k);
+    }
+    const raw=localStorage.getItem(mine); if(!raw) return;
+    const d=JSON.parse(raw)||{};
+    csGuests=Array.isArray(d.g)?d.g:[];
+    csSeq=Number(d.seq)||(csGuests.length+1);
+    csOff=new Set(Array.isArray(d.off)?d.off:[]);
+    csHand=!!d.hand;
+    if(d.t && Array.isArray(d.t.a) && Array.isArray(d.t.b)) csTeams=d.t;
+  }catch(_){}
+}
+/* Le squadre salvate valgono solo se sono ancora fatte delle stesse persone:
+   se l'admin nel frattempo ha corretto le presenze, si ricomincia. */
+function csDraftStillValid(){
+  if(!csTeams) return false;
+  const now=csPlaying().map(x=>x.k).sort().join('|');
+  const was=csTeams.a.concat(csTeams.b).slice().sort().join('|');
+  return now===was && now!=='';
+}
+
+/* ---------- il bilanciamento ----------
+   Il conto da minimizzare: prima la differenza di forza (e' il punto), poi i
+   ruoli sbilanciati, poi il caso in cui i due piu' forti finiscono insieme.
+   I pesi 100 / 9 / 5 fanno si' che un ruolo storto non giustifichi mai mezzo
+   punto di forza in piu' da una parte. */
+function csScore(pool,A,B){
+  let sa=0,sb=0,ma=0,mb=0;
+  A.forEach(i=>{ sa+=pool[i].forza; if(pool[i].forza>ma)ma=pool[i].forza; });
+  B.forEach(i=>{ sb+=pool[i].forza; if(pool[i].forza>mb)mb=pool[i].forza; });
+  const roles={};
+  A.forEach(i=>{ const r=pool[i].role; if(r) roles[r]=(roles[r]||0)+1; });
+  B.forEach(i=>{ const r=pool[i].role; if(r) roles[r]=(roles[r]||0)-1; });
+  let dR=0; for(const r in roles) dR+=Math.abs(roles[r]);
+  return Math.abs(sa-sb)*100 + (dR/2)*9 + Math.abs(ma-mb)*5;
+}
+/* Tante ripartenze a caso, ognuna limata scambiando coppie finche' migliora.
+   Non serve l'ottimo assoluto: servono divisioni ottime E diverse fra loro,
+   perche' «Rigenera» deve dare una squadra nuova, non la stessa due volte. */
+function csBuild(pool){
+  const n=pool.length, half=n>>1, idx=[];
+  for(let i=0;i<n;i++) idx.push(i);
+  const seen={}, out=[];
+  for(let t=0;t<CS_TRIES;t++){
+    for(let i=n-1;i>0;i--){ const j=(Math.random()*(i+1))|0, tmp=idx[i]; idx[i]=idx[j]; idx[j]=tmp; }
+    const A=idx.slice(0,half), B=idx.slice(half);
+    let better=true, guard=0;
+    while(better && guard++<14){
+      better=false;
+      for(let i=0;i<A.length;i++) for(let j=0;j<B.length;j++){
+        const s0=csScore(pool,A,B), sw=A[i];
+        A[i]=B[j]; B[j]=sw;
+        if(csScore(pool,A,B) < s0-1e-9) better=true;
+        else { const bk=A[i]; A[i]=B[j]; B[j]=bk; }
+      }
+    }
+    let sa=A.slice().sort((x,y)=>x-y), sb=B.slice().sort((x,y)=>x-y);
+    if(sb[0]<sa[0]){ const s=sa; sa=sb; sb=s; }       // chiave canonica: chi ha il primo indice sta in A
+    const key=sa.join(',');
+    if(seen[key]) continue;
+    seen[key]=1;
+    out.push({a:sa,b:sb,s:csScore(pool,sa,sb)});
+  }
+  out.sort((x,y)=>x.s-y.s);
+  return out.slice(0,CS_KEEP);
+}
+function csApplyAlt(){
+  const pool=csPlaying(), alt=csAlts[csAltIdx];
+  if(!alt) return;
+  csTeams={a:alt.a.map(i=>pool[i].k), b:alt.b.map(i=>pool[i].k)};
+  csHand=false;
+}
+function csMake(){
+  const pool=csPlaying();
+  if(pool.length<CS_MIN || pool.length%2){ renderTeamMaker(); return; }
+  csAlts=csBuild(pool); csAltIdx=0; csSel=null;
+  csApplyAlt(); csSaveDraft();
+  if(navigator.vibrate){ try{navigator.vibrate(12);}catch(_){} }
+  csGo('teams');
+}
+function csRegen(){
+  if(!csAlts.length){ csMake(); return; }
+  csAltIdx=(csAltIdx+1)%csAlts.length; csSel=null;
+  csApplyAlt(); csSaveDraft();
+  if(navigator.vibrate){ try{navigator.vibrate(8);}catch(_){} }
+  renderTeamMaker();
+}
+
+/* ---------- i numeri delle due squadre ---------- */
+function csSum(keys){ let t=0; keys.forEach(k=>{ const p=csById(k); if(p)t+=p.forza; }); return Math.round(t*10)/10; }
+function csVerdict(d){
+  if(d<=.3) return {cls:'ok',  tx:'Equilibrio perfetto'};
+  if(d<=.9) return {cls:'ok',  tx:'Squadre equilibrate'};
+  if(d<=1.8) return {cls:'mid',tx:'Leggero vantaggio'};
+  return {cls:'bad', tx:'Squadre sbilanciate'};
+}
+
+/* ---------- apertura, chiusura, navigazione ---------- */
+function openTeamMaker(){
+  if(!profile||!canOp()) return;
+  csLoadDraft();
+  csSel=null; csAlts=[]; csAltIdx=0; csGVote=6;
+  if(!csDraftStillValid()) csTeams=null;
+  csView = csTeams ? 'teams' : 'setup';
+  renderTeamMaker();
+  const el=document.getElementById('teamMaker'); if(el) el.classList.add('open');
+}
+function closeTeamMaker(){
+  const el=document.getElementById('teamMaker'); if(el) el.classList.remove('open');
+  csSaveDraft(); renderTeamMakerRow();
+}
+function csGo(v){
+  csView=v; csSel=null;
+  renderTeamMaker();
+  const b=document.getElementById('csBody'); if(b) b.scrollTop=0;
+}
+/* La riga nel Centro giornata: dice gia' da fuori se si puo' fare o cosa manca. */
+function renderTeamMakerRow(){
+  const row=document.getElementById('csCard'); if(!row) return;
+  const on=!!(profile&&canOp());
+  row.style.display=on?'flex':'none';
+  if(typeof syncMdMoreSec==='function') syncMdMoreSec();
+  if(!on) return;
+  const sub=document.getElementById('csSub'); if(!sub) return;
+  let n=0;
+  try{ n=csBase().length; }catch(_){ n=0; }
+  const g=csGuests.length;
+  const tot=n+g;
+  sub.textContent = !tot ? 'Segna prima chi c’è'
+    : (tot%2 ? tot+' giocatori · serve un numero pari'
+             : tot+' giocatori · '+(tot/2)+' contro '+(tot/2));
+}
+
+/* ---------- chi gioca / ospiti ---------- */
+function csToggle(k){
+  if(csOff.has(k)) csOff.delete(k); else csOff.add(k);
+  csTeams=null; csAlts=[]; csSaveDraft(); renderTeamMaker();
+}
+function csSetVote(v){ csGVote=v; renderTeamMaker(); }
+function csAddGuest(){
+  const el=document.getElementById('csGuestName');
+  const nome=((el&&el.value)||'').trim().slice(0,18);
+  if(!nome){ toast('Dai un nome all’ospite'); if(el)el.focus(); return; }
+  csGuests.push({k:'g'+(csSeq++), name:nome, vote:csGVote});
+  csTeams=null; csAlts=[]; csGVote=6; csSaveDraft();
+  toast(nome+' aggiunto per stasera');
+  csGo('setup');
+}
+function csDelGuest(k){
+  csGuests=csGuests.filter(g=>g.k!==k);
+  csOff.delete(k); csTeams=null; csAlts=[]; csSaveDraft(); renderTeamMaker();
+}
+
+/* ---------- lo scambio a mano ----------
+   Un tocco seleziona, il secondo tocco sull'altra squadra scambia. Restano
+   sempre in parita' numerica: in un cinque contro cinque «spostare» uno solo
+   non e' una cosa che esiste. */
+function csTap(k){
+  if(!csTeams) return;
+  if(csSel===k){ csSel=null; renderTeamMaker(); return; }
+  if(!csSel){ csSel=k; renderTeamMaker(); return; }
+  const sideOf=x=>csTeams.a.indexOf(x)>=0?'a':'b';
+  const s1=sideOf(csSel), s2=sideOf(k);
+  if(s1===s2){ csSel=k; renderTeamMaker(); return; }
+  const i=csTeams[s1].indexOf(csSel), j=csTeams[s2].indexOf(k);
+  csTeams[s1][i]=k; csTeams[s2][j]=csSel;
+  csSel=null; csHand=true; csSaveDraft();
+  if(navigator.vibrate){ try{navigator.vibrate(8);}catch(_){} }
+  renderTeamMaker();
+}
+
+/* ---------- condivisione ---------- */
+function csShareText(){
+  const lbl=(currentMd&&currentMd.label)?currentMd.label:'Prossima giornata';
+  const line=k=>{ const p=csById(k); return p?('• '+p.name+(p.guest?' (ospite)':'')+' — '+p.forza.toFixed(1)):''; };
+  const ord=arr=>arr.slice().sort((x,y)=>{const a=csById(x),b=csById(y);return (b?b.forza:0)-(a?a.forza:0);});
+  const sa=csSum(csTeams.a), sb=csSum(csTeams.b);
+  return '⚽ Squadre — '+lbl+'\n\n'
+    +'🔵 BLU · forza '+sa.toFixed(1)+'\n'+ord(csTeams.a).map(line).join('\n')+'\n\n'
+    +'⚪ BIANCHI · forza '+sb.toFixed(1)+'\n'+ord(csTeams.b).map(line).join('\n')+'\n\n'
+    +csVerdict(Math.abs(sa-sb)).tx+' (differenza '+Math.abs(sa-sb).toFixed(1)+')';
+}
+async function csShare(){
+  if(!csTeams) return;
+  const t=csShareText();
+  try{ if(navigator.share){ await navigator.share({text:t}); return; } }
+  catch(_){ return; }
+  try{ await navigator.clipboard.writeText(t); toast('Squadre copiate ✅'); }
+  catch(_){ toast('Copia non riuscita'); }
+}
+
+/* ---------- disegno ---------- */
+function csAvHTML(p,px){
+  return p.guest ? '<span class="csi-av ghost">👤</span>'
+                 : '<span class="csi-av">'+avatarImg(p.avatar,px)+'</span>';
+}
+function csColHTML(side,titolo,keys){
+  const ord=keys.slice().sort((x,y)=>{const a=csById(x),b=csById(y);return (b?b.forza:0)-(a?a.forza:0);});
+  const rows=ord.map(k=>{
+    const p=csById(k); if(!p) return '';
+    const cls=(csSel===k)?' sel':(csSel&&(csTeams[side].indexOf(csSel)<0)?' target':'');
+    return '<div class="cs-item'+cls+'" onclick="csTap(\''+k+'\')">'
+      +csAvHTML(p,26)
+      +'<span class="csi-n">'+esc(p.name)+(p.guest?' •':'')+'</span>'
+      +'<span class="csi-f">'+p.forza.toFixed(1)+'</span></div>';
+  }).join('');
+  return '<div class="cs-col '+side+'"><div class="cs-head"><b>'+titolo+'</b><s>'+csSum(keys).toFixed(1)+'</s></div>'+rows+'</div>';
+}
+function renderTeamMaker(){
+  const back=document.getElementById('csBack');
+  const ttlM=document.getElementById('csTtlMain'), ttlS=document.getElementById('csTtlSub');
+  const body=document.getElementById('csBody'), foot=document.getElementById('csFoot');
+  if(!back||!body||!foot) return;
+  const lbl=(currentMd&&currentMd.status!=='closed'&&currentMd.label)?currentMd.label:'Rosa prevista';
+
+  if(csView==='guest'){
+    back.textContent='←'; back.onclick=()=>csGo('setup');
+    ttlM.textContent='Ospite di serata'; ttlS.textContent='Vive solo qui, per queste squadre';
+    const f=csGuestForza(csGVote), vicino=csNearest(f);
+    body.innerHTML='<p class="cs-note" style="padding-top:2px">Uno che stasera gioca ma non è nell’app. Serve solo a fare le squadre: non entra nel listone, non prende voti e sparisce da solo.</p>'
+      +'<div class="field-lab" style="margin-top:12px">Nome</div>'
+      +'<input class="ob-input" id="csGuestName" maxlength="18" autocomplete="off" placeholder="Come lo chiamate">'
+      +'<div class="field-lab" style="margin-top:14px">Quanto vale, da 1 a 10</div>'
+      +'<div class="cs-dial">'+[1,2,3,4,5,6,7,8,9,10].map(v=>
+          '<button class="'+(csGVote===v?'on':'')+'" onclick="csSetVote('+v+')">'+v+'</button>').join('')+'</div>'
+      +'<div class="cs-tip">Entra in squadra con forza <b>'+f.toFixed(1)+'</b>'
+        +(vicino?' — cioè come <b>'+esc(vicino.name)+'</b>.':'.')
+        +' È la stessa scala degli altri: il 6 è il giocatore medio della lega.</div>';
+    foot.innerHTML='<button class="ls-cta" onclick="csAddGuest()">➕ Aggiungi per stasera</button>';
+    const inp=document.getElementById('csGuestName'); if(inp) setTimeout(()=>inp.focus(),80);
+    return;
+  }
+
+  if(csView==='teams' && csTeams){
+    back.textContent='←'; back.onclick=()=>csGo('setup');
+    ttlM.textContent='Le due squadre';
+    ttlS.textContent=lbl+' · '+(csHand?'ritoccate a mano':'alternativa '+(csAltIdx+1)+' di '+Math.max(csAlts.length,1));
+    const sa=csSum(csTeams.a), sb=csSum(csTeams.b), tot=sa+sb||1;
+    const d=Math.abs(sa-sb), ver=csVerdict(d);
+    const pa=Math.round(sa/tot*1000)/10, pb=Math.round((100-pa)*10)/10;
+    body.innerHTML='<div class="cs-bal">'
+        +'<div class="csb-row"><div class="csb-n a">'+sa.toFixed(1)+'</div>'
+        +'<div class="csb-mid"><div class="csb-lab">Forza stimata</div><div class="csb-v '+ver.cls+'">'+ver.tx+'</div></div>'
+        +'<div class="csb-n b">'+sb.toFixed(1)+'</div></div>'
+        +'<div class="cs-bar"><i class="a" style="width:'+pa+'%"></i><i class="b" style="width:'+pb+'%"></i></div></div>'
+      +'<div class="cs-wrap">'+csColHTML('a','🔵 Blu',csTeams.a)+csColHTML('b','⚪ Bianchi',csTeams.b)+'</div>'
+      +'<div class="cs-tip'+(csSel?' go':'')+'">'
+        +(csSel?('Ora tocca chi vuoi al suo posto nell’altra squadra: si scambiano.')
+               :('Tocca un giocatore e poi uno dell’altra squadra per scambiarli. La forza in alto si aggiorna subito.'))
+        +(csGuests.filter(g=>!csOff.has(g.k)).length?'<br>I nomi col puntino sono ospiti di stasera: finita la giornata non ne resta traccia.':'')
+        +'</div>';
+    foot.innerHTML='<div class="cs-mini" style="margin-top:0">'
+        +'<button onclick="csRegen()">🔄 Rigenera</button>'
+        +'<button onclick="csShare()">📤 Condividi</button></div>'
+      +'<button class="ls-cta" style="margin-top:9px" onclick="closeTeamMaker()">✓ Fatto</button>';
+    return;
+  }
+
+  /* ----- setup: chi gioca stasera ----- */
+  csView='setup';
+  back.textContent='✕'; back.onclick=closeTeamMaker;
+  ttlM.textContent='Crea le squadre'; ttlS.textContent=lbl+' · due squadre equilibrate in un tocco';
+  const eng=csEngine(), q=csQuality(eng);
+  const pool=csPool(), playing=csPlaying(), n=playing.length;
+
+  let warn='';
+  if(!pool.length){
+    warn='<div class="cs-warn">Non c’è ancora nessuno. Segna chi gioca dalle <b>Presenze</b>, oppure aggiungi gli ospiti qui.'
+      +'<div class="cs-mini"><button onclick="csToPresenze()">🟢 Segna i presenti</button>'
+      +'<button onclick="csGo(\'guest\')">➕ Ospite</button></div></div>';
+  } else if(n<CS_MIN){
+    warn='<div class="cs-warn">Con <b>'+n+'</b> non si fanno due squadre: ne servono almeno '+CS_MIN+'.'
+      +'<div class="cs-mini"><button onclick="csToPresenze()">🟢 Controlla i presenti</button>'
+      +'<button onclick="csGo(\'guest\')">➕ Ospite</button></div></div>';
+  } else if(n%2){
+    warn='<div class="cs-warn">Siete in <b>'+n+'</b>, numero dispari. Controlla di aver segnato tutti i presenti, oppure aggiungi chi stasera gioca ma non è nell’app.'
+      +'<div class="cs-mini"><button onclick="csToPresenze()">🟢 Controlla i presenti</button>'
+      +'<button onclick="csGo(\'guest\')">➕ Aggiungi ospite</button></div></div>';
+  }
+
+  const rows=pool.slice().sort((a,b)=>b.forza-a.forza).map(p=>{
+    const off=csOff.has(p.k);
+    return '<div class="cs-row'+(off?' off':' on')+'" onclick="csToggle(\''+p.k+'\')">'
+      +csAvHTML(p,34)
+      +'<span class="csr-n">'+esc(p.name)+'<small>'
+        +(p.guest?('ospite · voto '+p.vote):(p.role||'—')+(p.injured?' · 🩹 infortunato':''))
+      +'</small></span>'
+      +'<span class="csr-f">'+p.forza.toFixed(1)+'</span>'
+      +(p.guest?'<button class="cs-del" onclick="event.stopPropagation();csDelGuest(\''+p.k+'\')">✕</button>'
+               :'<span class="csr-tk">✓</span>')
+      +'</div>';
+  }).join('');
+
+  body.innerHTML=warn
+    +'<div class="cs-bar2"><span>In campo <b>'+n+'</b> di '+pool.length+(n&&!(n%2)?' · '+(n/2)+' vs '+(n/2):'')+'</span>'
+      +'<span class="cs-pill '+q.cls+'">'+q.lab+'</span></div>'
+    +(pool.length?rows:'')
+    +'<div class="cs-mini"><button onclick="csGo(\'guest\')">➕ Aggiungi un ospite</button>'
+      +'<button onclick="csToPresenze()">🟢 Presenze</button></div>'
+    +'<p class="cs-note">'+q.tx+' Tocca un nome per lasciarlo fuori da questa divisione.</p>';
+
+  const ok=(n>=CS_MIN && !(n%2));
+  foot.innerHTML='<button class="ls-cta" '+(ok?'':'disabled')+' onclick="csMake()">⚡ Genera le squadre</button>';
+}
+/* Dal pannello alle presenze: si chiude prima, cosi' l'admin non resta con due
+   schermate sovrapposte, e la bozza viene salvata per quando torna. Sotto c'e'
+   sempre il Centro giornata, perche' da li' si entra. */
+function csToPresenze(){
+  closeTeamMaker();
+  setNav('page-md-pres');
+}
+
 function renderMvpSegaHint(){ /* MVP nascosto durante la votazione: non si mostra chi sta votando chi */ }
 /* riflette in tempo reale la stellina MVP scelta, senza ridisegnare tutta la lista */
 function refreshMvpStars(){
