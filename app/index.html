@@ -4041,7 +4041,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='5.3';
+const APP_VERSION='5.4';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -7307,110 +7307,41 @@ async function loadMvpSega(){
   const {data}=await sb.rpc('get_mvp_sega',{md:currentMd.id});
   if(data&&data[0]){mvpPid=data[0].mvp||0;segaPid=data[0].sega||0;}
 }
-/* ---------- IL CANALE DAL VIVO: aggancio, cadute, ritorno ------------------
-   Sintomo (settembre, 5 persone, 10 segnalazioni): la striscia gialla «Gli
-   aggiornamenti dal vivo sono sospesi», e i voti degli altri che compaiono
-   solo riaprendo la pagina.
-
-   Due difetti, non uno.
-
-   1) IL NOME DEL CANALE ERA SEMPRE LO STESSO. `removeChannel()` e' asincrono:
-      chiede al server di staccare e torna subito. Aprendo un canale con lo
-      STESSO nome un istante dopo, il nuovo aggancio arrivava mentre il vecchio
-      era ancora in uscita, e il server rispondeva CHANNEL_ERROR. Sul telefono
-      succedeva di continuo, perche' ogni uscita e rientro dall'app stacca e
-      riattacca (tendina delle notifiche, cambio app, una telefonata). Adesso
-      ogni aggancio ha un nome suo e non puo' finire addosso al precedente; e
-      chi esce per un attimo non stacca piu' niente (si aspetta 4 secondi).
-
-   2) DOPO LA CADUTA NON CI RIPROVAVA PIU'. Si scriveva la segnalazione, si
-      mostrava la striscia, e finiva li': l'unico modo di tornare vivi era
-      ricaricare la pagina — che infatti e' quello che la striscia consigliava.
-      Un singolo sussulto di rete lasciava l'app cieca per tutta la serata.
-      Adesso riprova da sola a 2, 5, 12 e 30 secondi; se rientra, rilegge i
-      voti e le presenze arrivati nel frattempo e toglie la striscia da sola.
-
-   Di conseguenza cambia anche QUANDO si avvisa: la striscia e la riga nella
-   console compaiono solo dopo che i quattro tentativi sono falliti, non al
-   primo inciampo. Cosi' «aggiornamenti dal vivo caduti» nella console torna a
-   voler dire qualcosa: non piu' «ha sbattuto un attimo», ma «per mezzo minuto
-   non c'e' stato verso». Dopo, si continua a ritentare piano, ogni minuto.
-   -------------------------------------------------------------------------- */
-const LIVE_BACKOFF=[2000,5000,12000,30000];   // i tentativi rapidi, poi si passa al minuto
-let _liveNonce=0;        // rende unico il nome di ogni aggancio
-let _liveTry=0;          // a che punto siamo dei tentativi
-let _liveRetryT=null;    // tentativo gia' in coda (uno solo per volta)
-let _liveDownAt=0;       // da quando siamo senza canale: serve a recuperare al rientro
-let _liveTold=false;     // l'utente e' gia' stato avvisato per questa caduta
-
-/* Stacca e basta: nessun tentativo, nessun avviso. */
-function liveStop(){
-  if(_liveRetryT){ clearTimeout(_liveRetryT); _liveRetryT=null; }
-  if(voteChannel){ try{ sb.removeChannel(voteChannel); }catch(_){ } voteChannel=null; }
-}
-function subscribeLive(fresh){
-  liveStop();
-  if(!currentMd) return;
-  if(fresh!==false){ _liveTry=0; _liveTold=false; _liveDownAt=0; }   // ripartenza pulita
+function subscribeLive(){
+  if(voteChannel){sb.removeChannel(voteChannel);voteChannel=null;}
+  if(!currentMd)return;
   const f='matchday_id=eq.'+currentMd.id;
-  const ch=sb.channel('live-'+currentMd.id+'-'+(++_liveNonce))
+  voteChannel=sb.channel('live-'+currentMd.id)
     .on('postgres_changes',{event:'*',schema:'public',table:'votes',filter:f},scheduleLive)
     .on('postgres_changes',{event:'*',schema:'public',table:'match_stats',filter:f},scheduleLive)
     .on('postgres_changes',{event:'*',schema:'public',table:'nominations',filter:f},scheduleLive)
-    .on('postgres_changes',{event:'*',schema:'public',table:'matchday_players',filter:f},schedulePresence);
-  voteChannel=ch;        // prima di subscribe: la risposta puo' arrivare subito
-  ch.subscribe((status)=>{
-    if(ch!==voteChannel) return;          // risposta di un canale gia' sostituito: non conta
-    if(status==='SUBSCRIBED'){
-      _liveTry=0; _liveTold=false;
-      busyBar(false);
-      if(_liveDownAt){                    // eravamo caduti: si recupera quello che e' passato
-        _liveDownAt=0;
-        refreshLive().catch(()=>{});
-        refreshPresence().catch(()=>{});
+    .on('postgres_changes',{event:'*',schema:'public',table:'matchday_players',filter:f},schedulePresence)
+    /* 4.7 — se il canale non si aggancia (tetto di connessioni del piano
+       raggiunto, servizio giu') l'app continua a funzionare, ma i voti degli
+       altri non arrivano piu' da soli: va detto, e va messo a registro. */
+    .subscribe((status)=>{
+      if(status==='CHANNEL_ERROR' || status==='TIMED_OUT'){
+        fcOverload('realtime_ko','canale giornata '+(currentMd?currentMd.id:'?')+' \u2014 '+status);
+      }else if(status==='SUBSCRIBED'){
+        busyBar(false);
       }
-      return;
-    }
-    if(status==='CHANNEL_ERROR' || status==='TIMED_OUT' || status==='CLOSED') liveRetry(status);
-  });
-}
-function liveRetry(status){
-  if(!currentMd || document.hidden) return;   // in background non serve: si riaggancia al rientro
-  if(_liveRetryT) return;                     // un tentativo per volta
-  if(!_liveDownAt) _liveDownAt=Date.now();
-  let wait;
-  if(_liveTry < LIVE_BACKOFF.length){
-    wait=LIVE_BACKOFF[_liveTry]; _liveTry++;
-  }else{
-    if(!_liveTold){
-      _liveTold=true;
-      fcOverload('realtime_ko','giornata '+currentMd.id+' — '+status+' dopo '+LIVE_BACKOFF.length+' tentativi');
-    }
-    wait=60000;                               // non si molla, ma senza insistere
-  }
-  _liveRetryT=setTimeout(()=>{ _liveRetryT=null; subscribeLive(false); }, wait);
+    });
 }
 /* 3.7 — il canale della giornata resta aperto solo con l'app in primo piano.
    In background non serve a niente (lo schermo non si aggiorna) e occupa una
    connessione. Al rientro, se l'assenza e' stata lunga, si rileggono i dati
    che il canale avrebbe portato, poi si riapre. */
-let _hiddenAt=0, _liveIdleT=null;
+let _hiddenAt=0;
 document.addEventListener('visibilitychange', ()=>{
   if(!sb) return;
   if(document.hidden){
     _hiddenAt=Date.now();
-    /* Non si stacca piu' all'istante: la tendina delle notifiche, una
-       telefonata o un cambio d'app di due secondi facevano staccare e
-       riattaccare il canale di continuo, ed era proprio quel via-vai a
-       farlo cadere. Chi torna entro 4 secondi trova il canale ancora li'. */
-    if(_liveIdleT) clearTimeout(_liveIdleT);
-    _liveIdleT=setTimeout(()=>{ _liveIdleT=null; if(document.hidden) liveStop(); }, 4000);
+    if(voteChannel){ try{ sb.removeChannel(voteChannel); }catch(_){ } voteChannel=null; }
     return;
   }
-  if(_liveIdleT){ clearTimeout(_liveIdleT); _liveIdleT=null; }
-  if(!currentMd) return;
+  if(!currentMd || voteChannel) return;
   const away=_hiddenAt ? Date.now()-_hiddenAt : 0;
-  if(!voteChannel) subscribeLive(true);
+  subscribeLive();
   if(away>60000 && currentMd.status!=='closed'){
     refreshLive().catch(()=>{});
     refreshPresence().catch(()=>{});
