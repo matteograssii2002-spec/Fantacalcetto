@@ -703,6 +703,7 @@
   .csi-av.ghost{display:grid;place-items:center;height:26px;font-size:13px;line-height:1}
   .cs-item .csi-n{flex:1;min-width:0;font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .cs-item .csi-f{font-family:'JetBrains Mono';font-weight:800;font-size:12.5px;color:var(--muted);flex:none}
+  .cs-item .csi-r{font-family:'JetBrains Mono';font-weight:800;font-size:9px;letter-spacing:.04em;color:var(--muted);opacity:.8;flex:none}
   .cs-tip{margin:11px 0 0;background:rgba(63,151,255,.1);border:1px solid rgba(63,151,255,.3);color:#bfdcff;font-size:12px;line-height:1.5;padding:9px 11px;border-radius:12px}
   .cs-tip.go{background:rgba(47,217,138,.12);border-color:rgba(47,217,138,.4);color:#b9f3d6}
   /* elenco «chi gioca stasera» */
@@ -731,6 +732,8 @@
   .cs-dial button{background:var(--bg2);border:1.5px solid var(--line-strong);border-radius:12px;padding:12px 0;color:var(--muted);font-family:'JetBrains Mono';font-weight:800;font-size:15px;cursor:pointer}
   .cs-dial button:active{transform:scale(.95)}
   .cs-dial button.on{background:rgba(255,194,61,.18);border-color:var(--gold);color:var(--gold)}
+  .cs-dial.cs-roles{grid-template-columns:repeat(4,1fr)}
+  .cs-dial.cs-roles button{font-size:13px}
   .cs-del{width:30px;height:30px;border-radius:9px;background:rgba(255,93,107,.12);border:1px solid rgba(255,93,107,.35);color:#ffc9cb;font-size:13px;display:grid;place-items:center;cursor:pointer;flex:none}
   .cs-del:active{transform:scale(.92)}
   .mv{font-family:'JetBrains Mono';font-size:11px;font-weight:800;margin-left:5px;vertical-align:middle}
@@ -1411,7 +1414,17 @@
   .ig-out-t{font-size:12.5px;line-height:1.5;color:#9fb3cf;margin:0 0 9px}
   .ig-out-url{font-family:'JetBrains Mono',monospace;font-size:13px;color:#eaf1fb;background:rgba(255,255,255,.06);
     border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:11px 12px;word-break:break-all;-webkit-user-select:all;user-select:all}
-  .ig-out-b{margin-top:10px}
+  .ig-out-b{margin-top:10px;transition:background .2s}
+  /* 5.6 — rientro nell'app: scritta piccola in alto al posto della barra arancione */
+  .resume-pill{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:72;
+    transform:translate(-50%,-14px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+    background:rgba(20,34,58,.94);border:1px solid rgba(63,151,255,.35);color:#cfe0ff;
+    font-size:12px;font-weight:700;padding:6px 13px;border-radius:999px;white-space:nowrap;
+    box-shadow:0 6px 18px rgba(0,0,0,.35);max-width:calc(100% - 24px);overflow:hidden;text-overflow:ellipsis}
+  .resume-pill.on{opacity:1;transform:translate(-50%,0)}
+  .resume-pill.ok{border-color:rgba(47,217,138,.45);color:#b9f3d6}
+  .resume-pill.ko{border-color:rgba(255,194,61,.45);color:var(--gold-soft)}
+  .ig-btn.ig-copied{background:linear-gradient(135deg,#2fd98a,#16a765);color:#06301d}
   .bm-sum{display:flex;gap:16px;flex-wrap:wrap;margin:0 2px 16px;padding-bottom:13px;border-bottom:1px solid var(--line)}
   .bm-sum span{font-size:13px;font-weight:800;color:var(--text);display:inline-flex;align-items:baseline;gap:5px}
   .bm-sum span i{font-style:normal;color:var(--muted);font-weight:600;font-size:12px}
@@ -2983,6 +2996,7 @@
      resta usabile) e la schermata piena (non si entra proprio, i server sono al
      completo). In tutti e due i casi parte una riga nel registro incidenti, che
      il super-admin vede in console. -->
+<div id="resumePill" class="resume-pill" aria-live="polite"></div>
 <div id="busyBar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:71;background:#8a5a00;color:#fff;font-size:12.5px;font-weight:700;text-align:center;padding:6px 10px;align-items:center;justify-content:center;gap:6px">⏳ Servizio sovraccarico — qualche operazione può non riuscire</div>
 
 <div id="busy">
@@ -4041,7 +4055,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='5.5';
+const APP_VERSION='5.6';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -5255,19 +5269,33 @@ async function fcDoInstall(){
      Senza package apre il browser predefinito, qualunque sia.
    Se non si esce, compare il piano B a schermo — indirizzo grande e un pulsante
    per copiarlo — al posto di un avviso che nessuno vede. */
-function fcCopyUrl(){
+/* 5.6 — la conferma sta sul pulsante stesso: il toast dentro TikTok & C. non
+   si vede (la schermata piena gli sta sopra), quindi chi copiava non capiva
+   se era andata. Ora il pulsante diventa verde e dice cosa fare dopo. */
+function fcCopyFeedback(btn, ok){
+  if(!btn) return;
+  if(btn._fcT){ clearTimeout(btn._fcT); btn._fcT=null; }
+  if(!btn._fcTxt) btn._fcTxt=btn.innerHTML;
+  const dove=fcIsIOSDevice()?'Safari':'Chrome';
+  btn.classList.toggle('ig-copied', !!ok);
+  btn.innerHTML = ok ? '\u2713 Copiato! Ora incollalo in '+dove
+                     : 'Tieni premuto sull\u2019indirizzo qui sopra';
+  if(navigator.vibrate){ try{ navigator.vibrate(ok?[10,40,10]:20); }catch(_){ } }
+  btn._fcT=setTimeout(()=>{ btn.classList.remove('ig-copied'); btn.innerHTML=btn._fcTxt; btn._fcT=null; }, 3000);
+}
+function fcCopyUrl(btn){
   const url=location.href;
   try{
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(url).then(
-        ()=>toast('Indirizzo copiato \u2713'),
-        ()=>fcCopyLegacy(url));
+        ()=>{ toast('Indirizzo copiato \u2713'); fcCopyFeedback(btn,true); },
+        ()=>fcCopyLegacy(url,btn));
       return;
     }
   }catch(_){ }
-  fcCopyLegacy(url);
+  fcCopyLegacy(url,btn);
 }
-function fcCopyLegacy(url){
+function fcCopyLegacy(url,btn){
   try{
     const ta=document.createElement('textarea');
     ta.value=url; ta.setAttribute('readonly','');
@@ -5277,7 +5305,8 @@ function fcCopyLegacy(url){
     const ok=document.execCommand('copy');
     document.body.removeChild(ta);
     toast(ok?'Indirizzo copiato \u2713':'Tieni premuto sull\u2019indirizzo per copiarlo');
-  }catch(_){ toast('Tieni premuto sull\u2019indirizzo per copiarlo'); }
+    fcCopyFeedback(btn,ok);
+  }catch(_){ toast('Tieni premuto sull\u2019indirizzo per copiarlo'); fcCopyFeedback(btn,false); }
 }
 function fcOutFallback(){
   if(document.getElementById('igOut')) return;
@@ -5285,7 +5314,7 @@ function fcOutFallback(){
   const html='<div class="ig-out" id="igOut">'
     +'<p class="ig-out-t">Non si \u00e8 aperto niente? Copia l\u2019indirizzo e incollalo in '+dove+':</p>'
     +'<div class="ig-out-url">'+esc(location.host+location.pathname)+'</div>'
-    +'<button class="ig-btn ig-out-b" onclick="fcCopyUrl()">\ud83d\udccb Copia l\u2019indirizzo</button></div>';
+    +'<button class="ig-btn ig-out-b" onclick="fcCopyUrl(this)">\ud83d\udccb Copia l\u2019indirizzo</button></div>';
   const w=document.getElementById('igWhy');
   if(w){ w.insertAdjacentHTML('beforeend', html); return; }
   toast('Apri '+location.host+' in '+dove);
@@ -7319,13 +7348,30 @@ function subscribeLive(){
     /* 4.7 — se il canale non si aggancia (tetto di connessioni del piano
        raggiunto, servizio giu') l'app continua a funzionare, ma i voti degli
        altri non arrivano piu' da soli: va detto, e va messo a registro. */
+    /* 5.6 — niente piu' barra arancione: succedeva quasi sempre al rientro
+       nell'app, quando la connessione si sta ancora riaprendo, e non era un
+       guasto. Si segnala al registro, si rileggono i dati e si riprova da
+       soli (dopo 3, 10, 30 secondi, poi ogni minuto finche' si e' dentro). */
     .subscribe((status)=>{
       if(status==='CHANNEL_ERROR' || status==='TIMED_OUT'){
-        fcOverload('realtime_ko','canale giornata '+(currentMd?currentMd.id:'?')+' \u2014 '+status);
+        fcIncident('realtime_ko','canale giornata '+(currentMd?currentMd.id:'?')+' \u2014 '+status);
+        liveRetryLater();
       }else if(status==='SUBSCRIBED'){
-        busyBar(false);
+        _liveTry=0; if(_liveRetryT){ clearTimeout(_liveRetryT); _liveRetryT=null; }
       }
     });
+}
+let _liveTry=0, _liveRetryT=null;
+function liveRetryLater(){
+  if(_liveRetryT) return;
+  const wait=[3000,10000,30000][_liveTry] || 60000;
+  _liveTry++;
+  _liveRetryT=setTimeout(()=>{
+    _liveRetryT=null;
+    if(document.hidden || !currentMd || !sb) return;
+    subscribeLive();
+    if(currentMd.status!=='closed'){ refreshLive().catch(()=>{}); refreshPresence().catch(()=>{}); }
+  }, wait);
 }
 /* 3.7 — il canale della giornata resta aperto solo con l'app in primo piano.
    In background non serve a niente (lo schermo non si aggiorna) e occupa una
@@ -7337,16 +7383,54 @@ document.addEventListener('visibilitychange', ()=>{
   if(document.hidden){
     _hiddenAt=Date.now();
     if(voteChannel){ try{ sb.removeChannel(voteChannel); }catch(_){ } voteChannel=null; }
+    if(_liveRetryT){ clearTimeout(_liveRetryT); _liveRetryT=null; }
     return;
   }
-  if(!currentMd || voteChannel) return;
   const away=_hiddenAt ? Date.now()-_hiddenAt : 0;
-  subscribeLive();
-  if(away>60000 && currentMd.status!=='closed'){
-    refreshLive().catch(()=>{});
-    refreshPresence().catch(()=>{});
-  }
+  _hiddenAt=0;
+  /* oltre i 10 minuti l'app si riavvia da sola (vedi COLD_RESTART_AFTER):
+     inutile aggiornare a pezzi una pagina che sta per ricaricarsi */
+  if(away>COLD_RESTART_AFTER && _canColdRestart()) return;
+  _liveTry=0;
+  if(currentMd && !voteChannel) subscribeLive();
+  if(away>=3000 && profile) fcResumeRefresh();
 });
+/* 5.6 — RIENTRO BREVE (meno di 10 minuti fuori dall'app)
+   Si resta dove si era, compare una scritta piccola in alto e i dati si
+   rileggono subito, non solo dopo un minuto come prima. Se nel frattempo la
+   giornata e' cambiata (aperta, chiusa, annullata, orario spostato) si
+   ricarica tutto il necessario, come fa l'app quando tutti hanno votato. */
+let _resumeBusy=false, _resumePillT=null;
+function resumePill(stato){
+  const el=document.getElementById('resumePill'); if(!el) return;
+  if(_resumePillT){ clearTimeout(_resumePillT); _resumePillT=null; }
+  if(!stato){ el.classList.remove('on'); return; }
+  const TX={go:'\u21bb Aggiorno i dati\u2026', ok:'\u2713 Dati aggiornati',
+            ko:'Connessione assente: i dati potrebbero non essere aggiornati'};
+  el.textContent=TX[stato]||'';
+  el.className='resume-pill on '+stato;
+  if(stato!=='go') _resumePillT=setTimeout(()=>{ el.classList.remove('on'); _resumePillT=null; }, stato==='ok'?1200:3500);
+}
+async function fcResumeRefresh(){
+  if(_resumeBusy) return;
+  _resumeBusy=true;
+  resumePill('go');
+  try{
+    const {data,error}=await sb.from('matchdays').select('*').order('id',{ascending:false}).limit(1);
+    if(error) throw error;
+    const ultima=(data&&data[0])?data[0]:null;
+    const firma=m=>m?JSON.stringify([m.id,m.status,m.kickoff,m.label,m.closed_at]):'';
+    if(firma(ultima)!==firma(currentMd)){
+      await loadMatchdayData(); await loadPlayers(); await loadStandings(); await loadPlayerStats(); await loadSeason();
+      renderAll();
+    }else if(currentMd && currentMd.status!=='closed'){
+      await Promise.all([refreshLive(), refreshPresence()]);
+    }
+    resumePill('ok');
+  }catch(_){
+    resumePill(navigator.onLine===false?'ko':null);
+  }finally{ _resumeBusy=false; }
+}
 let presT=null;
 function schedulePresence(){clearTimeout(presT);presT=setTimeout(refreshPresence,300);}
 async function refreshPresence(){
@@ -8315,7 +8399,7 @@ function renderMatchday(){
 const MD_ACTIONS={
   open:   {cls:'save',    ic:'\u26a1', lab:'Apri subito la giornata',  fn:'openNowMatchday()'},
   pres:   {cls:'save',    ic:'\ud83d\udfe2', lab:'Segna le presenze di questa giornata', fn:'openPresCard()'},
-  kick:   {cls:'set-btn', ic:'\ud83d\udd51', lab:'Modifica orario di questa giornata', fn:'openEditKickoffSheet()'},
+  kick:   {cls:'save',    ic:'\ud83d\udd51', lab:'Modifica orario di questa giornata', fn:'openEditKickoffSheet()'},
   panel:  {cls:'save',    ic:'\ud83d\udcca', lab:'Apri pannello partita',   fn:'openLiveStats()'},
   close:  {cls:'save',    ic:'\ud83c\udfc1', lab:'Chiudi la giornata adesso', fn:'closeMatchday()'},
   recap:  {cls:'set-btn', ic:'\ud83d\udcca', lab:'Vedi il pagellone',      fn:'openRecapCurrent()'}
@@ -11094,6 +11178,9 @@ let csAlts=[], csAltIdx=0;
 let csSel=null;                 // giocatore toccato, in attesa dello scambio
 let csHand=false;               // squadre ritoccate a mano
 let csGVote=6;
+let csGName='';                 // nome dell'ospite mentre lo si scrive: sopravvive al cambio di voto
+let csGRole='';                 // ruolo dell'ospite: '' = non si sa, sta dove serve
+let csEditK=null;               // ospite che si sta modificando (null = nuovo)
 
 /* ---------- la stima di forza ----------
    media e scarto quadratico medio di una serie: servono a trasformare
@@ -11183,7 +11270,7 @@ function csPool(){
   const eng=csEngine();
   const out=csBase().map(p=>({k:'p'+p.id,name:p.name,avatar:p.avatar,role:p.role||'',
                               injured:!!p.injured,guest:false,forza:csForzaOf(p,eng)}));
-  csGuests.forEach(g=>out.push({k:g.k,name:g.name,avatar:null,role:'',injured:false,
+  csGuests.forEach(g=>out.push({k:g.k,name:g.name,avatar:null,role:g.role||'',injured:false,
                                 guest:true,vote:g.vote,forza:csGuestForza(g.vote)}));
   return out;
 }
@@ -11231,16 +11318,36 @@ function csDraftStillValid(){
    Il conto da minimizzare: prima la differenza di forza (e' il punto), poi i
    ruoli sbilanciati, poi il caso in cui i due piu' forti finiscono insieme.
    I pesi 100 / 9 / 5 fanno si' che un ruolo storto non giustifichi mai mezzo
-   punto di forza in piu' da una parte. */
+   punto di forza in piu' da una parte.
+   5.6 — i ruoli diventano una regola, non un consiglio: per ogni ruolo
+   (POR, DIF, ATT) le due squadre possono differire al massimo di uno. Niente
+   due portieri insieme, niente tutti difensori contro tutti attaccanti. Il
+   peso 1000 per ogni giocatore «di troppo» fa si' che nessuna differenza di
+   forza lo compensi. Si puo' sempre rispettare: i ruoli con un numero
+   dispari di giocatori sono in numero pari, quindi si compensano a coppie.
+   L'ospite senza ruolo sta dove serve. */
+const CS_ROLES=['POR','DIF','ATT'];
+function csRoleDiff(pool,A,B){
+  const roles={};
+  A.forEach(i=>{ const r=pool[i].role; if(CS_ROLES.indexOf(r)>=0) roles[r]=(roles[r]||0)+1; });
+  B.forEach(i=>{ const r=pool[i].role; if(CS_ROLES.indexOf(r)>=0) roles[r]=(roles[r]||0)-1; });
+  let dR=0, hard=0;
+  for(const r in roles){ const d=Math.abs(roles[r]); dR+=d; if(d>1) hard+=d-1; }
+  return {dR:dR, hard:hard};
+}
 function csScore(pool,A,B){
   let sa=0,sb=0,ma=0,mb=0;
   A.forEach(i=>{ sa+=pool[i].forza; if(pool[i].forza>ma)ma=pool[i].forza; });
   B.forEach(i=>{ sb+=pool[i].forza; if(pool[i].forza>mb)mb=pool[i].forza; });
-  const roles={};
-  A.forEach(i=>{ const r=pool[i].role; if(r) roles[r]=(roles[r]||0)+1; });
-  B.forEach(i=>{ const r=pool[i].role; if(r) roles[r]=(roles[r]||0)-1; });
-  let dR=0; for(const r in roles) dR+=Math.abs(roles[r]);
-  return Math.abs(sa-sb)*100 + (dR/2)*9 + Math.abs(ma-mb)*5;
+  const rd=csRoleDiff(pool,A,B);
+  return rd.hard*1000 + Math.abs(sa-sb)*100 + (rd.dR/2)*9 + Math.abs(ma-mb)*5;
+}
+/* Le squadre mostrate ora rispettano i ruoli? Serve dopo uno scambio a mano. */
+function csRolesBroken(){
+  if(!csTeams) return false;
+  const pool=csPlaying(), ix=k=>pool.findIndex(x=>x.k===k);
+  const A=csTeams.a.map(ix).filter(i=>i>=0), B=csTeams.b.map(ix).filter(i=>i>=0);
+  return csRoleDiff(pool,A,B).hard>0;
 }
 /* Tante ripartenze a caso, ognuna limata scambiando coppie finche' migliora.
    Non serve l'ottimo assoluto: servono divisioni ottime E diverse fra loro,
@@ -11307,9 +11414,12 @@ function csVerdict(d){
 function openTeamMaker(){
   if(!profile||!canOp()) return;
   csLoadDraft();
-  csSel=null; csAlts=[]; csAltIdx=0; csGVote=6;
+  csSel=null; csAlts=[]; csAltIdx=0; csGVote=6; csGName=''; csGRole=''; csEditK=null;
   if(!csDraftStillValid()) csTeams=null;
-  csView = csTeams ? 'teams' : 'setup';
+  /* 5.6 — si apre sempre sull'elenco: prima si controlla chi gioca (e si
+     aggiunge chi manca), poi si generano le squadre. Quelle della bozza
+     restano raggiungibili con «Rivedi le squadre». */
+  csView = 'setup';
   renderTeamMaker();
   const el=document.getElementById('teamMaker'); if(el) el.classList.add('open');
 }
@@ -11318,6 +11428,7 @@ function closeTeamMaker(){
   csSaveDraft(); renderTeamMakerRow();
 }
 function csGo(v){
+  if(v==='guest'){ csEditK=null; csGName=''; csGVote=6; csGRole=''; }   // ospite nuovo: si parte puliti
   csView=v; csSel=null;
   renderTeamMaker();
   const b=document.getElementById('csBody'); if(b) b.scrollTop=0;
@@ -11344,14 +11455,46 @@ function csToggle(k){
   if(csOff.has(k)) csOff.delete(k); else csOff.add(k);
   csTeams=null; csAlts=[]; csSaveDraft(); renderTeamMaker();
 }
-function csSetVote(v){ csGVote=v; renderTeamMaker(); }
+/* 5.6 — cambiare voto o ruolo aggiorna solo i tasti e la riga sotto: prima
+   ridisegnava tutto il pannello e il nome appena scritto spariva. */
+function csSetVote(v){
+  csGVote=v;
+  document.querySelectorAll('#csDial button').forEach(b=>b.classList.toggle('on',Number(b.dataset.v)===v));
+  const t=document.getElementById('csGTip'); if(t) t.innerHTML=csGuestTipHTML();
+}
+function csSetGRole(r){
+  csGRole=r;
+  document.querySelectorAll('#csRoleDial button').forEach(b=>b.classList.toggle('on',(b.dataset.r||'')===r));
+}
+function csGuestTipHTML(){
+  const f=csGuestForza(csGVote), vicino=csNearest(f);
+  return 'Entra in squadra con forza <b>'+f.toFixed(1)+'</b>'
+    +(vicino?' — cioè come <b>'+esc(vicino.name)+'</b>.':'.')
+    +' È la stessa scala degli altri: il 6 è il giocatore medio della lega.';
+}
+/* 5.6 — un tocco sull'ospite nell'elenco lo riapre con nome, ruolo e voto
+   gia' compilati: se lo si e' sopravvalutato si corregge, senza rifarlo. */
+function csEditGuest(k){
+  const g=csGuests.filter(x=>x.k===k)[0]; if(!g) return;
+  csEditK=k; csGName=g.name||''; csGVote=Number(g.vote)||6; csGRole=g.role||'';
+  csView='guest'; csSel=null;
+  renderTeamMaker();
+  const b=document.getElementById('csBody'); if(b) b.scrollTop=0;
+}
 function csAddGuest(){
   const el=document.getElementById('csGuestName');
-  const nome=((el&&el.value)||'').trim().slice(0,18);
+  const nome=((el&&el.value)||csGName||'').trim().slice(0,18);
   if(!nome){ toast('Dai un nome all’ospite'); if(el)el.focus(); return; }
-  csGuests.push({k:'g'+(csSeq++), name:nome, vote:csGVote});
-  csTeams=null; csAlts=[]; csGVote=6; csSaveDraft();
-  toast(nome+' aggiunto per stasera');
+  const g=csEditK?csGuests.filter(x=>x.k===csEditK)[0]:null;
+  if(g){
+    g.name=nome; g.vote=csGVote; g.role=csGRole;
+    csOff.delete(g.k);
+    toast(nome+' aggiornato');
+  }else{
+    csGuests.push({k:'g'+(csSeq++), name:nome, vote:csGVote, role:csGRole});
+    toast(nome+' aggiunto per stasera');
+  }
+  csTeams=null; csAlts=[]; csGVote=6; csGName=''; csGRole=''; csEditK=null; csSaveDraft();
   csGo('setup');
 }
 function csDelGuest(k){
@@ -11410,6 +11553,7 @@ function csColHTML(side,titolo,keys){
     return '<div class="cs-item'+cls+'" onclick="csTap(\''+k+'\')">'
       +csAvHTML(p,26)
       +'<span class="csi-n">'+esc(p.name)+(p.guest?' •':'')+'</span>'
+      +(CS_ROLES.indexOf(p.role)>=0?'<span class="csi-r">'+p.role+'</span>':'')
       +'<span class="csi-f">'+p.forza.toFixed(1)+'</span></div>';
   }).join('');
   return '<div class="cs-col '+side+'"><div class="cs-head"><b>'+titolo+'</b><s>'+csSum(keys).toFixed(1)+'</s></div>'+rows+'</div>';
@@ -11423,19 +11567,20 @@ function renderTeamMaker(){
 
   if(csView==='guest'){
     back.textContent='←'; back.onclick=()=>csGo('setup');
-    ttlM.textContent='Ospite di serata'; ttlS.textContent='Vive solo qui, per queste squadre';
-    const f=csGuestForza(csGVote), vicino=csNearest(f);
+    const edit=!!csEditK;
+    ttlM.textContent=edit?'Modifica ospite':'Ospite di serata'; ttlS.textContent='Vive solo qui, per queste squadre';
+    const roleBtn=(r,lab)=>'<button data-r="'+r+'" class="'+(csGRole===r?'on':'')+'" onclick="csSetGRole(\''+r+'\')">'+lab+'</button>';
     body.innerHTML='<p class="cs-note" style="padding-top:2px">Uno che stasera gioca ma non è nell’app. Serve solo a fare le squadre: non entra nel listone, non prende voti e sparisce da solo.</p>'
       +'<div class="field-lab" style="margin-top:12px">Nome</div>'
-      +'<input class="ob-input" id="csGuestName" maxlength="18" autocomplete="off" placeholder="Come lo chiamate">'
+      +'<input class="ob-input" id="csGuestName" maxlength="18" autocomplete="off" placeholder="Come lo chiamate" value="'+esc(csGName)+'" oninput="csGName=this.value">'
+      +'<div class="field-lab" style="margin-top:14px">Ruolo</div>'
+      +'<div class="cs-dial cs-roles" id="csRoleDial">'+roleBtn('POR','POR')+roleBtn('DIF','DIF')+roleBtn('ATT','ATT')+roleBtn('','Non so')+'</div>'
       +'<div class="field-lab" style="margin-top:14px">Quanto vale, da 1 a 10</div>'
-      +'<div class="cs-dial">'+[1,2,3,4,5,6,7,8,9,10].map(v=>
-          '<button class="'+(csGVote===v?'on':'')+'" onclick="csSetVote('+v+')">'+v+'</button>').join('')+'</div>'
-      +'<div class="cs-tip">Entra in squadra con forza <b>'+f.toFixed(1)+'</b>'
-        +(vicino?' — cioè come <b>'+esc(vicino.name)+'</b>.':'.')
-        +' È la stessa scala degli altri: il 6 è il giocatore medio della lega.</div>';
-    foot.innerHTML='<button class="ls-cta" onclick="csAddGuest()">➕ Aggiungi per stasera</button>';
-    const inp=document.getElementById('csGuestName'); if(inp) setTimeout(()=>inp.focus(),80);
+      +'<div class="cs-dial" id="csDial">'+[1,2,3,4,5,6,7,8,9,10].map(v=>
+          '<button data-v="'+v+'" class="'+(csGVote===v?'on':'')+'" onclick="csSetVote('+v+')">'+v+'</button>').join('')+'</div>'
+      +'<div class="cs-tip" id="csGTip">'+csGuestTipHTML()+'</div>';
+    foot.innerHTML='<button class="ls-cta" onclick="csAddGuest()">'+(edit?'✓ Salva modifiche':'➕ Aggiungi per stasera')+'</button>';
+    const inp=document.getElementById('csGuestName'); if(inp && !edit) setTimeout(()=>inp.focus(),80);
     return;
   }
 
@@ -11456,7 +11601,8 @@ function renderTeamMaker(){
         +(csSel?('Ora tocca chi vuoi al suo posto nell’altra squadra: si scambiano.')
                :('Tocca un giocatore e poi uno dell’altra squadra per scambiarli. La forza in alto si aggiorna subito.'))
         +(csGuests.filter(g=>!csOff.has(g.k)).length?'<br>I nomi col puntino sono ospiti di stasera: finita la giornata non ne resta traccia.':'')
-        +'</div>';
+        +'</div>'
+      +(csHand&&csRolesBroken()?'<div class="cs-warn" style="margin:10px 0 0">Con questo scambio i ruoli non sono più divisi in modo giusto (per esempio due portieri nella stessa squadra).</div>':'');
     foot.innerHTML='<div class="cs-mini" style="margin-top:0">'
         +'<button onclick="csRegen()">🔄 Rigenera</button>'
         +'<button onclick="csShare()">📤 Condividi</button></div>'
@@ -11488,10 +11634,10 @@ function renderTeamMaker(){
 
   const rows=pool.slice().sort((a,b)=>b.forza-a.forza).map(p=>{
     const off=csOff.has(p.k);
-    return '<div class="cs-row'+(off?' off':' on')+'" onclick="csToggle(\''+p.k+'\')">'
+    return '<div class="cs-row'+(off?' off':' on')+'" onclick="'+(p.guest?'csEditGuest':'csToggle')+'(\''+p.k+'\')">'
       +csAvHTML(p,34)
       +'<span class="csr-n">'+esc(p.name)+'<small>'
-        +(p.guest?('ospite · voto '+p.vote):(p.role||'—')+(p.injured?' · 🩹 infortunato':''))
+        +(p.guest?('ospite · '+(p.role?p.role+' · ':'')+'voto '+p.vote+' · tocca per modificare'):(p.role||'—')+(p.injured?' · 🩹 infortunato':''))
       +'</small></span>'
       +'<span class="csr-f">'+p.forza.toFixed(1)+'</span>'
       +(p.guest?'<button class="cs-del" onclick="event.stopPropagation();csDelGuest(\''+p.k+'\')">✕</button>'
@@ -11505,10 +11651,11 @@ function renderTeamMaker(){
     +(pool.length?rows:'')
     +'<div class="cs-mini"><button onclick="csGo(\'guest\')">➕ Aggiungi un ospite</button>'
       +'<button onclick="csToPresenze()">🟢 Presenze</button></div>'
-    +'<p class="cs-note">'+q.tx+' Tocca un nome per lasciarlo fuori da questa divisione.</p>';
+    +'<p class="cs-note">'+q.tx+' Tocca un nome per lasciarlo fuori da questa divisione (un ospite, per modificarlo). Le squadre tengono conto anche dei ruoli.</p>';
 
   const ok=(n>=CS_MIN && !(n%2));
-  foot.innerHTML='<button class="ls-cta" '+(ok?'':'disabled')+' onclick="csMake()">⚡ Genera le squadre</button>';
+  foot.innerHTML=(csTeams&&csDraftStillValid()?'<div class="cs-mini" style="margin:0 0 9px"><button onclick="csGo(\'teams\')">↩ Rivedi le squadre fatte</button></div>':'')
+    +'<button class="ls-cta" '+(ok?'':'disabled')+' onclick="csMake()">⚡ Genera le squadre</button>';
 }
 /* Dal pannello alle presenze: si chiude prima, cosi' l'admin non resta con due
    schermate sovrapposte, e la bozza viene salvata per quando torna. Sotto c'e'
@@ -12614,7 +12761,7 @@ async function checkForUpdate(){
    Tre eccezioni, tutte casi in cui ricaricare farebbe danno: senza rete (si
    ripartirebbe nella schermata offline), prima di essere entrati (si perde
    quello che si sta scrivendo) e durante il tutorial. */
-const COLD_RESTART_AFTER=15*60*1000;
+const COLD_RESTART_AFTER=10*60*1000;   // 5.6 — era 15 minuti
 function _canColdRestart(){
   try{
     if(typeof profile==='undefined' || !profile) return false;
