@@ -51,7 +51,7 @@
 })();
 </script>
 
-<title>FantaCalcetto - Il tuo campionato</title>
+<title>FantaCalcetto - Il fanta del tuo calcetto</title>
 <meta name="description" content="Trasforma il calcetto tra amici in un campionato: presenze, formazione a 5 con crediti e capitano, voti tra giocatori, pagellone e classifica di stagione. Gratis, senza scaricare niente.">
 <link rel="canonical" href="https://www.fantacalcettoitalia.it/">
 
@@ -59,7 +59,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="FantaCalcetto">
 <meta property="og:locale" content="it_IT">
-<meta property="og:title" content="FantaCalcetto - Il tuo campionato">
+<meta property="og:title" content="FantaCalcetto - Il fanta del tuo calcetto">
 <meta property="og:description" content="Formazioni, crediti, voti, pagellone e classifica per il calcetto tra amici. Gratis, dal telefono.">
 <meta property="og:url" content="https://www.fantacalcettoitalia.it/">
 <meta property="og:image" content="https://www.fantacalcettoitalia.it/sito/anteprima.png">
@@ -558,7 +558,7 @@
      PREZZI
      Il TOTALE e' il prezzo. Il costo a testa e' solo la
      rassicurazione, e si calcola dal cursore: senza JavaScript
-     resta il valore di partenza (15 persone), che e' gia' giusto.
+     resta il valore di partenza (16 persone), che e' gia' giusto.
      ============================================================ -->
 <section id="prezzi">
   <div class="wrap">
@@ -605,10 +605,10 @@
 
       <div class="csep"></div>
 
-      <div class="cq">Quanti siete? <b id="pxN">15</b></div>
-      <input type="range" id="pxRange" min="6" max="40" step="1" value="15"
+      <div class="cq">Quanti siete? <b id="pxN">16</b></div>
+      <input type="range" id="pxRange" min="16" max="40" step="1" value="16"
              aria-label="Quante persone ci sono nella lega">
-      <div class="cscale"><span>6</span><span>40</span></div>
+      <div class="cscale"><span>16</span><span>40</span></div>
 
       <div class="chead"><b id="pxEach">€2,00</b><span>a testa, per tutta la stagione</span></div>
 
@@ -796,7 +796,7 @@ document.getElementById('yy').textContent = new Date().getFullYear();
    Il totale non si muove mai: e' quello il prezzo. Il cursore
    cambia solo il «a testa», che serve a far capire l'ordine di
    grandezza. Senza JavaScript la pagina mostra comunque il
-   valore di partenza (15 persone), che e' gia' corretto.
+   valore di partenza (16 persone), che e' gia' corretto.
    ------------------------------------------------------------ */
 /* (sessione 68) proSoon() tolta insieme al pulsante: Pro si attiva nell'app. */
 
@@ -805,7 +805,7 @@ if (pxR) {
   var PX_TOT = 29.90;
   var pxN = document.getElementById('pxN'), pxE = document.getElementById('pxEach');
   function pxDraw(){
-    var n = Math.max(1, parseInt(pxR.value, 10) || 15);
+    var n = Math.max(1, parseInt(pxR.value, 10) || 16);
     pxN.textContent = n;
     var each = PX_TOT / n;
     /* arrotondo per ECCESSO ai centesimi: meglio dire un centesimo in piu'
