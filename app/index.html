@@ -2745,6 +2745,12 @@
   .navrow.t-cyan{--c:46,196,255} .navrow.t-slate{--c:143,169,204} .navrow.t-green{--c:47,217,138}
   .navrow.gold{--c:255,194,61;border-color:rgba(255,194,61,.28);background:linear-gradient(160deg,rgba(255,194,61,.13),rgba(255,255,255,.02))}
   .navrow.gold .go{color:#ffe3a1;background:rgba(255,194,61,.10);border-color:rgba(255,194,61,.2)}
+  /* 5.7 — riga «Elimina la lega»: rossa, staccata dalle altre e in fondo alla
+     pagina, perche' non e' una impostazione ma la fine della lega. */
+  .navrow.danger{--c:255,100,112;border-color:rgba(255,100,112,.32);
+    background:linear-gradient(160deg,rgba(255,100,112,.12),rgba(255,255,255,.02));margin-top:26px}
+  .navrow.danger .lab{color:#ff9aa4}
+  .navrow.danger .go{color:#ff9aa4;background:rgba(255,100,112,.10);border-color:rgba(255,100,112,.22)}
   /* riga Pro: la sola che luccica */
   .navrow.t-pro{--c:255,194,61;border-color:rgba(255,194,61,.48);
     background:linear-gradient(115deg,rgba(255,194,61,.24),rgba(255,138,60,.08) 55%,rgba(255,255,255,.02));
@@ -3473,6 +3479,7 @@
       <button class="navrow gold ownerRow" id="rowRules" onclick="setNav('page-regole')"><span class="ic">⚙️</span><span class="lab">Le regole del gioco<small>Apertura giornata, presenze, portiere, crediti</small></span><span class="go">›</span></button>
       <button class="navrow gold ownerRow" onclick="setNav('page-stagione')"><span class="ic">📅</span><span class="lab">Stagione<small id="admSeaSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold ownerRow" onclick="setNav('page-manutenzione')"><span class="ic">🛟</span><span class="lab">Aiuto e manutenzione<small>Segnala un problema, ricalcola il recap</small></span><span class="go">›</span></button>
+      <button class="navrow danger ownerRow" onclick="askLeagueDeletion()"><span class="ic">🗑️</span><span class="lab">Elimina la lega<small>Chiude la lega e cancella tutto</small></span><span class="go">›</span></button>
     </div>
 
     <!-- ===== PRIVACY E DATI ===== -->
@@ -4055,7 +4062,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='5.6';
+const APP_VERSION='5.7';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -9816,6 +9823,127 @@ async function adDoDelete(btn){
   alert(esito==='league_deleted'
     ? 'Account e lega eliminati. Grazie di aver giocato.'
     : 'Account eliminato. Grazie di aver giocato.');
+  location.replace('/');
+}
+
+/* ==========================================================================
+   ELIMINAZIONE DELLA LEGA (5.7)
+
+   Fino a ieri una lega si poteva cancellare solo dalla console super-admin.
+   Ora puo' farlo il suo proprietario, dall'app. Il vice no: amministra la
+   giornata, non scioglie la lega (la riga ha classe ownerRow, e comunque il
+   database ricontrolla).
+
+   Fa esattamente quello che fa il pulsante della console: la RPC
+   delete_my_league() chiama la stessa purge_league_data() di sa_delete_league.
+   Spariscono i dati della lega e gli account di TUTTI i membri, compreso chi
+   preme il tasto.
+
+   Tre passaggi, come per la cancellazione dell'account, ma con una differenza:
+   qui si scrive il nome esatto della lega. Cancellare il proprio account
+   riguarda una persona; cancellare la lega riguarda tutti gli altri, e vale
+   la pena rallentare.
+   ========================================================================== */
+function ldBox(){ const o=document.getElementById('ldOverlay'); return o?o.firstElementChild:null; }
+function ldClose(){ const o=document.getElementById('ldOverlay'); if(o) o.remove(); }
+
+function askLeagueDeletion(){
+  if(!(profile && profile.is_admin)){ toast('Solo chi ha creato la lega pu\u00f2 eliminarla'); return; }
+  ldClose();
+  const o=document.createElement('div');
+  o.id='ldOverlay';
+  o.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(5,12,24,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px';
+  o.innerHTML='<div style="'+AD_BOX+'"></div>';
+  document.body.appendChild(o);
+  ldStepIntro();
+}
+
+/* PASSO 1 — cosa sparisce davvero, detto senza giri di parole. */
+function ldStepIntro(){
+  const box=ldBox(); if(!box) return;
+  const nome=(myLeague&&myLeague.name)?myLeague.name:'questa lega';
+  box.innerHTML='<div style="'+AD_TIT+'">Elimina la lega</div>'
+    +'<p style="'+AD_TXT+'">Stai per chiudere <b style="color:#eaf1fb">'+esc(nome)+'</b>. Vengono cancellati per sempre:</p>'
+    +'<p style="'+AD_TXT+'">\u2022 giocatori, giornate, voti e formazioni<br>'
+      +'\u2022 classifiche, albo d\'oro e storico di tutte le stagioni<br>'
+      +'\u2022 presenze, crediti, mercato e impostazioni<br>'
+      +'\u2022 <b style="color:#eaf1fb">gli account di tutti i membri</b>, email comprese</p>'
+    +'<p style="'+AD_WARN+'">Sparisce anche il <b>tuo</b> account: la lega non resta senza di te, si chiude e basta. Gli altri membri perdono l\'accesso subito, senza preavviso.</p>'
+    +'<p style="'+AD_TXT+'"><b style="color:#eaf1fb">Non si torna indietro e non si recupera niente.</b></p>'
+    +'<button id="ldGo" style="'+AD_BLUE+'">Continua</button>'
+    +'<button id="ldNo" style="'+AD_GHOST+'">Annulla</button>';
+  box.querySelector('#ldNo').onclick=ldClose;
+  box.querySelector('#ldGo').onclick=ldStepName;
+}
+
+/* PASSO 2 — si scrive il nome esatto. Non e' burocrazia: e' il modo piu'
+   semplice per essere sicuri che chi preme sappia quale lega sta chiudendo. */
+function ldStepName(){
+  const box=ldBox(); if(!box) return;
+  const nome=(myLeague&&myLeague.name)?myLeague.name:'';
+  box.innerHTML='<div style="'+AD_TIT+'">Scrivi il nome della lega</div>'
+    +'<p style="'+AD_TXT+'">Per proseguire, scrivi qui sotto il nome esatto della lega:</p>'
+    +'<p style="'+AD_TXT+'"><b style="color:#eaf1fb">'+esc(nome||'\u2014')+'</b></p>'
+    +'<input id="ldName" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Nome della lega" '
+      +'style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.05);border:1px solid rgba(150,185,240,.22);'
+      +'border-radius:12px;padding:13px;color:#eaf1fb;font-size:15px;font-family:inherit;margin-bottom:12px">'
+    +'<button id="ldGo" style="'+AD_RED+';opacity:.5" disabled>Continua</button>'
+    +'<button id="ldNo" style="'+AD_GHOST+'">Annulla</button>';
+
+  const inp=box.querySelector('#ldName'), go=box.querySelector('#ldGo');
+  const norm=t=>String(t||'').trim().toLowerCase();
+  inp.oninput=()=>{
+    const ok = !!nome && norm(inp.value)===norm(nome);
+    go.disabled=!ok; go.style.opacity=ok?'1':'.5';
+  };
+  box.querySelector('#ldNo').onclick=ldClose;
+  go.onclick=()=>{ if(!go.disabled) ldStepConfirm(); };
+  setTimeout(()=>inp.focus(),80);
+}
+
+/* PASSO 3 — ultimo tocco, su una schermata diversa. */
+function ldStepConfirm(){
+  const box=ldBox(); if(!box) return;
+  box.innerHTML='<div style="'+AD_TIT+'">Ultima conferma</div>'
+    +'<p style="'+AD_TXT+'">Premendo qui sotto la lega viene chiusa e tutti i dati cancellati, subito.</p>'
+    +'<p style="'+AD_TXT+'"><b style="color:#eaf1fb">Non si torna indietro.</b></p>'
+    +'<button id="ldKill" style="'+AD_RED+'">Elimina la lega per sempre</button>'
+    +'<button id="ldNo" style="'+AD_GHOST+'">No, torna indietro</button>';
+  const btn=box.querySelector('#ldKill');
+  box.querySelector('#ldNo').onclick=ldClose;
+  btn.onclick=()=>ldDoDelete(btn);
+}
+
+async function ldDoDelete(btn){
+  btn.disabled=true; btn.style.opacity='.6'; btn.textContent='Cancellazione in corso\u2026';
+  try{
+    const {error}=await sb.rpc('delete_my_league');
+    if(error) throw error;
+  }catch(e){
+    btn.disabled=false; btn.style.opacity='1'; btn.textContent='Elimina la lega per sempre';
+    const m=((e&&e.message)||String(e));
+    if(m.includes('not_league_owner'))              toast('Solo chi ha creato la lega pu\u00f2 eliminarla');
+    else if(m.includes('superadmin_owned_league'))   toast('Da qui no: elimina questa lega dalla console super-admin');
+    else if(m.includes('cannot_delete_primary_league')) toast('Questa lega non \u00e8 eliminabile');
+    else if(m.includes('no_league'))                toast('Non risulti in nessuna lega');
+    else if(m.includes('delete_my_league')||m.includes('does not exist')) toast('Manca la SQL: esegui elimina_lega.sql');
+    else toast(errText(e));
+    return;
+  }
+
+  /* stessa pulizia del telefono che fa la cancellazione dell'account: la
+     subscription push resterebbe registrata nel browser anche senza la riga
+     nel database. */
+  try{
+    const reg=await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.getSubscription();
+    if(sub) await sub.unsubscribe();
+  }catch(_){ }
+  try{ await sb.auth.signOut(); }catch(_){ }
+  try{ localStorage.clear(); }catch(_){ }
+
+  ldClose();
+  alert('Lega eliminata. Grazie di aver giocato.');
   location.replace('/');
 }
 
