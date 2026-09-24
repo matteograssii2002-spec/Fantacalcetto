@@ -700,7 +700,7 @@
   .cs-item.target{border-color:rgba(47,217,138,.5);border-style:dashed;background:rgba(47,217,138,.06)}
   .csi-av{width:26px;flex:none;line-height:0;border-radius:7px;overflow:hidden;background:var(--surface2)}
   .csi-av img{width:26px;height:auto;display:block;border-radius:7px}
-  .csi-av.ghost{display:grid;place-items:center;height:26px;font-size:13px;line-height:1}
+  .csi-av.ghost{display:grid;place-items:center;width:26px;height:26px;font-size:13px;line-height:1;box-sizing:border-box}
   .cs-item .csi-n{flex:1;min-width:0;font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .cs-item .csi-f{font-family:'JetBrains Mono';font-weight:800;font-size:12.5px;color:var(--muted);flex:none}
   .cs-item .csi-r{font-family:'JetBrains Mono';font-weight:800;font-size:9px;letter-spacing:.04em;color:var(--muted);opacity:.8;flex:none}
@@ -708,7 +708,7 @@
   .cs-tip.go{background:rgba(47,217,138,.12);border-color:rgba(47,217,138,.4);color:#b9f3d6}
   /* elenco «chi gioca stasera» */
   .cs-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line);cursor:pointer}
-  .cs-row .csi-av{width:34px;height:34px} .cs-row .csi-av img{width:34px} .cs-row .csi-av.ghost{height:34px;font-size:16px}
+  .cs-row .csi-av{width:34px;height:34px} .cs-row .csi-av img{width:34px} .cs-row .csi-av.ghost{width:34px;height:34px;font-size:16px}
   .cs-row .csr-n{flex:1;min-width:0;font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .cs-row .csr-n small{display:block;font-weight:600;font-size:10.5px;color:var(--muted);letter-spacing:.02em}
   .cs-row .csr-f{font-family:'JetBrains Mono';font-weight:800;font-size:16px;color:var(--gold);min-width:32px;text-align:right;flex:none}
@@ -2761,6 +2761,18 @@
   .navrow.t-pro .ic{background:radial-gradient(circle at 35% 30%,#fff3c4,#ffc23d 55%,#b9780f);box-shadow:0 0 18px rgba(255,194,61,.6),inset 0 1px 0 rgba(255,255,255,.5)}
   .navrow.t-pro .lab{color:#ffe3a1} .navrow.t-pro .lab small{color:#e0cfa6}
   .navrow.t-pro .go{color:#241800;background:linear-gradient(135deg,#ffe08a,#ffb020);border:none;box-shadow:0 0 14px rgba(255,194,61,.5)}
+  /* 5.8 — «I numeri della partita»: stessa idea del riquadro Pro (luccica,
+     si nota) ma in blu, cosi' resta "informazione utile", non "a pagamento".
+     Prima era un .navrow uguale a tutti gli altri e spariva nell'elenco. */
+  .navrow.t-glow{--c:63,151,255;border-color:rgba(63,151,255,.5);
+    background:linear-gradient(115deg,rgba(63,151,255,.26),rgba(90,110,255,.10) 55%,rgba(255,255,255,.02));
+    box-shadow:0 18px 36px -22px rgba(63,151,255,.8),inset 0 1px 0 rgba(255,255,255,.12)}
+  .navrow.t-glow::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+    background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:260% 100%;background-position:130% 0;
+    animation:pzSheen 4.5s ease-in-out .3s infinite}
+  .navrow.t-glow .ic{background:radial-gradient(circle at 35% 30%,#d6ecff,#3f97ff 55%,#1c4fb0);box-shadow:0 0 18px rgba(63,151,255,.65),inset 0 1px 0 rgba(255,255,255,.5)}
+  .navrow.t-glow .lab{color:#eaf3ff;font-weight:800} .navrow.t-glow .lab small{color:#bcd6ff}
+  .navrow.t-glow .go{color:#08172e;background:linear-gradient(135deg,#bfe0ff,#3f97ff);border:none;box-shadow:0 0 14px rgba(63,151,255,.55)}
 
   .setgrp{--c:143,169,204;display:flex;align-items:center;gap:9px;margin:26px 4px 2px;font-size:11px;font-weight:900;letter-spacing:.16em;color:rgb(var(--c))}
   .setgrp::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:rgb(var(--c));box-shadow:0 0 10px rgba(var(--c),.9)}
@@ -2855,7 +2867,7 @@
   #page-profilo.on>:nth-child(n+7){animation-delay:.21s}
 
   @media (prefers-reduced-motion:reduce){
-    #setMenu.on>*,#page-profilo.on>*,.navrow.t-pro::after,#setMenu .prof::after,.prof-glow,.ph-hero::after,#page-profilo #setSaveBtn::after{animation:none}
+    #setMenu.on>*,#page-profilo.on>*,.navrow.t-pro::after,.navrow.t-glow::after,#setMenu .prof::after,.prof-glow,.ph-hero::after,#page-profilo #setSaveBtn::after{animation:none}
   }
   @media (max-width:350px){
     .navrow .ic{width:40px;height:40px;font-size:19px}
@@ -3413,7 +3425,7 @@
     <div class="countdown"><div class="cl" id="cdLabel">Giornata</div><div class="ct" id="cdTime">—</div></div>
     <!-- 4.9 — i numeri della partita servono PRIMA di votare, non dopo: la riga
          stava in fondo alla pagina, sotto ai voti, e chi votava non la vedeva. -->
-    <button class="navrow t-blue" id="bmOpenBtn" onclick="openBonusMalus()" style="margin:0 0 14px"><span class="ic">📋</span><span class="lab">I numeri della partita<small>Gol, assist e cartellini di ogni giocatore.</small></span><span class="go">›</span></button>
+    <button class="navrow t-glow" id="bmOpenBtn" onclick="openBonusMalus()" style="margin:0 0 14px"><span class="ic">📋</span><span class="lab">I numeri della partita<small>Guardali prima di votare: gol, assist e cartellini di ogni giocatore.</small></span><span class="go">›</span></button>
     <div class="vcard">
       <div class="vcard-h"><h3>Vota i giocatori</h3><button class="vsend" id="submitVotesBtn" onclick="submitVotes()" style="display:none">Invia voti</button></div>
       <p class="vs">Vota da 1 a 10 ogni giocatore. Tocca la 🏆 per l'<b>MVP</b>, poi <b>Invia voti</b> per salvare.</p>
@@ -3456,7 +3468,7 @@
            piu' spesso, e nasconderla dietro un tap in piu' sarebbe un peggioramento
            vero. Tutto il resto della gestione sta dietro una porta sola. -->
       <button class="navrow gold adminRow" id="rowMd" onclick="setNav('page-giornata')" style="display:none"><span class="ic">⚽</span><span class="lab">Centro giornata<small id="admMdSub">—</small></span><span class="go">›</span></button>
-      <button class="navrow gold adminRow" id="rowAdminHub" onclick="setNav('page-admin')" style="display:none"><span class="ic">🛠️</span><span class="lab">Amministra la lega<small id="admHubSub">Utenti, regole, stagione</small></span><span class="go">›</span></button>
+      <button class="navrow gold adminRow" id="rowAdminHub" onclick="setNav('page-admin')" style="display:none"><span class="ic">🛠️</span><span class="lab">Amministra la lega<small id="admHubSub">Utenti, Regole, Stagione, Assistenza, Eliminazione</small></span><span class="go">›</span></button>
       <div class="setgrp">Altro</div>
       <button class="navrow t-slate" id="rowInstall" onclick="openInstallHelp()"><span class="ic">📲</span><span class="lab">Installa sulla Home<small id="rowInstallSub">Icona sua, schermo intero, notifiche</small></span><span class="go">›</span></button>
       <button class="navrow t-slate" onclick="setNav('page-privacy')"><span class="ic">🔒</span><span class="lab">Privacy e dati<small>Informativa, termini, cancellazione</small></span><span class="go">›</span></button>
@@ -3478,7 +3490,7 @@
       <button class="navrow gold adminRow" id="rowLeague" onclick="setNav('page-lega')"><span class="ic">👥</span><span class="lab">Utenti<small id="admPeopleSub">Inviti, giocatori, avvisi, permessi</small></span><span class="go">›</span></button>
       <button class="navrow gold ownerRow" id="rowRules" onclick="setNav('page-regole')"><span class="ic">⚙️</span><span class="lab">Le regole del gioco<small>Apertura giornata, presenze, portiere, crediti</small></span><span class="go">›</span></button>
       <button class="navrow gold ownerRow" onclick="setNav('page-stagione')"><span class="ic">📅</span><span class="lab">Stagione<small id="admSeaSub">—</small></span><span class="go">›</span></button>
-      <button class="navrow gold ownerRow" onclick="setNav('page-manutenzione')"><span class="ic">🛟</span><span class="lab">Aiuto e manutenzione<small>Segnala un problema, ricalcola il recap</small></span><span class="go">›</span></button>
+      <button class="navrow gold ownerRow" onclick="setNav('page-manutenzione')"><span class="ic">🛟</span><span class="lab">Assistenza<small>Segnala un problema, ricalcola il recap</small></span><span class="go">›</span></button>
       <button class="navrow danger ownerRow" onclick="askLeagueDeletion()"><span class="ic">🗑️</span><span class="lab">Elimina la lega<small>Chiude la lega e cancella tutto</small></span><span class="go">›</span></button>
     </div>
 
@@ -3829,7 +3841,7 @@
          Al suo posto, per tutti gli altri admin, c'è il canale per segnalare. -->
     <div class="setpage" id="page-manutenzione">
       <button class="subback" onclick="setNav('page-admin')">‹ Amministra</button>
-      <div class="section-h"><h2>Aiuto e manutenzione</h2></div>
+      <div class="section-h"><h2>Assistenza</h2></div>
       <p class="setintro">Serve di rado: in condizioni normali qui non entri.</p>
       <div class="set-card">
         <h3>Qualcosa non va?</h3>
@@ -4062,7 +4074,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='5.7';
+const APP_VERSION='5.8';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -8539,7 +8551,7 @@ function autoHealthHTML(){
   if(late.length){
     const nn=late.map(x=>x.n);
     const lista = nn.length===1 ? nn[0] : (nn.slice(0,-1).join(', ')+' e '+nn[nn.length-1]);
-    return `<div class="mdc-note warn" style="margin-top:14px">\u26a0\ufe0f <b>Una notifica automatica non \u00e8 partita:</b> ${lista}. La giornata funziona lo stesso, ma nessuno \u00e8 stato avvisato: conviene dirglielo tu nel gruppo. Se si ripete, segnalacelo da Aiuto e manutenzione.</div>`;
+    return `<div class="mdc-note warn" style="margin-top:14px">\u26a0\ufe0f <b>Una notifica automatica non \u00e8 partita:</b> ${lista}. La giornata funziona lo stesso, ma nessuno \u00e8 stato avvisato: conviene dirglielo tu nel gruppo. Se si ripete, segnalacelo da Assistenza.</div>`;
   }
   if(steps.some(x=>x.ok))
     return `<p class="vs" style="color:var(--muted);font-size:11.5px;margin:14px 2px 0;line-height:1.5">\ud83e\udd16 Automazione attiva: i promemoria di questa giornata sono partiti regolarmente.</p>`;
@@ -8577,7 +8589,7 @@ function autoOpenStatusHTML(){
   const op=new Date(k.getTime()-72*HOUR);
   const late=autoOpenOverdueMs();
   if(late>25*MIN)
-    return box('warn',"\u26a0\ufe0f <b>L'apertura automatica \u00e8 in ritardo.</b> "+fmtDayTime(k)+" era gi\u00e0 dentro le 72h da "+durLabel(late)+", quindi la giornata sarebbe dovuta partire da sola e non \u00e8 successo. Aprila tu qui sotto, e se si ripete segnalacelo da Aiuto e manutenzione.");
+    return box('warn',"\u26a0\ufe0f <b>L'apertura automatica \u00e8 in ritardo.</b> "+fmtDayTime(k)+" era gi\u00e0 dentro le 72h da "+durLabel(late)+", quindi la giornata sarebbe dovuta partire da sola e non \u00e8 successo. Aprila tu qui sotto, e se si ripete segnalacelo da Assistenza.");
   if(op.getTime()<=Date.now())
     return box('ok',"\ud83e\udd16 <b>Apertura automatica attiva.</b> La prossima giornata \u00e8 "+fmtDayTime(k)+" e siamo gi\u00e0 dentro le 72h: si apre da sola entro pochi minuti. Se ti serve prima, aprila adesso.");
   return box('ok',"\ud83e\udd16 <b>Apertura automatica attiva.</b> La prossima giornata \u00e8 "+fmtDayTime(k)+": si apre da sola "+fmtDayTime(op)+", 72h prima del fischio d'inizio. Fino ad allora \u00e8 normale che non ci sia niente.");
@@ -12742,11 +12754,11 @@ function errText(e){
   if(/no_matchday/i.test(m))       return 'Nessuna giornata aperta.';
   if(/not_logged_in/i.test(m))     return 'Sessione non valida: esci e rientra.';
   if(/row-level security|violates row level|42501|permission denied/i.test(m))
-    return 'Il database non ti riconosce come amministratore di questa lega. Segnalacelo da Impostazioni \u203a Aiuto e manutenzione.';
+    return 'Il database non ti riconosce come amministratore di questa lega. Segnalacelo da Impostazioni \u203a Assistenza.';
   if(/duplicate key|already exists|23505/i.test(m))
     return 'Esiste gi\u00e0 qualcosa con questo nome: scegline un altro.';
   if(/does not exist|PGRST202|schema cache/i.test(m))
-    return "Manca un pezzo del database: va eseguito l'SQL di questa versione. Segnalacelo da Aiuto e manutenzione.";
+    return "Manca un pezzo del database: va eseguito l'SQL di questa versione. Segnalacelo da Assistenza.";
   if(/JWT|invalid.*token|expired/i.test(m))
     return 'La sessione \u00e8 scaduta: esci e rientra.';
   if(/Failed to fetch|NetworkError|network ?error/i.test(m))
