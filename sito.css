@@ -326,6 +326,9 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;margin-top:clamp(40p
 .foot nav{display:flex;flex-wrap:wrap;gap:12px 20px;font-size:14px;color:var(--muted);font-weight:600}
 .foot nav a{white-space:nowrap}   /* le voci vanno a capo INTERE, mai spezzate a meta' */
 .foot nav a:hover{color:var(--text)}
+.foot .social{display:flex;gap:14px;align-items:center}
+.foot .social a{color:var(--muted);display:flex;padding:4px;border-radius:8px;transition:color .15s}
+.foot .social a:hover{color:var(--accent)}
 
 /* ============================================================
    COMPARSA ALLO SCROLL — la classe la mette lo script.
