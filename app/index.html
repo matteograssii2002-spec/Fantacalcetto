@@ -3585,7 +3585,7 @@
         <div class="rg-sec g"><span class="dot"></span>Bonus</div>
         <div class="rg-grid">
           <div class="rg-t g"><span class="ic">⚽</span><span class="v">+3</span><span class="l">Gol</span></div>
-          <div class="rg-t g"><span class="ic">👟</span><span class="v">+2</span><span class="l">Assist</span></div>
+          <div class="rg-t g"><span class="ic">👟</span><span class="v">+1,5</span><span class="l">Assist</span></div>
           <div class="rg-t g"><span class="ic">🙌</span><span class="v">+3</span><span class="l">Rigore parato</span></div>
           <div class="rg-t g"><span class="ic">✅</span><span class="v">+2</span><span class="l">Squadra vince</span></div>
           <div class="rg-t g wide"><span class="ic">🧤</span><span class="v">+3</span><span class="l">Porta inviolata<small>solo portiere</small></span></div>
@@ -3597,9 +3597,9 @@
           <div class="rg-t r"><span class="ic">😵</span><span class="v">−3</span><span class="l">Autogol</span></div>
           <div class="rg-t r"><span class="ic">🚫</span><span class="v">−3</span><span class="l">Rigore sbagliato</span></div>
           <div class="rg-t r"><span class="ic">🔴</span><span class="v">−1</span><span class="l">Gol subito<small>solo portiere</small></span></div>
-          <div class="rg-t r"><span class="ic">❌</span><span class="v">−1</span><span class="l">Squadra perde</span></div>
-          <div class="rg-t r wide"><span class="ic">🟨</span><span class="v">−0,5</span><span class="l">Cartellino giallo</span></div>
+          <div class="rg-t r"><span class="ic">🟨</span><span class="v">−0,5</span><span class="l">Cartellino giallo</span></div>
         </div>
+        <p class="rg-note">La sconfitta non toglie punti: vale 0, come il pareggio.</p>
 
         <div class="rg-sec au"><span class="dot"></span>Moltiplicatori</div>
         <div class="rg-grid">
@@ -4074,7 +4074,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='5.8';
+const APP_VERSION='5.9';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -7355,11 +7355,19 @@ async function loadMvpSega(){
   const {data}=await sb.rpc('get_mvp_sega',{md:currentMd.id});
   if(data&&data[0]){mvpPid=data[0].mvp||0;segaPid=data[0].sega||0;}
 }
+let _liveNonce=0;
 function subscribeLive(){
-  if(voteChannel){sb.removeChannel(voteChannel);voteChannel=null;}
+  if(voteChannel){ try{ sb.removeChannel(voteChannel); }catch(_){ } voteChannel=null; }
   if(!currentMd)return;
   const f='matchday_id=eq.'+currentMd.id;
-  voteChannel=sb.channel('live-'+currentMd.id)
+  /* 5.3 — NOME UNICO a ogni aggancio (live-<id>-<nonce>): removeChannel() e'
+     asincrona, quindi un nome riusato subito arrivava mentre il vecchio
+     stava ancora staccando -> CHANNEL_ERROR. Sul telefono succedeva di
+     continuo perche' visibilitychange stacca/riattacca a ogni uscita e
+     rientro. Questa correzione si era persa in una sessione successiva
+     (tornato il nome fisso 'live-<id>'): ripristinata il 27/09 (5.9). */
+  const nonce=++_liveNonce;
+  const ch=sb.channel('live-'+currentMd.id+'-'+nonce)
     .on('postgres_changes',{event:'*',schema:'public',table:'votes',filter:f},scheduleLive)
     .on('postgres_changes',{event:'*',schema:'public',table:'match_stats',filter:f},scheduleLive)
     .on('postgres_changes',{event:'*',schema:'public',table:'nominations',filter:f},scheduleLive)
@@ -7372,6 +7380,7 @@ function subscribeLive(){
        guasto. Si segnala al registro, si rileggono i dati e si riprova da
        soli (dopo 3, 10, 30 secondi, poi ogni minuto finche' si e' dentro). */
     .subscribe((status)=>{
+      if(ch!==voteChannel) return;   // 5.9 — canale gia' sostituito: scarta l'evento del vecchio
       if(status==='CHANNEL_ERROR' || status==='TIMED_OUT'){
         fcIncident('realtime_ko','canale giornata '+(currentMd?currentMd.id:'?')+' \u2014 '+status);
         liveRetryLater();
@@ -7379,6 +7388,7 @@ function subscribeLive(){
         _liveTry=0; if(_liveRetryT){ clearTimeout(_liveRetryT); _liveRetryT=null; }
       }
     });
+  voteChannel=ch;
 }
 let _liveTry=0, _liveRetryT=null;
 function liveRetryLater(){
@@ -10888,8 +10898,8 @@ function scoreOf(pid,slot,isCaptain,avgMap,statsMap,mvp,seasonId){
   const voto=avgMap[pid]?avgMap[pid].v:6;
   const isMvp=(mvp===pid);
   const mult=(isCaptain?2:1);                          // il capitano raddoppia SOLO il voto
-  let bonus=st.gol*3+st.assist*2-st.og*3-(st.rs||0)*3+(st.rp||0)*3-(st.gi||0)*0.5,gs=st.gs||0;
-  if(st.esito==='V')bonus+=2; else if(st.esito==='S')bonus-=1;
+  let bonus=st.gol*3+st.assist*1.5-st.og*3-(st.rs||0)*3+(st.rp||0)*3-(st.gi||0)*0.5,gs=st.gs||0;
+  if(st.esito==='V')bonus+=2;                          // 5.9: vittoria +2, sconfitta e pareggio 0 (assist 1,5)
   if(isPor)bonus+=(gs===0?3:-gs);
   if(isMvp) bonus+=MVP_BONUS;                          // +3 fuori dal moltiplicatore
   const s=voto*mult+bonus;
@@ -11105,7 +11115,7 @@ function matchOpenable(){
 }
 const LIVE_FIELDS={
   gol:   {key:'gol',    emoji:'⚽', label:'Gol',      sub:'+3 a chi segna',          cls:'gol'},
-  assist:{key:'assist', emoji:'👟', label:'Assist',   sub:'+2 a chi serve l\'assist', cls:'ass'},
+  assist:{key:'assist', emoji:'👟', label:'Assist',   sub:'+1,5 a chi serve l\'assist', cls:'ass'},
   gs:    {key:'gs',     emoji:'🧤', label:'Portiere', sub:'gol subìto dal portiere', cls:'por'},
   og:    {key:'og',     emoji:'🅰️', label:'Autogol',        sub:'−3 a chi lo segna',     tone:'neg'},
   rs:    {key:'rs',     emoji:'🚫', label:'Rig. sbagliato', sub:'−3 a chi lo sbaglia',   tone:'neg'},
@@ -11201,10 +11211,10 @@ function renderLive(){
     ttlM.textContent='🏟️ Chi ha vinto?'; ttlS.textContent='Seleziona chi era nella squadra vincente';
     const anyWin=pres.some(p=> st[p.id] && st[p.id].esito==='V');
     body.innerHTML = (pres.length ? (
-      `<p class="vs" style="color:var(--muted);font-size:12.5px;margin:4px 2px 12px">Chi vince prende <b style="color:var(--green)">+2</b>, chi perde <b style="color:#ffb3b3">−1</b>.</p>`
+      `<p class="vs" style="color:var(--muted);font-size:12.5px;margin:4px 2px 12px">Chi vince prende <b style="color:var(--green)">+2</b>.</p>`
       + pres.map(p=>{ const w=st[p.id]&&st[p.id].esito==='V';
           const state=!anyWin?'draw':(w?'win':'lose');
-          const pill=state==='win'?'✓ Vince +2':(state==='lose'?'Perde −1':'Pareggio');
+          const pill=state==='win'?'✓ Vince +2':(state==='lose'?'':'Pareggio');   // 5.9: il rosso della riga basta, niente '0' scritto
           return `<div class="ls-wrow ${state}" onclick="liveToggleWin(${p.id})">
             <div class="lpav">${avatarImg(p.avatar,40)}</div>
             <div class="lpn">${p.name}</div>
@@ -13456,7 +13466,7 @@ function renderRecapHTML(card, d){
         ? `<div class="pag-vs-split">
              <div class="pvs-col w"><div class="pvs-n">${n.winners}</div><div class="pvs-l">vincitori · +2</div></div>
              <div class="pvs-x">vs</div>
-             <div class="pvs-col s"><div class="pvs-n">${n.losers}</div><div class="pvs-l">sconfitti · −1</div></div>
+             <div class="pvs-col s"><div class="pvs-n">${n.losers}</div><div class="pvs-l">sconfitti</div></div>
            </div>` : '';
       return `<div class="pag-eyebrow">I numeri della giornata</div>
         <div class="pag-stats">
@@ -13556,7 +13566,7 @@ function renderRecapHTML(card, d){
       const split=(n.winners+n.losers>0)?`<div class="pag-vs-split" style="margin-top:14px">
            <div class="pvs-col w"><div class="pvs-n">${n.winners}</div><div class="pvs-l">vincitori · +2</div></div>
            <div class="pvs-x">vs</div>
-           <div class="pvs-col s"><div class="pvs-n">${n.losers}</div><div class="pvs-l">sconfitti · −1</div></div></div>`:'';
+           <div class="pvs-col s"><div class="pvs-n">${n.losers}</div><div class="pvs-l">sconfitti</div></div></div>`:'';
       const win=w?`<div class="pag-trophy">🏆</div><div class="pag-win-tag">Vincitore di giornata</div>
            <h2 class="pag-name gold">${esc(w.team_name)}</h2>
            <div class="pag-bigline"><span data-count="${w.points}" data-dec="1">0</span></div><div class="pag-ptlabel">punti</div>`:'';
