@@ -2735,12 +2735,15 @@
     background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.07)}
   /* 4.8 — LA FRECCETTA STORTA (Android). Il carattere "\203A" ha metriche
      diverse da un font all'altro: su Roboto sta alto e spostato a sinistra, e
-     nel cerchio si vedeva storto. Adesso la freccia e' DISEGNATA (due lati di
-     un quadrato ruotato): identica su iPhone, Android e computer. */
+     nel cerchio si vedeva storto. Prima disegnata con due lati di un quadrato
+     ruotato, ma quel trucco chiede un margine scelto a mano per stare centrato
+     e nei cerchi piu' vistosi (es. t-glow) si vedeva ancora un pelo storta.
+     5.9 — ora e' un'icona SVG vera (maschera): si centra da sola, nessun
+     numero da indovinare, identica in ogni cerchio. */
   .navrow .go,#setMenu .prof .pgo::after{font-size:0;color:#c9dcf3}
-  .navrow .go::after{content:"";display:block;width:7px;height:7px;margin-left:-3px;
-    border-right:2px solid currentColor;border-top:2px solid currentColor;transform:rotate(45deg)}
-  .navrow.gold .go::after{border-color:#ffe3a1}
+  .navrow .go::after{content:"";display:block;width:11px;height:11px;background:currentColor;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9 6 15 12 9 18'/%3E%3C/svg%3E") center/contain no-repeat;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9 6 15 12 9 18'/%3E%3C/svg%3E") center/contain no-repeat}
   .navrow.t-blue{--c:63,151,255} .navrow.t-violet{--c:140,92,255} .navrow.t-gold{--c:255,194,61}
   .navrow.t-cyan{--c:46,196,255} .navrow.t-slate{--c:143,169,204} .navrow.t-green{--c:47,217,138}
   .navrow.gold{--c:255,194,61;border-color:rgba(255,194,61,.28);background:linear-gradient(160deg,rgba(255,194,61,.13),rgba(255,255,255,.02))}
@@ -11080,6 +11083,13 @@ document.getElementById('saveBtn').onclick=async function(){
 /* ---------- VOTI ---------- */
 function renderVoti(){
   computeLock();
+  /* 5.9 — «I numeri della partita» serve per guardare gol/assist/cartellini
+     PRIMA di votare: a voti chiusi (o non ancora aperti, o giornata chiusa)
+     non ha piu' senso mostrarlo, e se qualcuno lo aveva lasciato aperto
+     proprio mentre i voti si chiudevano, lo richiudiamo con lui. */
+  const bmBtn=document.getElementById('bmOpenBtn');
+  if(bmBtn) bmBtn.style.display=votesLocked?'none':'';
+  if(votesLocked && bmIsOpen()) closeBonusMalus();
   const active=!!(currentMd&&currentMd.status!=='closed');
   if(!active){
     const vl=document.getElementById('voteList'); if(vl)vl.innerHTML='<div class="empty-note">Nessuna giornata aperta. I giocatori da votare compaiono all\'apertura della prossima.</div>';
