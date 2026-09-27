@@ -6469,6 +6469,14 @@ function authErrIt(e){
   if(/should be different/i.test(m)) return 'La nuova password deve essere diversa da quella di prima.';
   if(/at least \d+ characters|Password should be at least/i.test(m)) return 'Password troppo corta: almeno 8 caratteri.';
   if(/pwned|compromised|breach/i.test(m)) return 'Questa password compare in fughe di dati note: scegline un\'altra.';
+  /* «email rate limit exceeded» contiene anche «rate limit»: va PRIMA del
+     controllo generico, o finirebbe nel messaggio generico e non verrebbe mai
+     segnalato al registro. E' l'unico limite di questa lista che vale la pena
+     vedere in console: significa che qualcuno non sta ricevendo il codice. */
+  if(/email rate limit exceeded/i.test(m)){
+    fcIncident('email_limite','durante '+gateMode);
+    return 'Troppe email in poco tempo: aspetta qualche minuto e riprova.';
+  }
   if(/rate limit|too many|for security purposes|after \d+ seconds/i.test(m)) return 'Troppi tentativi: aspetta un minuto e riprova.';
   // il messaggio del codice esce SOLO se l'errore parla davvero di token/otp/codice
   if(/(token|otp|code|magic ?link|email link|one[- ]time)/i.test(m) && /expired|invalid|not found/i.test(m))
@@ -12666,7 +12674,8 @@ const OVERLOAD_TXT={
   database_lento:     'Il database sta impiegando troppo. Riprova fra poco: non hai perso niente.',
   quota_superata:     'Il servizio ha raggiunto un limite mensile. Lo stiamo gia\u2019 vedendo: riprova piu\u2019 tardi.',
   servizio_ko:        'Il servizio non risponde in questo momento. Riprova fra qualche minuto: non hai perso niente.',
-  realtime_ko:        'Gli aggiornamenti dal vivo sono sospesi: i voti degli altri compaiono riaprendo la pagina.'
+  realtime_ko:        'Gli aggiornamenti dal vivo sono sospesi: i voti degli altri compaiono riaprendo la pagina.',
+  email_limite:       'Troppe email in poco tempo: se non arriva il codice, riprova fra qualche minuto.'
 };
 let _busyBarT=null;
 function busyBar(on, txt){

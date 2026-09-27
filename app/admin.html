@@ -346,7 +346,7 @@
     <div class="sect">Stato dell&rsquo;app</div>
     <button class="orow" id="chkCard" onclick="openDetail('chk')"><span class="oi">&#129658;</span><span class="ol"><b>Controlli</b><small>Se tutto quello che deve girare sta girando</small><span class="rt" id="chkCount"></span></span><span class="oc">&rsaquo;</span></button>
     <button class="orow" id="attCard" onclick="openDetail('att')"><span class="oi">&#128064;</span><span class="ol"><b>Serve un occhio</b><small>Leghe con qualcosa di storto</small><span class="rt" id="attCount"></span></span><span class="oc">&rsaquo;</span></button>
-    <button class="orow" id="ovlCard" onclick="openDetail('ovl')"><span class="oi">&#128201;</span><span class="ol"><b>Limiti dei servizi</b><small>Quando l&rsquo;app non ce la fa: connessioni, richieste, quota</small><span class="rt" id="ovlCount"></span></span><span class="oc">&rsaquo;</span></button>
+    <button class="orow" id="ovlCard" onclick="openDetail('ovl')"><span class="oi">&#128201;</span><span class="ol"><b>Limiti dei servizi</b><small>Connessioni, email, richieste, quota</small><span class="rt" id="ovlCount"></span></span><span class="oc">&rsaquo;</span></button>
     <button class="orow" id="liveCard" style="display:none" onclick="openDetail('live')"><span class="oi">&#9917;</span><span class="ol"><b>Giornate vive adesso</b><small>Aperte in questo momento, in tutte le leghe</small><span class="rt" id="liveCount"></span></span><span class="oc">&rsaquo;</span></button>
     <button class="orow" onclick="openDetail('ado')"><span class="oi">&#128242;</span><span class="ol"><b>Come viene usata</b><small>App sulla Home, notifiche, versione</small><span class="rt" id="adoBase"></span></span><span class="oc">&rsaquo;</span></button>
   </div>
@@ -423,7 +423,13 @@
       <div class="card"><div id="attBody"><div class="skel">Controllo&hellip;</div></div></div>
     </div>
     <div class="dtsec" id="dt-ovl" style="display:none">
+      <div class="card"><div id="ovlNow"><div class="skel">Carico&hellip;</div></div></div>
       <div class="card"><div id="ovlBody"><div class="skel">Carico&hellip;</div></div></div>
+      <div class="card">
+        <h2>Email: quello che da qui non si vede</h2>
+        <p class="note">Questo registro segnala solo quando &egrave; <b>Supabase</b> a rifiutare l&rsquo;invio (troppe email insieme). Non vede invece se &egrave; <b>Resend</b> a fermarsi: sul piano gratuito il tetto &egrave; 100 email al giorno, e oltre quel numero l&rsquo;invio si sospende senza che l&rsquo;app se ne accorga.</p>
+        <p class="note">Controllo di persona, soprattutto nei giorni di picco: <b>resend.com/emails</b> (il registro di ogni invio) e <b>resend.com/settings/usage</b> (il totale del mese).</p>
+      </div>
     </div>
     <div class="dtsec" id="dt-live" style="display:none">
       <div class="card"><div id="liveBody"></div></div>
@@ -528,14 +534,15 @@ async function loadAll(silent){
   const b=document.getElementById('refBtn'); b.textContent='\u2026'; b.disabled=true;
   /* quattro chiamate in parallelo, ognuna col suo paracadute: se una manca la
      console non deve spegnersi, deve solo mostrare un po' meno. */
-  const [ov, he, lg, pl, ck, ad, inc] = await Promise.all([
+  const [ov, he, lg, pl, ck, ad, inc, cap] = await Promise.all([
     sb.rpc('sa_overview').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_health').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_leagues_full').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_plans').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_checks').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_adoption').then(r=>r.error?null:r.data).catch(()=>null),
-    sb.rpc('sa_incidents',{p_hours:168}).then(r=>r.error?null:r.data).catch(()=>null)
+    sb.rpc('sa_incidents',{p_hours:168}).then(r=>r.error?null:r.data).catch(()=>null),
+    sb.rpc('capacity_status').then(r=>r.error?null:(r.data&&r.data[0])).catch(()=>null)
   ]);
   if(ov) paintOverview(ov);
   health=he;
@@ -544,6 +551,7 @@ async function loadAll(silent){
   document.getElementById('sqlWarnB').style.display = pl?'none':'flex';
   renderChecks(ck);
   renderOverloads(inc);
+  renderCapacityNow(cap);
   renderAdoption(ad);
   if(lg){ leagues=lg||[]; }
   else {
@@ -636,7 +644,7 @@ const DETAILS={
   att: {t:'Serve un occhio',
         s:'Le leghe con qualcosa di storto in questo momento: giornate ferme, promemoria non partiti, tetto dei membri raggiunto. Tocca una riga per aprire la lega.'},
   ovl: {t:'Limiti dei servizi',
-        s:'Quante volte, negli ultimi 7 giorni, l\u2019app ha sbattuto contro un limite dei servizi che usa: connessioni del database finite, troppe richieste insieme, quota mensile esaurita. Non sono errori di programmazione: sono i confini del piano gratuito. Se questi numeri crescono, conviene passare a un piano a pagamento prima che qualcuno resti fuori.'},
+        s:'Quante persone sono dentro adesso, e quante volte negli ultimi 7 giorni l\u2019app ha sbattuto contro un limite dei servizi che usa: connessioni del database finite, email bloccate, troppe richieste insieme, quota mensile esaurita. Non sono errori di programmazione: sono i confini del piano gratuito. Se questi numeri crescono, conviene passare a un piano a pagamento prima che qualcuno resti fuori.'},
   live:{t:'Giornate vive adesso',
         s:'Le giornate aperte in questo momento in tutte le leghe, con la fase in cui sono e i promemoria che dovevano partire.'},
   ado: {t:'Come viene usata',
@@ -694,9 +702,31 @@ const OVL_NOMI={
   database_lento:      ['Il database non ha risposto in tempo','La richiesta ha superato il tempo massimo ed \u00e8 stata annullata.'],
   quota_superata:      ['Quota mensile del piano esaurita','Traffico o spazio del piano gratuito finiti per questo mese.'],
   servizio_ko:         ['Servizio non raggiungibile','Il database ha risposto con un errore suo, non dell\u2019app.'],
-  realtime_ko:         ['Aggiornamenti dal vivo caduti','Il canale che aggiorna voti e presenze in tempo reale non si \u00e8 agganciato.']
+  realtime_ko:         ['Aggiornamenti dal vivo caduti','Il canale che aggiorna voti e presenze in tempo reale non si \u00e8 agganciato.'],
+  email_limite:        ['Troppe email insieme','Supabase ha rifiutato l\u2019invio di un codice di accesso o conferma: qualcuno non lo sta ricevendo.']
 };
-const OVL_GRAVI=['connessioni_finite','ingresso_bloccato','quota_superata'];
+const OVL_GRAVI=['connessioni_finite','ingresso_bloccato','quota_superata','email_limite'];
+/* ---------- CONNESSIONI ADESSO ----------
+   Un numero solo, letto in diretta da capacity_status() (la stessa funzione
+   che l'app chiama prima di far entrare qualcuno): quante persone dentro
+   adesso, su quale tetto. E' un indicatore, non uno storico: puo' scendere
+   da solo un minuto dopo un picco. Lo storico degli sbarramenti veri sta
+   nella lista sotto (renderOverloads). */
+function renderCapacityNow(cap){
+  const box=document.getElementById('ovlNow'); if(!box) return;
+  if(!cap || cap.tetto==null){
+    box.innerHTML='<div class="skel">Numero non disponibile: serve <span class="num">sovraccarico.sql</span>.</div>';
+    return;
+  }
+  const dentro=Number(cap.dentro)||0, tetto=Number(cap.tetto)||0;
+  const pct=tetto>0?Math.round(dentro*100/tetto):0;
+  const cls=cap.pieno?'bad':(pct>=80?'warn':'ok');
+  const nota=cap.pieno
+    ? 'Al tetto: chi entra ora vede lo schermo \u00abServer al completo\u00bb.'
+    : 'Persone collegate negli ultimi minuti \u2014 il numero su cui si regge il muro in ingresso.';
+  box.innerHTML='<div class="chk '+cls+'"><i></i><div><b>Connessioni adesso \u00b7 <span class="num">'+dentro+'</span> su '+tetto+'</b>'
+    +'<span>'+nota+'</span></div></div>';
+}
 function renderOverloads(rows){
   const body=document.getElementById('ovlBody'), cnt=document.getElementById('ovlCount');
   const card=document.getElementById('ovlCard');
