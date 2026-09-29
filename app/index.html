@@ -2944,6 +2944,22 @@
       de.classList.remove('vp-lie');
       return;
     }
+    /* 6.2 — VIEWPORT «A META'» (iPhone di un amico, 29/09/2026).
+       Dopo aver forzato height= nel meta viewport, su alcuni iPhone il layout
+       diventa alto quanto lo schermo (innerHeight) ma la parte che si vede davvero
+       resta piu' bassa (visualViewport.height). Il guscio, alto come il layout,
+       sporgeva sotto: la barra in basso tagliata. In Home si notava meno perche'
+       tornando alla Home si scorreva anche la pagina intera (vedi _scrollTo).
+       Se la parte visibile e' piu' bassa del layout di uno scarto da safe-area
+       (e non c'e' la tastiera aperta), il guscio prende l'altezza visibile. */
+    var ih=window.innerHeight||0, vh=(vv&&vv.height)||0;
+    if(!typing() && vh && ih && (ih-vh)>20 && (ih-vh)<=120){
+      de.style.setProperty('--app-h', Math.round(vh)+'px');
+      de.style.setProperty('--vp-gap','0px');
+      de.classList.remove('vp-lie');
+      unpan();
+      return;
+    }
     var m=Math.max(window.innerHeight||0,(vv&&vv.height)||0,de.clientHeight||0);
     var sh=0, portrait=false;
     try{ sh=(window.screen&&window.screen.height)||0; portrait=(window.innerWidth||0)<(window.innerHeight||0); }catch(_){}
@@ -2954,6 +2970,22 @@
     de.classList.toggle('vp-lie', gap>0);
     // una sola volta: chiedo a WebKit di usare l'altezza vera (niente revert -> niente rimbalzi)
     if(lie && mvp && !forced){ forced=true; try{ mvp.setAttribute('content', BASE+', height='+Math.round(sh)); }catch(_){} }
+    unpan();
+  }
+  /* 6.2 — la pagina intera non deve mai scorrere: scorre solo .scrollwrap. Se
+     iOS l'ha spostata (visibile piu' bassa del layout), la si rimette a zero.
+     Mai mentre si scrive: li' e' iOS che la sposta per mostrare il campo. */
+  function typing(){
+    try{ var a=document.activeElement;
+      return !!(a && (a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'||a.isContentEditable)); }
+    catch(_){ return false; }
+  }
+  function unpan(){
+    try{
+      if(typing()) return;
+      var vv=window.visualViewport;
+      if((window.scrollY||0)>0 || (vv && vv.offsetTop>0)) window.scrollTo(0,0);
+    }catch(_){ }
   }
   function settle(){ sync(); requestAnimationFrame(sync); [60,200,500,1000].forEach(function(ms){ setTimeout(sync,ms); }); }
   settle();
@@ -2966,6 +2998,10 @@
   });
   document.addEventListener('visibilitychange', function(){ if(!document.hidden) settle(); });
   if(window.visualViewport){ window.visualViewport.addEventListener('resize', sync); }
+  if(IOS){
+    window.addEventListener('scroll', unpan, {passive:true});
+    if(window.visualViewport) window.visualViewport.addEventListener('scroll', unpan);
+  }
 })();
 </script>
 <!-- SPLASH / caricamento iniziale: solo logo, niente login né barra in alto -->
@@ -4077,7 +4113,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='6.1';
+const APP_VERSION='6.2';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -12506,7 +12542,11 @@ function _scrollY(){
 function _scrollTo(y){
   const a=document.getElementById('scrollwrap');
   if(a) a.scrollTop=y;
-  try{ window.scrollTo(0,y); }catch(_){ }
+  /* 6.2 — prima scorreva ANCHE la pagina intera della stessa quantita': sugli
+     iPhone dove la parte visibile e' piu' bassa del guscio, tornando alla Home la
+     pagina si spostava in su (testata sparita) e nelle altre schede la barra in
+     basso restava tagliata. Con .scrollwrap la pagina intera resta sempre a zero. */
+  try{ window.scrollTo(0, a ? 0 : y); }catch(_){ }
 }
 function setNav(id){
   if(id==='page-avvisi') loadPushStatus();   // il dato si legge solo entrando qui
