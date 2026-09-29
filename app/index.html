@@ -4030,8 +4030,8 @@
 /* ============================================================
    👇 INCOLLA QUI LE TUE 2 CHIAVI (Supabase → Project Settings → API)
    ============================================================ */
-const SUPABASE_URL  = 'https://lfvpseusbsyzniugczbx.supabase.co';        // es. https://abcdxyz.supabase.co
-const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';   // chiave publishable (pubblica per design)
+const SUPABASE_URL  = 'INCOLLA_QUI_URL_SUPABASE';        // es. https://abcdxyz.supabase.co
+const SUPABASE_ANON = 'INCOLLA_QUI_CHIAVE_ANON';   // chiave publishable (pubblica per design)
 /* ============================================================ */
 
 
@@ -4077,7 +4077,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='5.9';
+const APP_VERSION='6.1';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -5972,6 +5972,10 @@ function heroState(){
 
   if(md && ph===2){
     const _g=presGateReason();
+    // 6.1 — un giocatore schierato non e' piu' presente: prima di tutto va rifatta la formazione
+    if(lineupAbsent.length && amManager())
+      return {ttl:'Formazione da <span class="hot">rivedere</span>', cta:'Rifai la formazione \u2192',
+              fn:"go('formazione')", note:absentNamesText()+'.'+(_g?' Le formazioni riaprono da '+MIN_PRESENT+' presenti.':'')};
     if(_g && !canOp())
       return {ttl:'Formazioni <span class="hot">in attesa</span>', cta:'Vedi la classifica \u2192',
               fn:"go('classifica')", note:_g+'. Aspettiamo l\u2019admin.'};
@@ -7233,10 +7237,12 @@ async function mdRows(mdId){
   catch(_){ return []; }
 }
 async function loadMdPresent(){
-  mdPresent=new Set();
-  if(!currentMd)return;
+  if(!currentMd){ mdPresent=new Set(); return; }
   const {data}=await sb.from('matchday_players').select('player_id').eq('matchday_id',currentMd.id);
-  (data||[]).forEach(r=>mdPresent.add(r.player_id));
+  /* 6.1 — il set nuovo si assegna a lettura finita: prima veniva svuotato e poi
+     riempito, e un ridisegno nel mezzo vedeva «nessun presente». */
+  const s=new Set(); (data||[]).forEach(r=>s.add(r.player_id));
+  mdPresent=s;
 }
 async function loadCanVote(){
   /* Chi puo' votare e' ora un dato della GIORNATA, non della lega.
@@ -7274,6 +7280,7 @@ async function loadMatchdayData(){
   }
   await Promise.all([loadMdPresent(), loadPlayerStats(), loadCanVote()]);
   ensureStats();
+  checkLineupAbsent();   // 6.1: senza await, non deve rallentare l'avvio
 }
 async function loadMatchday(){
   const {data}=await sb.from('matchdays').select('*').order('id',{ascending:false}).limit(1);
@@ -7311,13 +7318,56 @@ function lineupDraftRestore(){
     return true;
   }catch(_){ return false; }
 }
+/* 6.1 — CHI E' IN FORMAZIONE MA NON E' PIU' PRESENTE
+   La push di «Formazione da rivedere» arriva solo a chi ha le notifiche attive.
+   Questo controllo e' il paracadute: guarda la formazione SALVATA sul server (non
+   il campo sul telefono, che il cambio di modulo puo' aver svuotato) e la confronta
+   con i presenti di adesso. Vale solo finche' la formazione si puo' ancora rifare. */
+let lineupAbsent=[], _absentToastKey='';
+function absentNamesText(){
+  const n=lineupAbsent.map(esc);
+  const list=n.length>1 ? n.slice(0,-1).join(', ')+' e '+n[n.length-1] : n[0];
+  return n.length>1 ? list+' non sono più tra i presenti' : list+' non è più tra i presenti';
+}
+async function checkLineupAbsent(){
+  lineupAbsent=[];
+  try{
+    const md=currentMd;
+    const t=md?mdTimes(md):null;
+    const open = md && md.status!=='closed' && Number(md.id)>=0 && amManager()
+              && !(t && t.lineupLock!==Infinity && Date.now()>=t.lineupLock);
+    if(open){
+      const {data,error}=await sb.from('lineups').select('player_id').eq('matchday_id',md.id).eq('manager_id',user.id);
+      if(!error && md===currentMd){
+        const seen=new Set();
+        (data||[]).forEach(r=>{
+          if(mdPresent.has(r.player_id) || seen.has(r.player_id)) return;
+          seen.add(r.player_id);
+          const p=players.find(x=>x.id===r.player_id);
+          if(p) lineupAbsent.push(p.name);
+        });
+      }
+    }
+  }catch(_){ lineupAbsent=[]; }
+  if(lineupAbsent.length){
+    const key=(currentMd?currentMd.id:'')+'|'+lineupAbsent.join(',');
+    if(key!==_absentToastKey){ _absentToastKey=key; toast('Formazione da rivedere: '+lineupAbsent.join(', ')+(lineupAbsent.length>1?' non ci sono più':' non c\u2019è più')); }
+  }else _absentToastKey='';
+  try{ renderLineupWarn(); }catch(_){ }
+  try{ renderHero(); }catch(_){ }
+}
 function renderLineupWarn(){
   const w=document.getElementById('lineupWarn'); if(!w)return;
-  if(!lineupUnsaved){ w.style.display='none'; w.innerHTML=''; return; }
+  const parts=[];
+  if(lineupAbsent.length)
+    parts.push('<b>Formazione da rivedere.</b> '+absentNamesText()+'. '+(lineupAbsent.length>1?'Sostituiscili':'Sostituiscilo')+' e tocca <b>Conferma formazione</b>.');
+  if(lineupUnsaved)
+    parts.push(lineupLocked
+      ? '<b>Questa formazione non è mai arrivata al server.</b> È rimasta solo sul telefono e ormai le formazioni sono chiuse: avvisa l\'amministratore.'
+      : '<b>Questa formazione non è mai arrivata al server.</b> L\'abbiamo ritrovata sul telefono e rimessa in campo: controllala e tocca <b>Conferma formazione</b>.');
+  if(!parts.length){ w.style.display='none'; w.innerHTML=''; return; }
   w.style.display='block';
-  w.innerHTML=lineupLocked
-    ? '<b>Questa formazione non è mai arrivata al server.</b> È rimasta solo sul telefono e ormai le formazioni sono chiuse: avvisa l\'amministratore.'
-    : '<b>Questa formazione non è mai arrivata al server.</b> L\'abbiamo ritrovata sul telefono e rimessa in campo: controllala e tocca <b>Conferma formazione</b>.';
+  w.innerHTML=parts.join('<br><br>');
 }
 async function loadLineup(){
   if(!currentMd)return;
@@ -7477,6 +7527,7 @@ async function refreshPresence(){
   // l'admin ha cambiato i presenti: ricarico e riadeguo campo + liste (il modulo si riadegua da solo)
   await loadMdPresent();
   renderPresence(); renderHomePresence(); renderMarket(); renderVoti(); renderPitch();
+  checkLineupAbsent();   // 6.1: le presenze sono cambiate, la formazione salvata puo' non tornare piu'
 }
 function scheduleLive(){clearTimeout(liveT);liveT=setTimeout(refreshLive,300);}
 async function refreshLive(){
@@ -10629,7 +10680,10 @@ function presGridHTML(list, isOn){
 async function togglePresence(id){
   const liveMd = currentMd && currentMd.status!=='closed';
   if(liveMd){
-    if(mdPresent.has(id)){ await sb.from('matchday_players').delete().eq('matchday_id',currentMd.id).eq('player_id',id); mdPresent.delete(id); }
+    if(mdPresent.has(id)){
+      const {error:de}=await sb.from('matchday_players').delete().eq('matchday_id',currentMd.id).eq('player_id',id); mdPresent.delete(id);
+      if(!de) notifyPresenceRemoved(currentMd.id,id);   // 6.0: chi lo aveva schierato va avvisato
+    }
     else { await sb.from('matchday_players').insert({matchday_id:currentMd.id,player_id:id}); mdPresent.add(id); }
     renderPresence(); renderVoters(); renderMarket(); renderVoti(); renderPitch();
   }else{
@@ -10639,6 +10693,24 @@ async function togglePresence(id){
     if(want) plannedPresent.add(id); else plannedPresent.delete(id);
     renderPresence();
   }
+}
+/* 6.0 — PRESENZE CAMBIATE DOPO LE FORMAZIONI
+   Se l'admin toglie un presente che qualcuno aveva gia' schierato, quella
+   formazione ha un giocatore che non c'e' piu' e chi l'ha fatta non lo sa.
+   Il server (notify, mode 'presence_removed') trova gli allenatori che lo
+   avevano in formazione e manda a ciascuno una push: rifare la formazione.
+   Non blocca niente e non tocca le formazioni: se la notifica non parte,
+   la presenza e' comunque gia' stata tolta. */
+async function notifyPresenceRemoved(mdId,pid){
+  if(Number(mdId)<0) return;   // giornata del tutorial
+  try{
+    const {data}=await sb.functions.invoke('notify',{body:{mode:'presence_removed',matchday_id:mdId,player_id:pid}});
+    const n=data&&data.managers?Number(data.managers):0;
+    if(n>0){
+      const p=players.find(x=>x.id===pid);
+      toast('Avvisat'+(n===1?'o 1 allenatore':'i '+n+' allenatori')+': '+(p?p.name:'il giocatore')+' era in formazione');
+    }
+  }catch(_){ }
 }
 
 function isMyRow(t){ return (t.manager_id&&user&&t.manager_id===user.id) || (profile&&t.team_name===profile.team_name); }
@@ -11067,6 +11139,7 @@ document.getElementById('saveBtn').onclick=async function(){
   if(saved===5 && capOk){
     lineupUnsaved=false; lineupDraftClear();
     this.disabled=false; updateBudget(); renderLineupWarn();
+    checkLineupAbsent();   // 6.1: rifatta la formazione, l'avviso sparisce
     toast('Formazione salvata ✓'); return;
   }
   lineupUnsaved=true;
