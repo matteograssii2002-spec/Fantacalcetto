@@ -4132,7 +4132,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='6.5';
+const APP_VERSION='6.7';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -11224,11 +11224,33 @@ document.getElementById('saveBtn').onclick=async function(){
   const rows=Object.entries(lineup).map(([slot,pid])=>({slot,player_id:pid,is_captain:captain===slot}));
   lineupDraftSave();   // prima di provare: se qualcosa va storto, la squadra non si perde
   this.disabled=true; this.textContent='Salvataggio…';
-  let err=null;
-  try{
-    const {error}=await sb.rpc('save_lineup',{p_md:mdId,p_rows:rows,p_module:formModule});
-    if(error) err=error;
-  }catch(e){ err=e; }
+  /* 6.7 — LA FUNZIONE save_lineup E' A POSTO: e' una sola transazione (cancella, inserisce,
+     salva il modulo, conta le righe) e se qualcosa non va annulla tutto. Quando la formazione
+     «non si salva» il problema e' che la chiamata NON ARRIVA o viene RIFIUTATA:
+       - rete che cade proprio in quell'attimo, o app appena tornata dallo sfondo
+       - sessione scaduta (JWT) dopo un po' che l'app era ferma
+       - chiamata che non risponde mai (il tasto restava su «Salvataggio…»)
+       - formazioni appena chiuse per il server, che ha l'orologio giusto
+     I primi tre si ripetono senza rischi (la funzione e' idempotente): una nuova prova sola,
+     dopo aver rinnovato la sessione. Il quarto e' un vero rifiuto e si dice com'e'. */
+  const callSave=async()=>{
+    try{
+      const {error}=await withTimeout(sb.rpc('save_lineup',{p_md:mdId,p_rows:rows,p_module:formModule}),15000,'save_lineup');
+      return error||null;
+    }catch(e){ return e; }
+  };
+  const isTransient=(e)=>{
+    const m=String((e&&e.message)||e||''), c=String((e&&e.code)||'');
+    if(/row-level security|violates row level|42501|permission denied|save_lineup.*(does not exist|schema cache)|PGRST202/i.test(m+' '+c)) return false;
+    return /failed to fetch|networkerror|network request|load failed|fetch|timeout|timed out|abort|jwt|token|PGRST30[0-9]|401/i.test(m+' '+c);
+  };
+  let err=await callSave();
+  if(err && isTransient(err)){
+    try{ await sb.auth.getSession(); }catch(_){ }     // se il token e' scaduto, qui si rinnova
+    await new Promise(r=>setTimeout(r,900));
+    this.textContent='Riprovo…';
+    err=await callSave();
+  }
   // Se il database non ha ancora la funzione, si usa la vecchia strada.
   if(err && /save_lineup|PGRST202|schema cache|does not exist|non esiste/i.test(String((err&&err.message)||'')+' '+String((err&&err.code)||''))){
     err=null;
@@ -11240,13 +11262,30 @@ document.getElementById('saveBtn').onclick=async function(){
       await sb.from('lineup_modules').upsert({matchday_id:mdId,manager_id:user.id,module:formModule},{onConflict:'matchday_id,manager_id'});
     }catch(e2){ err=e2; }
   }
-  // CONTROPROVA: rileggo dal database prima di dire che e' andata bene.
-  let saved=-1, capOk=false;
+  /* 6.6 — CONTROPROVA VERA
+     Prima si contava solo: «ci sono 5 righe e un capitano?». Alla PRIMA formazione
+     bastava, perche' prima del salvataggio non c'era niente. Alla SECONDA no: se il
+     salvataggio falliva, sul server restava la formazione vecchia, che ha anche lei
+     5 righe e un capitano. La controprova la scambiava per quella nuova, diceva
+     «Formazione salvata ✓», buttava la bozza e nascondeva l'errore (il controllo
+     veniva prima di guardare err). Risultato: ufficiale restava la vecchia.
+     Ora si confronta il CONTENUTO: ogni slot con il suo giocatore, il capitano
+     giusto e il modulo. Solo se e' identico a quello inviato e' salvata. */
+  let saved=-1, same=false;
   try{
-    const {data,error:ce}=await sb.from('lineups').select('slot,is_captain').eq('matchday_id',mdId).eq('manager_id',user.id);
-    if(!ce){ saved=(data||[]).length; capOk=(data||[]).some(r=>r.is_captain); }
+    const [{data,error:ce},{data:lm,error:me}]=await Promise.all([
+      sb.from('lineups').select('slot,player_id,is_captain').eq('matchday_id',mdId).eq('manager_id',user.id),
+      sb.from('lineup_modules').select('module').eq('matchday_id',mdId).eq('manager_id',user.id).maybeSingle()
+    ]);
+    if(!ce){
+      const got=data||[]; saved=got.length;
+      const want={}; rows.forEach(r=>{ want[r.slot]=r; });
+      same = got.length===rows.length
+          && got.every(g=>{ const w=want[g.slot]; return w && String(w.player_id)===String(g.player_id) && !!w.is_captain===!!g.is_captain; })
+          && (!!me || !lm || lm.module===formModule);   // modulo: se non si riesce a leggerlo non blocca, se si legge deve coincidere
+    }
   }catch(_){ }
-  if(saved===5 && capOk){
+  if(saved===5 && same){
     lineupUnsaved=false; lineupDraftClear();
     this.disabled=false; updateBudget(); renderLineupWarn();
     checkLineupAbsent();   // 6.1: rifatta la formazione, l'avviso sparisce
@@ -11254,12 +11293,15 @@ document.getElementById('saveBtn').onclick=async function(){
   }
   lineupUnsaved=true;
   this.disabled=false; updateBudget(); renderLineupWarn();
+  // la bozza resta sul telefono (lineupDraftSave sopra): se rientra, la ritrova in campo
+  try{ fcIncident('lineup_ko', (saved===5?'rimasta la vecchia · ':'righe '+saved+' · ')+String((err&&(err.code||''))||'')+' '+String((err&&err.message)||'nessun errore').slice(0,200)); }catch(_){ }
   const em=String((err&&err.message)||'');
   if(/row-level security|violates row level|42501|permission denied/i.test(em)){
     toast('Le formazioni di questa giornata sono chiuse.'); return;
   }
   if(err){ toast(errText(err)); return; }
   if(saved<0){ toast('⚠️ Non riesco a confermare il salvataggio. Controlla la connessione.'); return; }
+  if(saved===5){ toast('⚠️ Formazione NON salvata: vale ancora quella di prima. Riprova.'); return; }
   toast('⚠️ Formazione NON salvata ('+saved+'/5). Riprova.');
 };
 
