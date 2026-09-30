@@ -610,7 +610,7 @@
   .evs:empty{display:none}
 
   .hint{text-align:center;color:var(--muted);font-size:12.5px;margin-top:16px;line-height:1.5}
-  /* 6.3 — tasto «Svuota campo»: toglie i giocatori dal campo, non tocca la formazione inviata */
+  /* 6.3 — tasto «Pulisci formazione»: toglie i giocatori dal campo, non tocca la formazione inviata */
   .clear-row{display:flex;justify-content:center;margin:10px 0 2px}
   .clear-pitch{background:var(--surface2);color:var(--text);border:1px solid var(--line-strong);font-weight:600;font-size:13px;padding:9px 16px;border-radius:999px;cursor:pointer;font-family:inherit}
   .clear-pitch:active{transform:scale(.97)}
@@ -3459,7 +3459,7 @@
       <div class="mark m-halfway"></div><div class="mark m-circle"></div><div class="mark m-spot"></div>
     </div>
     <p class="hint">Tocca uno slot per scegliere. Tocca uno schierato per renderlo <b style="color:var(--gold)">capitano</b> o rimuoverlo.</p>
-    <div class="clear-row"><button class="clear-pitch" id="clearPitchBtn" onclick="clearPitch()" style="display:none">🧹 Svuota campo</button></div>
+    <div class="clear-row"><button class="clear-pitch" id="clearPitchBtn" onclick="clearPitch()" style="display:none">🧹 Pulisci formazione</button></div>
     <div class="lineup-warn" id="lineupWarn"></div>
     <button class="save" id="saveBtn" disabled>Conferma formazione</button>
   </section>
@@ -3516,6 +3516,7 @@
       <div class="setgrp">Altro</div>
       <button class="navrow t-slate" id="rowInstall" onclick="openInstallHelp()"><span class="ic">📲</span><span class="lab">Installa sulla Home<small id="rowInstallSub">Icona sua, schermo intero, notifiche</small></span><span class="go">›</span></button>
       <button class="navrow t-slate" onclick="setNav('page-privacy')"><span class="ic">🔒</span><span class="lab">Privacy e dati<small>Informativa, termini, cancellazione</small></span><span class="go">›</span></button>
+      <button class="navrow t-slate" id="rowAccounts" onclick="openAccounts()"><span class="ic">👥</span><span class="lab">Cambia account<small>Passa a un altro tuo account o aggiungilo</small></span><span class="go">›</span></button>
       <div class="setfoot">
         <button class="logout" id="logoutBtn">Esci dall'account</button>
         <p class="setver">FantaCalcetto · versione <span id="appVersion">—</span></p>
@@ -4118,7 +4119,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='6.3';
+const APP_VERSION='6.4';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -5463,6 +5464,7 @@ function showWelcome(){
   if(_wsub) _wsub.textContent='Crea o entra in una lega. Inizia in un minuto.';
   ['gate','league','onboard'].forEach(id=>{const e=document.getElementById(id); if(e)e.classList.add('hidden');});
   const w=document.getElementById('welcome'); if(w){ w.classList.remove('hidden'); w.scrollTop=0; }
+  try{ accWelcomeBack(); }catch(_){ }   // 6.4
 }
 function showGate(intent){
   _interactiveAuth=true;
@@ -5670,6 +5672,8 @@ async function boot(){
     // più affidabile, perché con alcuni tipi di link il token non si vede nell'indirizzo.
     if(_e==='PASSWORD_RECOVERY'){ gateEnterRecovery(session&&session.user?session.user.email:''); return; }
     if(_gateAwaitNewPw) return;
+    if(session) accRemember(session);   // 6.4 — la sessione (anche rinnovata) resta salvata per il cambio account
+    if(_accSwitching) return;           // 6.4 — sto cambiando account: ci pensa il ricaricamento
     if(session&&(!user||user.id!==session.user.id)){ user=session.user; afterLogin(); }
   });
   // se parto senza rete non ha senso proseguire: mostro subito la schermata offline
@@ -5733,6 +5737,7 @@ async function afterLogin(){
           (Prima l'unico modo per uscirne era togliere e rimettere l'app dalla
           Home, perché così iOS cancellava la sessione salvata.) */
     if(!_interactiveAuth){
+      try{ if(user) accRemove(user.id); }catch(_){ }   // 6.4
       try{ await sb.auth.signOut(); }catch(_){ }
       user=null; profile=null; myLeague=null; currentMd=null;
       try{ Object.keys(localStorage).filter(k=>/^fc_(pendingRules|recap|srecap|live)/.test(k))
@@ -5755,6 +5760,7 @@ async function afterLogin(){
       loadPlayers().then(()=>spTo(74)),
       loadPlannedPresences().then(()=>spTo(78))
     ]);
+    try{ accInfo(); }catch(_){ }   // 6.4 — nome, squadra e lega per l'elenco degli account
     /* 4.7 — il muro in ingresso sta QUI: dopo il profilo (serve a sapere se e'
        il super-admin) e prima di caricare tutto il resto, cosi' se siamo al
        completo non si spreca nemmeno una chiamata. */
@@ -7335,19 +7341,28 @@ async function loadMatchday(){
    loro posto, basta toccare Conferma. La copia sparisce appena il server
    conferma di avere le cinque righe. */
 let lineupUnsaved=false;
-function lineupDraftKey(){ return currentMd?('fc_lin_'+currentMd.id):null; }
+/* 6.4 — le bozze sul telefono portavano solo l'id della giornata: con due account
+   sullo stesso telefono la formazione dell'uno poteva ricomparire nell'altro. Ora
+   la chiave porta anche l'account. La bozza vecchia (senza account) la prende la
+   prima sessione che la trova, cosi' chi ha una bozza in corso non la perde. */
+function draftGet(newKey, oldKey){
+  try{ let v=localStorage.getItem(newKey);
+       if(v==null){ v=localStorage.getItem(oldKey); if(v!=null){ localStorage.setItem(newKey,v); localStorage.removeItem(oldKey); } }
+       return v; }catch(_){ return null; }
+}
+function lineupDraftKey(){ return (currentMd&&user)?('fc_lin_'+user.id+'_'+currentMd.id):null; }
 function lineupDraftSave(){
   const k=lineupDraftKey(); if(!k)return;
   try{ localStorage.setItem(k, JSON.stringify({lineup:lineup, captain:captain, module:formModule, at:Date.now()})); }catch(_){ }
 }
 function lineupDraftClear(){
   const k=lineupDraftKey(); if(!k)return;
-  try{ localStorage.removeItem(k); }catch(_){ }
+  try{ localStorage.removeItem(k); localStorage.removeItem('fc_lin_'+currentMd.id); }catch(_){ }
 }
 function lineupDraftRestore(){
   const k=lineupDraftKey(); if(!k)return false;
   try{
-    const raw=localStorage.getItem(k); if(!raw)return false;
+    const raw=draftGet(k,'fc_lin_'+currentMd.id); if(!raw)return false;
     const d=JSON.parse(raw);
     if(!d||!d.lineup||Object.keys(d.lineup).length<5)return false;
     // i giocatori devono esistere ancora ed essere presenti in questa giornata
@@ -9953,13 +9968,18 @@ async function adDoDelete(btn){
 
   /* pulizia lato telefono: la subscription push resterebbe registrata nel
      browser anche se la riga nel database non c'e' piu'. */
+  /* 6.4 — se sul telefono ci sono altri account, l'iscrizione del telefono
+     serve anche a loro e localStorage non si svuota del tutto: si toglie solo questo */
+  const _altri=accList().filter(a=>a.id!==(user&&user.id));
   try{
-    const reg=await navigator.serviceWorker.ready;
-    const sub=await reg.pushManager.getSubscription();
-    if(sub) await sub.unsubscribe();
+    if(!_altri.length){
+      const reg=await navigator.serviceWorker.ready;
+      const sub=await reg.pushManager.getSubscription();
+      if(sub) await sub.unsubscribe();
+    }
   }catch(_){ }
   try{ await sb.auth.signOut(); }catch(_){ }
-  try{ localStorage.clear(); }catch(_){ }
+  try{ localStorage.clear(); if(_altri.length) accSave(_altri); }catch(_){ }
 
   adClose();
   alert(esito==='league_deleted'
@@ -10076,13 +10096,18 @@ async function ldDoDelete(btn){
   /* stessa pulizia del telefono che fa la cancellazione dell'account: la
      subscription push resterebbe registrata nel browser anche senza la riga
      nel database. */
+  /* 6.4 — se sul telefono ci sono altri account, l'iscrizione del telefono
+     serve anche a loro e localStorage non si svuota del tutto: si toglie solo questo */
+  const _altri=accList().filter(a=>a.id!==(user&&user.id));
   try{
-    const reg=await navigator.serviceWorker.ready;
-    const sub=await reg.pushManager.getSubscription();
-    if(sub) await sub.unsubscribe();
+    if(!_altri.length){
+      const reg=await navigator.serviceWorker.ready;
+      const sub=await reg.pushManager.getSubscription();
+      if(sub) await sub.unsubscribe();
+    }
   }catch(_){ }
   try{ await sb.auth.signOut(); }catch(_){ }
-  try{ localStorage.clear(); }catch(_){ }
+  try{ localStorage.clear(); if(_altri.length) accSave(_altri); }catch(_){ }
 
   ldClose();
   alert('Lega eliminata. Grazie di aver giocato.');
@@ -11151,7 +11176,7 @@ function openCaptainSheet(key){
 }
 function setCaptain(key){captain=key;closeSheet();renderPitch()}
 function removePlayer(key){delete lineup[key];if(captain===key)captain=null;closeSheet();renderPitch()}
-/* 6.3 — SVUOTA CAMPO
+/* 6.3 — PULISCI FORMAZIONE
    Toglie tutti i giocatori dal campo (e il capitano) per provare un'altra
    formazione senza rimuoverli uno a uno. Tocca SOLO il campo sul telefono: la
    formazione inviata resta quella sul server finche' non si tocca di nuovo
@@ -11161,7 +11186,7 @@ function clearPitch(){
   if(!Object.keys(lineup).length) return;
   lineup={}; captain=null;
   renderPitch();
-  toast('Campo svuotato · la formazione inviata resta valida finché non ne confermi una nuova');
+  toast('Formazione pulita · quella inviata resta valida finché non ne confermi una nuova');
 }
 /* SALVATAGGIO FORMAZIONE (rifatto in 4.3).
    Com'era: cancella le righe vecchie, poi inserisci le nuove, poi di' «salvata».
@@ -11302,10 +11327,10 @@ function renderLiveOpenBtn(){
   else { btn.disabled=false; hint.innerHTML='⏱️ Finestra partita terminata, ma puoi ancora correggere finché non chiudi la giornata.'; }
 }
 
-function liveDraftKey(){ return currentMd?('fc_live_'+currentMd.id):null; }
+function liveDraftKey(){ return (currentMd&&user)?('fc_live_'+user.id+'_'+currentMd.id):null; }
 function saveLiveDraft(){ const k=liveDraftKey(); if(!k)return; try{ const d={}; players.filter(isPresent).forEach(p=>{ if(adminStats[p.id])d[p.id]=adminStats[p.id]; }); localStorage.setItem(k,JSON.stringify(d)); }catch(_){} }
-function loadLiveDraft(){ const k=liveDraftKey(); if(!k)return; try{ const raw=localStorage.getItem(k); if(!raw)return; const d=JSON.parse(raw); for(const pid in d){ adminStats[pid]=Object.assign({gol:0,assist:0,og:0,gs:0,rs:0,rp:0,gi:0,esito:''}, adminStats[pid]||{}, d[pid]); } }catch(_){} }
-function clearLiveDraft(){ const k=liveDraftKey(); if(k){ try{ localStorage.removeItem(k); }catch(_){} } }
+function loadLiveDraft(){ const k=liveDraftKey(); if(!k)return; try{ const raw=draftGet(k,'fc_live_'+currentMd.id); if(!raw)return; const d=JSON.parse(raw); for(const pid in d){ adminStats[pid]=Object.assign({gol:0,assist:0,og:0,gs:0,rs:0,rp:0,gi:0,esito:''}, adminStats[pid]||{}, d[pid]); } }catch(_){} }
+function clearLiveDraft(){ const k=liveDraftKey(); if(k){ try{ localStorage.removeItem(k); localStorage.removeItem('fc_live_'+currentMd.id); }catch(_){} } }
 
 function openLiveStats(){
   if(!profile||!canOp())return;
@@ -12706,8 +12731,18 @@ async function createMyTeam(){
   toast('Squadra creata \u2713 Ora puoi schierare');
 }
 document.getElementById('logoutBtn').onclick=async()=>{
-  if(!confirm('Vuoi uscire dall\'account?\n\nPer rientrare ti serviranno la tua email e la tua password. Se non ricordi la password puoi reimpostarla dalla schermata di accesso.')) return;
-  await sb.auth.signOut(); location.reload();
+  /* 6.4 — con altri account sul telefono si esce solo da questo e si passa al
+     piu' recente degli altri. Le notifiche di questo account su questo telefono
+     si spengono: chi esce non deve continuare a riceverle. */
+  const others=accList().filter(a=>a.id!==(user&&user.id)).sort((a,b)=>(b.used||0)-(a.used||0));
+  const msg = others.length
+    ? 'Vuoi uscire da questo account?\n\nRestano gli altri account su questo telefono: passerai a «'+(others[0].team||others[0].name||others[0].email)+'».\nPer rientrare in questo ti serviranno email e password.'
+    : 'Vuoi uscire dall\'account?\n\nPer rientrare ti serviranno la tua email e la tua password. Se non ricordi la password puoi reimpostarla dalla schermata di accesso.';
+  if(!confirm(msg)) return;
+  await pushForget();
+  if(user) accRemove(user.id);
+  await sb.auth.signOut();
+  if(others.length){ _accSwitching=false; accSwitch(others[0].id); } else location.reload();
 };
 
 /* ---------- GESTIONE GIOCATORI (admin) ---------- */
@@ -12945,6 +12980,109 @@ function errText(e){
 }
 let toastT;function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
 
+/* ==========================================================================
+   PIU' ACCOUNT SU UN TELEFONO (6.4)
+
+   Una email = un profilo, come prima. Cambia solo che il telefono si ricorda
+   degli account gia' usati e ci si passa da dentro, senza uscire e rientrare.
+   Per ognuno si tiene la sessione (la stessa che Supabase gia' tiene per
+   l'account attivo). Il cambio salva la sessione attuale, apre quella
+   dell'altro account e ricarica l'app: e' il modo piu' sicuro, perche' nessun
+   dato dell'uno puo' restare in memoria nell'altro.
+   La chiave si chiama fcx_ e non fc_: il tutorial salva e rimette le chiavi fc_
+   e rimetterebbe indietro sessioni gia' rinnovate.
+   ========================================================================== */
+const ACC_KEY='fcx_accounts';
+let _accSwitching=false;
+function accList(){
+  try{ const a=JSON.parse(localStorage.getItem(ACC_KEY)||'[]'); return Array.isArray(a)?a.filter(x=>x&&x.id&&x.rt):[]; }catch(_){ return []; }
+}
+function accSave(l){ try{ localStorage.setItem(ACC_KEY,JSON.stringify(l)); }catch(_){ } }
+function accRemember(session){
+  if(!session||!session.user||!session.refresh_token) return;
+  const l=accList(); let a=l.find(x=>x.id===session.user.id);
+  if(!a){ a={id:session.user.id,used:Date.now()}; l.push(a); }
+  a.email=session.user.email||a.email||''; a.ac=session.access_token||''; a.rt=session.refresh_token;
+  accSave(l);
+}
+function accRemove(id){ accSave(accList().filter(x=>x.id!==id)); }
+function accInfo(){
+  if(!user||!profile) return;
+  const l=accList(), a=l.find(x=>x.id===user.id); if(!a) return;
+  a.name=profile.player_name||a.name||''; a.team=profile.team_name||a.team||'';
+  a.league=(myLeague&&myLeague.name)||a.league||'';
+  accSave(l);
+}
+async function accCurrentSaved(){
+  try{
+    const r=await sb.auth.getSession();
+    if(r&&r.data&&r.data.session){ accRemember(r.data.session); return accList().find(x=>x.id===r.data.session.user.id)||null; }
+  }catch(_){ }
+  return null;
+}
+function accGuard(){
+  if(TUT){ toast('Chiudi prima il tutorial'); return false; }
+  if(voteDirty && !confirm('Hai dei voti non ancora inviati: cambiando account andranno persi. Continuare?')) return false;
+  return true;
+}
+async function accSwitch(id){
+  if(_accSwitching) return;
+  if(user && id===user.id){ closeSheet(); return; }
+  const a=accList().find(x=>x.id===id); if(!a){ toast('Account non trovato'); return; }
+  if(!accGuard()) return;
+  _accSwitching=true; closeSheet(); toast('Cambio account…');
+  const cur=await accCurrentSaved();     // rete di sicurezza: l'account attuale resta recuperabile
+  try{
+    const {data,error}=await sb.auth.setSession({access_token:a.ac||'',refresh_token:a.rt});
+    if(error||!data||!data.session||data.session.user.id!==id) throw (error||new Error('sessione'));
+    accRemember(data.session);
+    const l=accList(), n=l.find(x=>x.id===id); if(n){ n.used=Date.now(); accSave(l); }
+    location.reload();
+  }catch(e){
+    // senza rete l'errore non dice niente sull'account: resta nell'elenco. Solo una sessione davvero scaduta lo toglie.
+    const _net = navigator.onLine===false || /fetch|network|load failed/i.test(String((e&&e.message)||''));
+    if(!_net) accRemove(id);
+    let ok=false;
+    try{ const r=await sb.auth.getSession(); ok=!!(r&&r.data&&r.data.session); }catch(_){ }
+    if(!ok && cur){ try{ await sb.auth.setSession({access_token:cur.ac||'',refresh_token:cur.rt}); ok=true; }catch(_){ } }
+    _accSwitching=false;
+    if(!ok){ location.reload(); return; }
+    toast(_net ? 'Nessuna connessione: riprova fra poco.' : 'Sessione scaduta: aggiungi di nuovo questo account');
+  }
+}
+async function accAdd(){
+  closeSheet();
+  if(_accSwitching||!accGuard()) return;
+  _accSwitching=true;
+  await accCurrentSaved();
+  try{ await sb.auth.signOut({scope:'local'}); }catch(_){ }   // solo su questo telefono: la sessione resta valida per il ritorno
+  location.reload();
+}
+function openAccounts(){
+  if(!user) return;
+  const l=accList().sort((a,b)=>((b.id===user.id)-(a.id===user.id))||((b.used||0)-(a.used||0)));
+  const rows=l.map(a=>{
+    const me=a.id===user.id, nm=esc(a.team||a.name||a.email||'Account'), sub=esc([a.league,a.email].filter(Boolean).join(' · '));
+    const ini=esc(String(a.team||a.name||a.email||'?').trim().charAt(0).toUpperCase());
+    return `<div class="opt" onclick="accSwitch('${a.id}')"><div class="oav emo">${ini}</div><div class="info"><b>${nm}</b><span>${sub}</span></div>`
+         +`<span class="pr" ${me?'style="color:var(--green)"':''}>${me?'In uso':'Passa'}</span></div>`;
+  }).join('');
+  document.getElementById('sheetTitle').textContent='I tuoi account';
+  document.getElementById('sheetHint').textContent=l.length>1?'Su questo telefono · tocca per passare':'Aggiungi un altro account per passare dall\u2019uno all\u2019altro';
+  document.getElementById('sheetList').innerHTML=rows
+    +`<div class="opt" onclick="accAdd()"><div class="icocircle">＋</div><div class="info"><b>Aggiungi un altro account</b><span>Accedi con un\u2019altra email</span></div></div>`;
+  openSheet();
+}
+// schermata iniziale (nessuna sessione): gli account gia' usati su questo telefono, per tornarci con un tocco
+function accWelcomeBack(){
+  const old=document.getElementById('wcAccounts'); if(old) old.remove();
+  const w=document.querySelector('#welcome .wc-actions'); const l=accList(); if(!w||!l.length) return;
+  const box=document.createElement('div'); box.id='wcAccounts'; box.style.cssText='margin-top:16px;display:flex;flex-direction:column;gap:8px';
+  box.innerHTML='<div class="wc-login" style="opacity:.8;margin:0">Account su questo telefono</div>'
+    +l.sort((a,b)=>(b.used||0)-(a.used||0)).map(a=>`<button class="ob-btn ghost" onclick="accSwitch('${a.id}')">${esc(a.team||a.name||a.email||'Account')}${a.league?' · '+esc(a.league):''}</button>`).join('');
+  w.appendChild(box);
+}
+
 /* ---------- NOTIFICHE PUSH ---------- */
 function urlB64ToUint8(b64){
   const pad='='.repeat((4-b64.length%4)%4);
@@ -12962,11 +13100,31 @@ async function enablePush(){
     const reg=await navigator.serviceWorker.ready;
     let sub=await reg.pushManager.getSubscription();
     if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlB64ToUint8(VAPID_PUBLIC)});
-    await sb.from('push_subscriptions').upsert({endpoint:sub.endpoint,user_id:user.id,sub:sub.toJSON()},{onConflict:'endpoint'});
+    await pushRegister(sub);
     touchDevice(true);   // lo stato delle notifiche è appena cambiato
     toast('Notifiche attivate ✅');
   }catch(e){ toast('Errore notifiche: '+e.message); }
   renderNotifBtn();
+}
+/* 6.4 — UNA RIGA PER OGNI ACCOUNT SUL TELEFONO
+   La chiave era solo l'endpoint (il telefono): con due account l'iscrizione
+   passava all'ultimo che apriva l'app, e l'altro non riceveva piu' niente.
+   Con la chiave (endpoint, account) ogni account del telefono riceve le sue.
+   Se il database non e' ancora aggiornato (account_switch.sql) si torna alla
+   scrittura di prima, cosi' l'app funziona in qualunque ordine. */
+async function pushRegister(sub){
+  const row={endpoint:sub.endpoint,user_id:user.id,sub:sub.toJSON()};
+  const r=await sb.from('push_subscriptions').upsert(row,{onConflict:'endpoint,user_id'});
+  if(r&&r.error) await sb.from('push_subscriptions').upsert(row,{onConflict:'endpoint'});
+}
+async function pushForget(){
+  try{
+    if(!('serviceWorker' in navigator)||!user) return;
+    const reg=await Promise.race([navigator.serviceWorker.ready, new Promise(r=>setTimeout(()=>r(null),1500))]);
+    if(!reg) return;
+    const sub=await reg.pushManager.getSubscription();
+    if(sub) await sb.from('push_subscriptions').delete().eq('endpoint',sub.endpoint).eq('user_id',user.id);
+  }catch(_){ }
 }
 async function pushNotify(title,body){
   try{ await sb.functions.invoke('notify',{body:{title,body,url:location.pathname}}); }catch(_){}
@@ -12979,7 +13137,7 @@ async function ensurePush(){
     const reg=await navigator.serviceWorker.ready;
     let sub=await reg.pushManager.getSubscription();
     if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlB64ToUint8(VAPID_PUBLIC)});
-    await sb.from('push_subscriptions').upsert({endpoint:sub.endpoint,user_id:user.id,sub:sub.toJSON()},{onConflict:'endpoint'});
+    await pushRegister(sub);
   }catch(_){}
 }
 /* Le righe delle Impostazioni dicono lo STATO, non cosa c'e' dentro: «attive»
