@@ -610,6 +610,10 @@
   .evs:empty{display:none}
 
   .hint{text-align:center;color:var(--muted);font-size:12.5px;margin-top:16px;line-height:1.5}
+  /* 6.3 — tasto «Svuota campo»: toglie i giocatori dal campo, non tocca la formazione inviata */
+  .clear-row{display:flex;justify-content:center;margin:10px 0 2px}
+  .clear-pitch{background:var(--surface2);color:var(--text);border:1px solid var(--line-strong);font-weight:600;font-size:13px;padding:9px 16px;border-radius:999px;cursor:pointer;font-family:inherit}
+  .clear-pitch:active{transform:scale(.97)}
   .save{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;background:linear-gradient(135deg,var(--accent),#1c6ff2);color:#fff;font-weight:700;font-size:15px;border:none;padding:15px;border-radius:14px;cursor:pointer;box-shadow:0 12px 28px -10px rgba(63,151,255,.6);transition:transform .15s,opacity .2s}
   .set-btn{width:100%;background:var(--bg2);border:1.5px solid var(--line-strong);color:var(--text);font-weight:700;font-size:14px;padding:13px;border-radius:13px;cursor:pointer;transition:transform .09s,background .15s,border-color .15s}
   .set-btn:disabled{opacity:.6;cursor:default}
@@ -3455,6 +3459,7 @@
       <div class="mark m-halfway"></div><div class="mark m-circle"></div><div class="mark m-spot"></div>
     </div>
     <p class="hint">Tocca uno slot per scegliere. Tocca uno schierato per renderlo <b style="color:var(--gold)">capitano</b> o rimuoverlo.</p>
+    <div class="clear-row"><button class="clear-pitch" id="clearPitchBtn" onclick="clearPitch()" style="display:none">🧹 Svuota campo</button></div>
     <div class="lineup-warn" id="lineupWarn"></div>
     <button class="save" id="saveBtn" disabled>Conferma formazione</button>
   </section>
@@ -4113,7 +4118,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='6.2';
+const APP_VERSION='6.3';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -7431,11 +7436,28 @@ async function loadAverages(){
   if(!error&&data) data.forEach(r=>averages[r.player_id]={v:Number(r.v),n:r.n});
 }
 let mdResultsSaved=false;   // c'e' almeno un esito V/S SALVATO per la giornata corrente
+/* 6.3 — PANNELLO DAL VIVO CHE SI AZZERAVA DA SOLO
+   Prima qui si faceva adminStats={} e poi si rileggeva il server. Ma durante la
+   partita il server e' vuoto: i dati stanno solo sul telefono dell'admin finche'
+   non tocca «Conferma e salva tutto». Questa funzione parte da sola a ogni
+   rientro nell'app (schermo bloccato, un'occhiata a WhatsApp: bastano 3 secondi),
+   a ogni riaggancio del canale dal vivo e a ogni voto o nomina che arriva: il
+   pannello restava aperto ma vuoto, e al tocco successivo la bozza sul telefono
+   veniva sovrascritta con quel vuoto. Tutto perso, due volte in una partita.
+   Adesso: 1) si costruisce su un oggetto nuovo e si sostituisce solo alla fine,
+   cosi' un tocco fatto mentre la lettura e' in corso non finisce nel vuoto;
+   2) finche' la giornata e' aperta, la bozza del telefono vince sul server:
+   sono le modifiche non ancora salvate, e sparisce appena si salva. */
 async function loadMatchStats(){
-  adminStats={}; mdResultsSaved=false;
-  if(!currentMd)return;
-  const {data}=await sb.from('match_stats').select('*').eq('matchday_id',currentMd.id);
-  (data||[]).forEach(r=>{adminStats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,gi:r.gialli||0,esito:r.esito||''};});
+  mdResultsSaved=false;
+  if(!currentMd){ adminStats={}; return; }
+  const md=currentMd;
+  const {data}=await sb.from('match_stats').select('*').eq('matchday_id',md.id);
+  if(md!==currentMd) return;   // giornata cambiata nel frattempo: questa lettura non vale piu'
+  const next={};
+  (data||[]).forEach(r=>{next[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,gi:r.gialli||0,esito:r.esito||''};});
+  adminStats=next;
+  if(md.status!=='closed') loadLiveDraft();   // bozza non salvata del pannello dal vivo: vince lei
   // l'esito è il segnale giusto: gol e assist possono essere legittimamente zero,
   // «chi ha vinto» no. Se non c'è, la partita non è ancora stata registrata.
   mdResultsSaved=(data||[]).some(r=>r.esito==='V'||r.esito==='S');
@@ -10989,6 +11011,8 @@ function updateBudget(){
   const fill=document.getElementById('meterFill');fill.style.width=Math.min(100,spent/BUDGET*100)+'%';fill.classList.toggle('over',over);
   const btn=document.getElementById('saveBtn');
   computeLock();
+  const cb=document.getElementById('clearPitchBtn');
+  if(cb) cb.style.display=(n>0 && !lineupLocked)?'inline-flex':'none';
   if(lineupLocked){btn.disabled=true;btn.textContent=lineupBlockReason();return;}
   if(over){btn.disabled=true;btn.textContent='Sfori il budget di '+(spent-BUDGET)+' cr';return;}
   btn.disabled=!(n===5 && captain);
@@ -11127,6 +11151,18 @@ function openCaptainSheet(key){
 }
 function setCaptain(key){captain=key;closeSheet();renderPitch()}
 function removePlayer(key){delete lineup[key];if(captain===key)captain=null;closeSheet();renderPitch()}
+/* 6.3 — SVUOTA CAMPO
+   Toglie tutti i giocatori dal campo (e il capitano) per provare un'altra
+   formazione senza rimuoverli uno a uno. Tocca SOLO il campo sul telefono: la
+   formazione inviata resta quella sul server finche' non si tocca di nuovo
+   «Conferma formazione». Il modulo scelto resta com'e'. */
+function clearPitch(){
+  if(lineupLocked){ toast(lineupBlockReason()); return; }
+  if(!Object.keys(lineup).length) return;
+  lineup={}; captain=null;
+  renderPitch();
+  toast('Campo svuotato · la formazione inviata resta valida finché non ne confermi una nuova');
+}
 /* SALVATAGGIO FORMAZIONE (rifatto in 4.3).
    Com'era: cancella le righe vecchie, poi inserisci le nuove, poi di' «salvata».
    Due difetti gravi:
