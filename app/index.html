@@ -4132,7 +4132,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='6.7';
+const APP_VERSION='6.8';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -7296,13 +7296,19 @@ async function mdRows(mdId){
   try{ const {data}=await sb.rpc('get_standings_md',{md:id}); return filterLeagueRows(data||[]); }
   catch(_){ return []; }
 }
+let _mdPresentFor=null;   // 6.8 — di quale giornata e' il set mdPresent
 async function loadMdPresent(){
-  if(!currentMd){ mdPresent=new Set(); return; }
-  const {data}=await sb.from('matchday_players').select('player_id').eq('matchday_id',currentMd.id);
+  if(!currentMd){ mdPresent=new Set(); _mdPresentFor=null; return; }
+  const mdId=currentMd.id;
+  const {data,error}=await sb.from('matchday_players').select('player_id').eq('matchday_id',mdId);
+  /* 6.8 — se la lettura fallisce (rete debole al rientro) non si svuota la
+     lista: si tengono i presenti gia' noti di QUESTA giornata. Prima un
+     errore dava «nessun presente» e sembrava che le presenze fossero perse. */
+  if(error){ if(_mdPresentFor!==mdId) mdPresent=new Set(); return; }
   /* 6.1 — il set nuovo si assegna a lettura finita: prima veniva svuotato e poi
      riempito, e un ridisegno nel mezzo vedeva «nessun presente». */
   const s=new Set(); (data||[]).forEach(r=>s.add(r.player_id));
-  mdPresent=s;
+  mdPresent=s; _mdPresentFor=mdId;
 }
 async function loadCanVote(){
   /* Chi puo' votare e' ora un dato della GIORNATA, non della lega.
@@ -8627,7 +8633,15 @@ const HERO_TODO={
 };
 function heroTodoKey(){
   if(!canOp() || seasonBreak()) return '';
-  const k=mdcPrimaryKey();
+  let k=mdcPrimaryKey();
+  /* 6.8 — semi-automatica: a giornata chiusa da piu' di un giorno il compito
+     dell'admin e' aprire la prossima, non rileggere il pagellone. Solo in
+     Home: il Centro giornata resta com'era. In automatica non serve, la
+     prossima si apre da sola. */
+  if(k==='recap' && !schedDraft.auto_open && currentMd && currentMd.status==='closed' && currentMd.closed_at){
+    const chiusa=new Date(currentMd.closed_at).getTime();
+    if(!isNaN(chiusa) && Date.now()-chiusa>24*HOUR) k='open';
+  }
   if(!HERO_TODO[k]) return '';                       // kick / recap: non sono compiti
   /* in automatica, fra una giornata e l'altra, l'admin non ha niente da fare:
      il compito compare solo se l'apertura manca o e' in ritardo */
@@ -10744,7 +10758,12 @@ function renderPresence(){
     ttlTx='Presenze';
     subTx = n ? (n===1?'1 presente':n+' presenti') : 'Nessun presente';
     if(n && n<MIN_PRESENT) subTx+=' \u00b7 ne servono '+MIN_PRESENT;
-    if(hint)hint.textContent = presenceSelf
+    /* 6.8 — se la giornata e' partita dalla rosa prevista («Chi gioca di
+       solito»: modalita' admin, oppure giornata senza sondaggio) lo si dice */
+    const fromPlan = plannedPresent.size>0 && (!presenceSelf || !!currentMd.skip_poll);
+    if(hint)hint.textContent = fromPlan
+      ? 'Gi\u00e0 segnati quelli che giocano di solito: togli chi questa volta non c\u2019\u00e8.'
+      : presenceSelf
       ? 'Correggi chi c\u2019\u00e8 fino al blocco formazioni, anche chi non ha risposto.'
       : 'Tocca per segnare presente o assente. Le formazioni si aprono da '+MIN_PRESENT+' presenti.';
     box.innerHTML=presGridHTML(players, id=>!!presentId(id));
@@ -10752,7 +10771,7 @@ function renderPresence(){
     const n=players.filter(p=>plannedPresent.has(p.id)).length;
     ttlTx='Chi gioca di solito';
     subTx = n ? n+' segnati per la prossima' : 'Nessuno segnato';
-    if(hint)hint.textContent='Li segni tu. Alla prossima giornata risultano gi\u00e0 presenti, e li ritocchi se qualcuno manca.';
+    if(hint)hint.textContent='Segna chi gioca di solito: alla prossima giornata saranno gi\u00e0 presenti, poi togli chi manca.';
     box.innerHTML=presGridHTML(players, id=>plannedPresent.has(id));
   }
   const t1=document.getElementById('presTitle'), t2=document.getElementById('presPageTitle'), sb2=document.getElementById('presSub');
@@ -10776,11 +10795,20 @@ function presGridHTML(list, isOn){
 async function togglePresence(id){
   const liveMd = currentMd && currentMd.status!=='closed';
   if(liveMd){
+    /* 6.8 — prima l'esito del salvataggio veniva ignorato: lo schermo mostrava
+       il cambio anche se il database l'aveva rifiutato, e al rientro spariva.
+       Ora si aggiorna solo se il salvataggio e' riuscito. */
     if(mdPresent.has(id)){
-      const {error:de}=await sb.from('matchday_players').delete().eq('matchday_id',currentMd.id).eq('player_id',id); mdPresent.delete(id);
-      if(!de) notifyPresenceRemoved(currentMd.id,id);   // 6.0: chi lo aveva schierato va avvisato
+      const {error:de}=await sb.from('matchday_players').delete().eq('matchday_id',currentMd.id).eq('player_id',id);
+      if(de){ toast('Presenza non salvata: '+errText(de)); return; }
+      mdPresent.delete(id);
+      notifyPresenceRemoved(currentMd.id,id);   // 6.0: chi lo aveva schierato va avvisato
     }
-    else { await sb.from('matchday_players').insert({matchday_id:currentMd.id,player_id:id}); mdPresent.add(id); }
+    else {
+      const {error:ie}=await sb.from('matchday_players').insert({matchday_id:currentMd.id,player_id:id});
+      if(ie && String(ie.code)!=='23505'){ toast('Presenza non salvata: '+errText(ie)); return; }   // 23505 = era gia' presente
+      mdPresent.add(id);
+    }
     renderPresence(); renderVoters(); renderMarket(); renderVoti(); renderPitch();
   }else{
     const want=!plannedPresent.has(id);
