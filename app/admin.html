@@ -31,14 +31,23 @@
     --shadow-card:0 12px 34px -24px rgba(0,8,24,.9);
   }
   *{box-sizing:border-box}
-  html{-webkit-text-size-adjust:100%}
+  html{-webkit-text-size-adjust:100%;height:100%;overflow:hidden;overscroll-behavior:none}
+  /* 1.0 app — niente barre di scorrimento da sito web: si scorre col dito o con la rotella,
+     ma la barra laterale non si vede mai. */
+  *{scrollbar-width:none;-ms-overflow-style:none}
+  *::-webkit-scrollbar{display:none;width:0;height:0;background:transparent}
   body{margin:0;color:var(--text);font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;
-    -webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh;overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;height:100%;overflow:hidden;overscroll-behavior:none;
     background:radial-gradient(120% 60% at 50% -10%,rgba(63,151,255,.18),transparent 60%),
                radial-gradient(90% 50% at 50% 110%,rgba(63,151,255,.08),transparent 55%),var(--bg);
     background-attachment:fixed}
-  .wrap{max-width:600px;margin:0 auto;padding:0 15px calc(96px + env(safe-area-inset-bottom))}
-  .authwrap{padding-bottom:0}
+  .wrap{max-width:600px;margin:0 auto;padding:14px 15px 22px}
+  /* schermata di accesso: sta ferma e, se serve (tastiera aperta), scorre dentro di se' */
+  .authwrap{position:fixed;inset:0;z-index:70;max-width:none;margin:0;padding:0 15px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  .authwrap>.center{max-width:600px;margin:0 auto}
+  /* il guscio: barra in alto ferma, contenuto che scorre, barra in basso ferma */
+  #app{position:fixed;inset:0;flex-direction:column}
+  .scrollwrap{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
   h1{font-size:21px;font-weight:800;letter-spacing:-.02em;margin:0;font-family:'Bricolage Grotesque',sans-serif}
   h3{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0;line-height:1.15}
   .sub{color:var(--muted);font-size:12.5px;margin:0}
@@ -47,8 +56,8 @@
   button{cursor:pointer;border:none;color:inherit;-webkit-tap-highlight-color:transparent}
 
   /* ---------- barra in alto ---------- */
-  .top{position:sticky;top:0;z-index:30;background:rgba(10,22,38,.82);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
-    border-bottom:1px solid var(--line);margin:0 -15px 14px;padding:max(10px,env(safe-area-inset-top)) 15px 10px;
+  .top{flex:none;position:relative;z-index:30;background:rgba(10,22,38,.96);
+    border-bottom:1px solid var(--line);margin:0;padding:max(10px,env(safe-area-inset-top)) max(15px,calc((100% - 600px)/2 + 15px)) 10px;
     display:flex;align-items:center;gap:11px}
   .top .logo{width:36px;height:36px;border-radius:11px;flex:none;object-fit:cover;box-shadow:0 8px 20px -10px rgba(63,151,255,.7)}
   .top .sp{flex:1;min-width:0}
@@ -69,8 +78,8 @@
   .maintbar i{font-style:normal;color:#ffb3ba;font-weight:800}
 
   /* ---------- barra in basso ---------- */
-  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(10,22,38,.9);
-    -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-top:1px solid var(--line-strong);
+  .tabbar{flex:none;position:relative;z-index:40;background:rgba(10,22,38,.96);
+    border-top:1px solid var(--line-strong);
     padding:6px 12px calc(6px + env(safe-area-inset-bottom))}
   .tabbar .in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
   .tb{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;padding:7px 4px 6px;border-radius:14px;
@@ -273,12 +282,13 @@
   .stat.blue{background:rgba(63,151,255,.11)} .stat.blue b{color:var(--accent-soft)}
 
   /* ---------- pagine a schermo intero ---------- */
-  .page{position:fixed;top:0;left:0;right:0;bottom:0;z-index:60;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;
+  .page{position:fixed;top:0;left:0;right:0;bottom:0;z-index:60;overflow:hidden;display:none;flex-direction:column;
     background:radial-gradient(120% 50% at 50% -10%,rgba(63,151,255,.16),transparent 60%),var(--bg)}
-  .page.on{display:block}
-  .page .wrap{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
-  .ptop{position:sticky;top:0;z-index:5;margin:0 -15px 12px;padding:max(10px,env(safe-area-inset-top)) 15px 8px;
-    background:rgba(10,22,38,.86);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+  .page.on{display:flex}
+  .pscroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .page .wrap{padding-top:12px;padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+  .ptop{flex:none;position:relative;z-index:5;margin:0;padding:max(10px,env(safe-area-inset-top)) max(15px,calc((100% - 600px)/2 + 15px)) 8px;
+    background:rgba(10,22,38,.96);border-bottom:1px solid var(--line)}
   .back{display:inline-flex;align-items:center;gap:6px;background:none;color:var(--accent-soft);font-size:15px;font-weight:700;padding:6px 2px}
   .back::before{content:"";width:9px;height:9px;border-left:2.5px solid currentColor;border-bottom:2.5px solid currentColor;transform:rotate(45deg);margin-left:3px}
   #pageDetail h1{margin-bottom:4px}
@@ -367,7 +377,7 @@
 <body data-tab="oggi">
 
 <!-- ========================= LOGIN ========================= -->
-<div class="wrap authwrap"><div id="loginView" class="center" style="display:none">
+<div class="wrap authwrap" id="authWrap" style="display:none"><div id="loginView" class="center" style="display:none">
   <div class="card">
     <img class="logo" src="/icon-512.png?v=3" alt="">
     <h1 style="text-align:center">Console</h1>
@@ -397,13 +407,14 @@
 
 <!-- ========================= CONSOLE ========================= -->
 <div id="app" style="display:none">
-<div class="wrap">
   <div class="top">
     <img class="logo" src="/icon-512.png?v=3" alt="">
     <div class="sp"><h1>Console</h1><p class="sub" id="topSub">—</p></div>
     <button class="iconbtn" onclick="loadAll()" id="refBtn" aria-label="Aggiorna"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><polyline points="20 4 20 11 13 11"/></svg></button>
     <button class="iconbtn" onclick="signOut()" aria-label="Esci"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
   </div>
+<div class="scrollwrap" id="scrollwrap">
+<div class="wrap">
 
   <div class="maintbar" id="maintBar" onclick="setTab('conti')"><span>🛠️ <i>Manutenzione attiva</i> · l’app è bloccata per tutti</span><i>›</i></div>
 
@@ -453,7 +464,7 @@
     <div class="sortrow">
       <div class="cnt">Leghe <span id="lgCount"></span></div>
       <select class="sortsel" id="lgSort" onchange="setSort(this.value)" aria-label="Ordina">
-        <option value="act">Più attive</option>
+        <option value="act">Ultimo accesso</option>
         <option value="mem">Più membri</option>
         <option value="new">Più recenti</option>
         <option value="id">Per numero</option>
@@ -500,6 +511,7 @@
     </div>
   </div>
 </div>
+</div>
 
 <!-- barra in basso, come nell'app -->
 <nav class="tabbar"><div class="in">
@@ -514,8 +526,9 @@
      e si mostra quello scelto. Cosi' le funzioni che li riempiono non cambiano
      di una riga. -->
 <div class="page" id="pageDetail">
-  <div class="wrap" style="padding-top:0">
-    <div class="ptop"><button class="back" onclick="closeDetail()">Oggi</button></div>
+  <div class="ptop"><button class="back" onclick="closeDetail()">Oggi</button></div>
+  <div class="pscroll">
+  <div class="wrap">
     <h1 id="dtTitle">&mdash;</h1>
     <p class="dtsub" id="dtSub" style="margin-top:6px">&mdash;</p>
     <div class="dtsec" id="dt-chk" style="display:none">
@@ -541,13 +554,16 @@
       <div class="card"><div id="adoVers"></div></div>
     </div>
   </div>
+  </div>
 </div>
 
 <!-- ========================= DETTAGLIO LEGA ========================= -->
 <div class="page" id="pageLeague">
-  <div class="wrap" style="padding-top:0">
-    <div class="ptop"><button class="back" onclick="closeLeague()">Tutte le leghe</button></div>
+  <div class="ptop"><button class="back" onclick="closeLeague()">Tutte le leghe</button></div>
+  <div class="pscroll">
+  <div class="wrap">
     <div id="lgDetail"></div>
+  </div>
   </div>
 </div>
 
@@ -561,11 +577,21 @@ const WD = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
 const MIN=60000, HOUR=3600000;
 let emailVal='', leagues=[], leaguesById={}, health=null, sortBy='act', hasNewRpc=true;
 let plans=null, plansById={}, filterBy='all', tab='oggi', attentions=[];
+/* Ultimo accesso: arriva da sa_last_access() (console_accessi.sql) ed e' il momento in cui un
+   telefono della lega ha aperto l'app l'ultima volta. Se la funzione non c'e' ancora si resta sul
+   vecchio «ultima attivita'», che non e' affidabile. */
+let accessById=null;
+function laOf(l){
+  if(!l) return null;
+  if(accessById) return accessById[String(l.id)]||null;
+  return l.last_act||null;
+}
 
 /* ---------- utilita' ---------- */
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function show(id){ ['loginView','denyView','app'].forEach(v=>{
-  const e=document.getElementById(v); if(e) e.style.display=(v===id?(id==='app'?'block':'flex'):'none'); }); }
+  const e=document.getElementById(v); if(e) e.style.display=(v===id?'flex':'none'); });
+  const aw=document.getElementById('authWrap'); if(aw) aw.style.display=(id==='app')?'none':'block'; }
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show');
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3000); }
 function eur(v){ return (v==null||v==='')?'—':('€'+Number(v).toLocaleString('it-IT')); }
@@ -626,7 +652,7 @@ function setTab(t){
     document.getElementById('pane'+k[0].toUpperCase()+k.slice(1)).classList.toggle('on',k===t);
     document.getElementById('tab' +k[0].toUpperCase()+k.slice(1)).classList.toggle('on',k===t);
   });
-  window.scrollTo(0,0);
+  const sw=document.getElementById('scrollwrap'); if(sw) sw.scrollTop=0;
 }
 
 /* ---------- caricamento ---------- */
@@ -634,7 +660,7 @@ async function loadAll(silent){
   const b=document.getElementById('refBtn'); b.classList.add('spin'); b.disabled=true;
   /* quattro chiamate in parallelo, ognuna col suo paracadute: se una manca la
      console non deve spegnersi, deve solo mostrare un po' meno. */
-  const [ov, he, lg, pl, ck, ad, inc, cap] = await Promise.all([
+  const [ov, he, lg, pl, ck, ad, inc, cap, adp, acc] = await Promise.all([
     sb.rpc('sa_overview').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_health').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_leagues_full').then(r=>r.error?null:r.data).catch(()=>null),
@@ -642,7 +668,9 @@ async function loadAll(silent){
     sb.rpc('sa_checks').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_adoption').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_incidents',{p_hours:168}).then(r=>r.error?null:r.data).catch(()=>null),
-    sb.rpc('capacity_status').then(r=>r.error?null:(r.data&&r.data[0])).catch(()=>null)
+    sb.rpc('capacity_status').then(r=>r.error?null:(r.data&&r.data[0])).catch(()=>null),
+    sb.rpc('sa_adoption_persone').then(r=>r.error?null:r.data).catch(()=>null),
+    sb.rpc('sa_last_access').then(r=>r.error?null:r.data).catch(()=>null)
   ]);
   if(ov) paintOverview(ov);
   health=he;
@@ -653,7 +681,10 @@ async function loadAll(silent){
   renderChecks(ck);
   renderOverloads(inc);
   renderCapacityNow(cap);
-  renderAdoption(ad);
+  accessById=null;
+  if(Array.isArray(acc)){ accessById={}; acc.forEach(r=>{ accessById[String(r.league_id)]=r.last_access; }); }
+  _adp=(adp&&Array.isArray(adp.versioni))?adp:null;
+  renderAdoption(ad,_adp);
   if(lg){ leagues=lg||[]; }
   else {
     const old=await sb.rpc('sa_leagues').then(r=>r.error?null:r.data).catch(()=>null);
@@ -759,7 +790,7 @@ function openDetail(k){
   document.getElementById('dtSub').textContent=d.s;
   document.querySelectorAll('#pageDetail .dtsec').forEach(s=>{ s.style.display=(s.id==='dt-'+k)?'':'none'; });
   const p=document.getElementById('pageDetail');
-  p.classList.add('on'); p.scrollTop=0;
+  p.classList.add('on'); { const sc=p.querySelector('.pscroll'); if(sc) sc.scrollTop=0; }
 }
 function closeDetail(){
   const p=document.getElementById('pageDetail'); if(p) p.classList.remove('on');
@@ -879,7 +910,9 @@ function bar(cls,titolo,n,base,nota){
     +(nota?'<div class="chk" style="padding:6px 0 0;border:none"><span>'+esc(nota)+'</span></div>':'')
     +'</div>';
 }
-function renderAdoption(a){
+let _adp=null;
+function renderAdoption(a,p){
+  if(!a && p && p.persone) a={};
   const box=document.getElementById('adoBars');
   const base=document.getElementById('adoBase');
   const vers=document.getElementById('adoVers');
@@ -895,8 +928,14 @@ function renderAdoption(a){
   if(a.leghe!=null&&a.leghe_attive!=null) set('lIna', Math.max(0,a.leghe-a.leghe_attive));
   set('uTot',a.utenti); set('uAct',a.attivi_30); set('uAct7',a.attivi_7);
 
+  /* Se c'e' sa_adoption_persone() i numeri sono PERSONE (una riga a testa, col dispositivo
+     dell'ultimo accesso) e non righe di dispositivo: una persona che ha aggiornato non resta
+     contata anche con la versione vecchia. */
+  const P=(p&&p.persone)?p:null;
+  if(P){ a=Object.assign({},a,{ misurati:P.persone, installate:P.installate||0, push_attive:P.push_attive||0,
+      push_bloccate:P.push_bloccate||0, push_da_fare:P.push_da_fare||0, versioni:p.versioni.slice().sort((x,y)=>verKey(y.v)-verKey(x.v)) }); }
   const m=a.misurati||0;
-  if(base) base.textContent = m ? ('su '+m+' che hanno aperto l\u2019app') : '';
+  if(base) base.textContent = m ? (P ? ('su '+m+' persone che hanno aperto l\u2019app negli ultimi '+(P.giorni||30)+' giorni') : ('su '+m+' che hanno aperto l\u2019app')) : '';
   if(!m){
     box.innerHTML='<div class="skel">Nessun battito ricevuto: i numeri si riempiono man mano che le persone aprono la versione 3.5 o pi\u00f9 recente.</div>';
     if(vers) vers.innerHTML='';
@@ -916,15 +955,20 @@ function renderAdoption(a){
           aggiornate<m ? 'Chi \u00e8 indietro prende la versione nuova alla prima apertura con la rete.' : '') : '');
 
   let h='';
-  if(versioni.length>1){
-    h+='<div class="sect" style="margin:2px 0 6px">Versioni in giro</div>';
+  if(versioni.length>1 || (P&&versioni.length)){
+    h+='<div class="sect" style="margin:2px 0 6px">Versioni in uso'+(P?'<small>persone</small>':'')+'</div>';
     h+=versioni.map((v,i)=>'<div class="vrow'+(i?' old':'')+'"><span>'+esc(v.v)+(i?'':' \u00b7 la pi\u00f9 recente')+'</span><b>'+v.n+'</b></div>').join('');
   }
-  const pf=Array.isArray(a.piattaforme)?a.piattaforme:[];
+  const pf=P?(Array.isArray(p.piattaforme)?p.piattaforme:[]):(Array.isArray(a.piattaforme)?a.piattaforme:[]);
   if(pf.length){
     const nomi={iphone:'iPhone',ipad:'iPad',android:'Android',mac:'Mac',windows:'Windows',altro:'Altro','?':'Sconosciuto'};
-    h+='<div class="sect" style="margin:12px 0 6px">Da che dispositivo</div>';
+    h+='<div class="sect" style="margin:12px 0 6px">Da che dispositivo'+(P?'<small>persone</small>':'')+'</div>';
     h+=pf.map(x=>'<div class="vrow"><span>'+esc(nomi[x.p]||x.p)+'</span><b>'+x.n+'</b></div>').join('');
+  }
+  if(P){
+    h+='<div class="chk" style="padding:12px 0 0"><span>Ogni persona \u00e8 contata una volta sola, con la versione e il telefono dell\u2019<b style="display:inline;font-size:12.5px">ultimo accesso</b>. Chi non apre l\u2019app da oltre '+(P.giorni||30)+' giorni non \u00e8 in elenco.</span></div>';
+  } else {
+    h+='<div class="chk" style="padding:12px 0 0"><span>Questi numeri contano <b style="display:inline;font-size:12.5px">righe di dispositivo</b>, non persone: chi ha aggiornato pu\u00f2 comparire ancora con la versione vecchia. Esegui <span class="num">console_accessi.sql</span> per averli per persona.</span></div>';
   }
   if(a.iscrizioni!=null){
     h+='<div class="chk" style="padding:12px 0 0"><span>Le iscrizioni push registrate sono <b style="display:inline;font-size:12.5px">'
@@ -1116,7 +1160,7 @@ function renderLeagues(){
   if(sortBy==='id')  list.sort((a,b)=>a.id-b.id);
   if(sortBy==='new') list.sort((a,b)=>t(b.created_at)-t(a.created_at));
   if(sortBy==='mem') list.sort((a,b)=>(b.members||0)-(a.members||0));
-  if(sortBy==='act') list.sort((a,b)=>t(b.last_act)-t(a.last_act)||b.id-a.id);
+  if(sortBy==='act') list.sort((a,b)=>t(laOf(b))-t(laOf(a))||b.id-a.id);
   document.getElementById('lgCount').textContent=list.length+(list.length!==leagues.length?(' / '+leagues.length):'');
   if(!list.length){ document.getElementById('lgBody').innerHTML='<div class="card"><div class="empty">Nessuna lega con questi filtri.</div></div>'; return; }
   document.getElementById('lgBody').innerHTML=list.map(l=>lgCardHTML(l)).join('');
@@ -1146,7 +1190,7 @@ function lgCardHTML(l){
     ? nw('<b>'+(l.members||0)+'</b>'+(gratis?('/'+cap):'')+' membri')
       +(l.members_push!=null?(' \u00b7 '+nw('<b>'+l.members_push+'</b> con notifiche')):'')
       +' \u00b7 '+nw('<b>'+(l.mds_closed||0)+'</b> '+((l.mds_closed||0)===1?'giornata':'giornate'))
-      +'<br>'+(l.admin_name?('admin <b>'+esc(l.admin_name)+'</b> \u00b7 '):'')+(l.last_act?('attiva '+ago(l.last_act)):'nessuna attivit\u00e0')
+      +'<br>'+(l.admin_name?('admin <b>'+esc(l.admin_name)+'</b> \u00b7 '):'')+(laOf(l)?('ultimo accesso '+ago(laOf(l))):(accessById?'nessun accesso registrato':'nessuna attivit\u00e0'))
     : '<b>'+(l.members_active||0)+'/'+(l.members||0)+'</b> membri attivi';
   /* Le leghe ferme si eliminano da qui: sono quelle che si vogliono togliere di
      mezzo. Il pulsante sta su una riga sua, in fondo alla scheda, lontano da dove
@@ -1170,7 +1214,7 @@ function lgCardHTML(l){
 function openLeague(id){
   const p=document.getElementById('pageLeague');
   document.getElementById('lgDetail').innerHTML='<div class="skel">Carico la scheda\u2026</div>';
-  p.classList.add('on'); p.scrollTop=0;
+  p.classList.add('on'); { const sc=p.querySelector('.pscroll'); if(sc) sc.scrollTop=0; }
   loadLeagueDetail(id);
 }
 function closeLeague(){ document.getElementById('pageLeague').classList.remove('on'); }
@@ -1210,7 +1254,7 @@ async function loadLeagueDetail(id){
   const initial=(String(l.name||'?').trim().charAt(0)||'?').toUpperCase();
   const avc=founder?'fnd':(plan!=='free'?'pro':'');
   const capTxt=(plan==='free')?(mem.length+'/'+cap):String(mem.length);
-  const lastAct=lst.last_act?ago(lst.last_act):'\u2014';
+  const lastAct=laOf(lst)?ago(laOf(lst)):'\u2014';
   const planP=planPill({_founder:founder,_plan:plan,_founder_no:pl?pl.founder_no:null});
   const lastSeason=seas[0];
   box.innerHTML=`
@@ -1227,7 +1271,7 @@ async function loadLeagueDetail(id){
       <div class="stat blue"><b>${capTxt}</b><span>Membri${plan==='free'?' \u00b7 tetto '+cap:''}</span></div>
       <div class="stat ${withPush<mem.length?'gold':'green'}"><b>${withPush}</b><span>Con notifiche</span></div>
       <div class="stat green"><b>${closed}</b><span>Giornate giocate</span></div>
-      <div class="stat"><b style="font-size:16px;padding-top:3px">${esc(lastAct)}</b><span>Ultima attivit\u00e0</span></div>
+      <div class="stat"><b style="font-size:16px;padding-top:3px">${esc(lastAct)}</b><span>Ultimo accesso</span></div>
     </div>
     ${withPush<mem.length?`<p class="note" style="margin:-4px 2px 14px">\u26a0\ufe0f <b>${mem.length-withPush}</b> ${mem.length-withPush===1?'persona non riceve':'persone non ricevono'} nessuna notifica: su iPhone le push arrivano solo se l'app \u00e8 stata aggiunta alla Home.</p>`:''}
 
@@ -1385,6 +1429,13 @@ function personVersion(m){
   return m ? (m.version_best||m.version||null) : null;
 }
 
+/* l'ultimo accesso di una persona: il piu' recente tra i suoi dispositivi, compresi quelli fermi */
+function personLast(m){
+  const dl=Array.isArray(m&&m.device_list)?m.device_list:[];
+  let best=0;
+  dl.forEach(d=>{ const t=d&&d.last_seen?new Date(d.last_seen).getTime():0; if(t>best) best=t; });
+  return best?new Date(best).toISOString():null;
+}
 function renderPeople(){
   const box=document.getElementById('peopleBox'); if(!box||!peopleData) return;
   const mem=peopleData.members||[];
@@ -1432,7 +1483,8 @@ function renderPeople(){
       esc(m.player_name||''),
       esc(m.email||'\u2014'),
       m.lineup_ok?'schierata':'non schierata',
-      m.voted?'ha votato':'non ha votato'
+      m.voted?'ha votato':'non ha votato',
+      personLast(m)?('ultimo accesso '+ago(personLast(m))):'nessun accesso registrato'
     ].filter(Boolean).join(' \u00b7 ');
 
     let body='';
