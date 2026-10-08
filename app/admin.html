@@ -1281,6 +1281,7 @@ async function loadLeagueDetail(id){
       ${kv('Fischio d\'inizio', dt(cur.kickoff))}
       ${kv('Presenti', (cur.presenti||0)+(cur.presenti===0?' \u26a0\ufe0f':''))}
       ${kv('Voti arrivati', cur.voti||0)}
+      <div id="curVot">${kv('Votanti', '\u2026')}</div>
       ${cur.skip_poll?kv('Sondaggio','saltato (\u00abApri subito\u00bb)'):''}
       <p class="note" style="margin-bottom:0">Promemoria automatici:</p>
       ${flagsHTML(cur)}
@@ -1536,7 +1537,15 @@ function togglePerson(id){
 async function loadMatchdayQuality(leagueId){
   const box=document.getElementById('mdBox'); if(!box) return;
   let data=null, error=null;
-  try{ const r=await sb.rpc('sa_league_matchdays',{p_league:leagueId}); data=r.data; error=r.error; }
+  let vot={};
+  try{
+    const [r,rv]=await Promise.all([
+      sb.rpc('sa_league_matchdays',{p_league:leagueId}),
+      Promise.resolve(sb.rpc('sa_league_votanti',{p_league:leagueId})).then(x=>x,()=>null)
+    ]);
+    data=r.data; error=r.error;
+    if(rv && !rv.error && Array.isArray(rv.data)) rv.data.forEach(x=>{ vot[x.id]=x; });
+  }
   catch(e){ error=e; }
   if(error||!data||data.error||!Array.isArray(data)){
     const msg=(error&&(error.message||error.hint))||(data&&data.error)||'';
@@ -1563,16 +1572,36 @@ async function loadMatchdayQuality(leagueId){
     if(chiusa && m.esiti===0)  note.push('<span class="qwarn">esiti V/S mancanti</span>');
     if(chiusa && m.mvp===0 && m.nomine>0) note.push('<span class="qwarn">MVP non assegnato</span>');
     if(chiusa && m.schierate<m.membri) note.push((m.membri-m.schierate)+' senza formazione');
-    if(chiusa && m.votanti<m.presenti) note.push((m.presenti-m.votanti)+' non hanno votato');
+    const V=vot[m.id]||null;
+    if(V){
+      /* votanti sugli aventi diritto di QUELLA giornata: chi ha un giocatore presente e gli abilitati
+         (allenatori). Proprietario e vice contano solo se giocano o sono abilitati. Per la giornata viva
+         si dice anche chi manca. */
+      const manca=V.aventi-V.hanno_votato;
+      if(chiusa && manca>0) note.push('<span class="qwarn">'+manca+(manca===1?' avente diritto non ha votato':' aventi diritto non hanno votato')+'</span>');
+      if(!chiusa && manca>0){
+        const nomi=(V.mancanti||[]);
+        note.push('mancano: '+nomi.slice(0,6).map(esc).join(', ')+(nomi.length>6?' +'+(nomi.length-6):''));
+      }
+    } else if(chiusa && m.votanti<m.presenti) note.push((m.presenti-m.votanti)+' non hanno votato');
     return '<div class="mrow"><div class="mi">'
       +'<b>'+esc(m.label||('#'+m.id))+' '+(chiusa?'':'<span class="pill a">viva</span>')+'</b>'
       +'<small>'+dt(m.kickoff)+' \u00b7 '+(m.presenti||0)+' presenti \u00b7 '
-      +(m.schierate||0)+'/'+(m.membri||0)+' schierate \u00b7 '+(m.votanti||0)+' votanti ('+(m.voti||0)+' voti)</small>'
+      +(m.schierate||0)+'/'+(m.membri||0)+' schierate \u00b7 '
+      +(V?('votanti <b>'+V.hanno_votato+'/'+V.aventi+'</b>'):((m.votanti||0)+' votanti'))+' ('+(m.voti||0)+' voti)</small>'
       +'<small style="margin-top:3px">'+bonus+(note.length?(' \u00b7 '+note.join(' \u00b7 ')):'')+'</small>'
       +'</div><div class="mr num">#'+m.id+'</div></div>';
   }).join('');
 
   box.innerHTML=h;
+  /* la riga «Votanti» della giornata in corso, in cima alla scheda */
+  const cv=document.getElementById('curVot');
+  if(cv){
+    const viva=data.find(m=>m.status!=='closed'); const Vv=viva?vot[viva.id]:null;
+    cv.innerHTML = Vv
+      ? '<div class="kv"><span class="k">Votanti</span><span class="v mono">'+Vv.hanno_votato+' / '+Vv.aventi+' aventi diritto</span></div>'
+      : '';
+  }
 }
 /* ---------- 3.7 · ACCOUNT RIMOSSI ----------
    Chi cancella il proprio account resta nella lega come profilo anonimo, perche'
