@@ -802,6 +802,13 @@
   .lb-row:nth-child(3) .rank{background:linear-gradient(135deg,#e3a872,#b97636);color:#221206}
   .lb-row .tot{font-family:'JetBrains Mono';font-weight:700;font-size:18px;color:var(--neutral)}
   .lb-row:nth-child(1) .tot{color:var(--gold)}
+  /* 7.0 — marcatori e assist: il 1° sta nel riquadro grande, l'elenco parte dal 2°.
+     nth-child contava le righe e dava oro al 2°, argento al 3°, bronzo al 4°. Qui i colori
+     seguono la POSIZIONE vera: oro = riquadro grande, argento = 2°, bronzo = 3°, gli altri neutri. */
+  .lb-row.top .rank{background:var(--surface2);color:var(--muted);box-shadow:none}
+  .lb-row.top.pos2 .rank{background:linear-gradient(135deg,#d7e0ee,#9fb0c8);color:#1a2336}
+  .lb-row.top.pos3 .rank{background:linear-gradient(135deg,#e3a872,#b97636);color:#221206}
+  .lb-row.top .tot{color:var(--muted)}
   .lb-row .who{flex:1;overflow:hidden}
   .lb-row .tlogo{width:26px;height:26px}
   .lb-row .who b{font-weight:700;font-size:15px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1410,6 +1417,12 @@
   .bch-back{pointer-events:auto;transform:translateZ(0);touch-action:manipulation;background:var(--surface2);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:14px;padding:9px 15px 9px 11px;border-radius:12px;cursor:pointer}
   .bch-back:active{transform:translateZ(0) scale(.97)}
   .bch-page-inner{max-width:var(--maxw);margin:0 auto;padding:6px 18px calc(40px + env(safe-area-inset-bottom))}
+  /* 7.0 — PAGINE SECONDARIE (scheda giocatore/squadra, bonus e malus, formazione): la barra
+     «Indietro» e' fuori dall'area che scorre, quindi non si muove mai: ne' quando si scorre,
+     ne' col rimbalzo di iOS tirando verso il basso. Scorre solo .bch-scroll. */
+  .bch-page:not(.pro-page){overflow:hidden;display:flex;flex-direction:column}
+  .bch-page:not(.pro-page) .bch-page-bar{position:relative;flex:none}
+  .bch-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
   .bch-page .stat-head{margin-bottom:16px}
   .bch-page .stat-av{width:64px;height:64px}
   .bch-page #teamAv{font-size:32px}
@@ -3936,10 +3949,12 @@
     <div class="bch-page-bar">
       <button class="bch-back" onclick="closeTeamLineupPage()" aria-label="Indietro">‹ Indietro</button>
     </div>
-    <div class="bch-page-inner">
-      <h3 id="tlpTitle" class="tlp-title"></h3>
-      <p class="shint" id="tlpHint"></p>
-      <div id="tlpList"></div>
+    <div class="bch-scroll">
+      <div class="bch-page-inner">
+        <h3 id="tlpTitle" class="tlp-title"></h3>
+        <p class="shint" id="tlpHint"></p>
+        <div id="tlpList"></div>
+      </div>
     </div>
   </div>
   <!-- BONUS E MALUS DELLA GIORNATA — sola lettura, la vedono tutti -->
@@ -3947,11 +3962,13 @@
     <div class="bch-page-bar">
       <button class="bch-back" onclick="closeBonusMalus()" aria-label="Indietro">‹ Indietro</button>
     </div>
-    <div class="bch-page-inner">
-      <h3 class="tlp-title">Bonus e malus</h3>
-      <p class="shint" id="bmHint"></p>
-      <div class="bm-sum" id="bmSum"></div>
-      <div id="bmList"></div>
+    <div class="bch-scroll">
+      <div class="bch-page-inner">
+        <h3 class="tlp-title">Bonus e malus</h3>
+        <p class="shint" id="bmHint"></p>
+        <div class="bm-sum" id="bmSum"></div>
+        <div id="bmList"></div>
+      </div>
     </div>
   </div>
   <div id="tut">
@@ -4019,24 +4036,26 @@
     <div class="bch-page-bar">
       <button class="bch-back" onclick="closeBacheca()" aria-label="Indietro">‹ Indietro</button>
     </div>
-    <div class="bch-page-inner">
-      <!-- SCHEDA GIOCATORE -->
-      <div id="pgPlayer" style="display:none">
-        <div class="stat-head"><div class="stat-av" id="statAv"></div>
-          <div class="stat-id"><b id="statName">—</b><span id="statRole">—</span></div></div>
-        <div class="sfilter" id="statSeasonBar"></div>
-        <div class="stat-grid" id="statGrid"></div>
-        <div class="vtrend" id="statChart" style="display:none"></div>
-        <div class="bch" id="statBacheca"></div>
-      </div>
-      <!-- SCHEDA SQUADRA / MANAGER -->
-      <div id="pgTeam" style="display:none">
-        <div class="stat-head"><div class="stat-av" id="teamAv">👔</div>
-          <div class="stat-id"><b id="teamName">—</b><span id="teamSub">—</span></div></div>
-        <div class="sfilter" id="teamSeasonBar"></div>
-        <div class="stat-grid" id="teamGrid"></div>
-        <div class="vtrend" id="teamChart" style="display:none"></div>
-        <div class="bch" id="teamBacheca"></div>
+    <div class="bch-scroll">
+      <div class="bch-page-inner">
+        <!-- SCHEDA GIOCATORE -->
+        <div id="pgPlayer" style="display:none">
+          <div class="stat-head"><div class="stat-av" id="statAv"></div>
+            <div class="stat-id"><b id="statName">—</b><span id="statRole">—</span></div></div>
+          <div class="sfilter" id="statSeasonBar"></div>
+          <div class="stat-grid" id="statGrid"></div>
+          <div class="vtrend" id="statChart" style="display:none"></div>
+          <div class="bch" id="statBacheca"></div>
+        </div>
+        <!-- SCHEDA SQUADRA / MANAGER -->
+        <div id="pgTeam" style="display:none">
+          <div class="stat-head"><div class="stat-av" id="teamAv">👔</div>
+            <div class="stat-id"><b id="teamName">—</b><span id="teamSub">—</span></div></div>
+          <div class="sfilter" id="teamSeasonBar"></div>
+          <div class="stat-grid" id="teamGrid"></div>
+          <div class="vtrend" id="teamChart" style="display:none"></div>
+          <div class="bch" id="teamBacheca"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -4132,7 +4151,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='6.8';
+const APP_VERSION='7.0';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -4350,8 +4369,23 @@ function avatarImg(name,px){
 }
 /* logo squadra: box quadrato px×px, immagine SEMPRE intera (contain) e mai tagliata.
    Se la squadra non ha ancora scelto un logo -> segnaposto discreto della stessa misura. */
+/* 7.0 — l'elenco dei loghi resta sul telefono per 6 ore. Se una squadra ha un logo che
+   nell'elenco in cache non c'e' (caricato o rinominato da poco), invece di mostrare il
+   segnaposto fino alla scadenza si riscarica l'elenco subito, una sola volta per apertura. */
+let _lgTries=0,_lgBusy=false;
+function ensureLogos(){
+  if(_lgBusy||_lgTries>=1||typeof sb==='undefined'||!sb) return;
+  _lgBusy=true; _lgTries++;
+  bucketList('loghi',LG_RE).then(list=>{
+    _lgBusy=false;
+    if(!list.length) return;
+    bucketCacheWrite(LG_KEY,list);
+    if(JSON.stringify(list)!==JSON.stringify(logos)){ logos=list; try{ if(profile) renderAll(); }catch(_){ } }
+  }).catch(()=>{ _lgBusy=false; });
+}
 function logoImg(name,px){
   const a=name&&logos.find(x=>x.name===name);
+  if(name&&!a) ensureLogos();
   if(a) return `<img class="tlogo" src="${a.url}" alt="" style="width:${px}px;height:${px}px" draggable="false">`;
   return `<span class="tlogo ph" style="width:${px}px;height:${px}px"></span>`;
 }
@@ -10149,6 +10183,7 @@ function openBacheca(which){
   pg.classList.remove('hidden');
   // porta in cima il contenuto
   const inner=pg.querySelector('.bch-page-inner'); if(inner) inner.scrollTop=0;
+  const sc=pg.querySelector('.bch-scroll'); if(sc) sc.scrollTop=0;
   pg.scrollTop=0;
 }
 function closeBacheca(){
@@ -12292,7 +12327,7 @@ function setLbScope(v, dir){
 /* una riga della classifica marcatori/assist */
 function topRowHTML(t,i,emo){
   const me=(t.owner_id&&user&&t.owner_id===user.id)?' me':'';
-  return `<div class="lb-row${me}" onclick="openPlayerStats(${t.id})" style="cursor:pointer">`
+  return `<div class="lb-row top pos${i+1}${me}" onclick="openPlayerStats(${t.id})" style="cursor:pointer">`
     +`<div class="rank">${i+1}</div>`
     +`<div class="pav">${avatarImg(t.avatar,30)}</div>`
     +`<div class="who"><b>${esc(t.name)}</b><span>${t.pres?(t.pres+(t.pres===1?' presenza':' presenze')):'Nessuna presenza'}</span></div>`
@@ -12428,6 +12463,7 @@ function openTeamLineupPage(){
   const pg=document.getElementById('teamLineupPage'); if(!pg)return;
   pg.classList.remove('hidden');
   const inner=pg.querySelector('.bch-page-inner'); if(inner) inner.scrollTop=0;
+  const sc=pg.querySelector('.bch-scroll'); if(sc) sc.scrollTop=0;
   pg.scrollTop=0;
 }
 function closeTeamLineupPage(){
@@ -12451,6 +12487,7 @@ async function openBonusMalus(){
   const pg=document.getElementById('bmPage'); if(!pg)return;
   renderBonusMalus();
   pg.classList.remove('hidden'); pg.scrollTop=0;
+  { const sc=pg.querySelector('.bch-scroll'); if(sc) sc.scrollTop=0; }
   try{ await loadMatchStats(); await loadMvpSega(); renderBonusMalus(); }catch(_){ }
 }
 function closeBonusMalus(){
