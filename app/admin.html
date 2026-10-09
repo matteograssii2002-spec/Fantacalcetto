@@ -1570,9 +1570,12 @@ async function loadMatchdayQuality(leagueId){
       : (chiusa?'<span class="qbad">nessun bonus inserito</span>':'<span class="qwarn">bonus non ancora inseriti</span>');
     const note=[];
     if(chiusa && m.esiti===0)  note.push('<span class="qwarn">esiti V/S mancanti</span>');
-    if(chiusa && m.mvp===0 && m.nomine>0) note.push('<span class="qwarn">MVP non assegnato</span>');
+    /* MVP: l'app lo ricava dalle nomine (il piu' nominato), non da match_stats.is_mvp, che non scrive mai.
+       Il vecchio avviso «MVP non assegnato» guardava quella colonna vuota: falso allarme su ogni giornata.
+       Ora si mostra chi e' l'MVP; l'assenza di nomine non e' un errore (la nomina e' facoltativa). */
     if(chiusa && m.schierate<m.membri) note.push((m.membri-m.schierate)+' senza formazione');
     const V=vot[m.id]||null;
+    if(V && V.mvp_nome) note.unshift('\ud83c\udfc6 MVP <b>'+esc(V.mvp_nome)+'</b> ('+V.mvp_nomine+')');
     if(V){
       /* votanti sugli aventi diritto di QUELLA giornata: chi ha un giocatore presente e gli abilitati
          (allenatori). Proprietario e vice contano solo se giocano o sono abilitati. Per la giornata viva
@@ -1588,7 +1591,7 @@ async function loadMatchdayQuality(leagueId){
       +'<b>'+esc(m.label||('#'+m.id))+' '+(chiusa?'':'<span class="pill a">viva</span>')+'</b>'
       +'<small>'+dt(m.kickoff)+' \u00b7 '+(m.presenti||0)+' presenti \u00b7 '
       +(m.schierate||0)+'/'+(m.membri||0)+' schierate \u00b7 '
-      +(V?('votanti <b>'+V.hanno_votato+'/'+V.aventi+'</b>'):((m.votanti||0)+' votanti'))+' ('+(m.voti||0)+' voti)</small>'
+      +(V?('<span style="white-space:nowrap">votanti <b>'+V.hanno_votato+'/'+V.aventi+'</b></span>'):((m.votanti||0)+' votanti'))+' ('+(m.voti||0)+' voti)</small>'
       +'<small style="margin-top:3px">'+bonus+(note.length?(' \u00b7 '+note.join(' \u00b7 ')):'')+'</small>'
       +'</div><div class="mr num">#'+m.id+'</div></div>';
   }).join('');
