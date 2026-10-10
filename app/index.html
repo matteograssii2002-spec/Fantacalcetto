@@ -595,6 +595,9 @@
   .slot.captain .pawn{filter:drop-shadow(0 0 7px rgba(255,194,61,.95))}
   .slot .tag{font-size:12px;font-weight:700;text-align:center;line-height:1.1;color:#fff;background:rgba(0,0,0,.45);padding:2px 8px;border-radius:7px;max-width:96px;margin-top:2px;white-space:normal;word-break:keep-all;overflow-wrap:normal;hyphens:none;text-shadow:0 1px 2px rgba(0,0,0,.4)}
   .slot .tag.empty{color:rgba(255,255,255,.92);font-weight:600}
+  /* 7.1 — schierato ma assente: pedina spenta, niente voto */
+  .slot.absent .pawn{opacity:.38;filter:grayscale(1)}
+  .slot.absent .tag{opacity:.6}
   .slot .cap{position:absolute;top:-4px;left:-4px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#1b1207;display:none;place-items:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:12px;border:2px solid #2c7a39}
   .slot.captain .cap{display:grid}
   .slot .yc{position:absolute;top:-3px;right:-3px;min-width:15px;height:20px;border-radius:3px;
@@ -1575,6 +1578,58 @@
   .ls-cta{width:100%;background:linear-gradient(135deg,var(--accent),#1c6ff2);color:#fff;font-weight:800;font-size:16px;border:none;padding:16px;border-radius:15px;cursor:pointer;box-shadow:0 14px 32px -10px rgba(63,151,255,.6);transition:transform .12s}
   .ls-cta:active{transform:scale(.98)}
   .ls-cta:disabled{opacity:.6}
+  /* ---- 7.1 — CHAT CON L'ASSISTENZA (tutti) ----
+     Tasto piccolo in Home, in basso a destra sopra la barra. La Home riceve
+     62px di spazio in fondo quando c'e', cosi' a fine pagina non copre niente. */
+  .chatfab{position:absolute;right:14px;bottom:calc(100% + 12px);width:46px;height:46px;border-radius:16px;display:none;place-items:center;cursor:pointer;
+    background:linear-gradient(160deg,rgba(31,58,108,.97),rgba(21,41,75,.97));border:1px solid var(--line-strong);color:var(--accent-soft);
+    box-shadow:0 12px 28px -12px rgba(0,8,24,.95),inset 0 1px 0 rgba(255,255,255,.07);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+    transition:transform .15s,color .2s,border-color .2s;-webkit-tap-highlight-color:transparent}
+  .chatfab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+  .chatfab:active{transform:scale(.92)}
+  .chatfab.unread{color:#fff;border-color:rgba(126,194,255,.5)}
+  .chatfab-dot{position:absolute;top:-6px;right:-6px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--red);color:#fff;
+    font-size:11px;font-weight:800;line-height:15px;text-align:center;border:2px solid var(--bg);display:none}
+  .chatfab.unread .chatfab-dot{display:block}
+  body.chatfab-on #v-home{padding-bottom:62px}
+  .chat-av{width:42px;height:42px;border-radius:13px;overflow:hidden;flex:none;border:1px solid var(--line-strong);background:var(--surface)}
+  .chat-av img{width:100%;height:100%;display:block}
+  .chat-head .ls-ttl small{white-space:normal}
+  .chat-body{display:flex;flex-direction:column;padding:4px 16px 14px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  .chat-day{align-self:center;font-size:11px;font-weight:700;color:var(--muted);background:rgba(150,185,240,.08);padding:4px 11px;border-radius:999px;margin:14px 0 8px}
+  .chat-who{font-size:11px;font-weight:800;color:var(--accent-soft);margin:8px 6px 3px}
+  .chat-who.me{align-self:flex-end}
+  .chat-msg{max-width:82%;padding:9px 12px 6px;border-radius:18px;font-size:15px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:3px}
+  .chat-msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#fff;border-bottom-right-radius:6px}
+  .chat-msg.them{align-self:flex-start;background:var(--surface);border:1px solid var(--line-strong);color:var(--text);border-bottom-left-radius:6px}
+  .chat-msg time{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;opacity:.68;text-align:right;margin-top:3px}
+  .chat-msg.pending{opacity:.55}
+  .chat-empty{margin:auto 0;text-align:center;padding:24px 8px}
+  .chat-empty img{width:64px;height:64px;border-radius:18px;display:block;margin:0 auto 12px;box-shadow:0 14px 30px -14px rgba(63,151,255,.6)}
+  .chat-empty b{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;display:block}
+  .chat-empty p{color:var(--muted);font-size:14px;line-height:1.5;margin:8px auto 16px;max-width:300px}
+  .chat-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+  .chat-chips button{background:rgba(63,151,255,.1);border:1px solid rgba(126,194,255,.28);color:var(--accent-soft);font-family:inherit;font-weight:700;font-size:13px;padding:8px 13px;border-radius:999px;cursor:pointer}
+  .chat-foot{flex:none;display:flex;align-items:flex-end;gap:9px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--bg);max-width:var(--maxw);width:100%;margin:0 auto}
+  .chat-ov.kb .chat-foot{padding-bottom:10px}
+  .chat-foot textarea{flex:1;min-width:0;resize:none;max-height:120px;background:var(--surface);border:1px solid var(--line-strong);border-radius:21px;color:var(--text);
+    font-family:inherit;font-size:16px;line-height:1.35;padding:10px 15px;outline:none;display:block}
+  .chat-foot textarea:focus{border-color:rgba(126,194,255,.5)}
+  .chat-send{flex:none;width:42px;height:42px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 10px 24px -10px rgba(63,151,255,.75)}
+  .chat-send svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  .chat-send:disabled{opacity:.4;box-shadow:none}
+  .chat-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 13px;margin-bottom:9px;color:var(--text);font-family:inherit;cursor:pointer}
+  .chat-row:active{transform:scale(.99)}
+  .chat-row.unread{border-color:rgba(126,194,255,.4)}
+  .cr-av{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;flex:none;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:16px;background:rgba(63,151,255,.14);border:1px solid rgba(63,151,255,.3);color:var(--accent-soft)}
+  .cr-mid{flex:1;min-width:0}
+  .cr-mid b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cr-mid small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chat-row.unread .cr-mid small{color:var(--text)}
+  .chat-row .cr-mid small.cr-lg{color:var(--accent-soft);font-size:11.5px;font-weight:700}
+  .cr-end{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+  .cr-end time{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+  .cr-pill{min-width:20px;height:20px;border-radius:10px;background:var(--accent);font-size:11px;font-weight:800;color:#fff;text-align:center;line-height:20px;padding:0 6px}
   .ls-cta.save{background:linear-gradient(135deg,var(--green),#1f9d63);box-shadow:0 14px 32px -10px rgba(55,201,126,.6)}
   .ls-blocks{display:flex;flex-direction:column;gap:12px;margin-top:4px}
   .ls-block{position:relative;border:1.5px solid var(--line-strong);border-radius:20px;padding:22px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;background:linear-gradient(160deg,#10294d,#0a1830);transition:transform .1s}
@@ -3559,7 +3614,7 @@
       <div class="section-h"><h2>Amministra la lega</h2></div>
       <p class="setintro">Solo tu vedi questa pagina.</p>
       <button class="navrow gold adminRow" id="rowLeague" onclick="setNav('page-lega')"><span class="ic">👥</span><span class="lab">Utenti<small id="admPeopleSub">Inviti, giocatori, avvisi, permessi</small></span><span class="go">›</span></button>
-      <button class="navrow gold ownerRow" id="rowRules" onclick="setNav('page-regole')"><span class="ic">⚙️</span><span class="lab">Le regole del gioco<small>Apertura giornata, presenze, portiere, crediti</small></span><span class="go">›</span></button>
+      <button class="navrow gold ownerRow" id="rowRules" onclick="setNav('page-regole')"><span class="ic">⚙️</span><span class="lab">Le regole della lega<small>Apertura giornata, presenze, portiere, crediti</small></span><span class="go">›</span></button>
       <button class="navrow gold ownerRow" onclick="setNav('page-stagione')"><span class="ic">📅</span><span class="lab">Stagione<small id="admSeaSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold ownerRow" onclick="setNav('page-manutenzione')"><span class="ic">🛟</span><span class="lab">Assistenza<small>Segnala un problema, ricalcola il recap</small></span><span class="go">›</span></button>
       <button class="navrow danger ownerRow" onclick="askLeagueDeletion()"><span class="ic">🗑️</span><span class="lab">Elimina la lega<small>Chiude la lega e cancella tutto</small></span><span class="go">›</span></button>
@@ -3671,6 +3726,7 @@
           <div class="rg-t r"><span class="ic">🟨</span><span class="v">−0,5</span><span class="l">Cartellino giallo</span></div>
         </div>
         <p class="rg-note">La sconfitta non toglie punti: vale 0, come il pareggio.</p>
+        <p class="rg-note">Schierato ma assente: se l’admin toglie dai presenti un giocatore che hai già schierato ricevi un avviso per sostituirlo. Se resta in campo vale <b>0</b>: niente voto e niente bonus.</p>
 
         <div class="rg-sec au"><span class="dot"></span>Moltiplicatori</div>
         <div class="rg-grid">
@@ -3932,7 +3988,9 @@
   </section>
   </div><!-- /scrollwrap -->
 
-  <nav class="nav"><div class="nav-inner">
+  <nav class="nav">
+    <div class="chatfab" id="chatFab" role="button" aria-label="Assistenza" onclick="openChat()"><svg viewBox="0 0 24 24"><path d="M5 4.5h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7.5L7 21v-3.5H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z"/><path d="M8 10h8M8 13.5h5"/></svg><span class="chatfab-dot" id="chatFabDot"></span></div>
+    <div class="nav-inner">
     <button class="on" data-v="home" onclick="go('home')"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"/></svg></i><span>Home</span></button>
     <button data-v="mercato" onclick="go('mercato')"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16l-1 13H5L4 7zM8 7V5a4 4 0 018 0v2" stroke-linecap="round" stroke-linejoin="round"/></svg></i><span>Mercato</span></button>
     <button class="navmain" data-v="formazione" onclick="go('formazione')"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M3 12h3M18 12h3"/></svg></i><span>Campo</span></button>
@@ -4060,6 +4118,21 @@
     </div>
   </div>
 
+  <!-- 7.1 — CHAT CON L'ASSISTENZA: ognuno la sua conversazione privata. Al
+       super-admin lo stesso pannello mostra prima l'elenco di chi ha scritto. -->
+  <div class="ls-open chat-ov" id="chatOv">
+    <div class="ls-head chat-head">
+      <button class="ls-back" id="chatBackBtn" onclick="chatBack()" aria-label="Chiudi">✕</button>
+      <div class="chat-av"><img src="/icon-512.png?v=3" alt=""></div>
+      <div class="ls-ttl"><b id="chatTtl">Assistenza FantaCalcetto</b><small id="chatSub">—</small></div>
+    </div>
+    <div class="ls-body chat-body" id="chatBody"></div>
+    <div class="chat-foot" id="chatFoot">
+      <textarea id="chatIn" rows="1" maxlength="2000" placeholder="Scrivi un messaggio…" oninput="chatGrow()"></textarea>
+      <button class="chat-send" id="chatSend" onclick="chatSendMsg()" aria-label="Invia"><svg viewBox="0 0 24 24"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg></button>
+    </div>
+  </div>
+
   <div class="ls-open" id="liveStats">
     <div class="ls-head">
       <button class="ls-back" id="lsBack" onclick="closeLiveStats()">✕</button>
@@ -4151,7 +4224,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='7.0';
+const APP_VERSION='7.1';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -4219,8 +4292,8 @@ function presGateReason(){
   if(Number(currentMd.id)<0) return '';   // giornata del tutorial
   const n=mdPresent.size;
   if(n<MIN_PRESENT) return n===0 ? 'Nessun presente segnato' : 'Presenti: '+n+' su '+MIN_PRESENT;
-  if(gkFixed && !players.some(p=>p.role==='POR' && mdPresent.has(p.id)))
-    return 'Manca il portiere';
+  /* 7.1 — tolto «Manca il portiere»: col portiere fisso, se fra i presenti non
+     c'e' nessun POR, in porta puo' andare chiunque (come in rotazione). */
   return '';
 }
 /* messaggio del perché le formazioni sono bloccate */
@@ -4259,11 +4332,9 @@ function fieldAvailability(){
     if(!isPresent(p)) return;
     if(p.role==='ATT') nATT++;
     else if(p.role==='DIF') nDIF++;
-    /* 4.8 — il ruolo Portiere ora si puo' assegnare in tutte le leghe. Dove il
-       portiere NON e' fisso pero' non esiste un reparto "porta": chi ha quel
-       ruolo gioca dove serve, quindi conta come uomo di movimento. Senza questa
-       riga un POR in una lega a rotazione non era schierabile da nessuna parte. */
-    else if(p.role==='POR' && !gkFixed){ nATT++; nDIF++; }
+    /* 7.1 — chi ha ruolo POR gioca SOLO in porta, in tutte e due le modalita':
+       non conta piu' come uomo di movimento (prima, in rotazione, valeva come
+       ATT e come DIF). Stessa regola in _lineup_overflow (SQL, crediti). */
   });
   const available=new Set();
   const missingDept = (nATT===0 || nDIF===0);
@@ -4280,6 +4351,13 @@ function fieldAvailability(){
   return {nATT,nDIF,available,freeRoles:false};
 }
 function moduleBonus(){return MODULES[formModule]?MODULES[formModule].bonus:0;}
+/* 7.1 — REGOLE DEL PORTIERE
+   - chi ha ruolo POR gioca solo in porta (fisso e rotazione);
+   - portiere fisso: in porta solo un POR, ma se fra i presenti non ce n'e'
+     nessuno in porta puo' andare chiunque, come in rotazione;
+   - rotazione: in porta chiunque. */
+function porPresent(){ return (players||[]).some(p=>p.role==='POR' && isPresent(p)); }
+function gkOnlyPor(){ return gkFixed && porPresent(); }
 // Se il modulo attuale non è più valido (presenze cambiate), ripiega su uno disponibile.
 function ensureValidModule(){
   // se non ci sono ancora presenti caricati, non forzare nulla (evita di svuotare al caricamento)
@@ -4611,6 +4689,9 @@ function tutStepsPlayer(){ return [
  {v:'home', el:'#homeRvWrap',
   ttl:'Rivivi',
   tx:"Ogni giornata finita ha il suo pagellone: voti, formazioni e chi ha vinto."},
+ {v:'home', el:'#chatFab', before:()=>syncChatFab(),
+  ttl:'Assistenza',
+  tx:"Hai un dubbio o un problema? Da questo tasto scrivi direttamente all\u2019<b>assistenza di FantaCalcetto</b>: ti rispondiamo qui, nell\u2019app."},
  {ttl:'Fatto',
   tx:"Il tutorial finisce qui. Per rivederlo: <b>Impostazioni \u203a Tutorial</b>."}
 ];}
@@ -4867,7 +4948,7 @@ function tutBusy(){
   const opn=(id)=>{ const e=document.getElementById(id); return !!e && e.classList.contains('open'); };
   return vis('rulesSetup') || vis('logoIntro') || vis('pwsetup')
       || vis('gate') || vis('welcome') || vis('onboard') || vis('league')
-      || opn('pushModal') || opn('pag') || opn('sheet');
+      || opn('pushModal') || opn('pag') || opn('sheet') || opn('chatOv');
 }
 function maybeShowTutorial(try_n){
   try{ if(localStorage.getItem(TUT_KEY)) return; }catch(_){ return; }
@@ -5825,11 +5906,18 @@ async function afterLogin(){
     loadSchedule();          // config lega (modalità portiere) per tutti gli utenti
     loadCreditConfig();      // metodo crediti + sondaggio valori per tutti
     ensurePush();            // riaggancia le notifiche se la subscription era scaduta
-    maybeShowLogoNotice();   // AVVISO TEMPORANEO (vedi blocco in fondo) — rimuovibile in un deploy futuro
+    maybeShowNews();         // 7.1 — avviso «Novità» una volta per dispositivo (blocco NOVITÀ in fondo)
+    refreshChatUnread();     // 7.1 — pallino del tasto chat (amministratori e super-admin)
     maybeShowLogoIntro();    // novità loghi: chiede di scegliere il logo a chi non ce l'ha ancora
     maybeAskPassword();      // chi c'era prima del login a password: gliela chiedo una volta sola
     maybePlanFullNotice();   // lega arrivata al tetto: una volta sola, e solo all'admin
     const _qs=new URLSearchParams(location.search);
+    /* 7.1 — dalla push della chat: si apre la chat e si toglie ?chat dall'indirizzo,
+       cosi' ricaricando la pagina non si riapre da sola */
+    if(_qs.get('chat') && chatRole()){
+      setTimeout(openChat,400);
+      try{ _qs.delete('chat'); const q=_qs.toString(); history.replaceState(null,'',location.pathname+(q?'?'+q:'')+location.hash); }catch(_){ }
+    }
     const _rp=_qs.get('recap'), _sp=_qs.get('srecap');             // deep-link dalle push
     if(_sp && !isNaN(parseInt(_sp))){ openSeasonRecap(parseInt(_sp), false); }
     else if(_rp && !isNaN(parseInt(_rp))){ openRecap(parseInt(_rp), false); }
@@ -6189,8 +6277,8 @@ function renderRulesSetup(){
   document.getElementById('suDays').innerHTML = SU_DAYS.map(d=>`<div class="preschip ${setupRules.weekday===d?'on':''}" onclick="suPickDay(${d})">${WD[d]}</div>`).join('');
   document.querySelectorAll('#suGk button').forEach(b=>b.classList.toggle('on',b.dataset.v===setupRules.gk));
   document.getElementById('suGkHint').textContent = setupRules.gk==='fix'
-    ? 'In porta solo chi ha ruolo Portiere (POR).'
-    : 'In porta può andare chiunque, a turno.';
+    ? 'In porta solo chi ha ruolo Portiere (POR); se quel giorno non ce n\u2019\u00e8 nessuno, chiunque.'
+    : 'In porta pu\u00f2 andare chiunque, a turno. Chi ha ruolo POR gioca solo in porta.';
   document.querySelectorAll('#suPres button').forEach(b=>b.classList.toggle('on',b.dataset.v===setupRules.pres));
   document.getElementById('suPresHint').textContent = setupRules.pres==='players'
     ? 'Ogni giocatore segna la propria presenza dalla Home.'
@@ -6511,7 +6599,12 @@ function helpMailto(){
 }
 function renderHelpBox(){
   const box=document.getElementById('helpBox'); if(!box) return;
-  box.innerHTML=`<p class="vs" style="color:var(--muted);font-size:12px;line-height:1.5;margin:6px 0 10px">Scrivici pure. Lega, versione e giornata sono gi\u00e0 nel messaggio.</p>
+  const chat = (chatRole()==='user')
+    ? `<p class="vs" style="color:var(--muted);font-size:12px;line-height:1.5;margin:6px 0 10px">Il modo pi\u00f9 veloce \u00e8 la chat: ti rispondiamo direttamente nell\u2019app.</p>
+    <button class="set-btn" onclick="openChat()">\ud83d\udcac Scrivi all\u2019assistenza</button>
+    <p class="vs" style="color:var(--muted);font-size:12px;line-height:1.5;margin:14px 0 10px">Oppure via email.</p>`
+    : '';
+  box.innerHTML=chat+`<p class="vs" style="color:var(--muted);font-size:12px;line-height:1.5;margin:6px 0 10px">Scrivici pure. Lega, versione e giornata sono gi\u00e0 nel messaggio.</p>
     <button class="set-btn" onclick="openHelpMail()">\u2709\ufe0f Segnala un problema</button>
     <button class="set-btn" style="margin-top:9px" onclick="copyHelpMail()">Copia l'indirizzo</button>`;
 }
@@ -7469,7 +7562,8 @@ function renderLineupWarn(){
   const w=document.getElementById('lineupWarn'); if(!w)return;
   const parts=[];
   if(lineupAbsent.length)
-    parts.push('<b>Formazione da rivedere.</b> '+absentNamesText()+'. '+(lineupAbsent.length>1?'Sostituiscili':'Sostituiscilo')+' e tocca <b>Conferma formazione</b>.');
+    parts.push('<b>Formazione da rivedere.</b> '+absentNamesText()+'. '+(lineupAbsent.length>1?'Sostituiscili':'Sostituiscilo')+' e tocca <b>Conferma formazione</b>.'
+      +(currentMd&&absentRuleOn(currentMd.id)?' Chi resta in campo senza aver giocato vale 0.':''));
   if(lineupUnsaved)
     parts.push(lineupLocked
       ? '<b>Questa formazione non è mai arrivata al server.</b> È rimasta solo sul telefono e ormai le formazioni sono chiuse: avvisa l\'amministratore.'
@@ -7907,7 +8001,7 @@ function renderRuleRows(){
     ? (wd!=null ? 'Automatica \u00b7 ogni '+WD_LABELS[wd]+' alle '+tm : 'Automatica \u00b7 manca giorno e ora')
     : 'Semi-automatica \u00b7 giorno e ora li scegli tu');
   set('presModeSub', presenceSelf?'Le segnano i giocatori':'Le segni tu');
-  set('gkSub', gkFixed?'In porta solo chi ha ruolo Portiere':'In porta pu\u00f2 andare chiunque');
+  set('gkSub', gkFixed?'In porta solo chi ha ruolo Portiere, se presente':'In porta pu\u00f2 andare chiunque');
   set('creditSub', creditMode==='poll'
     ? (valuePollOpen?'Sondaggio aperto':'Calcolati dal sondaggio')
     : 'Li imposti tu a mano');
@@ -8121,8 +8215,8 @@ function renderGkMode(){
   sw.querySelectorAll('button').forEach(b=>b.classList.toggle('on', (b.dataset.fixed==='1')===gkFixed));
   const h=document.getElementById('gkModeHint');
   if(h) h.textContent = gkFixed
-    ? 'In porta solo chi ha ruolo Portiere (POR).'
-    : 'In porta può andare chiunque.';
+    ? 'In porta solo chi ha ruolo Portiere (POR). Se in una giornata non c\u2019\u00e8 nessun POR tra i presenti, in porta pu\u00f2 andare chiunque. Chi ha ruolo POR gioca solo in porta.'
+    : 'In porta pu\u00f2 andare chiunque. Chi ha ruolo Portiere (POR) gioca solo in porta.';
   renderRuleRows();
 }
 async function setGkMode(fixed){
@@ -8864,7 +8958,7 @@ function renderMdCenter(){
                && !(currentSeason && currentSeason.status==='open' && Number(currentSeason.mds_total||0)>=38);
   let h='';
   if(prossima) h+=autoOpenStatusHTML();
-  if(key==='pres') h+=`<div class="mdc-note warn">\u26a0\ufe0f <b>${esc(presGateReason())}.</b> Formazioni chiuse finch\u00e9 non ne segni ${MIN_PRESENT}${gkFixed?', portiere compreso':''}.</div>`;
+  if(key==='pres') h+=`<div class="mdc-note warn">\u26a0\ufe0f <b>${esc(presGateReason())}.</b> Formazioni chiuse finch\u00e9 non ne segni ${MIN_PRESENT}.</div>`;
   /* 4.9 — «Vedi il pagellone» non sta piu' qui: il Centro giornata serve a
      mandare avanti la giornata, e il pagellone si legge dalla Home o dalla
      classifica. Una riga in meno da saltare ogni volta. */
@@ -9113,6 +9207,7 @@ function go(v){
   document.querySelectorAll('.view').forEach(s=>s.classList.remove('active'));
   document.getElementById('v-'+v).classList.add('active');
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  syncChatFab();   // 7.1 — il tasto chat sta solo in Home
   if(v==='settings'){ _setStack.length=0; setNav('setMenu'); openSettings(); }
   if(v==='classifica'){ maybeAnimateLega(); }
   /* stessa scheda toccata di nuovo, o Impostazioni: in cima.
@@ -11093,7 +11188,7 @@ function renderPitch(){
   SLOTS.forEach(s=>{
     const p=players.find(x=>x.id===lineup[s.key]); const filled=!!p,cap=captain===s.key,isPor=s.label==='POR';
     const el=document.createElement('div');
-    el.className=`slot ${cap?'captain':''} ${isPor?'por':''}`;
+    el.className=`slot ${cap?'captain':''} ${isPor?'por':''}${filled&&isAbsentOwn(p.id)?' absent':''}`;
     el.style.left=s.x+'%';el.style.top=s.y+'%';el.onclick=()=>slotTap(s.key);
     el.innerHTML=filled
       ?`<div class="pawn">${avatarImg(p.avatar,104)}<span class="cap">C</span><span class="yc" id="yc-${s.key}" style="display:none"></span></div><div class="tag">${p.name}<span id="tg-${s.key}"></span></div><div class="scoreline" id="sl-${s.key}"></div><div class="evs" id="ev-${s.key}"></div>`
@@ -11137,7 +11232,40 @@ function avgFor(id){return averages[id]?averages[id].v:6;}
    Il parametro seasonId resta nella firma: lo passano una trentina di punti,
    e toglierlo sarebbe trenta modifiche senza guadagno. */
 const MVP_BONUS = 3;
+/* 7.1 — SCHIERATO MA ASSENTE VALE 0
+   Se l'admin toglie dai presenti un giocatore gia' schierato, chi l'aveva in
+   formazione riceve l'avviso (6.0/6.1). Se non lo cambia, prima contava come se
+   avesse giocato: voto 6 di partenza (nessuno lo vota) e, in porta, anche il +3
+   di porta inviolata (zero gol subiti registrati). Ora vale 0: niente voto,
+   niente bonus, niente capitano. Presenze e media del giocatore non cambiano,
+   perche' non ha giocato.
+   Vale dalla giornata con id 67 in poi, per tutte le leghe: le giornate prima
+   restano come sono state giocate (stesso numero in _md_points_calc, SQL).
+   La giornata 5 della Fossa (id 66) ha una rettifica a parte (-3). */
+const ABSENT_ZERO_FROM_MD = 67;
+function absentRuleOn(mdId){ return Number(mdId)>=ABSENT_ZERO_FROM_MD; }
+/* Segna gli assenti dentro la mappa dei voti di UNA giornata. presentSet nullo o
+   vuoto (lettura fallita) = non si segna niente: meglio un 6 in piu' che uno 0 sbagliato. */
+function markAbsent(avgMap,lns,presentSet,mdId){
+  if(!absentRuleOn(mdId) || !presentSet || !presentSet.size) return avgMap;
+  (lns||[]).forEach(r=>{ if(!presentSet.has(r.player_id)) avgMap[r.player_id]={v:0,n:0,absent:true}; });
+  return avgMap;
+}
+async function mdPresentSet(md){
+  try{
+    const {data,error}=await sb.from('matchday_players').select('player_id').eq('matchday_id',md);
+    if(error) return null;
+    return new Set((data||[]).map(r=>r.player_id));
+  }catch(_){ return null; }
+}
+/* il proprio campo, giornata in corso */
+function isAbsentOwn(pid){
+  return !!currentMd && currentMd.status!=='closed' && absentRuleOn(currentMd.id)
+      && mdPresent.size>0 && !mdPresent.has(pid);
+}
 function scoreOf(pid,slot,isCaptain,avgMap,statsMap,mvp,seasonId){
+  if(avgMap[pid] && avgMap[pid].absent)
+    return {score:0,voto:0,gol:0,assist:0,og:0,rs:0,rp:0,gi:0,gs:0,isPor:slot==='g1',absent:true};
   const st=statsMap[pid]||{gol:0,assist:0,og:0,gs:0,rs:0,rp:0,gi:0,esito:''},isPor=slot==='g1';
   const voto=avgMap[pid]?avgMap[pid].v:6;
   const isMvp=(mvp===pid);
@@ -11150,10 +11278,12 @@ function scoreOf(pid,slot,isCaptain,avgMap,statsMap,mvp,seasonId){
   return {score:s,voto,gol:st.gol,assist:st.assist,og:st.og,rs:st.rs||0,rp:st.rp||0,gi:st.gi||0,gs,isPor};
 }
 function computeScore(pid,slotKey,mvp){
-  return scoreOf(pid,slotKey,captain===slotKey,averages,adminStats,mvp,currentMd?currentMd.season_id:null);
+  const avg=isAbsentOwn(pid) ? Object.assign({},averages,{[pid]:{v:0,n:0,absent:true}}) : averages;
+  return scoreOf(pid,slotKey,captain===slotKey,avg,adminStats,mvp,currentMd?currentMd.season_id:null);
 }
 // Icone evento sul campo: ⚽ gol · 👟 assist · 🅰️ autogol · 🚫 rigore sbagliato · 🙌 rigore parato · 🧤 imbattuto / 🔴 gol subiti (solo portiere)
 function statIcons(r){
+  if(r.absent) return '';
   const a=[];
   for(let i=0;i<(r.gol||0);i++)a.push('⚽');
   for(let i=0;i<(r.assist||0);i++)a.push('👟');
@@ -11180,11 +11310,11 @@ function pitchSlotsHTML(mod,getp){
   return slots.map(s=>{
     const isPor=s.label==='POR', o=getp(s);
     if(!o||!o.p) return `<div class="slot ${isPor?'por':''}" style="left:${s.x}%;top:${s.y}%"><div class="disc"></div><div class="tag empty">${isPor?'POR':s.label}</div></div>`;
-    const icons=statIcons(o.sc), cls=o.sc.voto>=6?'hi':'lo';
-    return `<div class="slot ${o.cap?'captain':''} ${isPor?'por':''}" style="left:${s.x}%;top:${s.y}%">
+    const icons=statIcons(o.sc), cls=o.sc.voto>=6?'hi':'lo', ab=!!o.sc.absent;
+    return `<div class="slot ${o.cap?'captain':''} ${isPor?'por':''}${ab?' absent':''}" style="left:${s.x}%;top:${s.y}%">
       <div class="pawn">${avatarImg(o.p?o.p.avatar:'',104)}${o.cap?'<span class="cap">C</span>':''}${(o.sc.gi||0)?`<span class="yc">${o.sc.gi>1?o.sc.gi:''}</span>`:''}</div>
       <div class="tag">${o.p?o.p.name:'?'}${o.mvp?' 🏆':''}</div>
-      <div class="scoreline"><span class="voto ${cls}">${o.sc.voto.toFixed(1)}</span></div>
+      <div class="scoreline">${ab?'':`<span class="voto ${cls}">${o.sc.voto.toFixed(1)}</span>`}</div>
       ${icons?`<div class="evs" style="${evsStyle(icons)}">${icons}</div>`:''}</div>`;
   }).join('');
 }
@@ -11205,7 +11335,7 @@ function updateScores(){
     const r=computeScore(pid,s.key,mvp); total+=r.score;
     const evs=statIcons(r);
     const cls=r.voto>=6?'hi':'lo';
-    el.innerHTML=`<span class="voto ${cls}">${r.voto.toFixed(1)}</span>`;
+    el.innerHTML=r.absent?'':`<span class="voto ${cls}">${r.voto.toFixed(1)}</span>`;
     if(yc){ const g=r.gi||0; yc.style.display=g?'grid':'none'; yc.textContent=g>1?String(g):''; }
     if(tg){ tg.textContent=(mvp&&pid===mvp)?' 🏆':''; }
     if(ev){ ev.innerHTML=evs; ev.style.cssText=evsStyle(evs); }});
@@ -11213,7 +11343,7 @@ function updateScores(){
 }
 function slotTap(key){
   if(lineupLocked){toast(lineupBlockReason());return;}
-  lineup[key]?openCaptainSheet(key):openPickerSheet(key);
+  lineup[key]&&!isAbsentOwn(lineup[key])?openCaptainSheet(key):openPickerSheet(key);
 }
 function openSheet(){document.getElementById('sheet').classList.add('open');document.getElementById('sheetBg').classList.add('open')}
 function closeSheet(){document.getElementById('sheet').classList.remove('open');document.getElementById('sheetBg').classList.remove('open')}
@@ -11222,14 +11352,14 @@ function openPickerSheet(key){
   const free=fieldAvailability().freeRoles;   // manca un reparto -> ruoli liberi sugli slot di movimento
   const eligible=players.filter(p=>{
     if(!isPresent(p)) return false;
-    if(isPor) return gkFixed?p.role==='POR':true;       // porta: invariato
-    if(free) return p.role!=='POR' || !gkFixed;          // ruoli liberi: chiunque di movimento (no POR se gk fisso)
-    if(!gkFixed && p.role==='POR') return true;          // 4.8 — rotazione: il POR gioca ovunque
+    if(isPor) return gkOnlyPor()?p.role==='POR':true;  // 7.1 — fisso senza POR presenti: chiunque
+    if(p.role==='POR') return false;                     // 7.1 — il POR gioca solo in porta
+    if(free) return true;                                // ruoli liberi: chiunque di movimento
     return p.role===slot.label;                          // normale: solo il ruolo dello slot
   }).sort((a,b)=>(b.cost??PRICE)-(a.cost??PRICE));
   const remaining=BUDGET-lineupSpent();
   document.getElementById('sheetTitle').textContent=isPor?'Scegli — in porta 🧤':(free?'Scegli — ruolo libero':'Scegli — '+(slot.label==='ATT'?'attaccante':'difensore'));
-  document.getElementById('sheetHint').textContent=eligible.length?('Solo presenti'+(isPor?(gkFixed?' · solo portieri (POR)':' (chiunque)'):(free?' · chiunque (ruoli liberi)':' · '+slot.label))+` · ${remaining} cr rimasti`):(isPor&&gkFixed?'Nessun portiere (POR) presente. Assegna il ruolo in Gestione giocatori.':'Nessun giocatore presente per questo ruolo.');
+  document.getElementById('sheetHint').textContent=eligible.length?('Solo presenti'+(isPor?(gkOnlyPor()?' · solo portieri (POR)':' (chiunque)'):(free?' · chiunque (ruoli liberi)':' · '+slot.label))+` · ${remaining} cr rimasti`):'Nessun giocatore presente per questo ruolo.';
   document.getElementById('sheetList').innerHTML=eligible.map(p=>{const taken=used.includes(p.id);const tooExp=!taken&&p.cost>remaining;const dis=taken||tooExp;
     return `<div class="opt ${dis?'dis':''}" onclick="${dis?'':`pick('${key}',${p.id})`}"><div class="oav">${avatarImg(p.avatar,38)}</div>
       <div class="info"><b>${p.name}</b><span>${roleLabel(p.role)}${taken?' · già schierato':(tooExp?' · troppo caro':'')}</span></div>
@@ -12403,6 +12533,7 @@ async function openTeamLineup(managerId, teamName){
   }
   const {data:lns}=await sb.from('lineups').select('*').eq('matchday_id',md).eq('manager_id',managerId);
   const avg={}; const {data:av}=await sb.rpc('get_averages',{md}); (av||[]).forEach(r=>avg[r.player_id]={v:Number(r.v)});
+  if(lns&&lns.length && absentRuleOn(md)) markAbsent(avg,lns,await mdPresentSet(md),md);   // 7.1
   const stats={}; const {data:msd}=await sb.from('match_stats').select('*').eq('matchday_id',md); (msd||[]).forEach(r=>stats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,gi:r.gialli||0,esito:r.esito||''});
   let mvp=0; const {data:msx}=await sb.rpc('get_mvp_sega',{md}); if(msx&&msx[0]){mvp=msx[0].mvp||0;}
   let mod='1-2-2'; const {data:lm}=await sb.from('lineup_modules').select('module').eq('matchday_id',md).eq('manager_id',managerId).maybeSingle(); if(lm&&MODULES[lm.module])mod=lm.module;
@@ -12427,9 +12558,9 @@ async function openTeamLineup(managerId, teamName){
     const sc=scoreOf(r.player_id,r.slot,r.is_captain,avg,stats,mvp);
     const slotlab=r.slot==='g1'?'POR':(r.slot[0]==='a'?'ATT':'DIF');
     const badges=(r.player_id===mvp?' 🏆':'')+(r.is_captain?' ©️':'');
-    return `<div class="opt"><div class="oav">${avatarImg(p?p.avatar:'',38)}</div>
-      <div class="info"><b>${p?p.name:'?'}${badges}</b><span>${slotlab} · voto ${sc.voto.toFixed(1)}</span></div>
-      <span class="pr" style="color:${sc.score>=0?'var(--green)':'var(--red)'}">${sc.score.toFixed(1)}</span></div>`;
+    return `<div class="opt"${sc.absent?' style="opacity:.55"':''}><div class="oav">${avatarImg(p?p.avatar:'',38)}</div>
+      <div class="info"><b>${p?p.name:'?'}${badges}</b><span>${slotlab} · ${sc.absent?'non ha giocato':'voto '+sc.voto.toFixed(1)}</span></div>
+      <span class="pr" style="color:${sc.absent?'var(--muted)':(sc.score>=0?'var(--green)':'var(--red)')}">${sc.score.toFixed(1)}</span></div>`;
   }).join('');
   document.getElementById('tlpList').innerHTML=`
     <div class="tl-swipe">
@@ -13399,7 +13530,7 @@ document.addEventListener('visibilitychange',()=>{
     try{ location.reload(); return; }catch(_){ _coldRestarting=false; }
   }
   if(via>30*60*1000) toTop();
-  checkForUpdate(); ensurePush();
+  checkForUpdate(); ensurePush(); refreshChatUnread();
 });
 window.addEventListener('focus',()=>{ checkForUpdate(); ensurePush(); });
 
@@ -13412,29 +13543,272 @@ document.addEventListener('pointerdown',e=>{
   setTimeout(()=>t.classList.remove('tapd'),150);
 },{passive:true});
 
-/* ===== AVVISO TEMPORANEO "nuovo logo" — blocco autonomo e rimuovibile ============
-   Si mostra UNA volta per dispositivo e si DISATTIVA da sola dopo la data sotto.
-   Per toglierlo del tutto: cancella questo blocco e la riga maybeShowLogoNotice() in afterLogin. */
-function maybeShowLogoNotice(){
+/* ===== 7.1 — CHAT CON L'ASSISTENZA ================================================
+   Chi la vede: tutti. Ogni persona ha la SUA conversazione privata con
+   l'assistenza di FantaCalcetto (il super-admin): gli altri della lega non la
+   leggono. Il super-admin vede lo stesso pannello, ma parte dall'elenco delle
+   persone che hanno scritto, e risponde come «Assistenza FantaCalcetto».
+   Niente canale dal vivo (le connessioni contemporanee sono contate): a pannello
+   aperto si rilegge ogni 8 secondi, a pannello chiuso basta il pallino, letto
+   all'avvio e a ogni rientro nell'app. L'avviso vero lo fa la push (notify,
+   mode 'support_msg'), che apre /app/?chat=1.
+   Tutto passa da funzioni del database (4_chat_assistenza_attiva.sql): la
+   tabella non e' leggibile direttamente. */
+const CHAT_STAFF='Assistenza FantaCalcetto';
+let chatMode=null, chatUser=null, chatInbox=[], chatMsgs=[], _chatKey='', chatTimer=null, chatUnread=0, chatSending=false;
+function chatRole(){
+  if(!profile) return null;
+  return isSuperAdmin() ? 'super' : 'user';
+}
+function syncChatFab(){
+  const f=document.getElementById('chatFab'); if(!f) return;
+  const home=document.getElementById('v-home');
+  const on=!!chatRole() && !!home && home.classList.contains('active');
+  f.style.display=on?'grid':'none';
+  document.body.classList.toggle('chatfab-on',on);
+  f.classList.toggle('unread',chatUnread>0);
+  const d=document.getElementById('chatFabDot'); if(d) d.textContent=chatUnread>9?'9+':String(chatUnread||'');
+  f.setAttribute('aria-label', chatRole()==='super' ? 'Messaggi all’assistenza' : 'Assistenza');
+}
+async function refreshChatUnread(){
+  if(!chatRole() || TUT){ syncChatFab(); return; }
+  try{ const {data,error}=await sb.rpc('support_unread'); if(!error) chatUnread=Number(data)||0; }catch(_){ }
+  syncChatFab();
+}
+function chatEl(id){ return document.getElementById(id); }
+function chatHead(ttl,sub,back){
+  chatEl('chatTtl').textContent=ttl; chatEl('chatSub').textContent=sub;
+  const b=chatEl('chatBackBtn'); b.textContent=back; b.setAttribute('aria-label', back==='‹'?'Indietro':'Chiudi');
+}
+function openChat(){
+  if(TUT){ toast('La chat si apre fuori dal tutorial'); return; }
+  const r=chatRole(); if(!r) return;
+  chatEl('chatOv').classList.add('open');
+  chatKbBind(true);
+  if(r==='super') chatShowInbox(); else chatShowThread(null);
+}
+function closeChat(){
+  chatStopPoll(); chatMode=null;
+  const ta=chatEl('chatIn'); if(ta) ta.blur();
+  chatKbBind(false);
+  chatEl('chatOv').classList.remove('open');
+  refreshChatUnread();
+}
+function chatBack(){
+  if(chatMode==='thread') chatShowInbox();
+  else closeChat();
+}
+function chatStopPoll(){ if(chatTimer){ clearInterval(chatTimer); chatTimer=null; } }
+function chatStartPoll(){
+  chatStopPoll();
+  chatTimer=setInterval(()=>{
+    if(document.hidden || !chatMode) return;
+    if(chatMode==='inbox') chatLoadInbox(true); else chatLoad(false);
+  },8000);
+}
+function chatWhen(v){
+  const d=new Date(v); if(isNaN(d)) return '';
+  return d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+}
+function chatDay(v){
+  const d=new Date(v); if(isNaN(d)) return '';
+  const t=new Date(); const y=new Date(); y.setDate(t.getDate()-1);
+  if(d.toDateString()===t.toDateString()) return 'Oggi';
+  if(d.toDateString()===y.toDateString()) return 'Ieri';
+  return d.toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'});
+}
+function chatAgo(v){
+  const d=new Date(v); if(isNaN(d)) return '';
+  if(d.toDateString()===new Date().toDateString()) return chatWhen(v);
+  return d.toLocaleDateString('it-IT',{day:'numeric',month:'short'});
+}
+/* --- super-admin: elenco delle persone che hanno scritto --- */
+async function chatShowInbox(){
+  chatMode='inbox'; chatUser=null; _chatKey='';
+  chatHead('Assistenza','Messaggi degli utenti','✕');
+  chatEl('chatFoot').style.display='none';
+  chatEl('chatBody').innerHTML='<div class="empty-note">Carico…</div>';
+  await chatLoadInbox(false);
+  chatStartPoll();
+}
+async function chatLoadInbox(quiet){
+  let r; try{ r=await sb.rpc('sa_support_inbox'); }catch(e){ r={error:e}; }
+  if(chatMode!=='inbox') return;
+  const body=chatEl('chatBody');
+  if(r.error){ if(!quiet) body.innerHTML='<div class="empty-note">Messaggi non disponibili: '+esc(errText(r.error))+'</div>'; return; }
+  chatInbox=r.data||[];
+  const key=chatInbox.map(c=>c.user_id+':'+c.total+':'+c.unread).join('|');
+  if(quiet && key===_chatKey) return;
+  _chatKey=key;
+  chatUnread=chatInbox.reduce((n,c)=>n+(Number(c.unread)||0),0); syncChatFab();
+  if(!chatInbox.length){
+    body.innerHTML='<div class="chat-empty"><img src="/icon-512.png?v=3" alt=""><b>Nessun messaggio</b><p>Quando qualcuno scrive all’assistenza compare qui, e ti arriva una notifica.</p></div>';
+    return;
+  }
+  body.innerHTML=chatInbox.map((c,i)=>{
+    const ini=String(c.user_name||'?').trim().charAt(0).toUpperCase()||'?';
+    const un=Number(c.unread)||0;
+    const lg=[c.team_name&&c.team_name!==c.user_name?c.team_name:'', c.league_name||''].filter(Boolean).join(' · ');
+    return `<button class="chat-row${un?' unread':''}" onclick="chatOpenUser(${i})">
+      <span class="cr-av">${esc(ini)}</span>
+      <span class="cr-mid"><b>${esc(c.user_name||'Utente')}</b><small class="cr-lg">${esc(lg)}</small><small>${c.last_from_staff?'Tu: ':''}${esc(c.last_body||'')}</small></span>
+      <span class="cr-end"><time>${chatAgo(c.last_at)}</time>${un?`<span class="cr-pill">${un}</span>`:''}</span>
+    </button>`;
+  }).join('');
+}
+function chatOpenUser(i){
+  const c=chatInbox[i]; if(!c) return;
+  const lg=[c.team_name&&c.team_name!==c.user_name?c.team_name:'', c.league_name||''].filter(Boolean).join(' · ');
+  chatShowThread(c.user_id, c.user_name||'Utente', lg);
+}
+/* --- conversazione --- */
+async function chatShowThread(userId, name, sub){
+  chatMode = userId ? 'thread' : 'mine';
+  chatUser = userId||null; chatMsgs=[]; _chatKey='';
+  if(chatMode==='thread') chatHead(name||'Utente', sub||('Rispondi come '+CHAT_STAFF), '‹');
+  else chatHead(CHAT_STAFF,'Ti rispondiamo qui, il prima possibile','✕');
+  chatEl('chatFoot').style.display='flex';
+  chatEl('chatBody').innerHTML='<div class="empty-note">Carico…</div>';
+  chatGrow();
+  await chatLoad(true);
+  chatStartPoll();
+}
+async function chatLoad(toEnd){
+  const mode=chatMode, uid=chatUser;
+  let r;
+  try{ r = mode==='thread' ? await sb.rpc('sa_support_thread',{p_user:uid}) : await sb.rpc('support_thread'); }
+  catch(e){ r={error:e}; }
+  if(chatMode!==mode || chatUser!==uid) return;       // nel frattempo si e' cambiata conversazione
+  const body=chatEl('chatBody');
+  if(r.error){
+    if(!chatMsgs.length) body.innerHTML='<div class="empty-note">La chat al momento non risponde: '+esc(errText(r.error))+'</div>';
+    return;
+  }
+  const rows=r.data||[];
+  const key=rows.map(m=>m.id).join(',');
+  if(key && key===_chatKey) return;                    // niente di nuovo: lo scroll resta dov'e'
+  const atEnd = body.scrollHeight - body.scrollTop - body.clientHeight < 80;
+  _chatKey=key; chatMsgs=rows;
+  chatRender();
+  if(toEnd || atEnd) chatToEnd();
+  if(mode==='mine'){ chatUnread=0; syncChatFab(); }
+}
+function chatIsMe(m){ return chatMode==='thread' ? !!m.from_staff : !m.from_staff; }
+function chatRender(){
+  const body=chatEl('chatBody');
+  if(!chatMsgs.length){
+    body.innerHTML = chatMode==='thread'
+      ? '<div class="chat-empty"><b>Nessun messaggio</b></div>'
+      : `<div class="chat-empty"><img src="/icon-512.png?v=3" alt=""><b>Come possiamo aiutarti?</b>
+         <p>Dubbi sul gioco, problemi con l’app o suggerimenti: scrivici qui. Ti risponderemo il prima possibile, direttamente nell’app.</p>
+         <div class="chat-chips"><button onclick="chatChip(this)">Ho un dubbio su…</button><button onclick="chatChip(this)">Ho un problema con…</button><button onclick="chatChip(this)">Ho un suggerimento:</button></div></div>`;
+    return;
+  }
+  let html='', lastDay='';
+  chatMsgs.forEach(m=>{
+    const day=chatDay(m.created_at);
+    if(day!==lastDay){ html+=`<div class="chat-day">${esc(day)}</div>`; lastDay=day; }
+    html+=`<div class="chat-msg ${chatIsMe(m)?'me':'them'}">${esc(m.body)}<time>${chatWhen(m.created_at)}</time></div>`;
+  });
+  body.innerHTML=html;
+}
+function chatToEnd(){ const b=chatEl('chatBody'); if(b) requestAnimationFrame(()=>{ b.scrollTop=b.scrollHeight; }); }
+function chatChip(btn){
+  const ta=chatEl('chatIn'); if(!ta) return;
+  ta.value=btn.textContent.replace(/…$/,'')+' ';
+  chatGrow(); ta.focus();
+  try{ ta.setSelectionRange(ta.value.length,ta.value.length); }catch(_){ }
+}
+function chatGrow(){
+  const ta=chatEl('chatIn'); if(!ta) return;
+  ta.style.height='auto'; ta.style.height=Math.min(120,ta.scrollHeight)+'px';
+  const b=chatEl('chatSend'); if(b) b.disabled=chatSending || !ta.value.trim();
+}
+async function chatSendMsg(){
+  if(chatSending) return;
+  const ta=chatEl('chatIn'); const txt=(ta.value||'').trim(); if(!txt) return;
+  const mode=chatMode, uid=chatUser;
+  chatSending=true; chatGrow();
+  const body=chatEl('chatBody');
+  if(!chatMsgs.length) body.innerHTML='';
+  const tmp=document.createElement('div'); tmp.className='chat-msg me pending'; tmp.textContent=txt;
+  body.appendChild(tmp); chatToEnd();
+  let r;
+  try{ r = mode==='thread' ? await sb.rpc('sa_support_reply',{p_user:uid,p_body:txt}) : await sb.rpc('support_send',{p_body:txt}); }
+  catch(e){ r={error:e}; }
+  chatSending=false;
+  if(r.error){
+    tmp.remove(); if(!chatMsgs.length) chatRender();
+    const m=String((r.error&&r.error.message)||'');
+    toast(m.includes('too_many') ? 'Troppi messaggi ravvicinati: riprova tra qualche minuto' : 'Messaggio non inviato: '+errText(r.error));
+    chatGrow(); return;
+  }
+  ta.value=''; chatGrow();
+  _chatKey=''; await chatLoad(true);
+  // la push la manda il server, rileggendo il messaggio appena salvato
+  try{ sb.functions.invoke('notify',{body:{mode:'support_msg', user_id: mode==='thread'?uid:null}}); }catch(_){ }
+}
+/* Tastiera su iPhone: finche' si scrive il pannello prende l'altezza visibile vera
+   (visualViewport), cosi' il campo di testo resta sopra la tastiera. A tastiera
+   chiusa torna a tutto schermo come gli altri pannelli. */
+function chatKbSync(){
+  const o=chatEl('chatOv'), vv=window.visualViewport; if(!o) return;
+  const typing = document.activeElement===chatEl('chatIn');
+  if(vv && typing && o.classList.contains('open')){
+    o.style.top=vv.offsetTop+'px'; o.style.height=vv.height+'px'; o.style.bottom='auto';
+    o.classList.add('kb');
+  }else{
+    o.style.top=''; o.style.height=''; o.style.bottom=''; o.classList.remove('kb');
+  }
+}
+function _chatKbLater(){ setTimeout(()=>{ chatKbSync(); chatToEnd(); },60); }
+function chatKbBind(on){
+  const vv=window.visualViewport, ta=chatEl('chatIn');
+  if(on){
+    if(vv){ vv.addEventListener('resize',chatKbSync); vv.addEventListener('scroll',chatKbSync); }
+    if(ta){ ta.addEventListener('focus',_chatKbLater); ta.addEventListener('blur',_chatKbLater); }
+  }else{
+    if(vv){ vv.removeEventListener('resize',chatKbSync); vv.removeEventListener('scroll',chatKbSync); }
+    if(ta){ ta.removeEventListener('focus',_chatKbLater); ta.removeEventListener('blur',_chatKbLater); }
+    chatKbSync();
+  }
+}
+/* ===== fine CHAT ================================================================= */
+
+/* ===== NOVITÀ — avviso al primo ingresso dopo un aggiornamento importante ======
+   7.1 — prende il posto dell'avviso «nuovo logo» (scaduto il 15/07), stessa grafica.
+   Si mostra UNA volta per dispositivo e smette da solo dopo `until`.
+   Per un avviso nuovo: cambia `id` (altrimenti chi ha gia' visto il vecchio non lo
+   vede), `until`, titolo e testo. Per non mostrare niente: `NEWS=null`.
+   Solo per le cose importanti: per le piccole non serve. */
+const NEWS={
+  id:'2026-10-assente-0',
+  until:'2026-11-10',
+  title:'Novità',
+  html:'Se l’admin toglie dai presenti un giocatore che avevi già schierato, ricevi un avviso per sostituirlo. '
+      +'<b>Se lo lasci in campo vale 0</b>: niente voto e niente bonus, anche in porta. '
+      +'Sul campo lo vedi spento: toccalo e scegli chi mettere al suo posto.'
+      +'<br><br><b>Assistenza in chat:</b> in Home, in basso a destra, c’è il tasto 💬. '
+      +'Per dubbi, problemi o suggerimenti puoi scriverci da lì: ti rispondiamo direttamente nell’app.'
+};
+function maybeShowNews(){
+  if(!NEWS) return;
+  const key='fc_news_'+NEWS.id;
   try{
-    if(Date.now() > Date.parse('2026-07-15')) return;            // dopo questa data non appare più
-    if(localStorage.getItem('fc_logo_notice_v1')) return;        // una sola volta per dispositivo
-  }catch(_){ return; }
-  const iOS=/iphone|ipad|ipod/i.test(navigator.userAgent||'');
-  const msg=iOS
-    ? "Abbiamo un nuovo logo ✨ Su iPhone l'icona sulla Home si aggiorna solo se <b>rimuovi e ri-aggiungi</b> l'app alla schermata Home. Ci vogliono 10 secondi e diventa molto più figa!"
-    : "Abbiamo un nuovo logo ✨ Se vuoi la nuova icona sulla Home anche subito, rimuovi e ri-aggiungi l'app. Altrimenti su Android si aggiorna da sola nei prossimi giorni.";
+    if(Date.now() > Date.parse(NEWS.until)) return;            // scaduto: non appare piu'
+    if(localStorage.getItem(key)) return;                      // gia' visto su questo dispositivo
+  }catch(_){ return; }                                         // memoria non leggibile: meglio niente che a ogni apertura
   const o=document.createElement('div');
   o.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(5,12,24,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px';
   o.innerHTML='<div style="max-width:340px;background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:20px;padding:22px;text-align:center;box-shadow:0 24px 60px -20px rgba(0,0,0,.7)">'
     +'<img src="/icon-512.png?v=3" alt="" style="width:74px;height:74px;border-radius:18px;display:block;margin:0 auto 14px">'
-    +'<div style="font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px;color:#eaf1fb">Nuovo logo!</div>'
-    +'<p style="color:#8aa3c2;font-size:14px;line-height:1.55;margin:0 0 18px">'+msg+'</p>'
+    +'<div style="font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px;color:#eaf1fb">'+NEWS.title+'</div>'
+    +'<p style="color:#8aa3c2;font-size:14px;line-height:1.55;margin:0 0 18px">'+NEWS.html+'</p>'
     +'<button id="lnOk" style="width:100%;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;border:none;padding:14px;border-radius:13px;cursor:pointer">Ho capito 👍</button></div>';
   document.body.appendChild(o);
-  o.querySelector('#lnOk').onclick=()=>{ try{localStorage.setItem('fc_logo_notice_v1','1');}catch(_){ } o.remove(); };
+  o.querySelector('#lnOk').onclick=()=>{ try{localStorage.setItem(key,'1');}catch(_){ } o.remove(); };
 }
-/* ===== fine avviso temporaneo ===================================================== */
+/* ===== fine NOVITÀ ================================================================ */
 
 /* ===== NOVITÀ LOGHI: avviso + scelta logo per squadre già esistenti ================
    Si mostra a chi ha già una squadra ma NON ha ancora un logo. Resta finché non ne
@@ -13683,6 +14057,8 @@ async function loadRecapExtra(md){
     ]);
     const lns=lnsR.data||[];
     const avg={}; (avdR.data||[]).forEach(r=>avg[r.player_id]={v:Number(r.v)});
+    if(lns.length && absentRuleOn(md)) markAbsent(avg,lns,await mdPresentSet(md),md);   // 7.1
+    const isAbs=pid=>!!(avg[pid]&&avg[pid].absent);
     const stats={}; (msdR.data||[]).forEach(r=>stats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,gi:r.gialli||0,esito:r.esito||''});
     const mvp=(msxR.data&&msxR.data[0]&&msxR.data[0].mvp)||0;
     const modBy={}; (lmdR.data||[]).forEach(r=>modBy[r.manager_id]=r.module);
@@ -13699,10 +14075,12 @@ async function loadRecapExtra(md){
       const rosa=myLns.map(r=>{
         const sc=scoreOf(r.player_id,r.slot,r.is_captain,avg,stats,mvp), pi=pInfo(r.player_id), st=stats[r.player_id]||{};
         if(st.esito==='V')realW++; else if(st.esito==='S')realL++;
-        const it={name:pi.name,avatar:pi.avatar,slot:r.slot,score:sc.score,cap:!!r.is_captain,mvp:r.player_id===mvp};
+        const it={name:pi.name,avatar:pi.avatar,slot:r.slot,score:sc.score,cap:!!r.is_captain,mvp:r.player_id===mvp,absent:!!sc.absent};
         tot+=sc.score;
-        if(!best||sc.score>best.score)best=it;
-        if(!worst||sc.score<worst.score)worst=it;
+        if(!sc.absent){
+          if(!best||sc.score>best.score)best=it;
+          if(!worst||sc.score<worst.score)worst=it;
+        }
         if(r.is_captain)cap=it;
         return it;
       }).sort((a,b)=>(ord[a.slot]||9)-(ord[b.slot]||9));
@@ -13716,7 +14094,7 @@ async function loadRecapExtra(md){
     }
 
     // ---------- REPARTI (merito puro: voto + eventi + esito, niente capitano/mvp/modulo) ----------
-    const fielded={}; lns.forEach(r=>{ (fielded[r.player_id]=fielded[r.player_id]||{keeper:false}); if(r.slot==='g1')fielded[r.player_id].keeper=true; });
+    const fielded={}; lns.forEach(r=>{ if(isAbs(r.player_id)) return; (fielded[r.player_id]=fielded[r.player_id]||{keeper:false}); if(r.slot==='g1')fielded[r.player_id].keeper=true; });
     const merit=(pid,asKeeper)=>scoreOf(pid,asKeeper?'g1':'a1',false,avg,stats,0).score;
     let bAtt=null,bDif=null,bPor=null;
     Object.keys(fielded).forEach(k=>{
@@ -13734,6 +14112,7 @@ async function loadRecapExtra(md){
       const seenP={}, seenK={};
       lns.forEach(r=>{
         const pid=r.player_id;
+        if(isAbs(pid)) return;
         if(!seenP[pid]){
           seenP[pid]=true;
           const st=stats[pid]||{}, pi=pInfo(pid), g=st.gol||0, a=st.assist||0;
@@ -13763,7 +14142,7 @@ async function loadRecapExtra(md){
 
     // ---------- CAPITANI: chi ha azzeccato / sbagliato la fascia ----------
     let cTop=null,cFlop=null;
-    lns.filter(r=>r.is_captain).forEach(r=>{
+    lns.filter(r=>r.is_captain && !isAbs(r.player_id)).forEach(r=>{
       const sc=scoreOf(r.player_id,r.slot,true,avg,stats,mvp).score, pi=pInfo(r.player_id);
       const it={team_name:teamOf(r.manager_id),player_name:pi.name,avatar:pi.avatar,score:sc};
       if(!cTop||sc>cTop.score)cTop=it;
