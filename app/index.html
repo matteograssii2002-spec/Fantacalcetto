@@ -5468,9 +5468,8 @@ function fcCopyFeedback(btn, ok){
   if(!btn) return;
   if(btn._fcT){ clearTimeout(btn._fcT); btn._fcT=null; }
   if(!btn._fcTxt) btn._fcTxt=btn.innerHTML;
-  const dove=fcIsIOSDevice()?'Safari':'Chrome';
   btn.classList.toggle('ig-copied', !!ok);
-  btn.innerHTML = ok ? '\u2713 Copiato! Ora incollalo in '+dove
+  btn.innerHTML = ok ? '\u2713 Copiato! Ora incollalo nel browser'
                      : 'Tieni premuto sull\u2019indirizzo qui sopra';
   if(navigator.vibrate){ try{ navigator.vibrate(ok?[10,40,10]:20); }catch(_){ } }
   btn._fcT=setTimeout(()=>{ btn.classList.remove('ig-copied'); btn.innerHTML=btn._fcTxt; btn._fcT=null; }, 3000);
@@ -5500,19 +5499,56 @@ function fcCopyLegacy(url,btn){
     fcCopyFeedback(btn,ok);
   }catch(_){ toast('Tieni premuto sull\u2019indirizzo per copiarlo'); fcCopyFeedback(btn,false); }
 }
-function fcOutFallback(){
-  if(document.getElementById('igOut')) return;
-  const dove=fcIsIOSDevice()?'Safari':'Chrome';
+/* 7.2 - se il browser non si apre, l'indirizzo e' GIA' copiato.
+   La copia parte nello stesso tocco del pulsante: un secondo e mezzo dopo il
+   browser (su iPhone soprattutto) non la considera piu' un gesto della persona
+   e la rifiuta. Vale per qualunque browser, su iPhone e su Android: il
+   messaggio non nomina Safari o Chrome, dice solo di aprire il proprio. */
+function fcCopyAtTap(url){
+  const exec=()=>{
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=url; ta.setAttribute('readonly','');
+      ta.style.cssText='position:fixed;left:-9999px;top:0';
+      document.body.appendChild(ta);
+      ta.select(); try{ ta.setSelectionRange(0,99999); }catch(_){ }
+      const ok=document.execCommand('copy');
+      document.body.removeChild(ta);
+      return !!ok;
+    }catch(_){ return false; }
+  };
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      return navigator.clipboard.writeText(url).then(()=>true, ()=>exec());
+    }
+  }catch(_){ }
+  return Promise.resolve(exec());
+}
+function fcOutFallback(copiato){
+  const msg = copiato
+    ? 'Indirizzo copiato \u2713 Apri il tuo browser e incollalo nella barra degli indirizzi.'
+    : 'Non si \u00e8 aperto niente? Copia l\u2019indirizzo e incollalo nella barra degli indirizzi del tuo browser:';
+  const gia=document.getElementById('igOut');
+  if(gia){
+    const t=gia.querySelector('.ig-out-t'); if(t) t.textContent=msg;
+    if(copiato){ const b=gia.querySelector('.ig-out-b'); if(b) fcCopyFeedback(b,true); }
+    return;
+  }
   const html='<div class="ig-out" id="igOut">'
-    +'<p class="ig-out-t">Non si \u00e8 aperto niente? Copia l\u2019indirizzo e incollalo in '+dove+':</p>'
+    +'<p class="ig-out-t">'+msg+'</p>'
     +'<div class="ig-out-url">'+esc(location.host+location.pathname)+'</div>'
     +'<button class="ig-btn ig-out-b" onclick="fcCopyUrl(this)">\ud83d\udccb Copia l\u2019indirizzo</button></div>';
   const w=document.getElementById('igWhy');
-  if(w){ w.insertAdjacentHTML('beforeend', html); return; }
-  toast('Apri '+location.host+' in '+dove);
+  if(w){
+    w.insertAdjacentHTML('beforeend', html);
+    if(copiato){ const b=w.querySelector('.ig-out-b'); if(b) fcCopyFeedback(b,true); }
+    return;
+  }
+  toast(copiato ? 'Indirizzo copiato \u2713 Apri il browser e incollalo' : 'Apri il browser e incolla l\u2019indirizzo di '+location.host);
 }
 function fcOpenOutside(){
   const url=location.href;
+  const copia=fcCopyAtTap(url);   // subito, dentro il tocco
   const nudo=location.host+location.pathname+location.search;
   let uscito=false;
   const segna=()=>{ if(document.hidden) uscito=true; };
@@ -5536,7 +5572,7 @@ function fcOpenOutside(){
   }
   setTimeout(()=>{
     document.removeEventListener('visibilitychange', segna);
-    if(!uscito && !document.hidden) fcOutFallback();
+    if(!uscito && !document.hidden) copia.then(ok=>{ if(!document.hidden) fcOutFallback(ok); });
   }, 1600);
 }
 
@@ -6430,6 +6466,11 @@ document.getElementById('lgCreateBtn').onclick=async function(){
   this.disabled=true; lgStatus('Creazione…');
   const {data,error}=await sb.rpc('create_league',{p_name:name,p_password:pwd});
   this.disabled=false;
+  if(error && error.code==='23505' && /league/i.test(error.message||'')){
+    lgStatus('Esiste gi\u00e0 una lega con questo nome. Scegline un altro.');
+    try{ document.getElementById('lgName').focus(); }catch(_){ }
+    return;
+  }
   if(error||!data||!data[0]){ lgStatus('Errore: '+(error?error.message:'riprova')); return; }
   pendingLeague={id:data[0].id,name:data[0].name,slug:data[0].slug,password:pwd};
   justCreatedLeague=true;
@@ -6449,10 +6490,12 @@ function inviteMsg(){
   const nome=(myLeague&&myLeague.name)||'la nostra lega';   // myLeague, non il badge: quello ha l'emoji attaccata
   return 'Ti ho invitato su FantaCalcetto \u2014 il fanta del nostro calcetto \u26bd\n\n'
     +'Lega: '+nome+'\n'
-    +'Password: '+pwd+'\n'
-    +link+'\n\n'
-    +'Importante: apri il link dal telefono e AGGIUNGI L\u2019APP ALLA HOME quando te lo chiede. '
-    +'Dal browser le notifiche non arrivano, e su iPhone \u00e8 l\u2019unico modo per riceverle.';
+    +'Password: '+pwd+'\n\n'
+    +'Come entrare:\n'
+    +'1. Apri questo link dal telefono e aggiungi l\u2019app alla Home:\n'+link+'\n'
+    +'2. Apri l\u2019app dall\u2019icona sulla Home.\n'
+    +'3. Tocca \u00abEntra in una lega\u00bb, registrati, poi cerca \u00ab'+nome+'\u00bb e scrivi la password.\n\n'
+    +'Importante: l\u2019app va aggiunta alla Home. Dal browser le notifiche non arrivano, e su iPhone \u00e8 l\u2019unico modo per riceverle.';
 }
 async function shareInvite(){
   const t=inviteMsg();
