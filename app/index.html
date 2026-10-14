@@ -252,7 +252,6 @@
   .wc-login{display:block;text-align:center;color:var(--accent-soft);font-size:14px;font-weight:600;margin-top:20px;cursor:pointer}
   .wc-login b{color:var(--text)}
   .wc-back{color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;align-self:flex-start;margin-bottom:2px}
-  .wc-ctx{display:inline-flex;align-items:center;gap:6px;background:rgba(63,139,255,.22);border:1px solid rgba(127,176,255,.55);border-radius:999px;padding:7px 13px;font-size:11.5px;color:#dbe8ff;font-weight:800;white-space:nowrap;box-shadow:0 4px 14px -6px rgba(63,139,255,.6)}
   /* pagina email: titoli in alto, form in basso, Indietro+pillola sulla stessa riga */
   #gate{display:flex;flex-direction:column}
   /* form ancorato in ALTO (non più glued in basso): così con la tastiera aperta il campo
@@ -289,7 +288,6 @@
      vede è come non averlo scritto. Il riquadro compare solo se c'è del testo. */
   .gate-status.bad{color:var(--red);font-weight:700}
   .gate-status.bad:not(:empty){background:rgba(255,93,107,.10);border:1px solid rgba(255,93,107,.38);border-radius:13px;padding:12px 14px;margin-top:16px}
-  .gate-spacer{flex:1}
   .field-lab{font-size:12px;color:var(--muted);font-weight:600;margin:4px 2px 7px;text-transform:uppercase;letter-spacing:.06em}
   .ob-input{width:100%;background:var(--surface);border:1.5px solid var(--line-strong);border-radius:15px;padding:16px 18px;color:var(--text);font-family:'Hanken Grotesk';font-size:17px;font-weight:600;outline:none;transition:border-color .2s}
   .ob-input:focus{border-color:var(--accent)}
@@ -341,7 +339,6 @@
   .avopt:active{transform:scale(.93)}
   .avopt.on{border-color:var(--accent);box-shadow:0 0 0 2px rgba(63,151,255,.4);background:rgba(63,151,255,.1)}
   .avopt img{width:100%;height:auto;display:block;border-radius:8px}
-  .avgrid.locked{opacity:.5;pointer-events:none}
   /* tendina avatar/logo nel profilo: mostra solo la scelta attuale, espande la griglia */
   .disc-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface2);border:1px solid var(--line-strong);border-radius:14px;padding:10px 12px;cursor:pointer}
   .disc-head:active{transform:scale(.99)}
@@ -364,7 +361,6 @@
   .lgopt:active{transform:scale(.93)}
   .lgopt.on{border-color:var(--accent);box-shadow:0 0 0 2px rgba(63,151,255,.4);background:rgba(63,151,255,.1)}
   .lgopt img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block}
-  .lggrid.locked{opacity:.5;pointer-events:none}
 
   /* ---- WIZARD ONBOARDING (più pagine invece di un unico scroll) ---- */
   /* onboarding: contenuto un po' più in basso (brand, titolo e riquadri) */
@@ -483,18 +479,8 @@
   .pcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:13px;position:relative;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .15s,opacity .2s}
   .pcard:active{transform:scale(.98)}
   .pcard.absent{opacity:.42}
-  .pc-avwrap{position:relative;width:100%;height:118px;border-radius:13px;background:linear-gradient(160deg,#13294a,#0d1c34);display:flex;align-items:center;justify-content:center;overflow:hidden}
-  .capo-badge{position:absolute;top:7px;left:7px;font-size:11px;font-weight:800;padding:3px 7px;border-radius:8px;background:rgba(255,194,61,.92);color:#1a1206;display:flex;align-items:center;gap:3px;z-index:2}
-  .inj-badge{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:8px;background:rgba(229,57,53,.94);color:#fff;display:flex;align-items:center;gap:4px;z-index:2;white-space:nowrap;box-shadow:0 3px 10px rgba(229,57,53,.4)}
-  .pcard.injured .pc-img{filter:grayscale(.7) brightness(.82)}
   .mbtn.inj{opacity:.45}
   .mbtn.inj.on{opacity:1;background:rgba(229,57,53,.2)}
-  .pc-img{width:100%;height:100%;object-fit:contain;display:block;padding:6px;box-sizing:border-box}
-  .pc-avwrap .ph{color:var(--muted);font-size:30px;font-weight:700}
-  .pc-namerow{display:flex;align-items:center;gap:7px;margin:10px 1px 0}
-  .pc-namerow .nm{font-weight:800;font-size:15px;letter-spacing:-.01em;line-height:1.1;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .rolep{font-size:10px;font-weight:800;letter-spacing:.05em;padding:4px 7px;border-radius:7px;background:var(--surface2);color:#cfe0ff;flex-shrink:0}
-  .pc-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:11px}
 
   /* --- Card giocatore stile FUT (mercato) --- */
   .pcard-fc{position:relative;cursor:pointer;transition:transform .12s,opacity .2s;line-height:0}
@@ -514,7 +500,6 @@
   .forma.down{background:rgba(255,99,99,.15);color:var(--red)}
   .forma.flat{background:var(--surface2);color:var(--muted)}
   .price{font-family:'JetBrains Mono';font-weight:700;font-size:14px;color:var(--gold)}
-  .pc-me{font-size:10.5px;color:var(--accent-soft);font-weight:700;margin:6px 1px 0}
   .presgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .prescell{display:flex;align-items:center;gap:9px;min-height:50px;padding:8px 11px;border-radius:13px;
     border:1.5px solid var(--line);background:var(--surface);cursor:pointer;
@@ -647,10 +632,6 @@
   .vcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:14px}
   .vcard h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;margin-bottom:4px}
   .vcard .vs{font-size:12.5px;color:var(--muted);margin-bottom:12px}
-  .vsel{display:flex;gap:10px}
-  .vsel .vbox{flex:1}
-  .vsel label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:6px}
-  .vsel label.mvp{color:var(--gold)} .vsel label.sega{color:var(--red)}
   select.vselect{width:100%;border:1.5px solid var(--line-strong);border-radius:12px;padding:13px 40px 13px 14px;color:var(--text);font-family:'Hanken Grotesk';font-size:14px;font-weight:600;outline:none;appearance:none;-webkit-appearance:none;cursor:pointer;
     background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' stroke='%238aa0c0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 15px center / 12px 8px, var(--bg2)}
   .vrow{display:flex;align-items:center;gap:12px;padding:12px 0}
@@ -659,24 +640,12 @@
   .vrow .pinfo{flex:1;min-width:0}
   .vrow .pinfo b{font-weight:700;font-size:14.5px;display:block}
   .vrow .pinfo .avg{font-size:12px;color:var(--muted);font-family:'JetBrains Mono';margin-top:2px}
-  .vslider{display:flex;flex-direction:column;align-items:flex-end;gap:6px;width:118px}
-  .vslider .vnum{font-family:'JetBrains Mono';font-weight:700;font-size:18px;color:var(--accent-soft)}
   input[type=range]{-webkit-appearance:none;width:118px;height:5px;border-radius:5px;background:rgba(255,255,255,.14);outline:none}
   input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.4)}
   input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;cursor:pointer}
 
   .admin-card{background:linear-gradient(160deg,#1a1308,#0f0a04);border:1px solid rgba(255,194,61,.3);border-radius:18px;padding:16px;margin-top:14px}
   .admin-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);background:rgba(255,194,61,.12);padding:4px 10px;border-radius:999px;margin-bottom:12px}
-  .arow{display:flex;align-items:center;gap:6px;padding:9px 0}
-  .admf{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid rgba(255,194,61,.14)}
-  .admf-l b{font-size:14px;font-weight:700}
-  .admf-l small{display:block;color:#b89a6a;font-size:11.5px;margin-top:1px}
-  .admf input{width:84px;background:var(--bg2);border:1.5px solid var(--line-strong);border-radius:10px;padding:10px;color:var(--text);font-family:'JetBrains Mono';font-weight:700;font-size:16px;text-align:center;outline:none}
-  .admf input:focus{border-color:var(--gold)}
-  .esito-seg{display:flex;gap:6px}
-  .esito-seg button{flex:1;min-width:74px;background:var(--bg2);border:1.5px solid var(--line-strong);border-radius:10px;padding:9px 8px;color:var(--muted);font-family:'Hanken Grotesk';font-weight:700;font-size:13px;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
-  .esito-seg button.on.win{background:rgba(55,201,126,.18);border-color:var(--green);color:#bff0d6}
-  .esito-seg button.on.lose{background:rgba(255,90,90,.16);border-color:var(--red);color:#ffc9cb}
   .modrow{display:flex;gap:7px;margin:12px 0 2px}
   .modbtn{flex:1;background:var(--bg2);border:1.5px solid var(--line-strong);border-radius:12px;padding:9px 4px;color:var(--muted);font-family:'Hanken Grotesk';cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:background .15s,border-color .15s,color .15s}
   .modbtn b{font-family:'JetBrains Mono';font-size:14px;color:var(--text)}
@@ -757,9 +726,6 @@
   .cs-del:active{transform:scale(.92)}
   .mv{font-family:'JetBrains Mono';font-size:11px;font-weight:800;margin-left:5px;vertical-align:middle}
   .mv.up{color:var(--green)} .mv.down{color:var(--red)}
-  .votesel,.admsel{appearance:none;-webkit-appearance:none;background:var(--bg2);border:1.5px solid var(--line-strong);color:var(--text);font-family:'JetBrains Mono';font-weight:800;font-size:16px;text-align:center;border-radius:10px;cursor:pointer}
-  .votesel{padding:8px 10px;min-width:60px} .admsel{padding:9px 12px;min-width:66px}
-  .votesel:disabled{opacity:.45}
   .vcard-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:2px}
   .vcard-h h3{margin:0}
   .vsend{background:linear-gradient(135deg,var(--accent),#1c6ff2);color:#fff;font-weight:800;font-size:13px;border:none;padding:9px 15px;border-radius:11px;cursor:pointer;white-space:nowrap;box-shadow:0 8px 20px -8px rgba(63,151,255,.6)}
@@ -786,12 +752,6 @@
   }
   @media (prefers-reduced-motion: reduce){ .mvpstar.ask{animation:none;filter:none;opacity:1;border-color:var(--gold)} }
   .vote-req{color:#b89a6a;font-size:12.5px;margin-top:12px;line-height:1.5;padding-top:10px;border-top:1px solid var(--line)}
-  .arow+.arow{border-top:1px solid rgba(255,194,61,.12)}
-  .arow .an{flex:1;font-weight:600;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .stp{display:flex;align-items:center;gap:3px}
-  .stp .lab{font-size:12px;width:15px;text-align:center}
-  .stp button{width:22px;height:22px;border-radius:6px;border:1px solid var(--line-strong);background:var(--surface2);color:var(--text);font-size:14px;font-weight:700;cursor:pointer;display:grid;place-items:center;line-height:1}
-  .stp .vn{font-family:'JetBrains Mono';font-weight:700;font-size:12px;width:13px;text-align:center}
 
   .lb{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
   .lb-row{display:flex;align-items:center;gap:13px;padding:15px 16px}
@@ -848,18 +808,6 @@
   /* CONFRONTO STAGIONE / SEMPRE. Prima la scheda giocatore mostrava sempre i
      totali di carriera (cambiavi stagione e i numeri non si muovevano), la
      scheda squadra solo quelli della stagione scelta: due bugie opposte. */
-  .cmp{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
-  .cmp-h{display:flex;align-items:center;padding:10px 14px 8px;font-size:11px;font-weight:800;
-    letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
-  .cmp-h .k{flex:1}
-  .cmp-h .a,.cmp-h .b{width:78px;text-align:right}
-  .cmp-h .a{color:var(--accent-soft)}
-  .cmp-r{display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);font-size:14px}
-  .cmp-r:last-child{border-bottom:none}
-  .cmp-r .k{flex:1;min-width:0;color:var(--muted);font-weight:600}
-  .cmp-r .a,.cmp-r .b{width:78px;text-align:right;font-family:'Bricolage Grotesque';font-weight:800;font-size:16px}
-  .cmp-r .a{color:var(--text)}
-  .cmp-r .b{color:var(--muted)}
   .prof .pgo{margin-left:auto;color:var(--muted);font-size:19px;line-height:1}
   .prof img{width:50px;height:auto;border-radius:10px}
   .prof .pinfo b{font-family:'Bricolage Grotesque';font-weight:800;font-size:19px}
@@ -872,27 +820,7 @@
   .set-sec .ic{font-size:15px;line-height:1}
   .set-sec.gold{color:var(--gold-soft)}
   .set-sec+.set-card{margin-top:10px}
-  .set-subsec{display:flex;align-items:center;gap:7px;margin:16px 2px 2px;font-family:'Bricolage Grotesque';font-weight:800;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--gold-soft);opacity:.92}
-  .set-subsec::before{content:"";width:13px;height:2px;border-radius:2px;background:var(--gold-soft);opacity:.55}
-  .set-subsec+.set-card{margin-top:8px}
   /* Fisarmonica impostazioni */
-  .acc{margin-top:12px}
-  .acc-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:15px 16px;cursor:pointer;color:var(--text);font-family:inherit;text-align:left}
-  .acc-head:active{transform:scale(.995)}
-  .acc-ttl{display:flex;align-items:center;gap:11px;font-family:'Bricolage Grotesque';font-weight:800;font-size:15.5px}
-  .acc-ttl .ic{font-size:18px;line-height:1}
-  .acc-chev{color:var(--muted);transition:transform .22s;flex:none}
-  .acc.open>.acc-head .acc-chev{transform:rotate(180deg)}
-  .acc.open>.acc-head{border-color:var(--line-strong)}
-  .acc-body{display:none}
-  .acc.open>.acc-body{display:block;padding:12px 6px 2px}
-  .acc-body>.set-card:first-child,.acc-body>.acc:first-child{margin-top:10px}
-  .acc.gold>.acc-head{border-color:rgba(255,194,61,.30);background:linear-gradient(180deg,rgba(255,194,61,.08),var(--surface))}
-  .acc.gold>.acc-head .acc-ttl{color:var(--gold-soft)}
-  .acc.sub{margin-top:10px}
-  .acc.sub>.acc-head{padding:12px 14px;border-radius:13px;background:var(--surface2)}
-  .acc.sub>.acc-head .acc-ttl{font-size:13.5px;color:var(--gold-soft)}
-  .acc.sub>.acc-head .acc-ttl .ic{font-size:15px}
   /* Navigazione a pagine nelle impostazioni */
   .setpage{display:none}
   .setpage.on{display:block;animation:setSlide .22s ease}
@@ -1079,8 +1007,6 @@
   .hpcard .hp-b.no.on{background:rgba(255,90,90,.14);border-color:var(--red);color:#ff9a9a}
   .hpcard .hp-note{color:var(--muted);font-size:11.5px;margin-top:10px;text-align:center}
   /* Step regole alla creazione lega */
-  .rule-grp{margin-bottom:18px}
-  .rule-h{font-family:'Bricolage Grotesque';font-weight:800;font-size:15px;margin-bottom:9px}
   .rule-hint{color:var(--muted);font-size:12px;line-height:1.5;margin-top:8px}
   .mrow{display:flex;align-items:center;gap:11px;padding:9px 0}
   .mrow+.mrow{border-top:1px solid var(--line)}
@@ -1095,28 +1021,9 @@
 
   /* Barra d'installazione: sta nel flusso, sopra la navigazione, quindi non
      copre niente e non ha bisogno di position:fixed né di calcoli di altezza. */
-  .ibar{display:none;flex:none;position:relative;z-index:51;align-items:center;gap:12px;
-    padding:12px 14px calc(12px + env(safe-area-inset-bottom));
-    background:linear-gradient(180deg,#143a68,#0d2444);
-    border-top:1px solid rgba(120,170,255,.34);box-shadow:0 -10px 28px -12px rgba(0,0,0,.85)}
-  .ibar.on{display:flex}
-  .ibar::before{content:'';position:absolute;left:0;right:0;top:0;height:2px;
-    background:linear-gradient(90deg,transparent,rgba(120,170,255,.75),transparent)}
-  .ib-ic{width:46px;height:46px;border-radius:12px;flex:none;box-shadow:0 3px 10px rgba(0,0,0,.5)}
-  .ib-tx{flex:1;min-width:0;line-height:1.28}
-  .ib-tx b{display:block;font-size:15.5px;font-weight:800;color:#eaf1fb}
-  .ib-tx small{display:block;font-size:12.5px;color:#a8c0de;margin-top:3px}
-  .ib-go{flex:none;background:linear-gradient(135deg,#4ea0ff,#1c6ff2);color:#fff;
-    font-weight:800;font-size:14.5px;border:none;padding:12px 20px;border-radius:12px;cursor:pointer;
-    box-shadow:0 4px 14px -4px rgba(63,151,255,.7);animation:ibPulse 2.8s ease-in-out infinite}
   @keyframes ibPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
-  @media (prefers-reduced-motion:reduce){.ib-go{animation:none}}
-  .ib-x{flex:none;background:none;border:none;color:#7f97b6;font-size:15px;padding:6px;cursor:pointer}
-  @media (max-width:359px){
-    .ib-ic{width:38px;height:38px}
-    .ib-tx b{font-size:14px} .ib-tx small{font-size:11.5px}
-    .ib-go{padding:10px 14px;font-size:13.5px}
-  }
+  
+  
   .nav{flex:none;position:relative;z-index:50;padding:5px 12px calc(6px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line)}
   /* RETE DI SICUREZZA iOS: quando il viewport è bugiardo (--vp-gap > 0) iOS non disegna gli ultimi
      --vp-gap pt del guscio → le scritte della barra ci finivano dentro e sparivano. Con .vp-lie il
@@ -1163,7 +1070,6 @@
   .statmodal-bg.open{opacity:1;pointer-events:auto}
   .statmodal{position:fixed;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);width:calc(100% - 56px);max-width:340px;z-index:611;background:var(--bg2);border:1px solid var(--line-strong);border-radius:22px;padding:20px 18px 18px;opacity:0;pointer-events:none;transition:opacity .22s,transform .22s cubic-bezier(.2,.8,.2,1)}
   .statmodal.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
-  .statx{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:10px;border:none;background:var(--surface2);color:var(--muted);font-size:14px;cursor:pointer;display:grid;place-items:center}
   .stat-head{display:flex;align-items:center;gap:13px;margin-bottom:16px}
   .stat-av{width:56px;height:56px;border-radius:13px;background:linear-gradient(160deg,#13294a,#0d1c34);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
   .stat-av img{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain;border-radius:11px;display:block}
@@ -1183,11 +1089,6 @@
   .stat-id .sid-tag.coach{color:var(--gold-soft);background:rgba(255,194,61,.13);border-color:rgba(255,194,61,.34)}
   .stat-id .sid-name{font-size:12.5px;font-weight:800;color:var(--text);letter-spacing:-.005em}
   .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-  .stat-box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 13px;text-align:center}
-  .stat-box .v{font-family:'JetBrains Mono';font-weight:700;font-size:22px;letter-spacing:-.02em;display:inline-block;position:relative}
-  .stat-box .v .deg{position:absolute;left:100%;top:.04em;font-size:.5em;font-weight:700;line-height:1;margin-left:1px;color:inherit}
-  .stat-box .k{font-size:11.5px;color:var(--muted);margin-top:2px;font-weight:600}
-  .stat-box.accent .v{color:var(--accent-soft)} .stat-box.gold .v{color:var(--gold)} .stat-box.green .v{color:var(--green)}
   /* ---- SCHEDA GIOCATORE: gerarchia, non sei scatole uguali ----------------
      Prima ogni numero aveva lo stesso peso visivo, quindi nessuno spiccava.
      Ora: il voto medio è LA cifra che riassume un giocatore e sta in un anello,
@@ -1306,7 +1207,6 @@
   .vtrend .vt-avg{font-family:'JetBrains Mono';font-weight:800;font-size:13px;color:var(--accent-soft);
     background:rgba(63,151,255,.14);border:1px solid rgba(63,151,255,.30);border-radius:999px;padding:3px 9px}
   .vtrend svg{display:block;width:100%;height:auto;overflow:visible}
-  .vtrend .vt-empty{color:var(--muted);font-size:12.5px;text-align:center;padding:14px 6px}
   /* ---- BACHECA (trofei) ---- */
   .bch{margin-top:15px}
   .bch-sec{margin-top:13px}
@@ -1328,9 +1228,7 @@
   .bch-head .bh-bar{flex:1;height:6px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden}
   .bch-head .bh-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-soft));box-shadow:0 0 8px rgba(63,151,255,.55)}
   .bch-head .bh-num{font-family:'JetBrains Mono';font-size:10.5px;font-weight:700;color:var(--muted);flex-shrink:0}
-  .bch-titles{display:flex;flex-wrap:wrap;gap:7px}
   .bch-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:999px;font-size:12.5px;font-weight:700;background:rgba(255,194,61,.14);border:1px solid rgba(255,194,61,.34);color:var(--gold-soft)}
-  .bch-chip.silver{background:rgba(190,200,214,.12);border-color:rgba(190,200,214,.34);color:#cdd6e4}
   .bch-chip small{font-weight:600;color:var(--muted);font-size:10.5px}
   .bch-badges{display:flex;flex-direction:column;gap:8px}
   .bch-badge{display:flex;align-items:center;gap:11px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:10px 12px}
@@ -1351,14 +1249,6 @@
      la pagina «si muoveva tutta». Niente piu' elementi fuori misura, e
      overflow-x:hidden come rete di sicurezza. */
   .pro-page{z-index:95;overflow-x:hidden;overscroll-behavior:contain}
-  .pro-top{display:flex;align-items:center;gap:13px;margin:4px 0 16px}
-  .pro-logo{width:56px;height:56px;border-radius:14px;flex:none;object-fit:contain;padding:4px;
-    background:var(--surface);border:1px solid rgba(255,194,61,.35)}
-  .pro-id{min-width:0;flex:1}
-  .pro-id b{font-family:'Bricolage Grotesque';font-weight:800;font-size:21px;letter-spacing:-.01em;
-    display:flex;align-items:center;gap:7px;line-height:1.1}
-  .pro-badge{font-size:10.5px;font-weight:800;letter-spacing:.1em;color:#1b1207;
-    background:linear-gradient(135deg,var(--gold-soft),var(--gold));padding:3px 7px;border-radius:6px}
   #proWhy{display:block;color:var(--muted);font-size:13px;line-height:1.45;margin-top:4px}
   .pro-amount{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
   .pro-amount b{font-family:'Bricolage Grotesque';font-size:32px;font-weight:800;line-height:1;letter-spacing:-.02em}
@@ -1597,8 +1487,6 @@
   .chat-head .ls-ttl small{white-space:normal}
   .chat-body{display:flex;flex-direction:column;padding:4px 16px 14px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   .chat-day{align-self:center;font-size:11px;font-weight:700;color:var(--muted);background:rgba(150,185,240,.08);padding:4px 11px;border-radius:999px;margin:14px 0 8px}
-  .chat-who{font-size:11px;font-weight:800;color:var(--accent-soft);margin:8px 6px 3px}
-  .chat-who.me{align-self:flex-end}
   .chat-msg{max-width:82%;padding:9px 12px 6px;border-radius:18px;font-size:15px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:3px}
   .chat-msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#fff;border-bottom-right-radius:6px}
   .chat-msg.them{align-self:flex-start;background:var(--surface);border:1px solid var(--line-strong);color:var(--text);border-bottom-left-radius:6px}
@@ -1631,7 +1519,6 @@
   .cr-end time{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
   .cr-pill{min-width:20px;height:20px;border-radius:10px;background:var(--accent);font-size:11px;font-weight:800;color:#fff;text-align:center;line-height:20px;padding:0 6px}
   .ls-cta.save{background:linear-gradient(135deg,var(--green),#1f9d63);box-shadow:0 14px 32px -10px rgba(55,201,126,.6)}
-  .ls-blocks{display:flex;flex-direction:column;gap:12px;margin-top:4px}
   .ls-block{position:relative;border:1.5px solid var(--line-strong);border-radius:20px;padding:22px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;background:linear-gradient(160deg,#10294d,#0a1830);transition:transform .1s}
   .ls-block:active{transform:scale(.985)}
   .ls-block .lse{font-size:32px;flex:none}
@@ -1683,8 +1570,6 @@
   .ls-step:active{transform:scale(.9)}
   .ls-step.add{border-color:var(--accent);color:var(--accent-soft);background:rgba(63,151,255,.12)}
   .ls-step.minus:disabled{opacity:.3;cursor:default}
-  .ls-rrow{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line)}
-  .ls-rrow .lpn{flex:1;min-width:0;font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .ls-note{color:#b89a6a;font-size:13px;line-height:1.55;text-align:center;padding:34px 16px}
   .ls-wrow{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1.5px solid var(--line-strong);border-radius:14px;margin-bottom:9px;cursor:pointer;background:var(--bg2);transition:border-color .15s,background .15s,transform .08s}
   .ls-wrow:active{transform:scale(.99)}
@@ -1704,18 +1589,6 @@
   /* Selettore stagione: segmented control in stile iOS. Scorre in orizzontale
      con snap quando le stagioni non ci stanno, e si può cambiare anche con lo
      swipe sulla lista (vedi bindSeasonSwipe). */
-  .seasonbar{display:flex;gap:4px;padding:4px;margin:0 0 10px;border-radius:14px;
-    background:rgba(150,185,240,.08);border:1px solid var(--line-strong);
-    overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-  .seasonbar::-webkit-scrollbar{display:none}
-  .seasonbar button{flex:1 0 auto;min-width:96px;scroll-snap-align:center;touch-action:manipulation;
-    border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:13px;
-    padding:9px 12px;border-radius:11px;cursor:pointer;white-space:nowrap;
-    transition:background .18s ease,color .18s ease,transform .12s ease}
-  .seasonbar button.on{background:var(--surface2);color:var(--text);box-shadow:0 6px 16px -10px rgba(0,8,24,.9)}
-  .seasonbar button.on.past{background:rgba(255,194,61,.18);color:var(--gold-soft)}
-  .seasonbar button:active{transform:scale(.97)}
-  .seasonbar .sb-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:6px;vertical-align:1px}
   /* SELETTORE STAGIONE: la barra a segmenti non regge oltre 3-4 stagioni, quindi
      il titolo stesso diventa il selettore e apre l'elenco completo in un foglio. */
   button.hh-season{font-family:inherit;line-height:1.15}
@@ -1723,12 +1596,6 @@
   .hh-season.pick{cursor:pointer;touch-action:manipulation}
   .hh-season.pick::after{content:'⌄';margin-left:6px;font-size:13px;opacity:.8;vertical-align:1px}
   .hh-season.pick:active{transform:scale(.96)}
-  .lb-back{display:flex;align-items:center;gap:10px;background:rgba(255,194,61,.10);border:1px solid rgba(255,194,61,.28);
-           border-radius:14px;padding:10px 12px;margin:0 0 10px;font-size:12.5px;color:var(--gold-soft)}
-  .lb-back button{margin-left:auto;flex:none;background:rgba(255,194,61,.18);border:1px solid rgba(255,194,61,.35);
-           color:var(--gold-soft);font-family:inherit;font-size:12px;font-weight:800;padding:6px 11px;border-radius:999px;
-           cursor:pointer;touch-action:manipulation}
-  .lb-back button:active{transform:scale(.96)}
   .opt .oav.emo{width:38px;text-align:center;font-size:23px;line-height:38px}
   .opt .pr.on{color:var(--accent)}
   /* HOME in intervallo fra due stagioni */
@@ -1776,9 +1643,6 @@
   @keyframes pagPop{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
   .pag-eyebrow{font-size:12.5px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-soft);margin-bottom:14px}
   .pag-eyebrow.gold{color:var(--gold-soft)}
-  .pag-cover-emoji{font-size:74px;margin-bottom:8px}
-  .pag-title{font-family:'Bricolage Grotesque';font-weight:800;font-size:44px;letter-spacing:-.03em;line-height:1}
-  .pag-sub{color:#a8bdd9;font-size:16px;margin-top:8px}
   .pag-hint{color:var(--muted);font-size:13px;margin-top:22px;animation:pagBlink 1.8s ease-in-out infinite}
   @keyframes pagBlink{0%,100%{opacity:.5}50%{opacity:1}}
   .pag-name{font-family:'Bricolage Grotesque';font-weight:800;font-size:30px;letter-spacing:-.02em;margin-top:14px;line-height:1.05}
@@ -1792,8 +1656,6 @@
      il riquadro, che con overflow:hidden la tagliava sui piedi. */
   .pag-av img{width:auto!important;height:auto!important;max-width:132px!important;max-height:132px!important;
     object-fit:contain!important;border-radius:0!important;display:block}
-  .pag-av.huge{width:188px;height:188px;border-radius:36px}
-  .pag-av.huge img{max-width:154px!important;max-height:154px!important}
   .pag-av.gold{box-shadow:0 0 0 3px rgba(255,194,61,.55), 0 24px 56px -18px rgba(255,194,61,.5)}
   .pag-av.sm{width:96px;height:96px;border-radius:20px}
   .pag-av.sm img{max-width:79px!important;max-height:79px!important}
@@ -1803,18 +1665,6 @@
   .pag-stat{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--line-strong);border-radius:18px;padding:20px 8px}
   .pag-statv{font-family:'Bricolage Grotesque';font-weight:800;font-size:46px;letter-spacing:-.02em;color:var(--accent-soft);line-height:1}
   .pag-statk{font-size:12.5px;color:var(--muted);margin-top:6px;font-weight:600}
-  .pag-result{margin-top:20px;font-size:15px;color:#c7d6ec;line-height:1.5;max-width:330px}
-  .pag-result b{color:#fff}
-  .pag-duo{display:flex;gap:14px;width:100%;max-width:360px;margin-top:6px}
-  .pag-duo-col{flex:1;border-radius:20px;padding:18px 10px;border:1.5px solid var(--line-strong);background:rgba(255,255,255,.04)}
-  .pag-duo-col.up{border-color:rgba(55,201,126,.5)} .pag-duo-col.down{border-color:rgba(255,90,90,.45)}
-  .pag-duo-tag{font-size:13px;font-weight:800;margin-bottom:12px}
-  .pag-duo-col.up .pag-duo-tag{color:var(--green)} .pag-duo-col.down .pag-duo-tag{color:var(--red)}
-  .pag-duo .pag-av{width:84px;height:84px;border-radius:18px;margin:0 auto}
-  .pag-duo .pag-av img{max-width:69px!important;max-height:69px!important}
-  .pag-duo-name{font-weight:800;font-size:15px;margin-top:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .pag-duo-pts{font-family:'JetBrains Mono';font-weight:800;font-size:24px;margin-top:4px}
-  .pag-duo-col.up .pag-duo-pts{color:#7ce6aa} .pag-duo-col.down .pag-duo-pts{color:#ff9a9a}
   .pag-mover{display:flex;align-items:center;gap:14px;width:100%;max-width:360px;border-radius:18px;padding:16px 18px;margin-top:12px;text-align:left;border:1.5px solid var(--line-strong)}
   .pag-mover.up{background:rgba(55,201,126,.12);border-color:rgba(55,201,126,.45)}
   .pag-mover.down{background:rgba(255,90,90,.10);border-color:rgba(255,90,90,.4)}
@@ -1841,81 +1691,25 @@
   .pag-win-tag{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-soft);margin-top:8px}
   .pag-spoon{margin-top:22px;font-size:14px;color:#c7d6ec;background:rgba(255,255,255,.05);border:1px solid var(--line-strong);border-radius:14px;padding:12px 16px}
   .pag-spoon b{color:#fff}
-  .pag-share-wrap{width:100%;max-width:300px;margin:8px 0 16px;border-radius:18px;overflow:hidden;min-height:200px;display:grid;place-items:center;background:rgba(255,255,255,.04);border:1px solid var(--line-strong)}
-  .pag-share-canvas{width:100%;height:auto;display:block}
   .pag-share-load{color:var(--muted);font-size:13px;padding:30px}
-  .pag-share-btn{background:linear-gradient(135deg,var(--accent),#1c6ff2);color:#fff;font-weight:800;font-size:16px;border:none;padding:15px 28px;border-radius:14px;cursor:pointer;box-shadow:0 14px 32px -10px rgba(63,151,255,.6)}
-  .pag-share-btn:active{transform:scale(.97)}
   /* copertina pagellone arricchita */
-  .pag-cover-badge{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-soft);background:rgba(63,151,255,.14);border:1px solid rgba(63,151,255,.32);padding:6px 14px;border-radius:999px;margin-bottom:18px}
-  .pag-cover-glow{position:relative;display:grid;place-items:center;margin-bottom:6px}
-  .pag-cover-glow::before{content:"";position:absolute;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(63,151,255,.5),transparent 68%);filter:blur(14px);animation:pagGlow 3.4s ease-in-out infinite}
   @keyframes pagGlow{0%,100%{opacity:.55;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
-  .pag-cover-glow .pag-cover-emoji{position:relative;margin-bottom:0}
-  .pag-cover-md{font-family:'Bricolage Grotesque';font-weight:800;font-size:20px;color:#cfe0f7;margin-top:10px;letter-spacing:-.01em}
-  .pag-cover-teaser{display:flex;align-items:center;gap:14px;margin-top:18px;color:#9db4d2;font-size:14px}
-  .pag-cover-teaser b{font-family:'Bricolage Grotesque';color:#fff;font-size:18px;margin-right:4px}
-  .pag-cover-teaser i{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.35)}
   /* ===== RECAP DI FINE STAGIONE =====
      Stessa grammatica visiva del pagellone (stesse card, stesso ritmo), con
      l'oro come accento dominante: la stagione è il momento "trofeo" dell'app.
      Spaziature sulla griglia da 8, ombre tinte del colore di sfondo. */
-  .pag-sbadge{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-soft);
-    background:rgba(255,194,61,.14);border:1px solid rgba(255,194,61,.34);padding:6px 14px;border-radius:999px;margin-bottom:16px}
-  .pag-cover-glow.gold::before{background:radial-gradient(circle,rgba(255,194,61,.5),transparent 68%)}
   /* righe premio: emoji · avatar · nome · valore */
-  .pag-awd{display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin-top:8px}
-  .pag-awd-row{display:flex;align-items:center;gap:10px;text-align:left;padding:12px 14px;border-radius:20px;
-    background:rgba(255,255,255,.05);border:1px solid var(--line-strong)}
-  .pag-awd-row.gold{background:rgba(255,194,61,.10);border-color:rgba(255,194,61,.40);box-shadow:0 12px 28px -18px rgba(255,194,61,.7)}
-  .pag-awd-row.me{background:rgba(63,151,255,.12);border-color:rgba(127,176,255,.5)}
-  .pag-awd-ic{width:26px;flex:none;font-size:20px;line-height:1;text-align:center}
-  .pag-awd-av{width:44px;height:44px;flex:none;border-radius:14px;overflow:hidden;display:grid;place-items:center;
-    background:linear-gradient(160deg,#16315a,#0c1c34)}
   /* misure in px, non in %: una max-height percentuale su un elemento in grid non
      si risolve in modo affidabile su Safari iOS e l'avatar sfondava il riquadro. */
-  .pag-awd-av img{width:auto!important;height:auto!important;max-width:38px!important;max-height:38px!important;
-    object-fit:contain!important;border-radius:0!important;display:block}
-  .pag-awd-tx{flex:1;min-width:0}
   /* block, non inline: da span in linea l'etichetta e il nome finivano attaccati
      ("CAPOCANNONIEREBenzo") e text-overflow non poteva funzionare. */
-  .pag-awd-k{display:block;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);line-height:1.35}
-  .pag-awd-k .nb{white-space:nowrap}
-  .pag-awd-n{display:block;font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;line-height:1.2;margin-top:2px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .pag-awd-v{flex:none;margin-left:auto;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-weight:700;
-    font-size:15px;color:var(--gold-soft);font-variant-numeric:tabular-nums}
-  .pag-awd-row.me .pag-awd-v{color:var(--accent-soft)}
   /* podio */
-  .pag-pod{display:flex;align-items:flex-end;gap:8px;width:100%;max-width:320px;margin-top:24px}
-  .pag-pod-c{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
-  .pag-pod-nm{font-size:12.5px;font-weight:700;color:#c7d6ec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-  .pag-pod-bar{width:100%;border-radius:16px 16px 0 0;border:1px solid rgba(127,176,255,.30);border-bottom:none;
-    background:linear-gradient(180deg,rgba(63,151,255,.30),rgba(63,151,255,.06));
-    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;padding:10px 4px 0}
-  .pag-pod-c.p1 .pag-pod-bar{height:112px;border-color:rgba(255,194,61,.5);
-    background:linear-gradient(180deg,rgba(255,194,61,.34),rgba(255,194,61,.06));box-shadow:0 -8px 32px -14px rgba(255,194,61,.8)}
-  .pag-pod-c.p2 .pag-pod-bar{height:80px}
-  .pag-pod-c.p3 .pag-pod-bar{height:56px}
-  .pag-pod-r{font-family:'Bricolage Grotesque';font-weight:800;font-size:20px;line-height:1}
-  .pag-pod-c.p1 .pag-pod-r{color:var(--gold-soft)}
-  .pag-pod-p{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
   /* parabola della posizione in classifica */
   .pag-path{width:100%;max-width:330px;margin-top:16px}
   .pag-path svg{width:100%;height:auto;display:block;overflow:visible}
   .pag-path-lg{display:flex;justify-content:space-between;margin-top:8px;font-size:11.5px;color:var(--muted)}
   /* riquadro discorsivo (frasi del recap) */
-  .pag-note{margin-top:16px;max-width:330px;font-size:14px;line-height:1.55;color:#c7d6ec;
-    background:rgba(255,255,255,.05);border:1px solid var(--line-strong);border-radius:16px;padding:12px 16px}
-  .pag-note b{color:#fff}
-  .pag-note.gold{background:rgba(255,194,61,.10);border-color:rgba(255,194,61,.34)}
-  .pag-note.gold b{color:var(--gold-soft)}
   /* duello testa a testa */
-  .pag-duel{display:flex;align-items:center;gap:8px;width:100%;max-width:340px;margin-top:20px}
-  .pag-duel-c{flex:1;min-width:0;border-radius:18px;padding:16px 10px;border:1.5px solid var(--line-strong);background:rgba(255,255,255,.05)}
-  .pag-duel-n{font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;line-height:1.2;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .pag-duel-x{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.1em;flex:none}
   .pag-vs-split{display:flex;align-items:stretch;gap:10px;margin-top:22px;width:100%;max-width:340px}
   .pag-vs-split .pvs-col{flex:1;border-radius:18px;padding:16px 8px;border:1.5px solid var(--line-strong);background:rgba(255,255,255,.04)}
   .pag-vs-split .pvs-col.w{border-color:rgba(55,201,126,.5);background:rgba(55,201,126,.10)}
@@ -1925,73 +1719,12 @@
   .pag-vs-split .pvs-l{font-size:12px;color:var(--muted);margin-top:6px;font-weight:600}
   .pag-vs-split .pvs-x{align-self:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
   /* --- La tua giornata --- */
-  .you-team{font-family:'Bricolage Grotesque';font-weight:800;font-size:24px;letter-spacing:-.02em;margin-bottom:2px}
-  .you-meta{color:#a8bdd9;font-size:13.5px;margin-top:6px;font-weight:600}
-  .you-up{color:var(--green);font-weight:800} .you-dn{color:var(--red);font-weight:800}
-  .you-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
-  .you-chip{font-size:12.5px;color:#cfe0f7;background:rgba(255,255,255,.06);border:1px solid var(--line-strong);border-radius:999px;padding:6px 12px}
-  .you-chip b{color:#fff} .you-chip.ok{background:rgba(55,201,126,.12);border-color:rgba(55,201,126,.4);color:#bff0d6}
-  .you-rosa{width:100%;max-width:330px;margin-top:14px;background:rgba(255,255,255,.04);border:1px solid var(--line-strong);border-radius:16px;overflow:hidden}
-  .you-prow{display:flex;align-items:center;gap:10px;padding:8px 12px}
-  .you-prow+.you-prow{border-top:1px solid var(--line)}
-  .you-pav{width:32px;height:32px;border-radius:9px;overflow:hidden;background:#102742;display:grid;place-items:center;flex:none}
-  .you-pav img{width:100%!important;height:auto!important;border-radius:0!important}
-  .you-pn{flex:1;text-align:left;font-weight:700;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .you-pn span{display:inline-block;margin-left:6px;font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.04em}
-  .you-pp{font-family:'JetBrains Mono';font-weight:800;font-size:15px;flex:none}
-  .you-pp.pos{color:#7ce6aa} .you-pp.neg{color:#ff9a9a}
-  .you-mod{margin-top:12px;font-size:12.5px;color:var(--muted)} .you-mod b{color:#fff}
   /* --- Reparti --- */
-  .rep-row{display:flex;gap:9px;width:100%;max-width:340px;margin-top:16px}
-  .rep-cell{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--line-strong);border-radius:14px;padding:12px 6px}
-  .rep-lbl{font-size:11px;font-weight:800;color:var(--accent-soft);margin-bottom:8px}
-  .rep-av{width:40px;height:40px;border-radius:11px;overflow:hidden;background:#102742;display:grid;place-items:center;margin:0 auto}
-  .rep-av img{width:100%!important;height:auto!important;border-radius:0!important}
-  .rep-nm{font-size:12px;font-weight:700;margin-top:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .rep-pt{font-family:'JetBrains Mono';font-weight:800;font-size:15px;color:#7ce6aa;margin-top:3px}
   /* --- Migliori di giornata (bomber / assist-man / muro) --- */
-  .lead-row{display:flex;gap:10px;width:100%;max-width:360px;margin-top:6px}
-  .lead-cell{flex:1;background:rgba(255,255,255,.04);border:1.5px solid var(--line-strong);border-radius:18px;padding:16px 8px 14px;display:flex;flex-direction:column;align-items:center}
-  .lead-ic{font-size:26px;line-height:1;margin-bottom:8px}
-  .lead-av{width:64px;height:64px;border-radius:16px;overflow:hidden;background:#102742;display:grid;place-items:center;margin:0 auto}
-  .lead-av img{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain;border-radius:0!important;display:block}
-  .lead-nm{font-size:12.5px;font-weight:800;margin-top:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
-  .lead-val{font-family:'JetBrains Mono';font-weight:800;font-size:22px;color:#eaf1fb;margin-top:5px;line-height:1}
-  .lead-val span{font-family:'Hanken Grotesk',sans-serif;font-weight:700;font-size:11px;color:var(--muted);margin-left:4px}
-  .lead-lbl{font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--accent-soft);margin-top:7px}
   /* --- Verdetto: 2º e 3º di giornata --- */
-  .vd-list{display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin-top:20px}
-  .vd-row{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);border:1px solid var(--line-strong);border-radius:14px;padding:11px 15px;text-align:left}
-  .vd-medal{font-size:22px;line-height:1;flex:none}
-  .vd-nm{flex:1;font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .vd-pt{font-family:'JetBrains Mono';font-weight:800;font-size:16px;color:#cfe0f7;flex:none}
-  .vd-pt span{font-family:'Hanken Grotesk',sans-serif;font-weight:700;font-size:11px;color:var(--muted);margin-left:3px}
   /* --- Capitani / MVP --- */
-  .cap-team{font-size:11.5px;color:var(--muted);margin-top:2px}
-  .mvp-podium{display:flex;flex-direction:column;gap:8px;margin-top:18px;width:100%;max-width:300px}
-  .mvp-prow{display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:14px;padding:8px 13px}
-  .mvp-pmedal{font-size:18px;width:22px;text-align:center;flex:none}
-  .mvp-pav{width:40px;height:40px;border-radius:11px;overflow:hidden;background:#102742;display:grid;place-items:center;flex:none}
-  .mvp-pav img{width:100%!important;height:auto!important;border-radius:0!important}
-  .mvp-pnm{flex:1;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
-  .mvp-pv{font-family:'JetBrains Mono';font-weight:700;font-size:14px;color:var(--gold-soft)}
-  .mvp-pv span{font-size:10px;color:var(--muted)}
-  .cap-mvp{display:flex;align-items:center;gap:13px;width:100%;max-width:340px;margin-top:16px;background:rgba(255,194,61,.10);border:1px solid rgba(255,194,61,.4);border-radius:16px;padding:12px 16px;text-align:left}
-  .cap-mvp-av{width:60px;height:60px;border-radius:14px;overflow:hidden;background:#102742;display:grid;place-items:center;flex:none}
-  .cap-mvp-av img{width:100%!important;height:auto!important;border-radius:0!important}
-  .cap-mvp-tx span{font-size:12px;font-weight:800;color:var(--gold-soft)}
-  .cap-mvp-tx b{display:block;font-family:'Bricolage Grotesque';font-size:19px;letter-spacing:-.01em;margin-top:1px}
-  .cap-mvp-tx small{color:#a8bdd9;font-size:12.5px}
   .pag-chip-risk{margin-top:16px;font-size:13px;color:#ffd9a8;background:rgba(255,160,60,.12);border:1px solid rgba(255,160,60,.38);border-radius:13px;padding:10px 16px}
   /* --- Striscia di forma --- */
-  .forma-sub{color:#a8bdd9;font-size:14px;margin-bottom:14px}
-  .forma-list{width:100%;max-width:340px;display:flex;flex-direction:column;gap:9px}
-  .forma-row{display:flex;align-items:center;gap:13px;background:rgba(255,255,255,.04);border:1px solid var(--line-strong);border-radius:14px;padding:13px 16px;text-align:left}
-  .forma-row.lead{background:rgba(255,194,61,.10);border-color:rgba(255,194,61,.4)}
-  .forma-rk{font-size:20px;width:26px;text-align:center;flex:none;font-family:'JetBrains Mono';font-weight:800;color:var(--muted)}
-  .forma-nm{flex:1;font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .forma-pt{font-family:'JetBrains Mono';font-weight:800;font-size:18px;color:#7ce6aa;flex:none}
-  .forma-pt span{font-size:11px;color:var(--muted);margin-left:3px;font-weight:600}
 
   /* ============================================================
      RESTYLING — meno scatole, più gerarchia (solo aspetto)
@@ -2064,11 +1797,6 @@
 
   /* DETTAGLIO GIOCATORE / SQUADRA — le mattonelle statistiche perdono il
      bordo: numero grande su superficie appena accennata, niente scatole dure */
-  .stat-box{background:rgba(126,194,255,.05);border:none;border-radius:16px;padding:17px 12px;box-shadow:none}
-  .stat-box .v{font-size:26px}
-  .stat-box.accent{background:rgba(63,151,255,.10)}
-  .stat-box.gold{background:rgba(255,194,61,.10)}
-  .stat-box.green{background:rgba(47,217,138,.10)}
   .stat-grid{gap:8px}
   /* andamento voti: pannello più morbido, niente bordo netto */
   .vtrend{background:none;border:none;box-shadow:none;padding:0;border-radius:0}
@@ -2090,7 +1818,6 @@
   /* BACHECA — i "titoli" diventano tag morbidi (niente bordo duro)
      e i "traguardi" da box a righe con linea sottile */
   .bch-chip{border:none;background:rgba(255,194,61,.14)}
-  .bch-chip.silver{border:none;background:rgba(190,200,214,.13)}
   .bch-badge{background:none;border:none;border-radius:0;padding:13px 2px}
   .bch-badges{gap:0}
   .bch-badge+.bch-badge{border-top:1px solid var(--line)}
@@ -2115,8 +1842,6 @@
   .pag-statv,.pag-vs-split .pvs-n,.rep-pt,.forma-pt,.lead-val{text-shadow:0 0 22px rgba(63,151,255,.4)}
   .pag-bigline{text-shadow:0 0 26px rgba(255,194,61,.5)}
   /* titolo del pagellone in gradiente accent (come la hero) */
-  .pag-title{background:linear-gradient(100deg,#ffffff,var(--accent-soft));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-  .pag-eyebrow.gold~.pag-title,.pag-title.gold{background:linear-gradient(100deg,#ffffff,var(--gold-soft));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 
   /* ============================================================
      SESSIONE 69 — caroselli home · filtro classifica · Pagellone
@@ -2215,16 +1940,8 @@
   /* --- copertina --- */
   .pz-badge{font-size:11.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#d6e9ff;padding:7px 15px;border-radius:999px;
     background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .pz-cover{position:relative;width:232px;height:232px;display:grid;place-items:center;margin:4px 0 -40px}
-  .pz-rings{position:absolute;inset:0}
-  .pz-rings i{position:absolute;inset:0;border-radius:50%;border:1.5px dashed rgba(126,194,255,.34);animation:pzSpin 30s linear infinite}
-  .pz-rings i:nth-child(2){inset:24px;border:1px solid rgba(126,194,255,.16);animation:none}
-  .pz-rings i:nth-child(3){inset:44px;border:none;background:radial-gradient(closest-side,rgba(63,151,255,.5),transparent);animation:pzPulse 3.2s ease-in-out infinite}
   @keyframes pzSpin{to{transform:rotate(360deg)}}
   @keyframes pzPulse{0%,100%{transform:scale(.9);opacity:.7}50%{transform:scale(1.08);opacity:1}}
-  .pz-bignum{position:relative;font-family:'Bricolage Grotesque';font-weight:800;font-size:172px;line-height:1;letter-spacing:-.06em;padding:0 .06em;
-    background:linear-gradient(180deg,#ffffff 12%,#a6d4ff 52%,rgba(63,151,255,.12) 96%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
-  .pz-bignum.emo{font-size:92px;background:none;-webkit-text-fill-color:initial;color:initial}
   .pz-tw{position:relative}
   .pz-title{font-family:'Bricolage Grotesque';font-weight:800;font-size:50px;letter-spacing:-.03em;line-height:1;text-transform:uppercase;
     background:linear-gradient(100deg,#ffffff 36%,#9fd0ff 48%,#ffffff 60%);background-size:260% 100%;background-position:100% 0;
@@ -2391,7 +2108,6 @@
   @media (max-height:700px){
     .pag-card{padding-top:38px}
     .pag-eyebrow{margin-bottom:10px}
-    .pz-cover{width:196px;height:196px;margin-bottom:-34px} .pz-bignum{font-size:146px}
     .pz-score span{font-size:64px} .pz-mvp{height:190px;margin-top:14px}
     .pz-ranks{margin-top:8px} .pz-rk{padding:7px 8px} .pz-rk b{font-size:21px} .pz-rk span{margin-top:3px}
     .pz-pills{margin-top:8px} .pz-rosa{margin-top:9px}
@@ -2416,7 +2132,7 @@
     .pz-mvp{height:152px;margin-top:26px} .pz-crown{top:-20px;font-size:32px} .pz-mvpn{font-size:32px}
     .pz-win{height:150px} .pz-medal{width:112px;height:112px} .pz-medal-in{width:90px;height:90px} .pz-medal-in .tlogo{width:58px;height:58px}
     .pz-wname{font-size:28px} .pz-wpts span{font-size:46px}
-    .pz-cover{width:170px;height:170px;margin-bottom:-30px} .pz-bignum{font-size:124px} .pz-title{font-size:42px}
+      .pz-title{font-size:42px}
   }
 
   /* ============================================================
@@ -4172,7 +3888,70 @@
   <div class="pag-card" id="pagCard"></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ============================================================
+   APP NATIVA (Capacitor, Play Store) — 14/10/2026
+   Dentro l'app scaricata dallo store questa stessa pagina viene caricata dal
+   sito: IS_NATIVE dice se siamo li' dentro. Sul sito e nella PWA e' sempre
+   false e nulla di quello che segue ha effetto.
+   - condivisione: la WebView di Android non ha navigator.share, lo ricreo
+     con i plugin Share + Filesystem (testo e immagini del pagellone);
+   - link esterni e window.open: si aprono nel browser di sistema, senza
+     uscire dall'app;
+   - niente service worker: la pagina deve passare sempre dall'app, che ci
+     aggiunge il ponte verso i plugin (offline: pagina locale dell'app).
+   ============================================================ */
+/* doppio riconoscimento: il ponte Capacitor e, di riserva, la firma che l'app
+   aggiunge allo user agent (c'e' anche se il ponte non fosse ancora pronto) */
+const IS_NATIVE=(function(){
+  try{ if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) return true; }catch(_){ }
+  return /FantaCalcettoApp/.test(navigator.userAgent||'');
+})();
+const NATIVE_OS=(function(){
+  if(!IS_NATIVE) return '';
+  try{ if(window.Capacitor && window.Capacitor.getPlatform) return window.Capacitor.getPlatform(); }catch(_){ }
+  return /iphone|ipad|ipod/i.test(navigator.userAgent||'') ? 'ios' : 'android';
+})();
+if(IS_NATIVE){
+  try{ document.documentElement.classList.add('native', 'native-'+NATIVE_OS); }catch(_){ }
+  const _P=()=> (window.Capacitor && window.Capacitor.Plugins) || {};
+  const _blobB64=(b)=>new Promise((ok,ko)=>{ const r=new FileReader(); r.onload=()=>ok(String(r.result).split(',')[1]||''); r.onerror=ko; r.readAsDataURL(b); });
+  try{
+    navigator.canShare=function(){ return !!_P().Share; };
+    navigator.share=async function(d){
+      d=d||{}; const P=_P(); if(!P.Share) throw new Error('share_unavailable');
+      let files;
+      if(d.files && d.files.length && P.Filesystem){
+        files=[];
+        for(const f of d.files){
+          const nm=(f && f.name) ? f.name : ('fantacalcetto_'+Date.now()+'.png');
+          const w=await P.Filesystem.writeFile({ path:nm, data:await _blobB64(f), directory:'CACHE' });
+          files.push(w.uri);
+        }
+      }
+      const o={ dialogTitle:'Condividi' };
+      if(d.title) o.title=d.title;
+      if(d.text)  o.text=d.text;
+      if(d.url)   o.url=d.url;
+      if(files)   o.files=files;
+      await P.Share.share(o);
+    };
+  }catch(_){ }
+  const _ext=(u)=>{ try{ const x=new URL(u, location.href); return x.href; }catch(_){ return u; } };
+  const _openOut=(u)=>{ const P=_P(); if(P.Browser) P.Browser.open({ url:_ext(u) }).catch(()=>{}); else location.href=_ext(u); };
+  const _wo=window.open;
+  window.open=function(u,t,f){
+    if(u && /^(https?:|\/)/i.test(String(u))){ _openOut(u); return null; }
+    return _wo ? _wo.call(window,u,t,f) : null;
+  };
+  document.addEventListener('click',function(e){
+    const a=e.target && e.target.closest ? e.target.closest('a[target="_blank"]') : null;
+    if(!a || !a.href || !/^https?:/i.test(a.href)) return;
+    e.preventDefault(); _openOut(a.href);
+  }, true);
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
 <script>
 /* ============================================================
    👇 INCOLLA QUI LE TUE 2 CHIAVI (Supabase → Project Settings → API)
@@ -5019,12 +4798,12 @@ let _interactiveAuth=false;
    start_url del manifest), per questo il nome della lega si scrive grande:
    è quello che la persona dovrà cercare dopo. ------------------------- */
 function fcIsStandalone(){
+  if(IS_NATIVE) return true;          // app dello store: e' gia' installata
   try{
     if(window.navigator && window.navigator.standalone===true) return true;
     return !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
   }catch(_){ return false; }
 }
-function fcIsPhone(){ return /iphone|ipad|ipod|android/i.test(navigator.userAgent||''); }
 /* Non «sei un telefono», ma «sai installare»: i tablet Samsung si presentano
    come computer (versione desktop dei siti) e restavano tagliati fuori, pur
    potendo installare benissimo. Se il browser ha offerto il prompt, la
@@ -5073,6 +4852,7 @@ function igLi(icon, testo, nota){
    I nomi delle voci cambiano con la versione e con la lingua del telefono:
    dove il nome puo' variare c'e' la nota con l'alternativa. */
 function fcBrowser(){
+  if(IS_NATIVE) return 'app-'+NATIVE_OS;
   const u=navigator.userAgent||'';
   if(fcInAppBrowser())            return 'inapp';
   if(/SamsungBrowser/i.test(u))   return 'samsung';
@@ -5096,12 +4876,6 @@ function fcNativeCapable(){
 }
 function fcSafariMajor(){
   const m=/Version\/(\d+)/.exec(navigator.userAgent||''); return m?parseInt(m[1],10):0;
-}
-function fcBrowserNome(){
-  return {samsung:'Samsung Internet','ios-firefox':'Firefox','ios-chrome':'Chrome',
-          'ios-edge':'Edge','ios-safari':'Safari','edge-android':'Edge',
-          'opera-android':'Opera','firefox-android':'Firefox',
-          'chrome-android':'Chrome',desktop:'questo browser'}[fcBrowser()]||'questo browser';
 }
 
 /* 4.0 — UN PASSO PER OGNI TOCCO, CON IL SUO SIMBOLO.
@@ -5355,17 +5129,6 @@ function closeInstallHelp(){ document.getElementById('instGate').classList.add('
    sta giocando, e ripeterglielo a ogni schermata \u00e8 pubblicit\u00e0.
    Le funzioni restano perch\u00e9 sono richiamate da pi\u00f9 punti. */
 function fcSyncInstallBar(){ }
-function fcInstallBarGo(){ }
-function fcHideInstallBar(){
-  try{ sessionStorage.setItem('fc_ibar_off','1'); }catch(_){ }
-  const bar=document.getElementById('installBar'); if(bar) bar.classList.remove('on');
-}
-/* Il rifiuto vale per questa sessione soltanto: alla visita dopo la barra
-   torna. Non e' insistenza fine a se stessa, e' che senza app installata su
-   questo telefono mezzo prodotto non funziona. */
-function fcInstallBarHidden(){
-  try{ return sessionStorage.getItem('fc_ibar_off')==='1'; }catch(_){ return false; }
-}
 
 function syncInstallRow(){
   const r=document.getElementById('rowInstall'); if(!r) return;
@@ -5746,6 +5509,7 @@ function fcDeviceKey(){
   }catch(_){ return 'no-storage'; }
 }
 function fcPlatform(){
+  if(IS_NATIVE) return NATIVE_OS+'-app';
   const u=navigator.userAgent||'';
   if(/iphone|ipod/i.test(u)) return 'iphone';
   if(/ipad/i.test(u) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1)) return 'ipad';
@@ -5819,7 +5583,7 @@ async function boot(){
   fcCheckInstalled();   // non aspetta: se cambia qualcosa la schermata si ridisegna
   sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
   spTo(10);
-  if('serviceWorker' in navigator){ try{
+  if(!IS_NATIVE && 'serviceWorker' in navigator){ try{
     await navigator.serviceWorker.register('/sw.js');
     // quando un nuovo service worker prende il controllo, ricarica UNA volta per prendere l'HTML fresca
     let _refreshing=false;
@@ -8631,15 +8395,6 @@ function computeLock(){
   votesLocked  = !currentMd || closed || !t || (!!t.voteOpen && now<t.voteOpen) || (now>t.voteClose);
   if(!amManager()) lineupLocked = true;   // solo giocatore: il campo è da guardare, non da schierare
 }
-function statsOpen(){
-  // L'admin puo' inserire bonus/malus solo da quando si aprono i voti (kickoff + 1h) in poi.
-  if(!currentMd)return false;
-  if(currentMd.status==='closed')return true;
-  const t=mdTimes(currentMd);
-  if(!t)return false;
-  if(!t.voteOpen)return true;            // giornata legacy senza kickoff: sempre aperta
-  return Date.now()>=t.voteOpen;
-}
 /* ---------- FASE DELLA GIORNATA: unica fonte di verità ----------
    Prima la fase si calcolava in due posti: phaseLabel() per l'intestazione e
    mdcPhaseIdx() per la timeline, con due elenchi di stati diversi. La prima
@@ -8671,10 +8426,6 @@ function mdPhaseShort(){ const i=mdPhaseIdx(); return i<0?'Nessuna giornata aper
 /* 4.8 — nel Centro giornata il nome della fase sta nell'etichetta in alto a
    destra: sotto al titolo serve solo la spiegazione, senza ripeterlo. */
 function mdPhaseDesc(){ const i=mdPhaseIdx(); return i<0?'Apri o programma la prossima partita.':MD_PHASES[i].desc; }
-function phaseLabel(){
-  const i=mdPhaseIdx();
-  return i<0 ? 'Nessuna giornata aperta' : (MD_PHASES[i].short+' \u00b7 '+MD_PHASES[i].desc);
-}
 let lastHeroTodo=null;   // ultima azione admin mostrata in Home: cambia -> ridisegno
 function startCountdown(){
   if(cdTimer)clearInterval(cdTimer);
@@ -9577,7 +9328,23 @@ function proTabHTML(){
     + PRO_TAB.map((r,i)=>`<div class="pt-r${r[2]?'':' only'}" style="--i:${i}"><span class="k"><span class="ic">${r[0]}</span>${esc(r[1])}</span>`
         +`<span class="a">${r[2]?yes:no}</span><span class="b">${r[3]?yes:no}</span></div>`).join('');
 }
+/* App dello store: al posto della pagina Pro, una frase senza link, senza indirizzo e senza prezzi.
+   Il pagamento resta sul sito (stesso account, stesso flusso di Lemon Squeezy di sempre). */
+function nativeProNotice(){
+  if(document.getElementById('proNativeNote')) return;
+  const o=document.createElement('div'); o.id='proNativeNote';
+  o.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(5,12,24,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px';
+  o.innerHTML='<div style="max-width:340px;background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:20px;padding:22px;text-align:center;box-shadow:0 24px 60px -20px rgba(0,0,0,.7)">'
+    +'<div style="font-size:34px;margin-bottom:6px">\u2b50</div>'
+    +'<div style="font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px;color:#eaf1fb">FantaCalcetto Pro</div>'
+    +'<p style="color:#8aa3c2;font-size:14px;line-height:1.55;margin:0 0 18px">Per passare a Pro vai sul sito di fantacalcettoitalia. Pu\u00f2 attivarlo solo l\u2019amministratore della lega.</p>'
+    +'<button id="pnOk" style="width:100%;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;border:none;padding:14px;border-radius:13px;cursor:pointer">Ho capito</button></div>';
+  document.body.appendChild(o);
+  o.querySelector('#pnOk').onclick=()=>o.remove();
+}
 function openPro(reason){
+  /* App dello store: niente prezzi ne' acquisti (regole Google/Apple). Chi e' Pro vede lo stato. */
+  if(IS_NATIVE && !isPro()){ nativeProNotice(); return; }
   const pg=document.getElementById('proPage'); if(!pg) return;
   renderProPage(reason||'info');
   // l'ingresso a cascata riparte a ogni apertura
@@ -9590,18 +9357,6 @@ function openPro(reason){
 function closePro(){
   const pg=document.getElementById('proPage'); if(pg) pg.classList.add('hidden');
   proRestoreScroll();
-}
-/* Apertura AUTOMATICA (non richiesta dall'utente): al massimo una a settimana
-   per dispositivo, qualunque cosa succeda. Le aperture volute — la riga nelle
-   Impostazioni, una stagione bloccata toccata apposta — passano da openPro e
-   non sono contate: sono l'utente che chiede, non l'app che propone. */
-function proMaybeShow(reason){
-  try{
-    const last=Number(localStorage.getItem('fc_pro_seen')||0);
-    if(Date.now()-last < 7*24*3600*1000) return false;
-    localStorage.setItem('fc_pro_seen', String(Date.now()));
-  }catch(_){ }
-  openPro(reason); return true;
 }
 function renderProPage(reason){
   const why=document.getElementById('proWhy');
@@ -9944,7 +9699,7 @@ function renderPlanUI(){
   try{ renderSeasonRecapButton(); }catch(_){ }   // l'Albo d'oro dipende dal piano: si riallinea quando il piano cambia
   const r=document.getElementById('rowPro'), sub=document.getElementById('proRowSub');
   if(r&&sub){
-    r.style.display = profile ? 'flex' : 'none';
+    r.style.display = (profile && (!IS_NATIVE || isPro())) ? 'flex' : 'none';
     sub.textContent = myPlan.founder ? 'Lega fondatrice \u00b7 Pro per sempre'
                     : isPro()        ? 'La tua lega \u00e8 Pro'
                     : 'Giocatori illimitati e tutte le stagioni';
@@ -10171,7 +9926,7 @@ async function adDoDelete(btn){
      serve anche a loro e localStorage non si svuota del tutto: si toglie solo questo */
   const _altri=accList().filter(a=>a.id!==(user&&user.id));
   try{
-    if(!_altri.length){
+    if(!_altri.length && !IS_NATIVE){   // in app nativa non c'e' service worker: ready non arriverebbe mai
       const reg=await navigator.serviceWorker.ready;
       const sub=await reg.pushManager.getSubscription();
       if(sub) await sub.unsubscribe();
@@ -10299,7 +10054,7 @@ async function ldDoDelete(btn){
      serve anche a loro e localStorage non si svuota del tutto: si toglie solo questo */
   const _altri=accList().filter(a=>a.id!==(user&&user.id));
   try{
-    if(!_altri.length){
+    if(!_altri.length && !IS_NATIVE){   // in app nativa non c'e' service worker: ready non arriverebbe mai
       const reg=await navigator.serviceWorker.ready;
       const sub=await reg.pushManager.getSubscription();
       if(sub) await sub.unsubscribe();
@@ -10347,20 +10102,6 @@ function pgRingHTML(val,label,pct,color){
 /* Scheda giocatore. Le barre sono rapportate al MIGLIORE della lega, non a un
    massimo teorico: è l'unico paragone che significhi qualcosa in un gruppo di
    15 amici, e si legge senza numeri. */
-/* Tabella di confronto: a sinistra la stagione scelta, a destra il totale di
-   sempre. Compare solo con almeno due stagioni: con una sola le due colonne
-   direbbero lo stesso numero due volte. Le righe senza dato spariscono, cosi'
-   se una RPC non espone una metrica per stagione non resta un trattino a vuoto. */
-function cmpTableHTML(rows, seasonLabel){
-  const vis=rows.filter(r=>r.a!=null || r.b!=null);
-  if(!vis.length) return '';
-  return `<div class="cmp">
-    <div class="cmp-h"><span class="k">\u2014</span><span class="a">${esc(seasonLabel)}</span><span class="b">Sempre</span></div>`
-    + vis.map(r=>`<div class="cmp-r"><span class="k">${esc(r.k)}</span>`
-        +`<span class="a">${r.a!=null?r.a:'\u2014'}</span>`
-        +`<span class="b">${r.b!=null?r.b:'\u2014'}</span></div>`).join('')
-    + `</div>`;
-}
 /* Le RPC delle schede non hanno tutte la stessa forma: alcune mettono i numeri
    in `stats`, altre in cima all'oggetto. Invece di indovinare, li cerco in
    entrambi i posti: se una metrica non c'e', la riga non viene disegnata. */
@@ -10370,7 +10111,6 @@ function pickStat(card, key){
   const v = (st[key]!=null) ? st[key] : (card[key]!=null ? card[key] : null);
   return (v==null||v==='') ? null : v;
 }
-function fmtVoto(v){ return v==null?null:String(Math.round(Number(v)*100)/100).replace('.',','); }
 /* Massimi del periodo: le barre si leggono «rispetto al migliore», quindi il
    migliore dev'essere quello dello stesso periodo dei numeri mostrati. */
 function scopeMaxes(scope){
@@ -10486,7 +10226,6 @@ function refreshPlayerCard(id){
     bch.innerHTML=bachecaHTML(card,{includeManager:false});
   });
 }
-function closeStatModal(){ closeBacheca(); }
 
 /* ---------- ANDAMENTO VOTI: grafichino della stagione (solo voto, niente bonus) ---------- */
 // Estrae il numero di giornata dalla label "Giornata N" (fallback: indice progressivo).
@@ -10828,10 +10567,8 @@ async function loadPosTrend(managerId, scope){
   if(_teamCardId!==managerId) return;
   box.innerHTML=posTrendHTML(pts,teams, perSeason?'fine stagione':'');
 }
-function sgn(v){ return (v==null||!Number(v))?null:('+'+v); }
 function mult(v){ return (v==null||!Number(v))?null:('\u00d7'+v); }
 function ord(v){ return (v==null||!Number(v))?null:(v+'\u00b0'); }
-function closeTeamModal(){ closeBacheca(); }
 function openMyPlayerBacheca(){ const mp=(typeof myPlayer==='function')?myPlayer():null; if(mp) openPlayerStats(mp.id); }
 function openMyTeamBacheca(){ if(user) openTeamCard(user.id); }
 /* ---------- ABILITA AL VOTO (manager-solo) ---------- */
@@ -11257,7 +10994,6 @@ function updateBudget(){
   btn.disabled=!(n===5 && captain);
   btn.textContent=n===5?(captain?'Conferma formazione ✓':'👑 Scegli il capitano'):`Mancano ${5-n} giocatori`;
 }
-function avgFor(id){return averages[id]?averages[id].v:6;}
 /* ---------- L'MVP VALE +3, SEMPRE E OVUNQUE ----------
    Com'era prima: capitano e MVP si moltiplicavano fra loro, e sulla stessa
    persona il voto valeva x4 — piu' di otto gol. Una scelta sola decideva la
@@ -12403,11 +12139,6 @@ async function submitVotes(){
 }
 /* etichetta di una giornata nella tendina. Guardando TUTTE le stagioni ci
    sarebbero due «Giornata 3»: davanti va il numero di stagione. */
-function mdOptLabel(m,period){
-  if(period!==ALLTIME) return m.label;
-  const sn=seasonById(m.season_id);
-  return (sn?('S'+sn.number+' \u00b7 '):'')+m.label;
-}
 function renderLB(){
   const period=lbScopeNow();
   renderLegaSeasonHead(); bindSeasonSwipe();
@@ -12702,7 +12433,6 @@ function renderBonusMalus(){
 }
 
 /* ---------- SETTINGS ---------- */
-function toggleAcc(head){ const a=head.closest('.acc'); if(a)a.classList.toggle('open'); }
 /* SWIPE DAL BORDO PER TORNARE INDIETRO.
    L'unica gesture che ha senso aggiungere: e' quella che ogni iPhone fa in ogni
    app, quindi non va scoperta — si sa gia'. E resta IN AGGIUNTA al pulsante
@@ -13406,7 +13136,7 @@ function urlB64ToUint8(b64){
   const raw=atob((b64+pad).replace(/-/g,'+').replace(/_/g,'/'));
   return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
 }
-function pushSupported(){ return ('serviceWorker' in navigator)&&('PushManager' in window)&&('Notification' in window); }
+function pushSupported(){ if(IS_NATIVE) return false; return ('serviceWorker' in navigator)&&('PushManager' in window)&&('Notification' in window); }
 async function enablePush(){
   closePushPrompt();
   if(!pushSupported()){ toast('Le notifiche non sono supportate qui'); return; }
@@ -13824,16 +13554,7 @@ function chatKbBind(on){
    Per un avviso nuovo: cambia `id` (altrimenti chi ha gia' visto il vecchio non lo
    vede), `until`, titolo e testo. Per non mostrare niente: `NEWS=null`.
    Solo per le cose importanti: per le piccole non serve. */
-const NEWS={
-  id:'2026-10-assente-0',
-  until:'2026-11-10',
-  title:'Novità',
-  html:'Se l’admin toglie dai presenti un giocatore che avevi già schierato, ricevi un avviso per sostituirlo. '
-      +'<b>Se lo lasci in campo vale 0</b>: niente voto e niente bonus, anche in porta. '
-      +'Sul campo lo vedi spento: toccalo e scegli chi mettere al suo posto.'
-      +'<br><br><b>Assistenza in chat:</b> in Home, in basso a destra, c’è il tasto 💬. '
-      +'Per dubbi, problemi o suggerimenti puoi scriverci da lì: ti rispondiamo direttamente nell’app.'
-};
+const NEWS=null;   // 14/10/2026: nessuna novita' da comunicare (per un avviso nuovo vedi sopra: id, until, title, html)
 function maybeShowNews(){
   if(!NEWS) return;
   const key='fc_news_'+NEWS.id;
@@ -14676,17 +14397,6 @@ async function renderRecapStandings(){
 
 /* coriandoli (canvas, niente librerie) */
 let _confT=null,_confCtx=null,_confCv=null,_confParts=[],_pagPaused=false;
-function startConfetti(){
-  const cv=document.getElementById('pagConfetti'); if(!cv) return;
-  _confCv=cv; const r=cv.getBoundingClientRect(); cv.width=r.width; cv.height=r.height||window.innerHeight; _confCtx=cv.getContext('2d');
-  const cols=['#ffc23d','#3f97ff','#2fd98a','#ff5d6b','#ffd470','#7ec2ff']; _confParts=[];
-  const H=cv.height;
-  // i coriandoli riempiono SUBITO tutto lo schermo (da sopra il bordo fino in fondo)
-  for(let i=0;i<160;i++) _confParts.push({x:Math.random()*cv.width, y:Math.random()*(H+H*0.4)-H*0.4,
-    w:6+Math.random()*7, h:9+Math.random()*9, vy:2.2+Math.random()*3.2, vx:-1.2+Math.random()*2.4,
-    rot:Math.random()*6.28, vr:-0.22+Math.random()*0.44, c:cols[i%cols.length]});
-  cancelAnimationFrame(_confT); _confLoop();
-}
 function _confLoop(){
   if(!_confCtx||!_confCv) return; const ctx=_confCtx, cv=_confCv;
   if(_pagPaused){ _confT=requestAnimationFrame(_confLoop); return; }   // storia in pausa: tutto congelato
@@ -14712,18 +14422,6 @@ async function avatarBlob(name){
 function loadImg(src){ return new Promise(res=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=()=>res(null); im.src=src; }); }
 function initials(n){ return (n||'?').trim().split(/\s+/).map(w=>w[0]||'').slice(0,2).join('').toUpperCase()||'?'; }
 function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
-async function drawAvatar(ctx,name,x,y,size,fallbackLabel){
-  rr(ctx,x,y,size,size,size*0.22);
-  const grd=ctx.createLinearGradient(x,y,x,y+size); grd.addColorStop(0,'#16315a'); grd.addColorStop(1,'#0c1c34');
-  ctx.fillStyle=grd; ctx.fill();
-  const url=await avatarBlob(name); let img=null; if(url) img=await loadImg(url);
-  if(img && img.naturalWidth){ ctx.save(); rr(ctx,x,y,size,size,size*0.22); ctx.clip();
-    const pad=size*0.08, bw=size-pad*2, bh=size-pad*2, ar=img.naturalWidth/img.naturalHeight;
-    let dw=bw, dh=bh; if(ar>1){ dh=bw/ar; } else { dw=bh*ar; }   // contain: mai schiacciato
-    ctx.drawImage(img, x+pad+(bw-dw)/2, y+pad+(bh-dh)/2, dw, dh); ctx.restore(); }
-  else { ctx.fillStyle='#9fb6d6'; ctx.font='800 '+Math.round(size*0.34)+'px "Hanken Grotesk",sans-serif';
-    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(initials(fallbackLabel||name), x+size/2, y+size/2+2); ctx.textBaseline='alphabetic'; }
-}
 /* logo squadra per la carta PNG (scaricato come blob: niente tainting del canvas) */
 async function logoBlob(name){
   if(!name) return null;
@@ -14735,18 +14433,6 @@ async function logoBlob(name){
     if(error||!data) throw 0;
     const url=URL.createObjectURL(data); _avBlob[key]=url; return url;
   }catch(_){ _avBlob[key]='FAIL'; return null; }
-}
-async function drawLogo(ctx,name,x,y,size){
-  rr(ctx,x,y,size,size,size*0.22);
-  const grd=ctx.createLinearGradient(x,y,x,y+size); grd.addColorStop(0,'#16315a'); grd.addColorStop(1,'#0c1c34');
-  ctx.fillStyle=grd; ctx.fill();
-  const url=name?await logoBlob(name):null; let img=null; if(url) img=await loadImg(url);
-  if(img && img.naturalWidth){ ctx.save(); rr(ctx,x,y,size,size,size*0.22); ctx.clip();
-    const pad=size*0.1, bw=size-pad*2, bh=size-pad*2, ar=img.naturalWidth/img.naturalHeight;
-    let dw=bw, dh=bh; if(ar>1){ dh=bw/ar; } else { dw=bh*ar; }
-    ctx.drawImage(img, x+pad+(bw-dw)/2, y+pad+(bh-dh)/2, dw, dh); ctx.restore(); }
-  else { ctx.fillStyle='#5d76a0'; ctx.font='52px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('🛡️', x+size/2, y+size/2); ctx.textBaseline='alphabetic'; }
 }
 /* nome file del logo della squadra vincitrice (per manager_id o, in fallback, per nome squadra) */
 function winnerLogoName(w){
