@@ -5521,7 +5521,7 @@ function fcPlatform(){
 function fcPushState(){
   try{
     if(!pushSupported()) return 'non_supportate';
-    const p=Notification.permission;
+    const p=pushPerm();
     return p==='granted'?'attive':(p==='denied'?'bloccate':'da_attivare');
   }catch(_){ return 'non_supportate'; }
 }
@@ -13136,10 +13136,108 @@ function urlB64ToUint8(b64){
   const raw=atob((b64+pad).replace(/-/g,'+').replace(/_/g,'/'));
   return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
 }
-function pushSupported(){ if(IS_NATIVE) return false; return ('serviceWorker' in navigator)&&('PushManager' in window)&&('Notification' in window); }
+function pushSupported(){ if(IS_NATIVE) return !!natPush(); return ('serviceWorker' in navigator)&&('PushManager' in window)&&('Notification' in window); }
+/* 15/10/2026 — NOTIFICHE NELL'APP ANDROID (Firebase Cloud Messaging)
+   Nella WebView dell'app le notifiche web non esistono: si usa il plugin
+   PushNotifications di Capacitor, che restituisce un «token» Firebase del
+   telefono. Il token va nella stessa tabella push_subscriptions:
+     endpoint = 'fcm:<token>'    sub = {type:'fcm', token, platform}
+   e notify.ts, vedendo type 'fcm', spedisce con Firebase invece che con Web Push.
+   Sul sito e nella PWA (IS_NATIVE=false) questo blocco non viene usato:
+   pushPerm() restituisce Notification.permission come prima.
+   Se l'app installata e' una versione senza il plugin, natPush() e' null e
+   le notifiche risultano «non supportate», come prima. */
+const FCM_TOKEN_KEY='fcx_fcm_token';   // fcx_: il tutorial rimette le chiavi fc_*
+let _natPerm='unknown', _natInitP=null, _natTokWait=null, _natRegistered=false;
+function natPush(){
+  try{
+    if(!IS_NATIVE || !window.Capacitor) return null;
+    if(window.Capacitor.isPluginAvailable && !window.Capacitor.isPluginAvailable('PushNotifications')) return null;
+    return (window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications) || null;
+  }catch(_){ return null; }
+}
+// stato del permesso con gli stessi valori del browser: granted / denied / default
+// (nell'app, finche' il plugin non ha risposto: 'unknown', che non fa partire inviti)
+function pushPerm(){
+  if(IS_NATIVE) return _natPerm;
+  try{ return Notification.permission; }catch(_){ return 'default'; }
+}
+function _natPermOf(r){ r=r&&r.receive; return r==='granted'?'granted':(r==='denied'?'denied':'default'); }
+// tocco sulla notifica: apre la pagina indicata, sempre dentro il gioco (/app/)
+function _natGo(a){
+  try{
+    const u=a&&a.notification&&a.notification.data&&a.notification.data.url; if(!u) return;
+    let x=new URL(String(u), location.origin);
+    if(x.origin!==location.origin || x.pathname.indexOf('/app')!==0) x=new URL('/app/', location.origin);
+    if(x.pathname+x.search===location.pathname+location.search) return;
+    location.href=x.href;
+  }catch(_){ }
+}
+function natPushInit(){
+  if(_natInitP) return _natInitP;
+  _natInitP=(async()=>{
+    const PN=natPush(); if(!PN) return;
+    try{
+      await PN.addListener('registration', t=>{
+        const tok=t&&t.value; if(!tok) return;
+        try{ localStorage.setItem(FCM_TOKEN_KEY,tok); }catch(_){ }
+        if(user&&sb) pushRegister({type:'fcm',token:tok,platform:NATIVE_OS}).catch(()=>{});
+        if(_natTokWait){ const w=_natTokWait; _natTokWait=null; w(tok); }
+      });
+      await PN.addListener('registrationError', ()=>{ if(_natTokWait){ const w=_natTokWait; _natTokWait=null; w(null); } });
+      await PN.addListener('pushNotificationActionPerformed', _natGo);
+    }catch(_){ }
+    // canale Android: e' il nome che si vede in Impostazioni > App > FantaCalcetto > Notifiche
+    try{ await PN.createChannel({ id:'fc_default', name:'Avvisi FantaCalcetto', description:'Giornate, presenze, formazioni e assistenza', importance:4, visibility:1, vibration:true }); }catch(_){ }
+    try{ _natPerm=_natPermOf(await PN.checkPermissions()); }catch(_){ _natPerm='default'; }
+    try{ renderNotifBtn(); }catch(_){ }
+  })();
+  return _natInitP;
+}
+// chiede il token a Firebase: risponde il listener 'registration' (null dopo 10 s)
+function natRegister(){
+  const PN=natPush(); if(!PN) return Promise.resolve(null);
+  return new Promise(ok=>{
+    _natTokWait=ok;
+    setTimeout(()=>{ if(_natTokWait===ok){ _natTokWait=null; ok(null); } }, 10000);
+    PN.register().catch(()=>{ if(_natTokWait===ok){ _natTokWait=null; ok(null); } });
+  });
+}
+async function natEnablePush(){
+  const PN=natPush(); if(!PN){ toast('Le notifiche non sono supportate qui'); return; }
+  await natPushInit();
+  let p='default';
+  try{
+    p=_natPermOf(await PN.checkPermissions());
+    if(p!=='granted') p=_natPermOf(await PN.requestPermissions());
+  }catch(_){ }
+  _natPerm=p;
+  if(p!=='granted'){ toast('Permesso notifiche negato'); renderNotifBtn(); return; }
+  const tok=await natRegister();
+  if(!tok){ toast('Notifiche non attivate: riprova tra poco'); renderNotifBtn(); return; }
+  _natRegistered=true;
+  touchDevice(true);   // lo stato delle notifiche è appena cambiato
+  toast('Notifiche attivate ✅');
+  renderNotifBtn();
+}
+// una volta per apertura: se il permesso c'e', riprende il token e lo risalva
+async function natEnsurePush(){
+  await natPushInit();
+  if(_natRegistered || _natPerm!=='granted' || !user) return;
+  _natRegistered=true;
+  await natRegister();
+}
+async function natForget(){
+  try{
+    const t=localStorage.getItem(FCM_TOKEN_KEY);
+    if(t && user) await sb.from('push_subscriptions').delete().eq('endpoint','fcm:'+t).eq('user_id',user.id);
+  }catch(_){ }
+}
+if(IS_NATIVE) natPushInit();
 async function enablePush(){
   closePushPrompt();
   if(!pushSupported()){ toast('Le notifiche non sono supportate qui'); return; }
+  if(IS_NATIVE){ await natEnablePush(); return; }
   let perm=Notification.permission;
   if(perm==='default') perm=await Notification.requestPermission();
   if(perm!=='granted'){ toast('Permesso notifiche negato'); renderNotifBtn(); return; }
@@ -13160,12 +13258,15 @@ async function enablePush(){
    Se il database non e' ancora aggiornato (account_switch.sql) si torna alla
    scrittura di prima, cosi' l'app funziona in qualunque ordine. */
 async function pushRegister(sub){
-  const row={endpoint:sub.endpoint,user_id:user.id,sub:sub.toJSON()};
+  const row=(sub&&sub.type==='fcm')   // 15/10 — token dell'app Android (vedi natPushInit)
+    ? {endpoint:'fcm:'+sub.token,user_id:user.id,sub:sub}
+    : {endpoint:sub.endpoint,user_id:user.id,sub:sub.toJSON()};
   const r=await sb.from('push_subscriptions').upsert(row,{onConflict:'endpoint,user_id'});
   if(r&&r.error) await sb.from('push_subscriptions').upsert(row,{onConflict:'endpoint'});
 }
 async function pushForget(){
   try{
+    if(IS_NATIVE){ await natForget(); return; }
     if(!('serviceWorker' in navigator)||!user) return;
     const reg=await Promise.race([navigator.serviceWorker.ready, new Promise(r=>setTimeout(()=>r(null),1500))]);
     if(!reg) return;
@@ -13180,6 +13281,7 @@ async function pushNotify(title,body){
 // (capita su iOS / quando il server la pulisce), la ricrea in silenzio a ogni avvio.
 async function ensurePush(){
   try{
+    if(IS_NATIVE){ await natEnsurePush(); return; }
     if(!pushSupported() || Notification.permission!=='granted' || !user) return;
     const reg=await navigator.serviceWorker.ready;
     let sub=await reg.pushManager.getSubscription();
@@ -13193,7 +13295,7 @@ async function ensurePush(){
 function renderNotifRowSub(){
   const e=document.getElementById('notifRowSub'); if(!e) return;
   if(!pushSupported()){ e.textContent = fcIsStandalone()?'Non supportate qui':'Servono con l\u2019app sulla Home'; return; }
-  const p=Notification.permission;
+  const p=pushPerm();
   e.textContent = p==='granted' ? 'Attive'
                 : p==='denied'  ? 'Bloccate dal telefono'
                 : 'Da attivare';
@@ -13202,17 +13304,17 @@ function renderNotifBtn(){
   renderNotifRowSub();
   const b=document.getElementById('notifBtn'); if(!b)return;
   if(!pushSupported()){ b.textContent='Non supportate su questo dispositivo'; b.disabled=true; b.className='set-btn'; return; }
-  const p=Notification.permission;
+  const p=pushPerm();
   if(p==='granted'){ b.textContent='🔔 Notifiche attive'; b.className='set-btn ok'; b.onclick=enablePush; }
   else if(p==='denied'){ b.textContent='🔕 Bloccate dalle impostazioni del telefono'; b.className='set-btn'; b.disabled=true; }
   else { b.textContent='🔔 Attiva le notifiche'; b.className='set-btn'; b.disabled=false; b.onclick=enablePush; }
 }
-function openPushPrompt(){ if(pushSupported()&&Notification.permission==='default') document.getElementById('pushBg').classList.add('open'),document.getElementById('pushModal').classList.add('open'); }
+function openPushPrompt(){ if(pushSupported()&&pushPerm()==='default') document.getElementById('pushBg').classList.add('open'),document.getElementById('pushModal').classList.add('open'); }
 function closePushPrompt(){ document.getElementById('pushBg').classList.remove('open'); document.getElementById('pushModal').classList.remove('open'); }
 // Mostra l'invito alle notifiche la PRIMA volta che un utente apre l'app (una sola volta per dispositivo).
 function maybeAskPush(){
   try{
-    if(!pushSupported() || Notification.permission!=='default') return;  // non supportate o gia' deciso
+    if(!pushSupported() || pushPerm()!=='default') return;  // non supportate o gia' deciso
     if(localStorage.getItem('fc_push_asked')) return;                    // gia' chiesto una volta
     if(document.getElementById('lnOk')) return;                          // avviso logo aperto: riprovo al prossimo avvio
     if(_recapPending || document.getElementById('pag').classList.contains('open')) return;  // pagellone in corso: riprovo dopo
@@ -13229,7 +13331,7 @@ function dismissNotifBanner(){
 }
 function maybeShowNotifBanner(){
   try{
-    if(!pushSupported() || Notification.permission!=='default') return;   // già attive, bloccate o non supportate → niente banner
+    if(!pushSupported() || pushPerm()!=='default') return;   // già attive, bloccate o non supportate → niente banner
     if(!localStorage.getItem('fc_push_asked')) return;                     // primissima volta: lo gestisce il modale
     if(document.getElementById('lnOk') || _recapPending || document.getElementById('pag').classList.contains('open')) return;
     const last=parseInt(localStorage.getItem('fc_notif_banner')||'0');
