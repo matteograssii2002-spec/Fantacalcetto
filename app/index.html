@@ -91,6 +91,10 @@
 
   .overlay{position:fixed;top:0;left:0;right:0;height:var(--app-h,100dvh);z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(130% 70% at 50% 0%, rgba(63,151,255,.22), transparent 60%),var(--bg);transition:opacity .35s}
   .overlay.hidden{opacity:0;pointer-events:none}
+  /* 15/10 — schermate «lega» e «profilo»: se il contenuto sta nello schermo (o sfora di pochi px) non si muovono
+     piu' col dito. Lo accende/spegne fitLock() qui sotto; se il contenuto e' piu' alto (tastiera aperta, elenco
+     lungo) la classe sparisce e si scorre come prima. */
+  .overlay.fitlock{overflow-y:hidden;touch-action:none}
   /* 4.6 — IL BUG DEL TASTO «INDIETRO» CHE NON RISPONDEVA.
      .overlay.hidden spegne i tocchi, ma .bch-back li riaccendeva con
      pointer-events:auto — e un figlio puo' riaccenderli anche dentro un
@@ -13926,7 +13930,13 @@ async function openRecap(md, auto){
   }catch(_){ if(!auto) toast('Errore nel caricare il pagellone'); }
   finally{ recapBusy=false; }
 }
+/* 15/10 — IL TOCCO CHE FINIVA SOTTO IL PAGELLONE.
+   Il pagellone si chiude al rilascio del dito (pointerup); un attimo dopo il telefono manda il «click» di
+   quello stesso tocco, ma ormai il pagellone non c'e' piu' e il click cade su quello che sta sotto: una squadra,
+   le statistiche... Per un istante dopo la chiusura i click veri dell'utente si buttano. */
+let _pagClickGuard=0;
 function closeRecap(){
+  _pagClickGuard=Date.now()+400;
   stopPagAuto();
   const p=document.getElementById('pag'); p.classList.remove('open');
   document.body.style.overflow=''; stopConfetti();
@@ -15375,6 +15385,34 @@ function shareSeason(){
       document.body.appendChild(a); a.click(); a.remove(); toast('Immagine salvata'); }catch(_){ toast('Non riesco a salvare'); }
   },'image/png');
 }
+
+document.addEventListener('click',e=>{
+  if(e.isTrusted && Date.now()<_pagClickGuard){ e.stopPropagation(); e.preventDefault(); }
+},true);
+/* 15/10 — SCHERMATE «LEGA» E «PROFILO» FERME (vedi .overlay.fitlock). Si misura quanto il contenuto sfora
+   l'altezza dello schermo: fino a 24px e' solo margine vuoto in fondo, quindi si blocca lo scorrimento. */
+(function fitLock(){
+  const IDS=['league','onboard'], MAXD=24;
+  let q=false;
+  function check(){
+    q=false;
+    IDS.forEach(id=>{
+      const el=document.getElementById(id); if(!el) return;
+      const want = !el.classList.contains('hidden') && (el.scrollHeight-el.clientHeight)<=MAXD;
+      if(el.classList.contains('fitlock')!==want) el.classList.toggle('fitlock',want);
+    });
+  }
+  function queue(){ if(!q){ q=true; requestAnimationFrame(check); } }
+  IDS.forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    try{ new MutationObserver(queue).observe(el,{attributes:true,attributeFilter:['class','style'],subtree:true,childList:true}); }catch(_){ }
+    try{ if(window.ResizeObserver) new ResizeObserver(queue).observe(el); }catch(_){ }
+  });
+  window.addEventListener('resize',queue);
+  try{ if(window.visualViewport) window.visualViewport.addEventListener('resize',queue); }catch(_){ }
+  try{ if(document.fonts && document.fonts.ready) document.fonts.ready.then(queue); }catch(_){ }
+  queue();
+})();
 
 /* navigazione storie: tap breve = avanti/indietro · tieni premuto = pausa (no skip al rilascio)
    · swipe orizzontale = scena precedente/successiva · swipe giù = chiudi */
