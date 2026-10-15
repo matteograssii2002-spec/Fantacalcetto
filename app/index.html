@@ -225,7 +225,10 @@
   .ob-brand b span{color:var(--brand-mark)}
   /* ---- WELCOME (schermata iniziale a 3 percorsi: crea / entra / accedi) ---- */
   /* tre zone: brand in alto · claim vicino sotto · azioni in fondo (thumb zone) */
-  #welcome{display:flex;flex-direction:column}
+  /* 15/10 — il bagliore dietro l'illustrazione (.wc-hero::before, 128% della larghezza) usciva dallo schermo:
+     l'overlay e' scorrevole in verticale, quindi diventava scorrevole anche di lato e nell'app Android la
+     schermata ballava a destra e sinistra. Il bagliore resta, ma tagliato ai bordi dello schermo. */
+  #welcome{display:flex;flex-direction:column;overflow-x:hidden}
   .wc-center{flex:1;min-height:0;justify-content:flex-start}
   .wc-top{margin-top:24px}
   .wc-mid{margin-top:36px}
@@ -1428,7 +1431,7 @@
   .tut-try{display:inline-block;margin-top:9px;font-size:11.5px;font-weight:700;color:var(--accent-soft);
     background:rgba(63,151,255,.12);border:1px solid rgba(63,151,255,.3);border-radius:8px;padding:4px 9px}
   .tut-foot{display:flex;align-items:center;gap:9px;margin-top:14px}
-  .tut-dots{flex:1;display:flex;gap:5px;align-items:center}
+  .tut-dots{flex:1;min-width:0;overflow:hidden;display:flex;gap:5px;align-items:center}
   .tut-dots i{width:6px;height:6px;border-radius:50%;background:var(--line-strong);transition:all .2s}
   .tut-dots i.on{background:var(--accent);width:17px;border-radius:4px}
   .tut-b{border:none;border-radius:11px;padding:10px 15px;font-family:'Hanken Grotesk';font-weight:700;
@@ -4595,7 +4598,7 @@ function tutGoTo(i){
   document.getElementById('tutSkip').style.display=st.tap?'':'none';
   const g=document.getElementById('tutGo');
   g.textContent = !last ? 'Avanti'
-                : (TUT.track==='player' && canOp() ? 'Ora la parte da admin \u2192' : 'Ho capito');
+                : (TUT.track==='player' && canOp() ? 'Parte admin \u2192' : 'Ho capito');
   document.getElementById('tutDots').innerHTML=TUT.steps.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('');
   _tutLastBox='';
   tutScrollTo(st.el?document.querySelector(st.el):null);
@@ -5522,7 +5525,7 @@ function fcPushState(){
   try{
     if(!pushSupported()) return 'non_supportate';
     const p=pushPerm();
-    return p==='granted'?'attive':(p==='denied'?'bloccate':'da_attivare');
+    return p==='granted'?(pushIsOff()?'da_attivare':'attive'):(p==='denied'?'bloccate':'da_attivare');
   }catch(_){ return 'non_supportate'; }
 }
 let _lastTouch=0;
@@ -12513,7 +12516,7 @@ document.addEventListener('touchend',e=>{
   if(_edgeX==null) return;
   const t=(e.changedTouches&&e.changedTouches[0]); const x0=_edgeX,y0=_edgeY; _edgeX=null;
   if(!t) return;
-  if(FC_HISTORY_BACK) return;                                // ci pensa il tasto di sistema
+  if(FC_HISTORY_BACK && !(IS_NATIVE && NATIVE_OS==='android')) return;   // app Android: con i 3 tasti non c'e' il gesto di sistema, lo swipe resta nostro
   const dx=t.clientX-x0, dy=t.clientY-y0;
   if(dx<EDGE_MIN || Math.abs(dy)>Math.abs(dx)*0.7) return;   // dev'essere orizzontale e deciso
   goBack();
@@ -13181,7 +13184,7 @@ function natPushInit(){
       await PN.addListener('registration', t=>{
         const tok=t&&t.value; if(!tok) return;
         try{ localStorage.setItem(FCM_TOKEN_KEY,tok); }catch(_){ }
-        if(user&&sb) pushRegister({type:'fcm',token:tok,platform:NATIVE_OS}).catch(()=>{});
+        if(user&&sb&&!pushIsOff()) pushRegister({type:'fcm',token:tok,platform:NATIVE_OS}).catch(()=>{});
         if(_natTokWait){ const w=_natTokWait; _natTokWait=null; w(tok); }
       });
       await PN.addListener('registrationError', ()=>{ if(_natTokWait){ const w=_natTokWait; _natTokWait=null; w(null); } });
@@ -13234,8 +13237,28 @@ async function natForget(){
   }catch(_){ }
 }
 if(IS_NATIVE) natPushInit();
+/* 15/10 — INTERRUTTORE NOTIFICHE (acceso / spento).
+   Prima, con il permesso concesso, il pulsante in Impostazioni riattivava e basta: non c'era modo di
+   spegnerle dall'app. Ora «Spente» = si cancella la riga di questo telefono per QUESTO account
+   (il server non gli manda piu' niente) e si ricorda la scelta, cosi' ensurePush() non le rimette
+   da sola al prossimo avvio. Il permesso del telefono non si tocca. La scelta e' per account
+   (altri account sullo stesso telefono restano com'erano). Chiave fcx_: il tutorial rimette le fc_*. */
+function pushOffKey(){ return 'fcx_push_off_'+(user?user.id:''); }
+function pushIsOff(){ try{ return !!(user && localStorage.getItem(pushOffKey())); }catch(_){ return false; } }
+function pushSetOff(v){
+  try{ if(!user) return; if(v) localStorage.setItem(pushOffKey(),'1'); else localStorage.removeItem(pushOffKey()); }catch(_){ }
+}
+async function disablePush(){
+  pushSetOff(true);
+  await pushForget();
+  _natRegistered=false;
+  touchDevice(true);   // lo stato delle notifiche e' appena cambiato
+  toast('Notifiche spente su questo telefono');
+  renderNotifBtn();
+}
 async function enablePush(){
   closePushPrompt();
+  pushSetOff(false);
   if(!pushSupported()){ toast('Le notifiche non sono supportate qui'); return; }
   if(IS_NATIVE){ await natEnablePush(); return; }
   let perm=Notification.permission;
@@ -13281,6 +13304,7 @@ async function pushNotify(title,body){
 // (capita su iOS / quando il server la pulisce), la ricrea in silenzio a ogni avvio.
 async function ensurePush(){
   try{
+    if(pushIsOff()) return;   // le ha spente lui dall'app: non si rimettono da sole
     if(IS_NATIVE){ await natEnsurePush(); return; }
     if(!pushSupported() || Notification.permission!=='granted' || !user) return;
     const reg=await navigator.serviceWorker.ready;
@@ -13296,7 +13320,7 @@ function renderNotifRowSub(){
   const e=document.getElementById('notifRowSub'); if(!e) return;
   if(!pushSupported()){ e.textContent = fcIsStandalone()?'Non supportate qui':'Servono con l\u2019app sulla Home'; return; }
   const p=pushPerm();
-  e.textContent = p==='granted' ? 'Attive'
+  e.textContent = p==='granted' ? (pushIsOff()?'Spente':'Attive')
                 : p==='denied'  ? 'Bloccate dal telefono'
                 : 'Da attivare';
 }
@@ -13305,7 +13329,8 @@ function renderNotifBtn(){
   const b=document.getElementById('notifBtn'); if(!b)return;
   if(!pushSupported()){ b.textContent='Non supportate su questo dispositivo'; b.disabled=true; b.className='set-btn'; return; }
   const p=pushPerm();
-  if(p==='granted'){ b.textContent='🔔 Notifiche attive'; b.className='set-btn ok'; b.onclick=enablePush; }
+  if(p==='granted'&&!pushIsOff()){ b.textContent='🔔 Notifiche attive \u00b7 tocca per spegnerle'; b.className='set-btn ok'; b.onclick=disablePush; }
+  else if(p==='granted'){ b.textContent='🔕 Notifiche spente \u00b7 tocca per riattivarle'; b.className='set-btn'; b.onclick=enablePush; }
   else if(p==='denied'){ b.textContent='🔕 Bloccate dalle impostazioni del telefono'; b.className='set-btn'; b.disabled=true; }
   else { b.textContent='🔔 Attiva le notifiche'; b.className='set-btn'; b.disabled=false; b.onclick=enablePush; }
 }
