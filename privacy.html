@@ -50,7 +50,7 @@
     <p class="lead">Informativa resa ai sensi dell'art. 13 del Regolamento (UE) 2016/679 (GDPR) agli utenti del servizio FantaCalcetto, disponibile all'indirizzo www.fantacalcettoitalia.it.</p>
 
     <div class="note">
-      <b>Sintesi.</b> Il Servizio tratta i soli dati necessari al proprio funzionamento: dati identificativi dell'account e dati di gioco. Non è prevista alcuna cessione a terzi per finalità commerciali, non sono presenti inserzioni pubblicitarie né strumenti di statistica di terze parti. La banca dati è ospitata su infrastruttura situata nell'Unione Europea. L'acquisto facoltativo del piano Pro è gestito da Lemon Squeezy: il Titolare non ha accesso ai dati di pagamento.
+      <b>Sintesi.</b> Il Servizio tratta i soli dati necessari al proprio funzionamento: dati identificativi dell'account e dati di gioco. Non è prevista alcuna cessione a terzi per finalità commerciali, non sono presenti inserzioni pubblicitarie né strumenti di statistica di terze parti. La banca dati è ospitata su infrastruttura situata nell'Unione Europea. L'acquisto facoltativo del piano Pro è gestito da Lemon Squeezy: il Titolare non ha accesso ai dati di pagamento. Nell'app per Android le notifiche sono recapitate tramite Firebase Cloud Messaging di Google. L'account può essere cancellato in autonomia e subito dall'applicazione (punto 6).
     </div>
 
     <h2>1. Titolare del trattamento</h2>
@@ -72,7 +72,7 @@
         <tr><td><b>Nome, soprannome, avatar</b></td><td>Identificazione dell'utente all'interno della propria lega</td><td>Esecuzione del contratto (art. 6.1.b)</td></tr>
         <tr><td><b>Denominazione e logo della squadra, ruolo</b></td><td>Costituzione del profilo di gioco</td><td>Esecuzione del contratto (art. 6.1.b)</td></tr>
         <tr><td><b>Dati di gioco</b><br><small>presenze, formazioni, valutazioni espresse e ricevute, reti, assist, punteggi, crediti</small></td><td>Erogazione delle funzionalità del Servizio: classifica, riepiloghi, statistiche e riconoscimenti</td><td>Esecuzione del contratto (art. 6.1.b)</td></tr>
-        <tr><td><b>Identificativo di sottoscrizione alle notifiche</b></td><td>Invio delle notifiche relative alle giornate di gioco</td><td>Consenso (art. 6.1.a)</td></tr>
+        <tr><td><b>Identificativo di sottoscrizione alle notifiche</b> (nell'app per Android: codice del dispositivo di Firebase Cloud Messaging)</td><td>Invio delle notifiche relative alle giornate di gioco</td><td>Consenso (art. 6.1.a)</td></tr>
         <tr><td><b>Data dell'ultimo accesso</b></td><td>Individuazione delle leghe inattive ai fini della cancellazione periodica</td><td>Legittimo interesse (art. 6.1.f)</td></tr>
         <tr><td><b>Dati dell'acquisto del piano Pro</b><br><small>numero d'ordine, importo e valuta, stato (pagato o rimborsato), data, lega e account che hanno avviato l'acquisto, eventuale richiesta di recesso</small></td><td>Attivazione e gestione del piano Pro; gestione di recessi, rimborsi e contestazioni</td><td>Esecuzione del contratto (art. 6.1.b)</td></tr>
         <tr><td><b>Dati tecnici di registro</b><br><small>conservati dai fornitori: indirizzo IP, errori applicativi, orario delle richieste</small></td><td>Sicurezza dell'infrastruttura, diagnosi dei malfunzionamenti, prevenzione degli abusi</td><td>Legittimo interesse (art. 6.1.f)</td></tr>
@@ -108,6 +108,7 @@
         <tr><td><b>Supabase</b></td><td>Banca dati e servizio di autenticazione</td><td>Irlanda (UE)</td></tr>
         <tr><td><b>Cloudflare</b></td><td>Distribuzione del sito e dell'applicazione</td><td>Stati Uniti</td></tr>
         <tr><td><b>Resend</b></td><td>Recapito delle comunicazioni email</td><td>Stati Uniti</td></tr>
+        <tr><td><b>Google (Firebase Cloud Messaging)</b></td><td>Recapito delle notifiche all'app per Android</td><td>Stati Uniti</td></tr>
         <tr><td><b>Aruba</b></td><td>Registrazione del dominio e gestione dei relativi record</td><td>Italia (UE)</td></tr>
       </tbody>
     </table>
@@ -120,13 +121,14 @@
     <h2>5. Trasferimenti verso Paesi terzi</h2>
     <p>La banca dati, che contiene la generalità dei dati personali trattati, è ospitata in <b>Irlanda</b> e non è pertanto oggetto di trasferimento al di fuori dello Spazio economico europeo.</p>
     <p>I fornitori Cloudflare e Resend sono società di diritto statunitense: nei loro confronti ha luogo un trasferimento di dati verso un Paese terzo, assistito dalle <b>clausole contrattuali tipo</b> adottate dalla Commissione europea e dagli accordi sul trattamento dei dati stipulati con i medesimi fornitori. I dati oggetto di tale trasferimento sono limitati ai dati tecnici di connessione e all'indirizzo email di destinazione delle comunicazioni.</p>
+    <p>Le notifiche dell'app per Android transitano da <b>Firebase Cloud Messaging</b>, servizio di Google, società di diritto statunitense che aderisce al <b>Data Privacy Framework UE-USA</b>: sono trattati il codice di recapito del dispositivo e il testo della notifica (titolo e messaggio), senza alcun dato di profilazione. Il Servizio non utilizza Firebase Analytics né altri strumenti di misurazione.</p>
     <p>La corrispondenza inviata all'indirizzo di assistenza è conservata da Google, che aderisce al <b>Data Privacy Framework UE-USA</b>; sono trattati esclusivamente l'indirizzo del mittente e il contenuto del messaggio.</p>
     <p>In occasione dell'acquisto del piano Pro, i dati indicati al punto 4 sono trasmessi a <b>Lemon Squeezy, LLC</b>, con sede negli Stati Uniti. Il trasferimento avviene solo se e quando l'amministratore avvia il pagamento, è necessario all'esecuzione del contratto richiesto dall'interessato (art. 49.1.b del GDPR), e il successivo trattamento è regolato dall'informativa di Lemon Squeezy.</p>
 
     <h2>6. Periodo di conservazione</h2>
     <ul>
       <li><b>Dati dell'account e dati di gioco:</b> conservati per tutta la durata del rapporto, essendo funzionali alla persistenza della classifica e dello storico della lega.</li>
-      <li><b>In caso di richiesta di cancellazione:</b> i dati sono cancellati entro 30 giorni dal ricevimento della richiesta.</li>
+      <li id="cancellazione"><b>Cancellazione dell'account:</b> l'utente può cancellare il proprio account in autonomia, con effetto immediato, dall'applicazione (sito, app installata o app per Android): <b>Impostazioni › Elimina il mio account</b>. In alternativa può scrivere a <b>assistenza.fantacalcetto@gmail.com</b>: la richiesta è evasa entro 30 giorni dal ricevimento.</li>
       <li><b>Leghe inattive:</b> le leghe prive di accessi da oltre 24 mesi sono cancellate, previa comunicazione all'indirizzo email dell'amministratore.</li>
       <li><b>Dati dell'acquisto del piano Pro:</b> conservati per 10 anni dall'acquisto, termine ordinario di prescrizione dei diritti derivanti dal contratto. In caso di cancellazione dell'account l'acquisto resta registrato, ma è dissociato dall'account.</li>
       <li><b>Sottoscrizione alle notifiche:</b> cessa automaticamente alla revoca dell'autorizzazione o alla disinstallazione dell'applicazione.</li>
@@ -134,11 +136,11 @@
     </ul>
     <div class="warn">
       <span class="ic">⚠️</span>
-      <p><b>Effetti della cancellazione.</b> La cancellazione dell'account comporta la rimozione dei punteggi, delle valutazioni e delle presenze dell'interessato, con conseguente modifica della classifica della lega di appartenenza per tutti i partecipanti. L'operazione è irreversibile.</p>
+      <p><b>Effetti della cancellazione.</b> La cancellazione dell'account comporta la disattivazione del profilo e l'eliminazione dell'indirizzo email e delle credenziali di accesso; l'utente scompare dall'elenco della lega, dalle presenze, dalle votazioni e dalle notifiche, e il codice di recapito delle notifiche è eliminato. Le giornate già giocate restano com'erano (voti, presenze e punti di quel momento), così che le classifiche non cambiano per gli altri partecipanti. L'amministratore di una lega con altri membri deve prima cedere la lega a un altro membro; se è l'unico rimasto, la lega è eliminata insieme all'account. L'operazione è irreversibile.</p>
     </div>
 
     <h2>7. Notifiche</h2>
-    <p>L'invio delle notifiche è subordinato all'autorizzazione rilasciata tramite il browser, che costituisce il consenso ai sensi dell'art. 6.1.a del GDPR. L'autorizzazione è revocabile in qualsiasi momento dalle impostazioni del dispositivo o dell'applicazione, senza che ciò comporti la cessazione degli altri servizi.</p>
+    <p>L'invio delle notifiche è subordinato all'autorizzazione rilasciata tramite il browser o, nell'app per Android, tramite il sistema operativo, che costituisce il consenso ai sensi dell'art. 6.1.a del GDPR. L'autorizzazione è revocabile in qualsiasi momento dalle impostazioni del dispositivo o dell'applicazione (<b>Impostazioni › Notifiche</b>, dove si possono spegnere e riaccendere), senza che ciò comporti la cessazione degli altri servizi.</p>
     <p>Le notifiche hanno per oggetto esclusivamente eventi di gioco: apertura e chiusura delle giornate, promemoria relativi a presenze e formazioni, comunicazione dei risultati. <b>Non sono inviate comunicazioni promozionali.</b></p>
 
     <h2>8. Diritti dell'interessato</h2>
@@ -176,7 +178,7 @@
     <h2>12. Modifiche alla presente informativa</h2>
     <p>La presente informativa può essere aggiornata, in particolare in caso di introduzione di nuovi fornitori o di variazione delle finalità del trattamento. Le modifiche sostanziali sono segnalate all'interno dell'applicazione. La data indicata in calce riporta l'ultima revisione.</p>
 
-    <p style="margin-top:34px;color:var(--muted);font-size:14px">Ultimo aggiornamento: 10 settembre 2026 · Titolare del trattamento: Matteo Grassi · <a href="termini.html">Termini di servizio</a></p>
+    <p style="margin-top:34px;color:var(--muted);font-size:14px">Ultimo aggiornamento: 15 ottobre 2026 · Titolare del trattamento: Matteo Grassi · <a href="termini.html">Termini di servizio</a></p>
   </div>
 </section>
 </main>
