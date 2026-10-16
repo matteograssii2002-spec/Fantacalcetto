@@ -3803,13 +3803,21 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <div class="statmodal-bg" id="pushBg" onclick="closePushPrompt()"></div>
+  <div class="statmodal-bg" id="pushBg" onclick="closePushPrompt();closePushDen()"></div>
   <div class="statmodal" id="pushModal" style="text-align:center">
     <div style="font-size:40px;margin-bottom:6px">🔔</div>
     <b style="font-family:'Bricolage Grotesque';font-size:19px;display:block;margin-bottom:6px">Vuoi gli avvisi delle giornate?</b>
     <p class="vs" style="color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:16px">Apertura e chiusura giornata, promemoria presenza e formazione. Niente spam.</p>
     <button class="ob-btn" style="margin-top:0" onclick="enablePush()">Sì, attiva</button>
     <button class="set-btn" style="margin-top:9px" onclick="closePushPrompt()">No, grazie</button>
+  </div>
+
+  <div class="statmodal" id="pushDenModal" style="text-align:center">
+    <div style="font-size:40px;margin-bottom:6px">🔕</div>
+    <b style="font-family:'Bricolage Grotesque';font-size:19px;display:block;margin-bottom:6px">Le notifiche sono spente</b>
+    <p class="vs" style="color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:16px">Senza non ti arrivano l’apertura della giornata, la richiesta di presenza e il promemoria formazione. Ti porto io nelle impostazioni del telefono: basta attivarle.</p>
+    <button class="ob-btn" style="margin-top:0" onclick="natOpenNotifSettings()">Apri le impostazioni</button>
+    <button class="set-btn" style="margin-top:9px" onclick="closePushDen()">Non ora</button>
   </div>
 
   <!-- ===== PAGINA «FantaCalcetto Pro» (overlay a pagina intera) =====
@@ -4050,7 +4058,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='7.2.3';
+const APP_VERSION='7.2.4';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   // nell'app si vede anche il codice del pacchetto: dice se un aggiornamento OTA e' arrivato
@@ -4830,7 +4838,7 @@ function tutBusy(){
   const opn=(id)=>{ const e=document.getElementById(id); return !!e && e.classList.contains('open'); };
   return vis('rulesSetup') || vis('logoIntro') || vis('pwsetup')
       || vis('gate') || vis('welcome') || vis('onboard') || vis('league')
-      || opn('pushModal') || opn('pag') || opn('sheet') || opn('chatOv');
+      || opn('pushModal') || opn('pushDenModal') || opn('pag') || opn('sheet') || opn('chatOv');
 }
 function maybeShowTutorial(try_n){
   try{ if(localStorage.getItem(TUT_KEY)) return; }catch(_){ return; }
@@ -12635,7 +12643,8 @@ let _edgeX=null,_edgeY=null;
    ha finito: pulsante, gesto e tasto di sistema la trovano tutti e tre. */
 const BACK_LAYERS=[
   {id:'tut',            on:el=>el.classList.contains('on')&&!!TUT, close:()=>tutQuit()},          // 1200
-  {id:'pushModal',      on:el=>el.classList.contains('open'),    close:()=>closePushPrompt()},     //  611
+  {id:'pushModal',      on:el=>el.classList.contains('open'),    close:()=>closePushPrompt()},
+  {id:'pushDenModal',   on:el=>el.classList.contains('open'),    close:()=>closePushDen()},     //  611
   {id:'sheet',          on:el=>el.classList.contains('open'),    close:()=>closeSheet()},          //  601
   {id:'pag',            on:el=>el.classList.contains('open'),    close:()=>closeRecap()},          //  500
   {id:'valuePoll',      on:el=>el.classList.contains('open'),    close:()=>closeValuePoll()},      //  120
@@ -13347,6 +13356,18 @@ function pushPerm(){
   try{ return Notification.permission; }catch(_){ return 'default'; }
 }
 function _natPermOf(r){ r=r&&r.receive; return r==='granted'?'granted':(r==='denied'?'denied':'default'); }
+// Stato reale: su Android 12 o precedente il plugin dice sempre «granted» anche con le notifiche
+// spente dalle impostazioni del telefono. Il controllo nativo NotifStatus lo smaschera.
+async function _natPermReal(PN){
+  let p=_natPermOf(await PN.checkPermissions());
+  if(p==='granted'){
+    try{
+      const S=window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NotifStatus;
+      if(S){ const r=await S.enabled(); if(r && r.enabled===false) p='denied'; }
+    }catch(_){ }
+  }
+  return p;
+}
 // tocco sulla notifica: apre la pagina indicata, sempre dentro il gioco (/app/)
 function _natGo(a){
   try{
@@ -13376,7 +13397,7 @@ function natPushInit(){
     }catch(_){ }
     // canale Android: e' il nome che si vede in Impostazioni > App > FantaCalcetto > Notifiche
     try{ await PN.createChannel({ id:'fc_default', name:'Avvisi FantaCalcetto', description:'Giornate, presenze, formazioni e assistenza', importance:4, visibility:1, vibration:true }); }catch(_){ }
-    try{ _natPerm=_natPermOf(await PN.checkPermissions()); }catch(_){ _natPerm='default'; }
+    try{ _natPerm=await _natPermReal(PN); }catch(_){ _natPerm='default'; }
     try{ renderNotifBtn(); }catch(_){ }
   })();
   return _natInitP;
@@ -13395,7 +13416,13 @@ async function natEnablePush(){
   await natPushInit();
   let p='default';
   try{
-    p=_natPermOf(await PN.checkPermissions());
+    p=await _natPermReal(PN);
+    if(p==='denied' && _natPermOf(await PN.checkPermissions())==='granted'){
+      // spente dalle impostazioni del telefono (Android vecchio): non c'e' un permesso da chiedere
+      _natPerm='denied'; renderNotifBtn(); closePushPrompt();
+      document.getElementById('pushBg').classList.add('open'); document.getElementById('pushDenModal').classList.add('open');
+      return;
+    }
     if(p!=='granted') p=_natPermOf(await PN.requestPermissions());
   }catch(_){ }
   _natPerm=p;
@@ -13515,13 +13542,66 @@ function renderNotifBtn(){
   const p=pushPerm();
   if(p==='granted'&&!pushIsOff()){ b.textContent='🔔 Notifiche attive \u00b7 tocca per spegnerle'; b.className='set-btn ok'; b.onclick=disablePush; }
   else if(p==='granted'){ b.textContent='🔕 Notifiche spente \u00b7 tocca per riattivarle'; b.className='set-btn'; b.onclick=enablePush; }
+  else if(p==='denied' && IS_NATIVE){ b.textContent='🔕 Bloccate dal telefono · tocca per attivarle'; b.className='set-btn'; b.disabled=false; b.onclick=natOpenNotifSettings; }
   else if(p==='denied'){ b.textContent='🔕 Bloccate dalle impostazioni del telefono'; b.className='set-btn'; b.disabled=true; }
   else { b.textContent='🔔 Attiva le notifiche'; b.className='set-btn'; b.disabled=false; b.onclick=enablePush; }
 }
 function openPushPrompt(){ if(pushSupported()&&pushPerm()==='default') document.getElementById('pushBg').classList.add('open'),document.getElementById('pushModal').classList.add('open'); }
 function closePushPrompt(){ document.getElementById('pushBg').classList.remove('open'); document.getElementById('pushModal').classList.remove('open'); }
 // Mostra l'invito alle notifiche la PRIMA volta che un utente apre l'app (una sola volta per dispositivo).
+/* 7.2 — NELL'APP: l'invito alle notifiche non e' piu' «una volta sola». Le notifiche sono il
+   cuore del gioco (apertura giornata, presenze, formazioni): finche' non sono attive, l'invito
+   torna ogni 3 aperture dell'app o ogni 72 ore (il primo dei due), senza esagerare.
+   - permesso ancora da dare (o negato una volta sola: Android lo richiede fino a due volte):
+     finestrella «Sì, attiva» + richiesta del telefono;
+   - bloccate per sempre dal telefono: finestrella con «Apri le impostazioni».
+   Resta sempre «Non ora»: mai bloccare chi non vuole. */
+let _natAskedNow=false, _natCounted=false;
+async function _natAskPush(n){
+  if(_natAskedNow) return;
+  try{ await natPushInit(); }catch(_){ }
+  if(!pushSupported()) return;
+  const p=pushPerm();
+  if(p==='granted' || p==='unknown') return;
+  const busy=(typeof TUT!=='undefined' && TUT) || document.getElementById('lnOk') || _recapPending
+    || document.getElementById('pag').classList.contains('open')
+    || (typeof tutBusy==='function' && tutBusy());
+  if(busy){ if((n||0)<10) setTimeout(()=>_natAskPush((n||0)+1),4000); return; }
+  const now=Date.now();
+  // ritmo: la prima volta subito, poi ogni 3 aperture dell'app oppure ogni 72 ore (vale il primo dei due)
+  let last=0, cnt=0;
+  try{ last=parseInt(localStorage.getItem('fc_push_last')||'0')||0; cnt=parseInt(localStorage.getItem('fc_push_n')||'0')||0; }catch(_){ }
+  if(!_natCounted){ _natCounted=true; cnt++; try{ localStorage.setItem('fc_push_n',String(cnt)); }catch(_){ } }
+  if(last && cnt<3 && now-last < 72*3600*1000) return;
+  _natAskedNow=true;
+  try{ localStorage.setItem('fc_push_last', String(now)); localStorage.setItem('fc_push_n','0'); localStorage.setItem('fc_push_asked','1'); }catch(_){ }
+  if(p==='denied'){ document.getElementById('pushBg').classList.add('open'); document.getElementById('pushDenModal').classList.add('open'); return; }
+  const no=document.querySelector('#pushModal .set-btn'); if(no) no.textContent='Non ora';
+  openPushPrompt();
+}
+function closePushDen(){ document.getElementById('pushBg').classList.remove('open'); const m=document.getElementById('pushDenModal'); if(m) m.classList.remove('open'); }
+async function natOpenNotifSettings(){
+  closePushDen();
+  try{
+    const S=window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NativeSettings;
+    if(S){ await S.open({ optionAndroid:'app_notification', optionIOS:'app' }); return; }
+  }catch(_){ }
+  toast('Apri Impostazioni › App › FantaCalcetto › Notifiche');
+}
+// tornando dalle impostazioni del telefono: se ora sono attive, le attivo qui
+document.addEventListener('visibilitychange', async ()=>{
+  if(document.hidden || !IS_NATIVE) return;
+  try{
+    const PN=natPush(); if(!PN || _natPerm==='unknown') return;
+    const np=await _natPermReal(PN);
+    if(np!==_natPerm){
+      _natPerm=np; renderNotifBtn();
+      if(np==='granted' && user){ _natRegistered=false; natEnsurePush(); toast('Notifiche attivate ✅'); }
+    }
+  }catch(_){ }
+});
 function maybeAskPush(){
+  if(IS_NATIVE){ try{ _natAskPush(0); }catch(_){ } return; }
   try{
     if(!pushSupported() || pushPerm()!=='default') return;  // non supportate o gia' deciso
     if(localStorage.getItem('fc_push_asked')) return;                    // gia' chiesto una volta
@@ -15688,6 +15768,58 @@ try{
   const _sb=document.getElementById('sheetBg'), _sh=document.getElementById('sheet');
   if(_sb&&_sh){ document.body.appendChild(_sb); document.body.appendChild(_sh); }
 }catch(_){ }
+/* ===== 7.2 — LINK D'INVITO SENZA L'APP: porta al Play Store (solo sito, solo Android) ======
+   Con l'app installata il link d'invito apre direttamente l'app (App Links, vedi sotto) e questa
+   pagina non si vede nemmeno. Se l'app NON c'e', il link arriva nel browser: su un telefono
+   Android mostro «Installa l'app» che porta al Play Store (restando possibile «Continua dal
+   browser»). iPhone e computer proseguono come prima sul sito.
+   INTERRUTTORE: metti FC_PLAY_LIVE=true quando l'app e' pubblica sul Play Store (finche' e' solo
+   nel test chiuso, chi non e' tester troverebbe una pagina vuota). */
+const FC_PLAY_LIVE=false;
+const FC_PLAY_URL='https://play.google.com/store/apps/details?id=it.fantacalcettoitalia.app';
+(function(){
+  try{
+    if(!FC_PLAY_LIVE || IS_NATIVE || !/Android/i.test(navigator.userAgent||'')) return;
+    if(fcIsStandalone()) return;                                   // gia' la PWA installata
+    const slug=new URLSearchParams(location.search).get('lega'); if(!slug) return;
+    try{ if(sessionStorage.getItem('fc_play_skip')) return; }catch(_){ }
+    const d=document.createElement('div');
+    d.id='playInvite';
+    d.style.cssText='position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;color:var(--text);font-family:inherit';
+    d.innerHTML='<div style="font-size:54px;margin-bottom:10px">⚽</div>'
+      +'<b style="font-family:\'Bricolage Grotesque\';font-size:24px;margin-bottom:8px">Sei stato invitato in una lega</b>'
+      +'<p style="color:var(--muted);font-size:14px;line-height:1.5;max-width:320px;margin-bottom:22px">Con l’app di FantaCalcetto ricevi gli avvisi della giornata e entri più veloce. Installala, poi tocca di nuovo il link d’invito.</p>'
+      +'<a href="'+FC_PLAY_URL+'&referrer='+encodeURIComponent('lega='+slug)+'" style="display:block;width:100%;max-width:340px;background:linear-gradient(135deg,var(--accent),#1c6ff2);color:#fff;font-weight:700;font-size:16px;padding:17px;border-radius:15px;text-decoration:none">Installa da Google Play</a>'
+      +'<button id="playInviteGo" style="margin-top:16px;background:none;border:none;color:var(--muted);font-size:14px;text-decoration:underline;padding:10px">Continua dal browser</button>';
+    const add=()=>{ document.body.appendChild(d); document.getElementById('playInviteGo').onclick=()=>{ try{ sessionStorage.setItem('fc_play_skip','1'); }catch(_){ } d.remove(); }; };
+    if(document.body) add(); else document.addEventListener('DOMContentLoaded',add);
+  }catch(_){ }
+})();
+
+/* ===== 7.2 — LINK D'INVITO CHE APRONO L'APP (Android App Links) ====================
+   Se l'app e' installata, un link https://www.fantacalcettoitalia.it/app/?lega=... (WhatsApp,
+   messaggi) apre direttamente l'app invece del browser. Il sistema lo consegna qui; si passa
+   alla stessa pagina dentro l'app (https://localhost/app/?lega=...), dove il flusso d'invito
+   di sempre fa il resto. Se sei gia' dentro con un account, il link d'invito non cambia niente. */
+(function(){
+  if(!IS_NATIVE) return;
+  const go=(u)=>{
+    try{
+      const x=new URL(String(u));
+      if(!/(^|\.)fantacalcettoitalia\.it$/.test(x.hostname) || x.pathname.indexOf('/app')!==0) return;
+      const lega=x.searchParams.get('lega'); if(!lega) return;
+      if(new URLSearchParams(location.search).get('lega')===lega) return;   // gia' qui
+      location.href=new URL('/app/?lega='+encodeURIComponent(lega), location.origin).href;
+    }catch(_){ }
+  };
+  try{
+    const A=window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+    if(!A) return;
+    A.addListener('appUrlOpen', e=>go(e&&e.url));
+    A.getLaunchUrl().then(r=>{ if(r&&r.url) go(r.url); }).catch(()=>{});
+  }catch(_){ }
+})();
+
 /* ===== 7.2 — ENTRA CON IMPRONTA / VOLTO (solo app) ===============================
    Un AIUTO per il login, non un blocco: dopo il primo accesso con email e password
    l'app propone di salvare le credenziali in modo protetto (Keystore Android /
