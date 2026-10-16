@@ -1103,14 +1103,14 @@
      (3 gol valgono diverso se il capocannoniere ne ha 4 o 12); le presenze sono
      una fila di tacche, che si contano a colpo d'occhio senza leggere niente. */
   #statGrid{display:block}
-  .pg-hero{display:flex;align-items:center;gap:16px;background:rgba(126,194,255,.05);border-radius:18px;padding:16px}
+  .pg-hero{display:flex;align-items:center;gap:12px;background:rgba(126,194,255,.05);border-radius:18px;padding:16px}
   .pg-ringwrap{flex:none;width:82px;text-align:center}
   .pg-ring{position:relative;width:82px;height:82px}
   .pg-ring svg{width:82px;height:82px;display:block;transform:rotate(-90deg)}
   .pg-ring .rv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
   .pg-ring .rv b{font-family:'JetBrains Mono';font-weight:700;font-size:21px;line-height:1;letter-spacing:-.03em}
   /* l'etichetta sta SOTTO l'anello: dentro finiva a cavallo del cerchio */
-  .pg-rlab{display:block;font-size:10.5px;color:var(--muted);font-weight:600;margin-top:8px;line-height:1.2}
+  .pg-rlab{display:block;font-size:10.5px;color:var(--muted);font-weight:600;margin-top:8px;line-height:1.2;min-height:2.4em}
   .pg-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
   .pg-mini .k{font-size:11px;color:var(--muted);font-weight:600}
   .pg-mini .v{font-family:'JetBrains Mono';font-weight:700;font-size:18px;line-height:1;margin-top:4px}
@@ -4010,7 +4010,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='7.1';
+const APP_VERSION='7.2';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   if(_av) _av.textContent = APP_VERSION;
@@ -6885,6 +6885,7 @@ let cardScope=null;    // periodo delle schede: id stagione oppure 'all'
 let _bestVoteTxt='\u2014';   // miglior voto del periodo (lo riempie loadVoteTrend)
 let _avgVote=null;           // voto medio del periodo, dalle stesse giornate
 let _avgVoteReady=false;     // la risposta è arrivata? (null + ready = nessun voto nel periodo)
+let _avgFanta=null, _avgFantaReady=false, _fantaTok=0, _mvpCache={};   // fantavoto medio (7.2): voto + bonus/malus, stesse giornate del voto medio
 let _lastPlayerCard=null;    // ultima scheda ricevuta, per ridisegnare senza richiederla
 
 async function loadSeasonsList(){
@@ -9213,7 +9214,7 @@ function setCardScope(kind,ref,v){
   if(String(n)===String(cardScope)) return;
   cardScope=n;
   // la scheda vecchia non deve piu' essere usata come ripiego per il periodo nuovo
-  _lastPlayerCard=null; _avgVote=null; _avgVoteReady=false; _bestVoteTxt='\u2014';
+  _lastPlayerCard=null; _avgVote=null; _avgVoteReady=false; _avgFanta=null; _avgFantaReady=false; _bestVoteTxt='\u2014';
   if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){ } }
   renderCardScopeBar(kind);
   const box=document.getElementById(kind==='player'?'statBacheca':'teamBacheca');
@@ -10152,6 +10153,8 @@ function playerStatsGridHTML(s,mx){
   const pres=Number(s.presences)||0, gol=Number(s.gol)||0, ass=Number(s.assist)||0;
   const voto=Number(s.voto)||0;
   const vm=voto?String(Math.round(voto*100)/100).replace('.',','):'—';
+  const fOk=(s.fanta!=null && isFinite(Number(s.fanta))), fv=fOk?Number(s.fanta):0;
+  const fm=fOk?String(Math.round(fv*100)/100).replace('.',','):'—';
   // presenze: tacche se le giornate sono poche, barra unica quando sono tante
   const ticks = maxP<=10
     ? Array.from({length:maxP},(_,i)=>`<i class="${i<pres?'on':''}"></i>`).join('')
@@ -10161,6 +10164,7 @@ function playerStatsGridHTML(s,mx){
       <span class="bv">${val}</span></div>`;
   return `<div class="pg-hero">
       ${pgRingHTML(vm,'Voto medio',voto/10,'var(--gold)')}
+      ${pgRingHTML(fm,'Fantavoto medio',fOk?fv/15:0,'var(--accent)')}
       <div class="pg-side">
         <div class="pg-mini"><div class="k">Presenze</div>
           <div class="pg-ticks">${ticks}</div>
@@ -10187,7 +10191,7 @@ function openPlayerStats(id){
   // il periodo parte dalla stagione che si sta sfogliando: aprire una scheda
   // non deve cambiare il punto di vista sotto i piedi
   cardScope=(cardScope===ALLTIME)?ALLTIME:((viewSeasonId!=null)?viewSeasonId:displaySeasonId);
-  _bestVoteTxt='\u2014'; _avgVote=null; _avgVoteReady=false; _lastPlayerCard=null;
+  _bestVoteTxt='\u2014'; _avgVote=null; _avgVoteReady=false; _avgFanta=null; _avgFantaReady=false; _lastPlayerCard=null;
   document.getElementById('statAv').innerHTML=avatarImg(p.avatar,50);
   document.getElementById('statName').textContent=p.name;
   document.getElementById('statRole').innerHTML=statHeadTagsHTML(p.role,s.forma);
@@ -10218,6 +10222,7 @@ function paintPlayerGrid(id,card){
   // il periodo vince sempre sulla carriera. Finche' non si sa, «—»: mai un
   // numero preso in prestito da un altro periodo, nemmeno per un istante
   s.voto = _avgVoteReady ? ((_avgVote!=null)?_avgVote:0) : 0;
+  s.fanta = (_avgFantaReady && _avgFanta!=null) ? _avgFanta : null;   // 7.2: null = «—»
   g.innerHTML=playerStatsGridHTML(s,scopeMaxes(cardScope));
   applyBestVote();
 }
@@ -10262,15 +10267,18 @@ async function voteRows(id, seasonId){
 async function loadVoteTrend(id, scope){
   const box=document.getElementById('statChart'); if(!box) return;
   _bestVoteTxt='\u2014'; _avgVote=null; _avgVoteReady=false; applyBestVote();
+  _avgFanta=null; _avgFantaReady=false; const ftok=++_fantaTok;
   box.style.display='block';
   box.innerHTML=chartHeadHTML('\ud83d\udcc8 Andamento voti','')+emptyChartSVG('Carico\u2026');
   const perSeason = (scope===ALLTIME && allSeasons.length>1);
   let pts=[], best=null;      // `best` = record vero, separato dai punti del grafico
+  const fRows=[];             // 7.2: (stagione, giornata, voto) per il fantavoto medio
   try{
     if(perSeason){
       const ord=allSeasons.slice().sort((a,b)=>a.number-b.number);
       const res=await Promise.all(ord.map(s=>voteRows(id,s.id)));
       res.forEach((rows,i)=>{
+        (rows||[]).forEach(r=>{ const x=Number(r.voto); if(isFinite(x)) fRows.push({sid:ord[i].id,label:r.md_label,voto:x}); });
         const v=(rows||[]).map(r=>Number(r.voto)).filter(x=>isFinite(x));
         if(!v.length) return;
         pts.push({lab:'S'+ord[i].number, v:v.reduce((a,b)=>a+b,0)/v.length});   // il grafico: medie
@@ -10279,6 +10287,7 @@ async function loadVoteTrend(id, scope){
       });
     }else{
       const rows=await voteRows(id, (scope===ALLTIME)?null:scope);
+      (rows||[]).forEach(r=>{ const x=Number(r.voto); if(isFinite(x)) fRows.push({sid:(scope===ALLTIME)?null:scope,label:r.md_label,voto:x}); });
       pts=(rows||[]).map((r,i)=>({lab:mdShortLabel(r.md_label,i), v:Number(r.voto)}))
                     .filter(p=>isFinite(p.v));
     }
@@ -10300,6 +10309,69 @@ async function loadVoteTrend(id, scope){
   applyBestVote();
   if(_statCardId===id) paintPlayerGrid(id,_lastPlayerCard);
   box.innerHTML=voteTrendHTML(pts, perSeason?'media per stagione':'');
+  loadFantaAvg(id,fRows,perSeason,ftok);      // 7.2: arriva dopo e ridisegna solo l'anello
+}
+/* FANTAVOTO MEDIO (7.2).
+   Per ogni giornata in cui il giocatore ha preso voto: voto + bonus/malus presi
+   in campo, con LE STESSE regole di scoreOf (gol +3, assist +1,5, autogol -3,
+   rigore sbagliato -3, rigore parato +3, giallo -0,5, vittoria +2, MVP +3, e
+   per i POR porta inviolata +3 oppure -gol subiti; per gli altri il -gol subiti
+   se ne hanno presi, e la porta inviolata +3 nelle giornate in cui almeno una
+   squadra li ha schierati in porta (slot g1) e non hanno preso gol). Il capitano che raddoppia
+   il voto e il bonus modulo sono scelte del singolo allenatore, non del
+   giocatore: restano fuori. Poi la media, aggregata come il voto medio (su
+   All time: media delle medie di stagione), cosi' i due numeri si confrontano.
+   Le giornate si agganciano ai voti per etichetta (la RPC dei voti non
+   restituisce l'id); se una non si aggancia, non entra nella media. */
+async function mvpOfMd(md){
+  if(Object.prototype.hasOwnProperty.call(_mvpCache,md)) return _mvpCache[md];
+  const {data,error}=await sb.rpc('get_mvp_sega',{md});
+  if(error) throw error;
+  const v=(data&&data[0]&&data[0].mvp)||0;
+  _mvpCache[md]=v; return v;
+}
+async function loadFantaAvg(id,fRows,perSeason,ftok){
+  let val=null;
+  try{
+    if(!matchdaysList.length) await loadMatchdaysList();
+    const p=players.find(x=>x.id===id), isPor=!!(p&&p.role==='POR');
+    const items=[];
+    (fRows||[]).forEach(r=>{
+      const m=matchdaysList.find(x=> x.label===r.label && x.status==='closed' && (r.sid==null || String(x.season_id)===String(r.sid)));
+      if(m) items.push({md:m.id,sid:r.sid,voto:r.voto});
+    });
+    if(items.length){
+      const ids=items.map(i=>i.md);
+      const [sr,mv,gr]=await Promise.all([
+        sb.from('match_stats').select('*').eq('player_id',id).in('matchday_id',ids),
+        Promise.all(ids.map(mvpOfMd)),
+        // chi non e' POR: giornate in cui almeno una squadra l'ha messo in porta (slot g1)
+        isPor ? Promise.resolve({data:[]}) : sb.from('lineups').select('matchday_id').eq('player_id',id).eq('slot','g1').in('matchday_id',ids)
+      ]);
+      if(sr.error) throw sr.error;
+      if(gr.error) throw gr.error;
+      const inG1=new Set((gr.data||[]).map(r=>r.matchday_id));
+      const byMd={}; (sr.data||[]).forEach(r=>{ byMd[r.matchday_id]=r; });
+      const groups={};
+      items.forEach((it,i)=>{
+        const st=byMd[it.md]||{};
+        let b=(st.gol||0)*3+(st.assist||0)*1.5-(st.autogol||0)*3-(st.rigore_sbagliato||0)*3+(st.rigore_parato||0)*3-(st.gialli||0)*0.5;
+        if(st.esito==='V') b+=2;
+        { const gs=st.gol_subiti||0;
+          if(isPor) b+=(gs===0?3:-gs);      // il POR sta sempre in porta (fisso e rotazione): porta inviolata +3 oppure -gol subiti
+          else if(gs>0) b-=gs;              // chi non e' POR ma ha preso gol era in porta (rotazione, o fisso senza POR): il malus l'ha preso davvero
+          else if(inG1.has(it.md)) b+=3; }  // zero gol subiti e messo in porta da almeno una squadra: porta inviolata +3
+        if(mv[i]===id) b+=MVP_BONUS;
+        const k=perSeason?String(it.sid):'all';
+        (groups[k]||(groups[k]=[])).push(it.voto+b);
+      });
+      const means=Object.keys(groups).map(k=>groups[k].reduce((a,x)=>a+x,0)/groups[k].length);
+      val=means.length?means.reduce((a,x)=>a+x,0)/means.length:null;
+    }
+  }catch(_){ val=null; }
+  if(ftok!==_fantaTok || _statCardId!==id) return;     // periodo o scheda cambiati nel frattempo
+  _avgFanta=val; _avgFantaReady=true;
+  paintPlayerGrid(id,_lastPlayerCard);
 }
 /* Un grafico senza dati non deve sparire: sparendo sembra un pezzo di app
    rotto. Resta la cornice, con le linee guida e una riga che dice perche'
@@ -11338,7 +11410,7 @@ function matchOpenable(){
 const LIVE_FIELDS={
   gol:   {key:'gol',    emoji:'⚽', label:'Gol',      sub:'+3 a chi segna',          cls:'gol'},
   assist:{key:'assist', emoji:'👟', label:'Assist',   sub:'+1,5 a chi serve l\'assist', cls:'ass'},
-  gs:    {key:'gs',     emoji:'🧤', label:'Portiere', sub:'gol subìto dal portiere', cls:'por'},
+  gs:    {key:'gs',     emoji:'🧤', label:'Portiere', sub:'−1 a ogni gol subìto', cls:'por'},
   og:    {key:'og',     emoji:'🅰️', label:'Autogol',        sub:'−3 a chi lo segna',     tone:'neg'},
   rs:    {key:'rs',     emoji:'🚫', label:'Rig. sbagliato', sub:'−3 a chi lo sbaglia',   tone:'neg'},
   rp:    {key:'rp',     emoji:'🙌', label:'Rig. parato',    sub:'+3 a chi lo para',      tone:'pos'},
