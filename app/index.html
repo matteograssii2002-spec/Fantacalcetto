@@ -319,6 +319,23 @@
      in tutti i passaggi del gate, anche quando gateLinks si svuota. */
   .gate-legal{margin-top:22px;text-align:center;font-size:11.5px;line-height:1.55;color:var(--muted)}
   .gate-legal a{color:var(--accent-soft);text-decoration:underline;text-underline-offset:2px}
+  /* 7.2 — schermo basso (telefoni piccoli): le schermate d'ingresso stringono i vuoti
+     invece di tagliare l'ultima riga o scorrere. La classe .tight la mette lo script
+     «SCHERMATE D'INGRESSO FERME», solo se il contenuto non ci starebbe. */
+  .overlay.tight .ob-inner{padding-top:calc(14px + env(safe-area-inset-top));padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+  #onboard.tight .ob-inner{padding-top:calc(24px + env(safe-area-inset-top))}
+  .overlay.tight .ob-brand{margin-bottom:8px}
+  .overlay.tight .gate-bar{margin-bottom:10px}
+  .overlay.tight .gate-bottom{margin-top:10px}
+  .overlay.tight .gate-legal{margin-top:10px}
+  .overlay.tight .gate-links{margin-top:12px;gap:9px}
+  .overlay.tight .ctx-box{margin-top:12px}
+  .overlay.tight h1{margin:6px 0 10px}
+  .overlay.tight .ob-btn{margin-top:12px}
+  .overlay.tight .wc-top{margin-top:8px}
+  .overlay.tight .wc-mid{margin-top:16px}
+  .overlay.tight .wc-logo{width:78px;height:78px;margin-bottom:10px}
+  .overlay.tight .wc-login{margin-top:12px}
   /* ---- passaggio alla password per chi c'era già ----
      Stessa impalcatura del gate (azione in fondo, nella zona del pollice),
      ma con un riquadro che spiega il perché: nessuno deve chiedersi
@@ -2739,6 +2756,21 @@
          Adesso: nel primo secondo si tiene il valore PIU' ALTO visto (quello a
          barra ritirata, cioe' l'altezza vera), poi si aggiorna solo per scarti
          grossi - tastiera o rotazione - mai per la barra. */
+      /* 7.2 — NELL'APP ANDROID niente "valore piu' alto": non c'e' barra degli
+         indirizzi che si ritira. All'avvio innerHeight puo' valere per un attimo
+         piu' dello spazio vero (finche' le barre di sistema non si assestano) e
+         il picco restava: le schermate piene (accesso, crea, entra) sporgevano
+         sotto lo schermo, con l'ultima riga (privacy) fuori vista. Qui si segue
+         sempre l'altezza vera, tastiera compresa. */
+      var NAT=false;
+      try{ NAT=!!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())
+                || /FantaCalcettoApp/.test(navigator.userAgent||''); }catch(_){ }
+      if(av && NAT){
+        de.style.setProperty('--app-h', Math.round(av)+'px');
+        de.style.setProperty('--vp-gap','0px');
+        de.classList.remove('vp-lie');
+        return;
+      }
       if(av){
         var _now=Date.now();
         var _fermo=(_andH && (_now-_andT0)>1000 && Math.abs(av-_andH)<=140);
@@ -2836,7 +2868,7 @@
     </div>
     <div class="off-mid">
       <h1 class="off-h">Nessuna connessione</h1>
-      <p class="off-sub">Per usare l’app serve una connessione a internet.<br>Riparte da sola appena la rete torna.</p>
+      <p class="off-sub">Senza internet non si possono vedere classifiche, formazioni e voti, né schierare, votare o salvare risultati.<br>Non perdi niente: l’app riparte da sola appena la rete torna.</p>
     </div>
     <div class="off-actions">
       <button class="ob-btn" id="offBtn" onclick="retryOffline()">Riprova</button>
@@ -3919,6 +3951,12 @@ const NATIVE_OS=(function(){
   try{ if(window.Capacitor && window.Capacitor.getPlatform) return window.Capacitor.getPlatform(); }catch(_){ }
   return /iphone|ipad|ipod/i.test(navigator.userAgent||'') ? 'ios' : 'android';
 })();
+/* 7.2 — Indirizzo vero del sito. Nell'app con i file dentro, la pagina vive su
+   https://localhost: tutto cio' che esce dal telefono (link d'invito, email di
+   reset, pagine legali, link esterni) deve puntare al sito, mai a localhost.
+   Sul sito e nella PWA fcAppUrl() restituisce lo stesso indirizzo di prima. */
+const FC_SITE='https://www.fantacalcettoitalia.it';
+function fcAppUrl(){ return IS_NATIVE ? FC_SITE+'/app/' : (location.origin+location.pathname); }
 if(IS_NATIVE){
   try{ document.documentElement.classList.add('native', 'native-'+NATIVE_OS); }catch(_){ }
   const _P=()=> (window.Capacitor && window.Capacitor.Plugins) || {};
@@ -3944,7 +3982,8 @@ if(IS_NATIVE){
       await P.Share.share(o);
     };
   }catch(_){ }
-  const _ext=(u)=>{ try{ const x=new URL(u, location.href); return x.href; }catch(_){ return u; } };
+  // un indirizzo «di casa» (/privacy.html, /termini.html…) dentro l'app non esiste: si apre quello del sito
+  const _ext=(u)=>{ try{ const x=new URL(u, location.href); return (x.origin===location.origin) ? (FC_SITE+x.pathname+x.search+x.hash) : x.href; }catch(_){ return u; } };
   const _openOut=(u)=>{ const P=_P(); if(P.Browser) P.Browser.open({ url:_ext(u) }).catch(()=>{}); else location.href=_ext(u); };
   const _wo=window.open;
   window.open=function(u,t,f){
@@ -4013,7 +4052,8 @@ const BUDGET=100;
 const APP_VERSION='7.2';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
-  if(_av) _av.textContent = APP_VERSION;
+  // nell'app si vede anche il codice del pacchetto: dice se un aggiornamento OTA e' arrivato
+  if(_av) _av.textContent = APP_VERSION + ((IS_NATIVE && window.FC_WEB_BUILD) ? ' \u00b7 '+String(window.FC_WEB_BUILD).slice(0,7) : '');
 }
 try{ console.log('FantaCalcetto build', APP_VERSION); }catch(_){}
 // se una chiamata di rete si impianta, non lasciamo l'interfaccia bloccata all'infinito
@@ -4280,6 +4320,11 @@ function gateStatus(msg,bad){
    avatar, e non scrivono niente di nostro.
    ============================================================================ */
 const TUT_KEY='fc_tut_done';
+/* 7.2 — modo «toccalo» spento: il primo tocco passava al modo libero o faceva
+   avanzare, e serviva un secondo tocco per vedere succedere qualcosa. Ora il
+   riquadro evidenziato si guarda e basta, si va avanti con «Avanti».
+   Rimettendo true torna tutto com'era (passi con tap:true). */
+const TUT_TAP=false;
 let TUT=null, _tutSnap=null, _sbReal=null, _tutRaf=null, _tutLastBox='';
 
 /* La card «Chi puo' votare» si riempie da una RPC, che durante il tutorial
@@ -4318,6 +4363,22 @@ function tutSbGuard(){
   };
 }
 function tutSbFree(){ if(_sbReal){ sb=_sbReal; _sbReal=null; } }
+/* 7.2 — RETE DI SICUREZZA A FINE TUTORIAL. Qualunque caricamento partito durante
+   la demo (rientro nell'app dopo il permesso notifiche, canale dal vivo, una scheda
+   aperta) ha ricevuto dati vuoti dalla rete finta, e il ripristino copre solo una
+   parte dello stato: stagioni, elenco giornate, numeri per stagione e MVP restavano
+   vuoti fino al riavvio («Stagione 1», giornate doppie, fantavoto «—»).
+   Qui si ricarica tutto dal database vero, nello stesso ordine dell'avvio. */
+async function tutReloadReal(){
+  try{
+    _mvpCache={};
+    await loadSeason();
+    await Promise.all([loadStandings(), loadPlayers()]);
+    await loadMatchdayData();
+    await loadPlayerStats();
+    renderAll(); renderHomeBcards(true);
+  }catch(_){ }
+}
 
 /* nomi neutri: non devono somigliare a quelli veri del gruppo, o uno crede
    che il tutorial stia parlando di persone in carne e ossa */
@@ -4582,7 +4643,7 @@ function tutFreeOn(){
 function tutTapWatch(e){
   if(!TUT || TUT.free) return;
   const st=TUT.steps[TUT.i]||{};
-  if(!st.tap) return;
+  if(!(st.tap && TUT_TAP)) return;
   const t=document.getElementById('tut');
   if(t && t.contains(e.target)) return;   // ha premuto la card, Esci o un pannello
   tutFreeOn();
@@ -4598,8 +4659,8 @@ function tutGoTo(i){
   if(st.nav) setNav(st.nav);
   tutDemoCards();   // renderAll() dentro `before` svuota Rivivi: lo rifaccio dopo
   document.getElementById('tutTtl').textContent=st.ttl;
-  document.getElementById('tutTx').innerHTML=st.tx+(st.tap?'<span class="tut-try">\ud83d\udc46 toccalo: funziona davvero</span>':'');
-  document.getElementById('tutSkip').style.display=st.tap?'':'none';
+  document.getElementById('tutTx').innerHTML=st.tx+((st.tap && TUT_TAP)?'<span class="tut-try">\ud83d\udc46 toccalo: funziona davvero</span>':'');
+  document.getElementById('tutSkip').style.display=(st.tap && TUT_TAP)?'':'none';
   const g=document.getElementById('tutGo');
   g.textContent = !last ? 'Avanti'
                 : (TUT.track==='player' && canOp() ? 'Parte admin \u2192' : 'Ho capito');
@@ -4608,8 +4669,25 @@ function tutGoTo(i){
   tutScrollTo(st.el?document.querySelector(st.el):null);
   tutPlace();
   // tre riposizionamenti di sicurezza: fra un passo e l'altro cambiano vista,
-  // contenuto e altezze, e l'ultima parola deve averla la misura piu' recente
-  setTimeout(tutPlace,80); setTimeout(tutPlace,240); setTimeout(tutPlace,520);
+  // contenuto e altezze (e le viste entrano con un'animazione), quindi rifaccio
+  // anche lo scorrimento: la misura piu' recente deve avere l'ultima parola
+  const _again=()=>{
+    if(!TUT || TUT.i!==i || TUT.free) return;
+    tutScrollTo(st.el?document.querySelector(st.el):null);
+    tutPlace();
+  };
+  setTimeout(_again,80); setTimeout(_again,240); setTimeout(_again,520); setTimeout(_again,900);
+}
+/* il contenitore che scorre davvero: di solito #scrollwrap, ma lo cerco
+   risalendo dall'elemento, cosi' vale anche per le pagine dentro le Impostazioni */
+function tutScroller(el){
+  let n=el&&el.parentElement;
+  while(n && n!==document.body){
+    const o=getComputedStyle(n).overflowY;
+    if((o==='auto'||o==='scroll') && n.scrollHeight>n.clientHeight+1) return n;
+    n=n.parentElement;
+  }
+  return document.getElementById('scrollwrap');
 }
 /* Scorrimento ISTANTANEO e calcolato a mano dentro #scrollwrap.
    Con scrollIntoView({behavior:'smooth'}) il riflettore finiva sull'elemento
@@ -4620,12 +4698,21 @@ function tutGoTo(i){
    al punto giusto. */
 function tutScrollTo(el){
   if(!el) return;
-  const sw=document.getElementById('scrollwrap');
+  const sw=tutScroller(el);
   if(!sw) return;
   try{
     const r=el.getBoundingClientRect(), sr=sw.getBoundingClientRect();
     if(!r.height && !r.width) return;
-    const want=sw.scrollTop + (r.top - sr.top) - Math.max(0,(sr.height - r.height)/2);
+    const card=document.getElementById('tutCard');
+    const ch=(card&&card.offsetHeight)||180;
+    let want;
+    if(r.height > sr.height - ch - 40){
+      // blocco alto quanto lo schermo: lo porto in basso lasciando sopra lo
+      // spazio per il fumetto, cosi' la cornice non finisce sotto la barra
+      want=sw.scrollTop + (r.top - sr.top) - (ch + 30);
+    } else {
+      want=sw.scrollTop + (r.top - sr.top) - Math.max(0,(sr.height - r.height)/2);
+    }
     sw.scrollTop=Math.max(0, Math.min(want, sw.scrollHeight - sw.clientHeight));
   }catch(_){ }
 }
@@ -4670,10 +4757,17 @@ function tutPlace(){
     }
     return;
   }
-  const r=el.getBoundingClientRect(), pad=8;
-  const x=Math.max(0,Math.round(r.left-pad)), y=Math.max(0,Math.round(r.top-pad));
+  const r0=el.getBoundingClientRect(), pad=8;
+  // la cornice resta dentro la parte VISIBILE del contenitore che scorre:
+  // un blocco piu' alto dello schermo non deve finire sotto la barra in basso
+  let vt=0, vb=H;
+  const sc=tutScroller(el);
+  if(sc && sc.contains(el)){ const q=sc.getBoundingClientRect(); vt=Math.max(0,q.top); vb=Math.min(H,q.bottom); }
+  const top0=Math.max(r0.top,vt), bot0=Math.min(r0.bottom,vb);
+  const r=(bot0>top0)?{left:r0.left,right:r0.right,width:r0.width,top:top0,bottom:bot0,height:bot0-top0}:r0;
+  const x=Math.max(0,Math.round(r.left-pad)), y=Math.max(0,Math.round(r.top-(r.top>vt+pad?pad:0)));
   const w=Math.max(0,Math.min(W-x,Math.round(r.width+pad*2)));
-  const h=Math.max(0,Math.min(H-y,Math.round(r.height+pad*2)));
+  const h=Math.max(0,Math.min(vb-y,Math.round(r.height+(r.top>vt+pad?pad:0)+(r.bottom<vb-pad?pad:0))));
   const box=x+','+y+','+w+','+h;
   if(box===_tutLastBox) return;
   _tutLastBox=box;
@@ -4687,7 +4781,7 @@ function tutPlace(){
   ring.style.width=w+'px'; ring.style.height=h+'px';
   const hole=document.getElementById('tutH');   // NB: H e' gia' l'altezza della finestra
   if(hole){
-    if(st.tap){ hole.style.display='none'; }
+    if(st.tap && TUT_TAP){ hole.style.display='none'; }
     else { hole.style.cssText=`position:fixed;display:block;background:transparent;`
       +`left:${x}px;top:${y}px;width:${w}px;height:${h}px`; }
   }
@@ -4710,6 +4804,7 @@ function tutQuit(){
   computeLock(); renderAll();
   renderHomeBcards(true);   // force: senza, il throttle lascerebbe la sezione spenta
   go('home');
+  tutReloadReal();
   toast('Tutorial chiuso \u00b7 lo ritrovi in Impostazioni');
 }
 /* la riga «Tutorial» nelle Impostazioni: agli admin chiede quale dei due percorsi */
@@ -6338,7 +6433,7 @@ async function loadInvite(){
     const {data}=await sb.rpc('get_league_admin_info');
     if(data&&data[0]){
       card.style.display='';
-      document.getElementById('invLink').value=location.origin+location.pathname+'?lega='+data[0].slug;
+      document.getElementById('invLink').value=fcAppUrl()+'?lega='+data[0].slug;
       document.getElementById('invPwd').value=data[0].password;
     } else card.style.display='none';
   }catch(_){ card.style.display='none'; }
@@ -6652,7 +6747,7 @@ async function doReset(email){
   /* Si entra SOLO col codice ({{ .Token }}): il template dell'email non contiene link.
      redirectTo resta per prudenza, così le vecchie email già spedite (che un link ce
      l'hanno ancora finché non scadono) atterrano su gateEnterRecovery e non in home. */
-  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:fcAppUrl()});
   if(error){ gateStatus(authErrIt(error),true); return; }
   _gateAwaitNewPw=true;   // da qui in avanti la sessione pu\u00f2 aprirsi: l'app resta fuori finch\u00e9 non salvo
   gateShowCode('Ti ho inviato un codice a '+email+'. Scrivilo qui sotto.');
@@ -6672,7 +6767,7 @@ document.getElementById('gateResend').onclick=async function(){
   gateStatus('Rinvio in corso\u2026');
   try{
     if(gateMode==='signup') await gateResendSignup(gateEmailVal);
-    else { const {error}=await sb.auth.resetPasswordForEmail(gateEmailVal,{redirectTo:location.origin+location.pathname}); if(error) throw error; }
+    else { const {error}=await sb.auth.resetPasswordForEmail(gateEmailVal,{redirectTo:fcAppUrl()}); if(error) throw error; }
     gateStatus('Codice rinviato a '+gateEmailVal+'.');
   }catch(e){ gateStatus(authErrIt(e),true); }
 };
@@ -7538,6 +7633,7 @@ function resumePill(stato){
 }
 async function fcResumeRefresh(){
   if(_resumeBusy) return;
+  if(TUT || _sbReal) return;   // 7.2 — durante il tutorial la rete e' finta: ricaricare svuoterebbe i dati veri
   _resumeBusy=true;
   resumePill('go');
   try{
@@ -13246,8 +13342,11 @@ function _natPermOf(r){ r=r&&r.receive; return r==='granted'?'granted':(r==='den
 function _natGo(a){
   try{
     const u=a&&a.notification&&a.notification.data&&a.notification.data.url; if(!u) return;
-    let x=new URL(String(u), location.origin);
-    if(x.origin!==location.origin || x.pathname.indexOf('/app')!==0) x=new URL('/app/', location.origin);
+    // 7.2: le notifiche portano l'indirizzo del sito; nell'app con i file dentro si apre la stessa pagina in locale
+    let x=new URL(String(u), FC_SITE);
+    const casa=(x.origin===location.origin) || /(^|\.)fantacalcettoitalia\.it$/.test(x.hostname);
+    if(!casa || x.pathname.indexOf('/app')!==0) x=new URL('/app/', FC_SITE);
+    x=new URL(x.pathname+x.search+x.hash, location.origin);
     if(x.pathname+x.search===location.pathname+location.search) return;
     location.href=x.href;
   }catch(_){ }
@@ -13778,6 +13877,48 @@ function maybeShowNews(){
   o.querySelector('#lnOk').onclick=()=>{ try{localStorage.setItem(key,'1');}catch(_){ } o.remove(); };
 }
 /* ===== fine NOVITÀ ================================================================ */
+
+/* ===== 7.2 — SCHERMATE D'INGRESSO FERME ===========================================
+   Benvenuto, accesso/registrazione (crea o entra) e scelta della lega sono overlay
+   scorrevoli. Sul telefono l'altezza calcolata e quella vera possono differire di
+   qualche pixel e la schermata si muoveva appena in su e in giu', mentre il resto
+   dell'app e' fermo. Se il contenuto ci sta (con 24px di tolleranza, che cadono
+   nel margine vuoto in fondo) lo scorrimento si spegne; se non ci sta (telefono
+   piccolo, tastiera aperta) torna come prima. */
+(function(){
+  const IDS=['welcome','gate','onboard','league'];
+  let mo=null;
+  const measure=e=>e.scrollHeight-e.clientHeight;
+  const fit=()=>{ IDS.forEach(id=>{
+    const e=document.getElementById(id); if(!e || e.classList.contains('hidden')) return;
+    e.style.overflowY=''; e.style.height=''; e.classList.remove('tight');
+    // rete di sicurezza (solo app): se la schermata sporge sotto la parte che si
+    // vede davvero, la accorcio a quella, cosi' l'ultima riga non finisce fuori
+    try{
+      if(typeof IS_NATIVE!=='undefined' && IS_NATIVE){
+        const q=e.getBoundingClientRect(), vis=window.innerHeight||0;
+        if(vis && q.bottom>vis+2) e.style.height=Math.max(0,vis-q.top)+'px';
+      }
+    }catch(_){ }
+    let over=measure(e), tight=false;
+    // non ci sta: provo prima a stringere i vuoti (telefono basso)
+    if(over>0){ e.classList.add('tight'); tight=true; over=measure(e); }
+    // il margine vuoto in fondo assorbe qualche pixel: scorrimento spento solo se
+    // l'ultima riga resta tutta visibile (piu' stretto quando i vuoti sono ridotti)
+    if(over<=(tight?10:24)){ e.style.overflowY='hidden'; e.scrollTop=0; }
+  }); if(mo) mo.takeRecords(); };
+  let _t=null; const later=()=>{ if(_t) cancelAnimationFrame(_t); _t=requestAnimationFrame(()=>{ _t=null; fit(); }); };
+  try{
+    window.addEventListener('resize',later);
+    if(window.visualViewport) window.visualViewport.addEventListener('resize',later);
+    mo=new MutationObserver(later);
+    const ro=('ResizeObserver' in window) ? new ResizeObserver(later) : null;
+    IDS.forEach(id=>{ const e=document.getElementById(id); if(!e) return;
+      mo.observe(e,{attributes:true,attributeFilter:['class'],childList:true,subtree:true});
+      if(ro) Array.from(e.children).forEach(c=>ro.observe(c)); });
+    later();
+  }catch(_){ }
+})();
 
 /* ===== NOVITÀ LOGHI: avviso + scelta logo per squadre già esistenti ================
    Si mostra a chi ha già una squadra ma NON ha ancora un logo. Resta finché non ne
@@ -15538,6 +15679,106 @@ try{
   const _sb=document.getElementById('sheetBg'), _sh=document.getElementById('sheet');
   if(_sb&&_sh){ document.body.appendChild(_sb); document.body.appendChild(_sh); }
 }catch(_){ }
+/* ===== 7.2 — AGGIORNAMENTI DELL'APP SENZA PASSARE DALLO STORE (OTA) ===========
+   Solo nell'app Android/iOS; sul sito e nella PWA non fa niente.
+   Il gioco vive dentro l'app (www/). Quando pubblichi una versione nuova con
+   «pubblica-ota.sh», sul sito compaiono app-ota/latest.json e lo zip del gioco.
+   L'app:
+   1) appena il codice e' partito avvisa il plugin (notifyAppReady). Se un pacchetto
+      nuovo non arriva fin qui entro 15 secondi (errore grave), il plugin torna DA
+      SOLO al pacchetto precedente, e quella versione non viene piu' riscaricata;
+   2) se all'avvio c'e' gia' un pacchetto scaricato e pronto, lo mette subito
+      (siamo ancora dietro al logo: nessuno perde niente);
+   3) all'avvio e al rientro (al massimo ogni 30 minuti) legge latest.json; se la
+      versione e' diversa da quella che sta girando, la scarica in sottofondo e la
+      controlla con lo SHA-256. Si applica al prossimo avvio oppure dopo 10 minuti
+      passati fuori dall'app: mai mentre la si usa.
+   latest.json: {version, url, checksum, min_native}. min_native = build minima
+   dell'app (versionCode) che serve: le app piu' vecchie restano dove sono.
+   Freno d'emergenza: version "builtin" riporta tutti al gioco originale dell'app. */
+const FC_OTA_URL=FC_SITE+'/app-ota/latest.json';
+let _otaBusy=false, _otaAt=0;
+function _otaU(){ try{ return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorUpdater) || null; }catch(_){ return null; } }
+function _otaBadList(){ try{ return JSON.parse(localStorage.getItem('fc_ota_bad')||'[]'); }catch(_){ return []; } }
+function _otaMarkBad(v){ try{ const l=_otaBadList(); if(v && l.indexOf(v)<0){ l.push(v); localStorage.setItem('fc_ota_bad', JSON.stringify(l.slice(-20))); } }catch(_){ } }
+async function _otaManifest(){
+  const url=FC_OTA_URL+'?t='+Date.now();
+  const H=window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorHttp;
+  let d;
+  if(H){
+    const r=await H.get({ url:url, headers:{'Cache-Control':'no-cache'}, responseType:'json', connectTimeout:10000, readTimeout:10000 });
+    if(!r || r.status!==200) return null;
+    d=r.data;
+  } else {
+    const r=await fetch(url,{cache:'no-store'}); if(!r.ok) return null; d=await r.json();
+  }
+  if(typeof d==='string'){ try{ d=JSON.parse(d); }catch(_){ return null; } }
+  if(!d || typeof d.version!=='string') return null;
+  return d;
+}
+async function fcOtaCheck(force){
+  const U=_otaU(); if(!U || _otaBusy) return;
+  if(!force && Date.now()-_otaAt < 30*60*1000) return;
+  _otaBusy=true; _otaAt=Date.now();
+  try{
+    const m=await _otaManifest(); if(!m) return;
+    const here=String(window.FC_WEB_BUILD||'');
+    // freno d'emergenza: tutti di nuovo sul gioco dentro l'app
+    if(m.version==='builtin'){
+      try{ const c=await U.current(); if(c && c.bundle && c.bundle.id!=='builtin') await U.reset({ toLastSuccessful:false }); }catch(_){ }
+      return;
+    }
+    if(m.version===here) return;                         // sta gia' girando questa
+    if(_otaBadList().indexOf(m.version)>=0) return;      // gia' fallita una volta: mai piu'
+    if(!/^[a-f0-9]{64}$/i.test(String(m.checksum||''))) return;
+    if(String(m.url||'').indexOf(FC_SITE+'/app-ota/')!==0) return;   // solo dal nostro sito
+    // serve un'app piu' nuova? (plugin nativi che questa build non ha)
+    const need=parseInt(m.min_native,10)||0;
+    if(need){
+      try{
+        const A=window.Capacitor.Plugins.App;
+        const info=A ? await A.getInfo() : null;
+        if(!info || (parseInt(info.build,10)||0) < need) return;
+      }catch(_){ return; }
+    }
+    // gia' scaricata in un giro precedente?
+    let b=null;
+    try{
+      const l=await U.list();
+      b=((l && l.bundles)||[]).find(x=>x.version===m.version && (x.status==='success'||x.status==='pending')) || null;
+    }catch(_){ }
+    if(!b) b=await U.download({ url:m.url, version:m.version, checksum:m.checksum.toLowerCase() });
+    if(!b || !b.id) return;
+    await U.next({ id:b.id });
+    try{ await U.setMultiDelay({ delayConditions:[{ kind:'background', value:'600000' }] }); }catch(_){ }
+  }catch(e){
+    try{ console.warn('OTA', e && e.message); }catch(_){ }
+  }finally{ _otaBusy=false; }
+}
+async function fcOtaStart(){
+  if(!IS_NATIVE) return;
+  const U=_otaU(); if(!U) return;
+  try{ await U.notifyAppReady(); }catch(_){ }
+  // un pacchetto che non e' partito: annotato, cosi' non si riscarica in loop
+  try{ const f=await U.getFailedUpdate(); if(f && f.bundle && f.bundle.version) _otaMarkBad(f.bundle.version); }catch(_){ }
+  // pacchetto gia' pronto da un giro precedente: lo metto adesso, dietro al logo
+  try{
+    const nx=await U.getNextBundle(), cur=await U.current();
+    if(nx && nx.id && nx.id!=='builtin' && cur && cur.bundle && nx.id!==cur.bundle.id
+       && nx.status!=='error' && _otaBadList().indexOf(nx.version)<0){
+      let tried=''; try{ tried=sessionStorage.getItem('fc_ota_try')||''; }catch(_){ }
+      if(tried!==nx.id){
+        try{ sessionStorage.setItem('fc_ota_try', nx.id); }catch(_){ }
+        await U.set({ id:nx.id });   // ricarica subito: qui sotto non si arriva
+        return;
+      }
+    }
+  }catch(_){ }
+  setTimeout(()=>fcOtaCheck(true), 5000);
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) fcOtaCheck(false); });
+}
+try{ fcOtaStart(); }catch(_){ }
+
 boot();
 </script>
 </body>
