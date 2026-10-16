@@ -13757,7 +13757,9 @@ function chatKbBind(on){
    Per un avviso nuovo: cambia `id` (altrimenti chi ha gia' visto il vecchio non lo
    vede), `until`, titolo e testo. Per non mostrare niente: `NEWS=null`.
    Solo per le cose importanti: per le piccole non serve. */
-const NEWS=null;   // 14/10/2026: nessuna novita' da comunicare (per un avviso nuovo vedi sopra: id, until, title, html)
+const NEWS={id:'2026-10-fantavoto', until:'2026-11-16T00:00:00+01:00',   // 16/10/2026 (7.2): fantavoto medio nella scheda giocatore
+  title:'Novità: fantavoto medio',
+  html:'Nella scheda di ogni giocatore, accanto al voto medio, trovi ora il <b>fantavoto medio</b>: la media dei voti con bonus e malus.'};
 function maybeShowNews(){
   if(!NEWS) return;
   const key='fc_news_'+NEWS.id;
