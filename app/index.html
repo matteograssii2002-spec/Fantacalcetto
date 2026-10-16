@@ -3339,6 +3339,7 @@
       <div class="section-h"><h2>Impostazioni</h2></div>
       <button class="prof" onclick="setNav('page-profilo')"><span class="prof-glow" aria-hidden="true"></span><div id="setPreview"></div><div class="pinfo"><span class="prof-kick"><span id="setTeamLogo"></span>Il tuo profilo</span><b id="setTeamName">La tua squadra</b><span id="setPlayerName">Giocatore</span></div><span class="pgo">Modifica</span></button>
       <button class="navrow t-blue" onclick="setNav('page-notifiche')"><span class="ic">🔔</span><span class="lab">Notifiche<small id="notifRowSub">Avvisi delle giornate</small></span><span class="go">›</span></button>
+      <button class="navrow t-green" id="rowBio" onclick="bioSettings()" style="display:none"><span class="ic">🔐</span><span class="lab">Entra con impronta o volto<small id="bioRowSub">Al posto di email e password</small></span><span class="go" id="bioRowGo">›</span></button>
       <button class="navrow t-violet" id="rowTut" onclick="tutFromSettings()"><span class="ic">🎓</span><span class="lab">Tutorial<small>Rivedi le funzioni principali dell’app</small></span><span class="go">›</span></button>
       <button class="navrow t-gold" id="alboRow" onclick="openAlboSheet()" style="display:none"><span class="ic">🏆</span><span class="lab">Albo d'oro<small id="alboSub">Le stagioni archiviate</small></span><span class="go">›</span></button>
       <button class="navrow t-cyan" onclick="setNav('page-regolamento')"><span class="ic">📖</span><span class="lab">Regolamento<small>Come si fanno i punti</small></span><span class="go">›</span></button>
@@ -4049,7 +4050,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='7.2.1';
+const APP_VERSION='7.2.3';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   // nell'app si vede anche il codice del pacchetto: dice se un aggiornamento OTA e' arrivato
@@ -6611,6 +6612,12 @@ function gateSet(mode){
   gateStatus('');
   gateLinks();
   try{ gateAccounts(); }catch(_){ }   // 6.4
+  // 7.2 — se sul telefono c'e' l'accesso rapido, lo propongo da solo (una volta per apertura)
+  try{
+    if(gateMode==='login' && IS_NATIVE && !_bioAuto && bioSavedEmail() && _bioP()){
+      _bioAuto=true; setTimeout(()=>{ const g=document.getElementById('gate'); if(g && !g.classList.contains('hidden') && gateMode==='login' && gateStage==='form') bioLogin(); },500);
+    }
+  }catch(_){ }
 }
 /* i passaggi laterali: si cambia strada senza perdere l'email gi\u00e0 scritta */
 function gateLinks(){
@@ -6618,7 +6625,8 @@ function gateLinks(){
   if(gateStage!=='form'){ box.innerHTML=''; return; }
   let h='';
   if(gateMode==='login'){
-    h='<a onclick="gateGo(\'signup\')">Non hai un account? <b>Registrati</b></a>'
+    h=(typeof bioGateBtn==='function'?bioGateBtn():'')
+     +'<a onclick="gateGo(\'signup\')">Non hai un account? <b>Registrati</b></a>'
      +'<a onclick="gateGo(\'reset\')">Password dimenticata?</a>'
      +'<a class="small" onclick="gateGo(\'reset\')">Non ne hai mai avuta una? <b>Impostala qui</b></a>';
   } else if(gateMode==='signup'){
@@ -6722,7 +6730,7 @@ async function doLogin(email,pw){
     }
     gateStatus(authErrIt(error),true); return;
   }
-  if(data&&data.user){ user=data.user; gateStatus(''); afterLogin(); }
+  if(data&&data.user){ user=data.user; gateStatus(''); try{ bioNote(email,pw); }catch(_){ } afterLogin(); }
 }
 
 async function doSignup(email,pw){
@@ -6738,7 +6746,7 @@ async function doSignup(email,pw){
     gateStatus('Questa email ha gi\u00e0 un account. Entra con la tua password, oppure usa \u00abPassword dimenticata\u00bb.',true);
     return;
   }
-  if(data&&data.session&&u){ user=u; gateStatus(''); afterLogin(); return; }   // conferma email disattivata
+  if(data&&data.session&&u){ user=u; gateStatus(''); try{ bioNote(email,pw); }catch(_){ } afterLogin(); return; }   // conferma email disattivata
   gateShowCode('\u2705 Ti ho inviato un codice a '+email+'. Scrivilo qui sotto per confermare.');
 }
 
@@ -10018,6 +10026,7 @@ async function adDoDelete(btn){
     const {data,error}=await sb.rpc('delete_my_account');
     if(error) throw error;
     esito=data;
+    try{ bioForget(); }catch(_){ }
   }catch(e){
     btn.disabled=false; btn.style.opacity='1'; btn.textContent='Elimina definitivamente';
     toast(errText(e));
@@ -15679,6 +15688,152 @@ try{
   const _sb=document.getElementById('sheetBg'), _sh=document.getElementById('sheet');
   if(_sb&&_sh){ document.body.appendChild(_sb); document.body.appendChild(_sh); }
 }catch(_){ }
+/* ===== 7.2 — ENTRA CON IMPRONTA / VOLTO (solo app) ===============================
+   Un AIUTO per il login, non un blocco: dopo il primo accesso con email e password
+   l'app propone di salvare le credenziali in modo protetto (Keystore Android /
+   Keychain iOS). Quando poi serve entrare di nuovo (uscito dall'account, sessione
+   scaduta, telefono nuovo con lo stesso account) nella schermata di accesso compare
+   «Entra con impronta/volto» al posto di scrivere email e password.
+   Se la sessione e' gia' aperta, l'app si apre normalmente: niente blocchi.
+   - Telefoni con biometria forte: credenziali legate al sensore (serve il dito/volto
+     per leggerle). Telefoni con solo sblocco facciale «debole»: salvate cifrate e
+     lette solo dopo la verifica del volto/dito.
+   - Se la password e' cambiata, il tentativo fallisce, i dati salvati si cancellano
+     e si torna a email e password.
+   Sul sito e nella PWA non esiste (la riga nelle Impostazioni non compare). */
+const BIO_SERVER='it.fantacalcettoitalia.app.login';
+let _bioPending=null, _bioAuto=false, _bioAvail=null;   // _bioPending: {email,pw} in memoria, mai su disco
+function _bioP(){ try{ return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NativeBiometric) || null; }catch(_){ return null; } }
+function bioSavedEmail(){ try{ return localStorage.getItem('fc_bio_cred')||''; }catch(_){ return ''; } }
+function bioMode(){ try{ return localStorage.getItem('fc_bio_mode')||'secure'; }catch(_){ return 'secure'; } }
+async function bioCaps(){
+  if(_bioAvail) return _bioAvail;
+  const P=_bioP(); if(!P) return (_bioAvail={ok:false,strong:false});
+  try{
+    const r=await P.isAvailable({ useFallback:false });
+    _bioAvail={ ok:!!(r && r.isAvailable), strong:!!(r && r.strongBiometryIsAvailable) };
+  }catch(_){ _bioAvail={ok:false,strong:false}; }
+  return _bioAvail;
+}
+function _bioLabel(){ return 'impronta o volto'; }
+async function bioSave(email,pw){
+  const P=_bioP(); if(!P) return false;
+  const caps=await bioCaps(); if(!caps.ok) return false;
+  const base={ username:email, password:pw, server:BIO_SERVER };
+  if(caps.strong){
+    try{
+      await P.setCredentials(Object.assign({ accessControl:2, title:'FantaCalcetto', negativeButtonText:'Annulla' }, base));
+      localStorage.setItem('fc_bio_mode','secure'); localStorage.setItem('fc_bio_cred',email); return true;
+    }catch(e){ if(e && /cancel|user/i.test(String(e.message||e.code||''))) return false; }
+  }
+  try{
+    await P.verifyIdentity({ reason:'Conferma che sei tu', title:'FantaCalcetto', subtitle:'Attiva l’accesso rapido', negativeButtonText:'Annulla', useFallback:false });
+    await P.setCredentials(base);
+    localStorage.setItem('fc_bio_mode','gate'); localStorage.setItem('fc_bio_cred',email); return true;
+  }catch(_){ return false; }
+}
+async function bioForget(){
+  const P=_bioP();
+  try{ if(P) await P.deleteCredentials({ server:BIO_SERVER }); }catch(_){ }
+  try{ localStorage.removeItem('fc_bio_cred'); localStorage.removeItem('fc_bio_mode'); }catch(_){ }
+  bioRefreshRow(); try{ gateLinks(); }catch(_){ }
+}
+async function bioRead(){
+  const P=_bioP(); if(!P) return null;
+  try{
+    if(bioMode()==='secure'){
+      return await P.getSecureCredentials({ server:BIO_SERVER, title:'FantaCalcetto', subtitle:'Entra con impronta o volto', reason:'Entra in FantaCalcetto', negativeButtonText:'Annulla' });
+    }
+    await P.verifyIdentity({ reason:'Entra in FantaCalcetto', title:'FantaCalcetto', subtitle:'Conferma che sei tu', negativeButtonText:'Annulla', useFallback:false });
+    return await P.getCredentials({ server:BIO_SERVER });
+  }catch(_){ return null; }
+}
+/* tasto «Entra con impronta o volto» sopra i link dell'accesso */
+function bioGateBtn(){
+  if(!IS_NATIVE || !_bioP() || !bioSavedEmail()) return '';
+  return '<button class="ob-btn ghost" style="margin-top:0" onclick="bioLogin()">🔐 Entra con impronta o volto</button>';
+}
+async function bioLogin(){
+  if(!IS_NATIVE || !sb) return;
+  const c=await bioRead();
+  if(!c || !c.username || !c.password){ gateStatus('Non sono riuscito a leggere i dati salvati: entra con email e password.',true); return; }
+  const em=document.getElementById('gateEmail'); if(em) em.value=c.username;
+  gateStatus('Accesso in corso…');
+  const {data,error}=await sb.auth.signInWithPassword({email:c.username,password:c.password});
+  if(error){
+    if(/Invalid login credentials/i.test(String(error.message||''))){
+      await bioForget();
+      gateStatus('La password è cambiata: entra con email e password. Poi puoi riattivare l’accesso rapido.',true);
+    } else gateStatus(authErrIt(error),true);
+    return;
+  }
+  if(data && data.user){ user=data.user; gateStatus(''); afterLogin(); }
+}
+/* una volta, appena sistemato tutto dopo il primo accesso con password */
+function bioNote(email,pw){ if(IS_NATIVE && _bioP() && !bioSavedEmail()){ _bioPending={email:email,pw:pw}; bioOfferSoon(0); } }
+function bioOfferSoon(n){
+  if(!_bioPending) return;
+  try{ if(localStorage.getItem('fc_bio_no')==='1'){ _bioPending=null; return; } }catch(_){ }
+  const busy=(typeof TUT!=='undefined' && TUT) || (typeof tutBusy==='function' && tutBusy());
+  if(busy || !profile){ if(n<40) setTimeout(()=>bioOfferSoon(n+1),3000); return; }
+  bioCaps().then(c=>{
+    if(!c.ok || !_bioPending){ _bioPending=null; return; }
+    document.getElementById('sheetTitle').textContent='Entra più in fretta';
+    document.getElementById('sheetHint').textContent='Con '+_bioLabel()+' del telefono la prossima volta non devi scrivere email e password. Restano salvate in modo protetto, solo su questo telefono.';
+    document.getElementById('sheetList').innerHTML=
+      '<button class="save" onclick="bioOfferYes()">🔐 Attiva</button>'+
+      '<button class="set-btn" style="margin-top:10px" onclick="bioOfferNo(false)">Non ora</button>'+
+      '<button class="set-btn" style="margin-top:10px;opacity:.7" onclick="bioOfferNo(true)">Non chiedermelo più</button>';
+    openSheet();
+  });
+}
+async function bioOfferYes(){
+  const c=_bioPending; closeSheet(); _bioPending=null;
+  if(!c) return;
+  const ok=await bioSave(c.email,c.pw);
+  toast(ok ? 'Accesso rapido attivato ✓' : 'Non attivato: riprova da Impostazioni');
+  bioRefreshRow();
+}
+function bioOfferNo(never){ closeSheet(); _bioPending=null; if(never){ try{ localStorage.setItem('fc_bio_no','1'); }catch(_){ } } }
+/* Impostazioni */
+async function bioRefreshRow(){
+  const r=document.getElementById('rowBio'); if(!r) return;
+  const c=await bioCaps();
+  r.style.display=(IS_NATIVE && _bioP() && c.ok) ? '' : 'none';
+  const on=!!bioSavedEmail();
+  const sub=document.getElementById('bioRowSub'), go=document.getElementById('bioRowGo');
+  if(sub) sub.textContent = on ? 'Attivo · entri senza scrivere la password' : 'Spento · al posto di email e password';
+  if(go) go.textContent = on ? 'Attivo' : 'Spento';
+}
+function bioSettings(){
+  if(bioSavedEmail()){
+    document.getElementById('sheetTitle').textContent='Accesso rapido attivo';
+    document.getElementById('sheetHint').textContent='Quando devi rientrare nell’account puoi usare '+_bioLabel()+' al posto di email e password.';
+    document.getElementById('sheetList').innerHTML='<button class="set-btn" onclick="closeSheet();bioForget();toast(\'Accesso rapido disattivato\')">Disattiva</button>';
+    openSheet(); return;
+  }
+  document.getElementById('sheetTitle').textContent='Attiva l’accesso rapido';
+  document.getElementById('sheetHint').textContent='Scrivi la tua password una volta: la salvo in modo protetto su questo telefono, e poi entri con '+_bioLabel()+'.';
+  document.getElementById('sheetList').innerHTML=
+    '<div class="pw-wrap" style="margin-top:0"><input class="ob-input" id="bioPwIn" type="password" placeholder="La tua password" autocomplete="current-password"></div>'+
+    '<div id="bioPwSt" class="gate-status bad" style="min-height:0"></div>'+
+    '<button class="save" style="margin-top:12px" onclick="bioSettingsGo()">Attiva</button>';
+  openSheet();
+}
+async function bioSettingsGo(){
+  const inp=document.getElementById('bioPwIn'), st=document.getElementById('bioPwSt');
+  const pw=(inp&&inp.value)||''; const email=(user&&user.email)||'';
+  if(!pw){ if(st) st.textContent='Scrivi la password.'; return; }
+  if(st){ st.classList.remove('bad'); st.textContent='Controllo…'; }
+  const {error}=await sb.auth.signInWithPassword({email,password:pw});
+  if(error){ if(st){ st.classList.add('bad'); st.textContent=/Invalid login/i.test(String(error.message||''))?'Password sbagliata.':authErrIt(error); } return; }
+  closeSheet();
+  const ok=await bioSave(email,pw);
+  toast(ok?'Accesso rapido attivato ✓':'Non attivato');
+  bioRefreshRow();
+}
+try{ if(IS_NATIVE) bioRefreshRow(); }catch(_){ }
+
 /* ===== 7.2 — AGGIORNAMENTI DELL'APP SENZA PASSARE DALLO STORE (OTA) ===========
    Solo nell'app Android/iOS; sul sito e nella PWA non fa niente.
    Il gioco vive dentro l'app (www/). Quando pubblichi una versione nuova con
@@ -15716,7 +15871,7 @@ async function _otaManifest(){
   if(!d || typeof d.version!=='string') return null;
   return d;
 }
-async function fcOtaCheck(force){
+async function fcOtaCheck(force,instant){
   const U=_otaU(); if(!U || _otaBusy) return;
   if(!force && Date.now()-_otaAt < 30*60*1000) return;
   _otaBusy=true; _otaAt=Date.now();
@@ -15750,6 +15905,13 @@ async function fcOtaCheck(force){
     if(!b) b=await U.download({ url:m.url, version:m.version, checksum:m.checksum.toLowerCase() });
     if(!b || !b.id) return;
     await U.next({ id:b.id });
+    /* ISTANTANEO: se il pacchetto e' arrivato mentre c'e' ancora il logo di avvio
+       (rete buona, pacchetto piccolo), lo metto subito: la prima apertura e' gia'
+       quella nuova. Se e' arrivato tardi, l'app e' in uso: si applica piu' avanti. */
+    if(instant && typeof _splashGone!=='undefined' && !_splashGone && !window.__fcReloading){
+      window.__fcReloading=true;
+      try{ await U.set({ id:b.id }); return; }catch(_){ window.__fcReloading=false; }
+    }
     try{ await U.setMultiDelay({ delayConditions:[{ kind:'background', value:'600000' }] }); }catch(_){ }
   }catch(e){
     try{ console.warn('OTA', e && e.message); }catch(_){ }
@@ -15769,12 +15931,13 @@ async function fcOtaStart(){
       let tried=''; try{ tried=sessionStorage.getItem('fc_ota_try')||''; }catch(_){ }
       if(tried!==nx.id){
         try{ sessionStorage.setItem('fc_ota_try', nx.id); }catch(_){ }
+        window.__fcReloading=true;
         await U.set({ id:nx.id });   // ricarica subito: qui sotto non si arriva
         return;
       }
     }
   }catch(_){ }
-  setTimeout(()=>fcOtaCheck(true), 5000);
+  fcOtaCheck(true,true);   // subito, in parallelo al caricamento: se e' veloce, parte la versione nuova
   document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) fcOtaCheck(false); });
 }
 try{ fcOtaStart(); }catch(_){ }
