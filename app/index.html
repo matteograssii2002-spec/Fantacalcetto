@@ -3966,6 +3966,33 @@ const NATIVE_OS=(function(){
    Sul sito e nella PWA fcAppUrl() restituisce lo stesso indirizzo di prima. */
 const FC_SITE='https://www.fantacalcettoitalia.it';
 function fcAppUrl(){ return IS_NATIVE ? FC_SITE+'/app/' : (location.origin+location.pathname); }
+/* 7.2.5 — RICARICARE L'APP: un solo punto per tutta l'app.
+   Nell'app Android `location.reload()` a volte non fa niente (19/10/2026, Galaxy S9:
+   «Aggiungi un altro account» toglieva la sessione ma l'app restava aperta e anonima,
+   e da li' l'Albo d'oro e le altre letture rispondevano vuote).
+   - App: ricarica il plugin degli aggiornamenti (CapacitorUpdater.reload), che riapre
+     la pagina dal lato nativo, senza passare dalla cronologia del browser. Se nel
+     frattempo e' gia' scaricato un aggiornamento, parte quello: e' comunque un riavvio.
+   - Sito e PWA: location.reload() come prima.
+   In entrambi i casi, se dopo qualche secondo la pagina e' ancora questa, la si riapre
+   dal suo indirizzo (rete di sicurezza: se il ricaricamento riesce, questo codice non
+   arriva mai a girare). Chiamate doppie ignorate. */
+function fcReload(){
+  if(window.__fcReloadAsked) return;
+  window.__fcReloadAsked=true;
+  const fallback=()=>{ try{ location.replace(IS_NATIVE ? location.origin+'/' : location.pathname+location.search); }catch(_){ } };
+  let U=null;
+  try{ if(IS_NATIVE) U=(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorUpdater) || null; }catch(_){ U=null; }
+  if(U && typeof U.reload==='function'){
+    let gone=false;
+    const web=()=>{ if(gone) return; gone=true; try{ location.reload(); }catch(_){ } setTimeout(fallback,4000); };
+    try{ Promise.resolve(U.reload()).catch(web); }catch(_){ web(); return; }
+    setTimeout(web,4000);
+    return;
+  }
+  try{ location.reload(); }catch(_){ }
+  setTimeout(fallback,4000);
+}
 if(IS_NATIVE){
   try{ document.documentElement.classList.add('native', 'native-'+NATIVE_OS); }catch(_){ }
   const _P=()=> (window.Capacitor && window.Capacitor.Plugins) || {};
@@ -5567,7 +5594,7 @@ async function netAlive(){
 // e si torna esattamente dov'era; se invece non era mai partita, ricarico.
 function backOnline(){
   if(user && _splashGone){ offStatus(''); hideOffline(); }
-  else { offStatus('Connessione trovata, ricarico…'); setTimeout(()=>location.reload(), 500); }
+  else { offStatus('Connessione trovata, ricarico…'); setTimeout(()=>fcReload(), 500); }
 }
 async function retryOffline(){
   if(_offRetrying) return; _offRetrying=true;
@@ -5692,13 +5719,18 @@ async function boot(){
   }catch(_){ }
   fcMarkStandalone();
   fcCheckInstalled();   // non aspetta: se cambia qualcosa la schermata si ridisegna
+  /* 7.2.5 — «Aggiungi un altro account»: il segno lasciato prima di ricaricare garantisce
+     che si riparta senza sessione (anche se una scrittura in ritardo l'avesse rimessa)
+     e che si arrivi dritti all'accesso, con sotto gli account gia' usati sul telefono. */
+  let _accAdding=false;
+  try{ if(localStorage.getItem(ACC_ADD_KEY)==='1'){ localStorage.removeItem(ACC_ADD_KEY); _accAdding=true; accDropLocalSession(); } }catch(_){ }
   sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
   spTo(10);
   if(!IS_NATIVE && 'serviceWorker' in navigator){ try{
     await navigator.serviceWorker.register('/sw.js');
     // quando un nuovo service worker prende il controllo, ricarica UNA volta per prendere l'HTML fresca
     let _refreshing=false;
-    navigator.serviceWorker.addEventListener('controllerchange', ()=>{ if(_refreshing)return; _refreshing=true; location.reload(); });
+    navigator.serviceWorker.addEventListener('controllerchange', ()=>{ if(_refreshing)return; _refreshing=true; fcReload(); });
     // controlla subito se c'è una versione più recente
     try{ const reg=await navigator.serviceWorker.getRegistration(); if(reg) reg.update(); }catch(_){}
   }catch(_){} }
@@ -5710,6 +5742,10 @@ async function boot(){
     // più affidabile, perché con alcuni tipi di link il token non si vede nell'indirizzo.
     if(_e==='PASSWORD_RECOVERY'){ gateEnterRecovery(session&&session.user?session.user.email:''); return; }
     if(_gateAwaitNewPw) return;
+    // 7.2.5 — sessione persa con l'app aperta (rinnovo rifiutato, uscita da un'altra scheda):
+    // prima l'app restava sulla schermata di prima ma parlava col database da anonima.
+    if(_e==='SIGNED_IN') _fcSelfOut=false;   // nuovo accesso nella stessa pagina: il controllo torna attivo
+    if(_e==='SIGNED_OUT' && user && !_accSwitching && !_fcSelfOut){ toast('Sessione scaduta: accedi di nuovo'); fcReload(); return; }
     if(session) accRemember(session);   // 6.4 — la sessione (anche rinnovata) resta salvata per il cambio account
     if(_accSwitching) return;           // 6.4 — sto cambiando account: ci pensa il ricaricamento
     if(session&&(!user||user.id!==session.user.id)){ user=session.user; afterLogin(); }
@@ -5729,6 +5765,7 @@ async function boot(){
     afterLogin();
   }
   else {
+    if(_accAdding){ hideSplash(); showGate('login'); gateStatus('Accedi con l\u2019altro account.'); return; }
     // LINK D'INVITO (?lega=slug): salto la welcome e vado dritto al login,
     // già in modalità "entra in una lega" e con il nome della lega a schermo.
     const _slug=new URLSearchParams(location.search).get('lega');
@@ -5776,7 +5813,7 @@ async function afterLogin(){
           Home, perché così iOS cancellava la sessione salvata.) */
     if(!_interactiveAuth){
       try{ if(user) accRemove(user.id); }catch(_){ }   // 6.4
-      try{ await sb.auth.signOut(); }catch(_){ }
+      try{ await fcSignOut(); }catch(_){ }
       user=null; profile=null; myLeague=null; currentMd=null;
       try{ Object.keys(localStorage).filter(k=>/^fc_(pendingRules|recap|srecap|live)/.test(k))
              .forEach(k=>localStorage.removeItem(k)); }catch(_){ }
@@ -6651,7 +6688,7 @@ function gateGo(mode){
   if(em){ em.value=keep; if(!keep) setTimeout(()=>{ try{em.focus();}catch(_){ } },120); }
 }
 function gateBack(){
-  if(gateStage==='newpw'){ _gateAwaitNewPw=false; try{ sb.auth.signOut(); }catch(_){ } gateSet('login'); return; }
+  if(gateStage==='newpw'){ _gateAwaitNewPw=false; try{ fcSignOut(); }catch(_){ } gateSet('login'); return; }
   if(gateStage==='code'){ gateSet(gateMode); return; }
   if(gateMode==='reset'){ gateSet('login'); return; }
   showWelcome();
@@ -10053,14 +10090,14 @@ async function adDoDelete(btn){
       if(sub) await sub.unsubscribe();
     }
   }catch(_){ }
-  try{ await sb.auth.signOut(); }catch(_){ }
+  try{ await fcSignOut(); }catch(_){ }
   try{ localStorage.clear(); if(_altri.length) accSave(_altri); }catch(_){ }
 
   adClose();
   alert(esito==='league_deleted'
     ? 'Account e lega eliminati. Grazie di aver giocato.'
     : 'Account eliminato. Grazie di aver giocato.');
-  location.replace('/');
+  if(IS_NATIVE) fcReload(); else location.replace('/');
 }
 
 /* ==========================================================================
@@ -10181,12 +10218,12 @@ async function ldDoDelete(btn){
       if(sub) await sub.unsubscribe();
     }
   }catch(_){ }
-  try{ await sb.auth.signOut(); }catch(_){ }
+  try{ await fcSignOut(); }catch(_){ }
   try{ localStorage.clear(); if(_altri.length) accSave(_altri); }catch(_){ }
 
   ldClose();
   alert('Lega eliminata. Grazie di aver giocato.');
-  location.replace('/');
+  if(IS_NATIVE) fcReload(); else location.replace('/');
 }
 
 /* ---------- PAGINA BACHECA (overlay full-screen) ---------- */
@@ -12958,8 +12995,8 @@ document.getElementById('logoutBtn').onclick=async()=>{
   if(!confirm(msg)) return;
   await pushForget();
   if(user) accRemove(user.id);
-  await sb.auth.signOut();
-  if(others.length){ _accSwitching=false; accSwitch(others[0].id); } else location.reload();
+  await fcSignOut();
+  if(others.length){ _accSwitching=false; accSwitch(others[0].id); } else fcReload();
 };
 
 /* ---------- GESTIONE GIOCATORI (admin) ---------- */
@@ -13133,7 +13170,7 @@ async function retryBusy(silent){
   if(!silent && b){ b.disabled=false; b.textContent='Riprova'; }
   if(c.pieno){ if(st) st.textContent='Ancora al completo. Riprovo da solo fra poco.'; return; }
   hideBusy();
-  try{ location.reload(); }catch(_){ }
+  try{ fcReload(); }catch(_){ }
 }
 /* Chiede al database quanti siamo dentro adesso e qual e' il tetto. Se la
    funzione non c'e' ancora (SQL non eseguito) si fa finta di niente: mai
@@ -13211,6 +13248,17 @@ let toastT;function toast(msg){const t=document.getElementById('toast');t.textCo
    ========================================================================== */
 const ACC_KEY='fcx_accounts';
 let _accSwitching=false;
+/* 7.2.5 */
+const ACC_ADD_KEY='fcx_acc_adding';   // segno «sto aggiungendo un account», letto all'avvio
+let _fcSelfOut=false;                 // uscita voluta: il controllo «sessione persa» non interviene
+function fcSignOut(){ _fcSelfOut=true; return sb.auth.signOut(); }
+// toglie solo la copia locale della sessione (niente chiamata al server, vedi accAdd)
+function accDropLocalSession(){
+  try{
+    const k=(sb&&sb.auth&&sb.auth.storageKey)||'';
+    Object.keys(localStorage).forEach(x=>{ if((k&&x.indexOf(k)===0)||/^sb-.+-auth-token/.test(x)) localStorage.removeItem(x); });
+  }catch(_){ }
+}
 function accList(){
   try{ const a=JSON.parse(localStorage.getItem(ACC_KEY)||'[]'); return Array.isArray(a)?a.filter(x=>x&&x.id&&x.rt):[]; }catch(_){ return []; }
 }
@@ -13254,7 +13302,7 @@ async function accSwitch(id){
     if(error||!data||!data.session||data.session.user.id!==id) throw (error||new Error('sessione'));
     accRemember(data.session);
     const l=accList(), n=l.find(x=>x.id===id); if(n){ n.used=Date.now(); accSave(l); }
-    location.reload();
+    fcReload();
   }catch(e){
     // senza rete l'errore non dice niente sull'account: resta nell'elenco. Solo una sessione davvero scaduta lo toglie.
     const _net = navigator.onLine===false || /fetch|network|load failed/i.test(String((e&&e.message)||''));
@@ -13266,7 +13314,7 @@ async function accSwitch(id){
     if(!ok){
       if(_net){ toast('Nessuna connessione: riprova fra poco.'); return; }
       if(!user){ accExpiredToGate(a); return; }   // dalla schermata di accesso: email gia' scritta, manca solo la password
-      location.reload(); return;
+      fcReload(); return;
     }
     toast(_net ? 'Nessuna connessione: riprova fra poco.' : 'Sessione scaduta: aggiungi di nuovo questo account');
   }
@@ -13277,22 +13325,23 @@ function accExpiredToGate(a){
     const em=document.getElementById('gateEmail'); if(em&&a&&a.email) em.value=a.email;
     gateStatus('La sessione di questo account è scaduta: inserisci la password per rientrare.');
     const pw=document.getElementById('gatePw'); if(pw) pw.focus();
-  }catch(_){ location.reload(); }
+  }catch(_){ fcReload(); }
 }
 async function accAdd(){
   closeSheet();
   if(_accSwitching||!accGuard()) return;
   _accSwitching=true;
-  await accCurrentSaved();
+  /* La sessione attuale e' gia' salvata a ogni rinnovo (onAuthStateChange -> accRemember):
+     qui la si aggiorna un'ultima volta, ma senza aspettare piu' di 3 secondi. */
+  try{ await Promise.race([accCurrentSaved(), new Promise(r=>setTimeout(r,3000))]); }catch(_){ }
   /* NIENTE signOut(), nemmeno con scope 'local': avvisa comunque il server, che chiude quella
      sessione, e il token appena salvato non vale piu' (era il difetto della prima 6.4: toccando
-     l'account non succedeva niente). Si toglie solo la copia locale della sessione e si ricarica. */
+     l'account non succedeva niente). Si toglie solo la copia locale della sessione e si ricarica.
+     7.2.5: il segno ACC_ADD_KEY fa ripartire l'app direttamente dall'accesso. */
   try{ sb.auth.stopAutoRefresh(); }catch(_){ }
-  try{
-    const k=(sb.auth&&sb.auth.storageKey)||'';
-    Object.keys(localStorage).forEach(x=>{ if((k&&x.indexOf(k)===0)||/^sb-.+-auth-token/.test(x)) localStorage.removeItem(x); });
-  }catch(_){ }
-  location.reload();
+  try{ localStorage.setItem(ACC_ADD_KEY,'1'); }catch(_){ }
+  accDropLocalSession();
+  fcReload();
 }
 function openAccounts(){
   if(!user) return;
@@ -13654,6 +13703,7 @@ async function _fetchSelf(){
 _fetchSelf().then(t=>{_bootHtml=t;});
 let _checking=false;
 async function checkForUpdate(){
+  if(IS_NATIVE) return;   // 7.2.5 — nell'app gli aggiornamenti arrivano dall'OTA (fcOtaCheck): il file locale non cambia mai
   if(_checking) return; _checking=true;
   try{
     const t=await _fetchSelf();
@@ -13661,7 +13711,7 @@ async function checkForUpdate(){
       if(_bootHtml==null){ _bootHtml=t; }
       /* si confrontano solo cose dello stesso tipo: impronta con impronta */
       else if(t.startsWith('etag:')!==String(_bootHtml).startsWith('etag:')){ }
-      else if(t!==_bootHtml){ location.reload(); return; }
+      else if(t!==_bootHtml){ fcReload(); return; }
     }
   }finally{ _checking=false; }
 }
@@ -13691,7 +13741,7 @@ document.addEventListener('visibilitychange',()=>{
   const via=_awaySince?Date.now()-_awaySince:0;
   if(via>COLD_RESTART_AFTER && !_coldRestarting && _canColdRestart()){
     _coldRestarting=true;
-    try{ location.reload(); return; }catch(_){ _coldRestarting=false; }
+    try{ fcReload(); return; }catch(_){ _coldRestarting=false; }
   }
   if(via>30*60*1000) toTop();
   checkForUpdate(); ensurePush(); refreshChatUnread();
