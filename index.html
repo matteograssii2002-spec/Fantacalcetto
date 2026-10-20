@@ -138,7 +138,7 @@
     background:rgba(255,194,61,.16);color:var(--gold);font-size:12px;font-weight:800}
   @media (max-width:360px){ .pfound{padding:18px 12px 14px} .pfound .pf-l{gap:6px} .pfound .pf-l span{font-size:11.5px;padding:10px 2px 9px} }
   /* Sessione 68: il pulsante Pro esce dalla vetrina. Da qui non si sa di che
-     lega sei, quindi il passaggio si fa solo dentro l'app. Stili qui e non in
+     lega sei, quindi il passaggio si fa dalla pagina /pro (20/10/2026: nome lega, senza login). Stili qui e non in
      sito.css per lo stesso motivo della regola sopra. */
   .calc .cvat{color:var(--muted);font-size:12.5px;font-weight:600;margin:-2px 0 10px}
   .calc .cwhere{display:flex;align-items:center;justify-content:center;gap:9px;text-align:left;max-width:380px;
@@ -146,6 +146,9 @@
     background:rgba(255,194,61,.08);border:1px solid rgba(255,194,61,.24);font-size:13.5px;line-height:1.5}
   .calc .cwhere .ic{font-size:18px;line-height:1.2;flex:none}
   .calc .cwhere b{color:var(--gold-soft)}
+  .calc a.cwhere{color:inherit;text-decoration:none;transition:background .2s,border-color .2s}
+  .calc a.cwhere:hover{background:rgba(255,194,61,.14);border-color:rgba(255,194,61,.45)}
+  .calc a.cwhere u{color:var(--gold-soft);text-underline-offset:3px;font-weight:700;white-space:nowrap}
 </style>
 
 <script type="application/ld+json">
@@ -616,7 +619,7 @@
         <span class="cflag"><b>✓</b> Nessun rinnovo automatico</span>
         <span class="cflag"><b>✓</b> Si paga una volta e basta</span>
       </div>
-      <div class="cwhere"><span class="ic">📱</span><span>Passa a Pro <b>dentro l'app</b></span></div>
+      <a class="cwhere" href="/pro"><span class="ic">⭐</span><span><b>Passa a Pro</b> <u>→</u></span></a>
     </div>
 
     <div class="pfound rise">
@@ -687,7 +690,7 @@
     </div>
     <div class="faq rise">
       <details><summary>Quanto costa?</summary><div class="a"><p><b>Giocare è gratis</b>, per sempre e senza pubblicità: fino a 15 giocatori avete il gioco completo, pagellone e classifica compresi. <b>Pro costa €29,90 a stagione per tutta la lega</b> (non a testa, IVA inclusa) e serve se siete più di 15 o se volete tenere le stagioni passate. <a href="#prezzi">Vedi i prezzi</a>.</p></div></details>
-      <details><summary>Come si passa a Pro?</summary><div class="a"><p><b>Dall'app.</b> L'amministratore della lega lo attiva da <b>Impostazioni → FantaCalcetto Pro</b> e vale per tutti i partecipanti.</p></div></details>
+      <details><summary>Come si passa a Pro?</summary><div class="a"><p><b>Dal sito.</b> Basta la pagina <a href="/pro">Passa a Pro</a>: scrivi il nome della lega e paghi, senza accedere. Vale per tutti i partecipanti.</p></div></details>
       <details><summary>C'è una prova a tempo?</summary><div class="a"><p><b>No, e non serve.</b> La versione gratuita non è una prova: è il gioco completo, senza scadenza e senza carta di credito. Pro si prende solo quando serve davvero, cioè quando superate i 15 giocatori o quando volete rivedere le stagioni passate.</p></div></details>
       <details><summary>Quanti bisogna essere?</summary><div class="a"><p><b>Da dieci in su</b>, così le formazioni possono essere diverse tra loro. Con quindici è perfetto. La versione gratuita arriva <b>fino a 15 giocatori</b>; oltre serve Pro, e lì non c'è nessun tetto. Chi è già dentro <b>non viene mai tolto</b>.</p></div></details>
       <details><summary>Si può giocare senza scendere in campo?</summary><div class="a"><p><b>Sì.</b> Chi non gioca a calcetto — un amico, la fidanzata, chi è infortunato a lungo — entra come <b>solo allenatore</b>: ha la sua squadra, schiera la formazione e sta in classifica come tutti. Non prende voti, perché non gioca, e non compare nel sondaggio delle presenze. Se possa votare i giocatori lo decide l'organizzatore.</p></div></details>
