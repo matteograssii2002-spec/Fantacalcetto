@@ -381,8 +381,12 @@
   <div class="card">
     <img class="logo" src="/icon-512.png?v=3" alt="">
     <h1 style="text-align:center">Console</h1>
-    <p class="sub" style="text-align:center;margin:6px 0 16px" id="loginSub">Accedi con la mail del tuo account super-admin.</p>
-    <div id="step1">
+    <p class="sub" style="text-align:center;margin:6px 0 16px" id="loginSub">Inserisci il PIN.</p>
+    <div id="step0" style="display:none">
+      <input id="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="&bull;&bull;&bull;&bull;" oninput="pinInput()" style="text-align:center;font-size:28px;letter-spacing:.6em;padding-left:.6em">
+      <p class="note" style="text-align:center"><a href="#" onclick="signOut();return false" style="color:var(--muted)">Esci del tutto da questo dispositivo</a></p>
+    </div>
+    <div id="step1" style="display:none">
       <input id="email" type="email" inputmode="email" placeholder="la-tua@email.it" autocomplete="email">
       <button class="btn" style="margin-top:10px" onclick="sendCode()">Invia codice</button>
     </div>
@@ -411,7 +415,7 @@
     <img class="logo" src="/icon-512.png?v=3" alt="">
     <div class="sp"><h1>Console</h1><p class="sub" id="topSub">—</p></div>
     <button class="iconbtn" onclick="loadAll()" id="refBtn" aria-label="Aggiorna"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><polyline points="20 4 20 11 13 11"/></svg></button>
-    <button class="iconbtn" onclick="signOut()" aria-label="Esci"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+    <button class="iconbtn" onclick="lock()" aria-label="Blocca"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
   </div>
 <div class="scrollwrap" id="scrollwrap">
 <div class="wrap">
@@ -476,28 +480,52 @@
   <!-- ============ CONTI ============ -->
   <div class="tabpane" id="paneConti">
     <div class="card">
+      <h2>Riepilogo su 12 mesi</h2>
+      <div class="grid">
+        <div class="stat gold"><b id="sRev" style="font-size:17px">&ndash;</b><span>Ricavi</span></div>
+        <div class="stat red"><b id="sCost" style="font-size:17px">&ndash;</b><span>Costi</span></div>
+        <div class="stat" id="sMarginCard"><b id="sMargin" style="font-size:17px">&ndash;</b><span>Margine</span></div>
+      </div>
+      <p class="note" id="sNote"></p>
+    </div>
+
+    <div class="card">
+      <h2>Ricavi</h2>
+      <div class="grid">
+        <div class="stat"><b id="rPaying">&ndash;</b><span>Leghe Pro paganti</span></div>
+        <div class="stat"><b id="rPrice" style="font-size:17px">&ndash;</b><span>Prezzo all&rsquo;anno</span></div>
+        <div class="stat green"><b id="rYear" style="font-size:17px">&ndash;</b><span>Ricavo all&rsquo;anno</span></div>
+      </div>
+      <p class="note" id="revNote">&mdash;</p>
+      <div class="row" style="margin-top:14px;align-items:flex-end">
+        <div style="flex:1;min-width:0"><label class="lab" for="inPrice">Prezzo Pro, &euro; all&rsquo;anno per lega</label><input id="inPrice" inputmode="decimal" placeholder="29,90"></div>
+        <button class="btn ghost sm" onclick="savePrice()">Salva</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Costi <span class="rt" id="cTot"></span></h2>
+      <div id="costWarn" class="empty" style="display:none;color:var(--amber)">Manca la SQL nuova: esegui <span class="num">17_console_costi_e_slot.sql</span> e poi aggiorna.</div>
+      <div id="costList"></div>
+      <div style="margin-top:14px">
+        <label class="lab" for="cLabel">Nuova spesa</label>
+        <input id="cLabel" placeholder="Es. Boost post Instagram" maxlength="80" autocomplete="off">
+        <div class="row" style="margin-top:8px">
+          <div style="flex:1;min-width:0"><input id="cAmount" inputmode="decimal" placeholder="Importo &euro;" autocomplete="off"></div>
+          <div style="flex:1;min-width:0"><select id="cPeriod"><option value="una_volta">Una volta</option><option value="mese">Ogni mese</option><option value="anno">Ogni anno</option></select></div>
+        </div>
+        <button class="btn" style="margin-top:10px" onclick="addCost()">Aggiungi spesa</button>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>Slot fondatrici</h2>
       <div class="row" style="align-items:baseline;gap:8px;flex-wrap:wrap">
         <span class="big num" id="fUsed">&ndash;</span>
         <span class="sub">su <span class="num" id="fTot">20</span> occupati &middot; <b id="fFree">&ndash;</b> liberi</span>
       </div>
       <div class="slots" id="fSlots"></div>
-      <p class="note">Le prime venti leghe hanno Pro per sempre, per patto. Il conto lo tiene il trigger <span class="num">trg_founder_slot</span> nel database, non questa pagina. Uno slot si libera solo con un&rsquo;azione manuale e deliberata.</p>
-    </div>
-
-    <div class="card">
-      <h2>Denaro</h2>
-      <div class="grid">
-        <div class="stat red"><b id="eCost">&ndash;</b><span>Costo al mese</span></div>
-        <div class="stat gold"><b id="eRev">&ndash;</b><span>Ricavo stimato</span></div>
-        <div class="stat" id="eMarginCard"><b id="eMargin">&ndash;</b><span>Margine stimato</span></div>
-      </div>
-      <p class="note" id="revNote">&mdash;</p>
-      <div class="row" style="margin-top:14px;align-items:flex-end">
-        <div style="flex:1;min-width:0"><label class="lab" for="inCost">Costo &euro;/mese</label><input id="inCost" inputmode="decimal" placeholder="0"></div>
-        <div style="flex:1;min-width:0"><label class="lab" for="inPrice">Prezzo &euro;/lega</label><input id="inPrice" inputmode="decimal" placeholder="0"></div>
-      </div>
-      <button class="btn ghost" style="margin-top:12px" onclick="saveEconomics()">Salva</button>
+      <p class="note">Le prime venti leghe hanno Pro per sempre, per patto. Se una viene riportata a gratis perde lo status e lo slot torna libero per la prossima lega che si crea.</p>
     </div>
 
     <div class="card">
@@ -592,7 +620,13 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;',
 function show(id){ ['loginView','denyView','app'].forEach(v=>{
   const e=document.getElementById(v); if(e) e.style.display=(v===id?'flex':'none'); });
   const aw=document.getElementById('authWrap'); if(aw) aw.style.display=(id==='app')?'none':'block'; }
-function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show');
+/* Il riquadro dei messaggi puo' mancare dalla pagina: prima toast() andava in errore e,
+   siccome ogni azione chiama toast() PRIMA di ridisegnare la schermata, il ridisegno non
+   partiva mai (da qui il «devo premere Aggiorna»). Ora il riquadro si crea da solo. */
+function toast(m){
+  let t=document.getElementById('toast');
+  if(!t){ t=document.createElement('div'); t.id='toast'; t.className='toast'; document.body.appendChild(t); }
+  t.textContent=m; t.classList.add('show');
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3000); }
 function eur(v){ return (v==null||v==='')?'—':('€'+Number(v).toLocaleString('it-IT')); }
 function dt(v){ if(!v) return '—'; const d=new Date(v); if(isNaN(d)) return '—';
@@ -610,11 +644,50 @@ function ago(v){ if(!v) return '—'; const d=new Date(v); if(isNaN(d)) return '
   const g=Math.floor(s/86400); return g+(g===1?' giorno fa':' giorni fa'); }
 function msAgo(v){ const d=v?new Date(v):null; return (d&&!isNaN(d))?(Date.now()-d.getTime()):null; }
 
-/* ---------- accesso ---------- */
+/* ---------- accesso ----------
+   Due chiavi. 1) La SESSIONE (mail + codice): si fa UNA volta per dispositivo e resta salvata
+   finche' non scegli «Esci del tutto». 2) Il PIN: si chiede a ogni apertura della console.
+   Il PIN da solo non apre niente: senza la sessione i dati non escono dal database. Per questo
+   non e' una password e non viene mai mandato a Supabase: serve a chiudere a chiave il
+   telefono lasciato in giro. Nel file c'e' solo la sua impronta (SHA-256), non il numero. */
+const PIN_HASH='a9cf85077d385637f1cf278c4f7ef11f02def1e8ad268726ea117e5b5ae30385';
+const UNLOCK_KEY='fc_adm_unlocked';
+let _pinFail=0, _pinUntil=0;
+function isUnlocked(){ try{ return sessionStorage.getItem(UNLOCK_KEY)==='1'; }catch(_){ return false; } }
+function setUnlocked(v){ try{ if(v) sessionStorage.setItem(UNLOCK_KEY,'1'); else sessionStorage.removeItem(UNLOCK_KEY); }catch(_){ } }
+async function sha256hex(t){
+  const b=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));
+  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+function showStep(n){
+  ['step0','step1','step2'].forEach((id,i)=>{ document.getElementById(id).style.display=(i===n?'block':'none'); });
+  document.getElementById('loginSub').textContent =
+    n===0 ? 'Inserisci il PIN.' :
+    n===1 ? 'Primo accesso su questo dispositivo: la mail del tuo account super-admin.' :
+            'Inserisci il codice ricevuto via email.';
+  document.getElementById('loginErr').textContent='';
+  const f=document.getElementById(n===0?'pin':(n===1?'email':'code'));
+  if(f) setTimeout(()=>{ try{ f.focus(); }catch(_){ } },60);
+}
 async function boot(){
   const { data:{ session } } = await sb.auth.getSession();
-  if(!session){ show('loginView'); return; }
+  if(!session){ show('loginView'); showStep(1); return; }
+  if(!isUnlocked()){ show('loginView'); showStep(0); return; }
   await gate();
+}
+async function pinInput(){
+  const el=document.getElementById('pin');
+  const v=(el.value||'').replace(/\D/g,'').slice(0,4); el.value=v;
+  if(v.length<4) return;
+  const err=document.getElementById('loginErr');
+  if(Date.now()<_pinUntil){ el.value=''; err.textContent='Troppi tentativi: riprova tra '+Math.ceil((_pinUntil-Date.now())/1000)+' secondi.'; return; }
+  let ok=false;
+  try{ ok=(await sha256hex('fcadm:'+v))===PIN_HASH; }catch(_){ ok=false; }
+  el.value='';
+  if(ok){ _pinFail=0; setUnlocked(true); await gate(); return; }
+  _pinFail++;
+  if(_pinFail>=5){ _pinFail=0; _pinUntil=Date.now()+30000; err.textContent='PIN sbagliato 5 volte: attendi 30 secondi.'; }
+  else err.textContent='PIN sbagliato.';
 }
 async function gate(){
   try{
@@ -631,18 +704,19 @@ async function sendCode(){
   if(!emailVal){ document.getElementById('loginErr').textContent='Inserisci la mail.'; return; }
   const { error } = await sb.auth.signInWithOtp({ email:emailVal, options:{ shouldCreateUser:false } });
   if(error){ document.getElementById('loginErr').textContent=error.message; return; }
-  document.getElementById('step1').style.display='none';
-  document.getElementById('step2').style.display='block';
-  document.getElementById('loginSub').textContent='Inserisci il codice ricevuto via email.';
+  showStep(2);
 }
 async function verifyCode(){
   const token=(document.getElementById('code').value||'').trim();
   document.getElementById('loginErr').textContent='';
   const { error } = await sb.auth.verifyOtp({ email:emailVal, token, type:'email' });
   if(error){ document.getElementById('loginErr').textContent='Codice non valido.'; return; }
+  setUnlocked(true);            // il codice della mail vale gia' come sblocco
   await gate();
 }
-async function signOut(){ await sb.auth.signOut(); location.reload(); }
+/* Blocca: torna al PIN, la sessione resta. Esci del tutto: cancella anche la sessione. */
+function lock(){ setUnlocked(false); location.reload(); }
+async function signOut(){ setUnlocked(false); await sb.auth.signOut(); location.reload(); }
 
 
 /* ---------- schede ---------- */
@@ -656,11 +730,15 @@ function setTab(t){
 }
 
 /* ---------- caricamento ---------- */
+let _loadSeq=0, costs=null;
 async function loadAll(silent){
+  /* Ogni giro ha un numero: se ne parte uno nuovo mentre il vecchio e' ancora in viaggio,
+     la risposta vecchia viene buttata e non ridisegna schermate gia' aggiornate. */
+  const my=++_loadSeq;
   const b=document.getElementById('refBtn'); b.classList.add('spin'); b.disabled=true;
   /* quattro chiamate in parallelo, ognuna col suo paracadute: se una manca la
      console non deve spegnersi, deve solo mostrare un po' meno. */
-  const [ov, he, lg, pl, ck, ad, inc, cap, adp, acc] = await Promise.all([
+  const [ov, he, lg, pl, ck, ad, inc, cap, adp, acc, cst] = await Promise.all([
     sb.rpc('sa_overview').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_health').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_leagues_full').then(r=>r.error?null:r.data).catch(()=>null),
@@ -670,8 +748,11 @@ async function loadAll(silent){
     sb.rpc('sa_incidents',{p_hours:168}).then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('capacity_status').then(r=>r.error?null:(r.data&&r.data[0])).catch(()=>null),
     sb.rpc('sa_adoption_persone').then(r=>r.error?null:r.data).catch(()=>null),
-    sb.rpc('sa_last_access').then(r=>r.error?null:r.data).catch(()=>null)
+    sb.rpc('sa_last_access').then(r=>r.error?null:r.data).catch(()=>null),
+    sb.rpc('sa_costs_list').then(r=>r.error?null:r.data).catch(()=>null)
   ]);
+  if(my!==_loadSeq) return;
+  costs=Array.isArray(cst)?cst:null;
   if(ov) paintOverview(ov);
   health=he;
   hasNewRpc = !!(he || lg);
@@ -688,6 +769,7 @@ async function loadAll(silent){
   if(lg){ leagues=lg||[]; }
   else {
     const old=await sb.rpc('sa_leagues').then(r=>r.error?null:r.data).catch(()=>null);
+    if(my!==_loadSeq) return;
     leagues=(old||[]).map(l=>({ id:l.id, name:l.name, is_paid:l.is_paid, active:l.active,
                                 members:l.members, members_active:l.members_active }));
   }
@@ -721,8 +803,8 @@ function paintOverview(d){
   const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=(v==null?'\u2013':v); };
   set('lTot',d.leagues_total); set('lAct',d.leagues_active); set('lIna',d.leagues_inactive);
   set('uTot',d.users_total);   set('uAct',d.users_active);   set('pTot',d.push_total);
-  if(d.monthly_cost!=null) document.getElementById('inCost').value=d.monthly_cost;
-  if(d.price_per_league!=null) document.getElementById('inPrice').value=d.price_per_league;
+  { const ip=document.getElementById('inPrice');
+    if(ip && d.price_per_league!=null && document.activeElement!==ip) ip.value=Number(d.price_per_league).toFixed(2).replace('.',','); }
   const on=!!d.maintenance;
   const mbar=document.getElementById('maintBar'); if(mbar) mbar.classList.toggle('on',on);
   const dot=document.getElementById('mDot');
@@ -738,34 +820,50 @@ function paintOverview(d){
 let _lastOverview=null;
 
 /* ---------- denaro ----------
-   Il ricavo stimato della console vecchia contava tutte le leghe segnate come
-   paganti, fondatrici comprese. Ma le fondatrici hanno Pro a vita per patto e
-   non pagheranno mai: tenerle dentro gonfiava il numero e basta. Se sa_plans()
-   risponde si usa il suo conto, che le esclude; altrimenti si ripiega su quello
-   vecchio, dicendolo. */
+   RICAVI: le leghe Pro che pagano (le fondatrici, cioe' le prime 20, hanno Pro per sempre e
+   sono escluse) per il prezzo annuo. COSTI: voci scritte a mano, ognuna «una volta», «ogni mese»
+   o «ogni anno». Il riepilogo mette tutto su 12 mesi: una volta = tutta la cifra, mese = x12. */
+function eur2(v){ return (v==null||v===''||isNaN(Number(v)))?'—':('€'+Number(v).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})); }
+const PERIODO={una_volta:'una volta', mese:'ogni mese', anno:'ogni anno'};
+function costYear(c){ const a=Number(c.amount)||0; return c.period==='mese'?a*12:a; }
 function paintMoney(ov){
-  const cost = ov?ov.monthly_cost:null;
-  let rev, nota;
-  if(plans && plans.revenue_real!=null){
-    rev=plans.revenue_real;
-    nota='<b>'+plans.paying+'</b> '+(plans.paying===1?'lega Pro pagante':'leghe Pro paganti')
-        +' \u00d7 '+eur(plans.price)+'. Le <b>'+plans.founder_used+'</b> fondatrici sono escluse: hanno Pro per sempre e non pagheranno mai.';
-  } else {
-    rev = ov?ov.revenue_est:null;
-    nota='Conto vecchio: tutte le leghe segnate come paganti, fondatrici comprese. Esegui <span class="num">console_b.sql</span> per il numero giusto.';
-  }
-  const marg = (cost!=null && rev!=null) ? (Number(rev)-Number(cost)) : null;
-  document.getElementById('eCost').textContent=eur(cost);
-  document.getElementById('eRev').textContent=eur(rev);
-  document.getElementById('eMargin').textContent=eur(marg);
-  document.getElementById('eMarginCard').className='stat '+((marg!=null&&marg<0)?'red':'green');
-  document.getElementById('revNote').innerHTML=nota;
+  const price = (plans && plans.price!=null) ? Number(plans.price) : ((ov&&ov.price_per_league!=null)?Number(ov.price_per_league):null);
+  const paying = leagues.filter(l=>l._plan!=='free' && !l._founder).length;
+  const rev = price!=null ? paying*price : null;
+  const set=(id,t)=>{ const e=document.getElementById(id); if(e) e.textContent=t; };
+  set('rPaying',String(paying)); set('rPrice',eur2(price)); set('rYear',eur2(rev));
+  document.getElementById('revNote').innerHTML='<b>'+paying+'</b> '+(paying===1?'lega Pro che paga':'leghe Pro che pagano')
+    +' × '+eur2(price)+' all’anno. Le <b>'+leagues.filter(l=>l._founder).length+'</b> fondatrici (le prime 20) sono escluse: hanno Pro per sempre.';
 
-  const used = plans?plans.founder_used:null, tot = plans?plans.founder_slots:20;
-  document.getElementById('fUsed').textContent = used==null?'\u2013':used;
-  document.getElementById('fTot').textContent  = tot;
-  document.getElementById('fFree').textContent = plans?plans.founder_free:'\u2013';
-  let sl=''; for(let i=0;i<tot;i++) sl+='<i class="'+((used!=null&&i<used)?'used':'')+'"></i>';
+  const warn=document.getElementById('costWarn'), list=document.getElementById('costList');
+  let tot=null, once=0, rec=0;
+  if(costs===null){
+    warn.style.display='block'; list.innerHTML=''; set('cTot','');
+  } else {
+    warn.style.display='none';
+    costs.forEach(c=>{ if(c.period==='una_volta') once+=Number(c.amount)||0; else rec+=costYear(c); });
+    tot=once+rec;
+    set('cTot',eur2(tot));
+    list.innerHTML = costs.length ? costs.map(c=>
+      '<div class="kv"><span class="k" style="color:var(--text);min-width:0;overflow-wrap:anywhere"><b>'+esc(c.label)+'</b><br>'
+      +'<small style="color:var(--muted)">'+PERIODO[c.period]+' · dal '+dOnly(c.spent_on)+'</small></span>'
+      +'<span class="v" style="display:flex;align-items:center;gap:8px;flex:none">'+eur2(c.amount)
+      +'<button type="button" class="btn ghost sm" style="padding:6px 10px" onclick="delCost('+c.id+')" aria-label="Elimina">✕</button></span></div>').join('')
+      : '<div class="empty">Nessuna spesa registrata.</div>';
+  }
+  set('sRev',eur2(rev));
+  set('sCost',tot==null?'—':eur2(tot));
+  const marg=(rev!=null&&tot!=null)?(rev-tot):null;
+  set('sMargin',eur2(marg));
+  document.getElementById('sMarginCard').className='stat '+((marg!=null&&marg<0)?'red':'green');
+  document.getElementById('sNote').innerHTML = tot==null ? '' :
+    'Costi: <b>'+eur2(once)+'</b> una tantum + <b>'+eur2(rec)+'</b> di spese che si ripetono, contate su 12 mesi.';
+
+  const used=leagues.filter(l=>l._founder).length, ft=(plans&&plans.founder_slots)||20;
+  document.getElementById('fUsed').textContent = used;
+  document.getElementById('fTot').textContent  = ft;
+  document.getElementById('fFree').textContent = Math.max(0,ft-used);
+  let sl=''; for(let i=0;i<ft;i++) sl+='<i class="'+(i<used?'used':'')+'"></i>';
   document.getElementById('fSlots').innerHTML=sl;
 }
 
@@ -1437,6 +1535,20 @@ function personLast(m){
   dl.forEach(d=>{ const t=d&&d.last_seen?new Date(d.last_seen).getTime():0; if(t>best) best=t; });
   return best?new Date(best).toISOString():null;
 }
+/* PS = app scaricata dallo store (la piattaforma finisce in «-app»: android-app, un domani ios-app).
+   PWA = icona sulla Home installata dal browser. Una persona puo' avere tutte e due. */
+const isPS=d=>/-app$/.test(String((d&&d.platform)||''));
+function personKinds(m){
+  const vivi=devVivi(m);
+  return { ps:vivi.some(isPS), pwa:vivi.some(d=>d&&d.standalone&&!isPS(d)) };
+}
+function kindTags(m){
+  const k=personKinds(m); let h='';
+  if(k.ps)  h+='<span class="tg ok">PS</span>';
+  if(k.pwa) h+='<span class="tg ok">PWA</span>';
+  if(!k.ps&&!k.pwa) h+='<span class="tg warn">\ud83c\udf10</span>';
+  return h;
+}
 function renderPeople(){
   const box=document.getElementById('peopleBox'); if(!box||!peopleData) return;
   const mem=peopleData.members||[];
@@ -1444,7 +1556,9 @@ function renderPeople(){
   const md=peopleData.matchday||null;
   const tot=mem.length;
 
-  const nHome=mem.filter(m=>m.standalone).length;
+  const nPS=mem.filter(m=>personKinds(m).ps).length;
+  const nPWA=mem.filter(m=>personKinds(m).pwa).length;
+  const nHome=mem.filter(m=>{const k=personKinds(m);return k.ps||k.pwa;}).length;
   const nPush=mem.filter(m=>m.push_state).length;
   const nVer =latest?mem.filter(m=>verKey(personVersion(m))>=verKey(latest)).length:0;
   const rotti=mem.filter(m=>personProblems(m,latest).length);
@@ -1453,8 +1567,10 @@ function renderPeople(){
 
   let h='<h2>Persone <span class="rt">'+tot+'</span></h2>';
 
-  h+=bar('g','App sulla Home', nHome, tot,
+  h+=bar('g','PWA sulla Home', nPWA, tot,
          nHome<tot?'Su iPhone senza icona sulla Home le notifiche non arrivano proprio.':'')
+   + bar('o','App Play Store', nPS, tot,
+         nPS===0?'Nessuno ha ancora l\u2019app dello store.':'')
    + bar('','Notifiche accese', nPush, tot,
          nPush<tot?(tot-nPush)+(tot-nPush===1?' persona non riceve niente.':' persone non ricevono niente.'):'')
    + (latest?bar('o','Sulla versione '+esc(latest), nVer, tot,
@@ -1478,7 +1594,7 @@ function renderPeople(){
     const vecchia=latest&&v&&verKey(v)<verKey(latest);
     const tags=
         '<span class="tg '+(m.push_state?'ok':'bad')+'">'+(m.push_state?'\ud83d\udd14':'\ud83d\udd15')+'</span>'
-      + '<span class="tg '+(m.standalone?'ok':'warn')+'">'+(m.standalone?'\ud83d\udcf2':'\ud83c\udf10')+'</span>'
+      + kindTags(m)
       + '<span class="tg mono '+(v?(vecchia?'warn':'ok'):'bad')+'">'+esc(v||'mai')+'</span>';
     const sub=[
       esc(m.player_name||''),
@@ -1497,7 +1613,7 @@ function renderPeople(){
         '<div class="drow">'
           +'<b>'+esc(d.version||'?')+'</b>'
           +'<span>'+esc(d.platform||'?')+' \u00b7 '+esc(d.browser||'?')
-          +(d.standalone?' \u00b7 sulla Home':' \u00b7 dal browser')
+          +(isPS(d)?' \u00b7 app Play Store':(d.standalone?' \u00b7 PWA sulla Home':' \u00b7 dal browser'))
           +' \u00b7 notifiche '+esc(d.push||'?')+'</span>'
           +'<b style="color:var(--muted);font-weight:600">'+(d.last_seen?ago(d.last_seen):'\u2014')+'</b></div>').join('');
       if(nascosti>0)
@@ -1677,20 +1793,21 @@ function planBoxHTML(id, l){
     ${plan==='free'
       ? `<button class="btn" style="margin-top:11px" onclick="setPlan(${id},'pro')">\u2b50 Passa a Pro</button>`
       : `<button class="btn ghost" style="margin-top:11px" onclick="setPlan(${id},'free')">Riporta a Gratis</button>`}
-    ${founder?'<p class="note">\u00c8 una fondatrice: ha Pro per sempre per patto e non entra nel ricavo stimato. Riportarla a gratis <b>non libera</b> lo slot, che si libera solo a mano.</p>'
+    ${founder?'<p class="note">\u00c8 una fondatrice: ha Pro per sempre per patto e non entra nei ricavi. Se la riporti a gratis perde lo status di fondatrice e <b>libera lo slot</b>.</p>'
              :'<p class="note">Cambia il piano davvero: tetto dei membri, schermate dell\u2019app e ricavo stimato si allineano tutti a questo.</p>'}
   </div>`;
 }
 async function setPlan(id, plan){
   const l=leaguesById[id]||{};
   const nome=l.name||('#'+id);
-  if(plan==='free' && !confirm('Riportare \u00ab'+nome+'\u00bb al piano gratis?\n\nTorna il tetto dei 15 membri. Se adesso sono di pi\u00f9, restano tutti dentro: il tetto blocca solo i NUOVI ingressi.')) return;
+  if(plan==='free' && !confirm('Riportare \u00ab'+nome+'\u00bb al piano gratis?\n\n'+(l._founder?'Perde lo status di fondatrice e libera uno slot.\n\n':'')+'Torna il tetto dei 15 membri. Se adesso sono di pi\u00f9, restano tutti dentro: il tetto blocca solo i NUOVI ingressi.')) return;
   try{
     const { error } = await sb.rpc('sa_set_plan',{ p_league:id, p_plan:plan });
     if(error) throw error;
     toast(plan==='pro'?'Passata a Pro':'Riportata a gratis');
-    await loadAll(true);
-    if(document.getElementById('pageLeague').classList.contains('on')) await loadLeagueDetail(id);
+    /* subito sulla schermata, senza aspettare il giro dal database */
+    if(leaguesById[id]){ leaguesById[id]._plan=plan; if(plan==='free') leaguesById[id]._founder=false; renderFilters(); renderLeagues(); paintMoney(_lastOverview); }
+    await refreshAfter(id);
   }catch(e){
     const m=(e&&e.message)||String(e);
     if(m.includes('sa_set_plan')||m.includes('does not exist')) toast('Manca console_b2.sql: esegui la SQL nuova');
@@ -1721,7 +1838,7 @@ async function resetFlags(mdId, leagueId){
     if(error) throw error;
     if(data && data.ok===false){ toast('Nessun flag da azzerare'); return; }
     toast('Fatto: il cron rimanderà entro 10 minuti');
-    await loadLeagueDetail(leagueId); await loadAll(true);
+    await refreshAfter(leagueId);
   }catch(e){ toast('Errore: '+((e&&e.message)||e)); }
 }
 async function toggleMaint(){
@@ -1732,17 +1849,19 @@ async function toggleMaint(){
     const { error } = await sb.rpc('sa_set_maintenance',{ p_on:next });
     if(error) throw error;
     toast(next?'Manutenzione attivata':'App di nuovo online');
-    await loadAll(true);
+    paintOverview(Object.assign({}, _lastOverview||{}, { maintenance:next }));
+    await refreshAfter();
   }catch(e){ toast('Errore: '+((e&&e.message)||e)); }
 }
-async function togglePaid(id,paid){
-  try{
-    const { error } = await sb.rpc('sa_set_league_paid',{ p_league:id, p_paid:paid });
-    if(error) throw error;
-    toast(paid?'Segnata come pagante':'Riportata a gratis');
+/* Dopo ogni azione la schermata si aggiorna subito e poi ancora una volta dopo un attimo:
+   cosi' non serve premere «Aggiorna» per vedere quello che e' appena successo. */
+async function refreshAfter(leagueId){
+  const go=async()=>{
     await loadAll(true);
-    if(document.getElementById('pageLeague').classList.contains('on')) await loadLeagueDetail(id);
-  }catch(e){ toast('Errore: '+((e&&e.message)||e)); }
+    if(leagueId && document.getElementById('pageLeague').classList.contains('on')) await loadLeagueDetail(leagueId);
+  };
+  await go();
+  setTimeout(()=>{ go().catch(()=>{}); },1500);
 }
 async function saDeleteLeague(id){
   if(id===1){ toast('La lega principale non è eliminabile'); return; }
@@ -1761,7 +1880,7 @@ async function saDeleteLeague(id){
     if(error) throw error;
     toast('Lega «'+name+'» eliminata');
     closeLeague();
-    await loadAll(true);
+    await refreshAfter();
   }catch(e){
     const m=(e&&e.message)||String(e);
     if(m.includes('not_superadmin')) toast('Non autorizzato');
@@ -1770,15 +1889,46 @@ async function saDeleteLeague(id){
     else toast('Errore: '+m);
   }
 }
-async function saveEconomics(){
-  const c=document.getElementById('inCost').value.replace(',','.');
-  const p=document.getElementById('inPrice').value.replace(',','.');
+function numIt(v){ return String(v||'').trim().replace(/\s/g,'').replace(/\./g,'').replace(',','.'); }
+function numPrice(v){ return String(v||'').trim().replace(/\s/g,'').replace(',','.'); }
+async function savePrice(){
+  const raw=numPrice(document.getElementById('inPrice').value);
+  const p=raw===''?null:Number(raw);
+  if(p!==null && (!isFinite(p)||p<0)){ toast('Prezzo non valido'); return; }
   try{
-    const { error } = await sb.rpc('sa_set_economics',{ p_monthly_cost:c===''?null:Number(c), p_price:p===''?null:Number(p) });
+    const { error } = await sb.rpc('sa_set_economics',{ p_monthly_cost:null, p_price:p });
     if(error) throw error;
-    toast('Economia salvata');
-    await loadAll(true);
-  }catch(e){ toast('Errore'); }
+    toast('Prezzo salvato');
+    await refreshAfter();
+  }catch(e){ toast('Errore: '+((e&&e.message)||e)); }
+}
+async function addCost(){
+  const label=(document.getElementById('cLabel').value||'').trim();
+  const raw=numPrice(document.getElementById('cAmount').value);
+  const amount=Number(raw);
+  const period=document.getElementById('cPeriod').value;
+  if(!label){ toast('Scrivi cos’è la spesa'); return; }
+  if(raw===''||!isFinite(amount)||amount<0){ toast('Importo non valido'); return; }
+  try{
+    const { error } = await sb.rpc('sa_cost_add',{ p_label:label, p_amount:amount, p_period:period, p_date:null });
+    if(error) throw error;
+    document.getElementById('cLabel').value=''; document.getElementById('cAmount').value='';
+    toast('Spesa aggiunta');
+    await refreshAfter();
+  }catch(e){
+    const m=(e&&e.message)||String(e);
+    toast(m.includes('sa_cost_add')||m.includes('does not exist')?'Manca la SQL 17: eseguila prima':'Errore: '+m);
+  }
+}
+async function delCost(id){
+  const c=(costs||[]).find(x=>x.id===id);
+  if(!confirm('Eliminare la spesa «'+(c?c.label:'#'+id)+'»?')) return;
+  try{
+    const { error } = await sb.rpc('sa_cost_delete',{ p_id:id });
+    if(error) throw error;
+    toast('Spesa eliminata');
+    await refreshAfter();
+  }catch(e){ toast('Errore: '+((e&&e.message)||e)); }
 }
 
 
