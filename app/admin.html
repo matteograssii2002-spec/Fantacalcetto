@@ -1538,9 +1538,21 @@ function personLast(m){
 /* PS = app scaricata dallo store (la piattaforma finisce in «-app»: android-app, un domani ios-app).
    PWA = icona sulla Home installata dal browser. Una persona puo' avere tutte e due. */
 const isPS=d=>/-app$/.test(String((d&&d.platform)||''));
+/* PWA SOSTITUITA DALL'APP DELLO STORE (20/10/2026).
+   Chi aveva l'icona sulla Home e poi installa l'app dallo store di solito toglie
+   l'icona, ma la riga della PWA resta nel database per un mese. Il sistema non puo'
+   sapere che e' stata tolta: lo deduce. Se sullo stesso tipo di telefono c'e' una riga
+   dell'app dello store vista PIU' DI RECENTE della riga PWA, la PWA non e' piu'
+   usata e non si conta. Se invece la PWA e' ancora quella aperta per ultima, restano
+   tutte e due. (iPhone e iPad contano come lo stesso sistema, per l'iOS di domani.) */
+const osDi=p=>{ const x=String(p||'').replace(/-app$/,''); return (x==='iphone'||x==='ipad')?'ios':x; };
+function pwaSostituita(d, vivi){
+  if(!d || !d.standalone || isPS(d)) return false;
+  return vivi.some(p=>isPS(p) && osDi(p.platform)===osDi(d.platform) && devEta(p)<devEta(d));
+}
 function personKinds(m){
   const vivi=devVivi(m);
-  return { ps:vivi.some(isPS), pwa:vivi.some(d=>d&&d.standalone&&!isPS(d)) };
+  return { ps:vivi.some(isPS), pwa:vivi.some(d=>d&&d.standalone&&!isPS(d)&&!pwaSostituita(d,vivi)) };
 }
 function kindTags(m){
   const k=personKinds(m); let h='';
@@ -1613,7 +1625,7 @@ function renderPeople(){
         '<div class="drow">'
           +'<b>'+esc(d.version||'?')+'</b>'
           +'<span>'+esc(d.platform||'?')+' \u00b7 '+esc(d.browser||'?')
-          +(isPS(d)?' \u00b7 app Play Store':(d.standalone?' \u00b7 PWA sulla Home':' \u00b7 dal browser'))
+          +(isPS(d)?' \u00b7 app Play Store':(d.standalone?(pwaSostituita(d,vivi)?' \u00b7 PWA sostituita dall\u2019app dello store':' \u00b7 PWA sulla Home'):' \u00b7 dal browser'))
           +' \u00b7 notifiche '+esc(d.push||'?')+'</span>'
           +'<b style="color:var(--muted);font-weight:600">'+(d.last_seen?ago(d.last_seen):'\u2014')+'</b></div>').join('');
       if(nascosti>0)
