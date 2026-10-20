@@ -638,6 +638,13 @@
   .gacc-txt span{font-size:11.5px;line-height:1.25;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .gacc-go{color:var(--accent-soft);font-size:12px;font-weight:700;flex-shrink:0}
   .gacc-or{font-size:11.5px;color:var(--muted);text-align:center;margin:10px 0 0}
+  /* 7.2.5 — su schermi stretti (Galaxy S9, 360px) una email lunga negli account del telefono allargava la
+     riga oltre lo schermo (407px): la schermata di accesso scorreva di lato e «ballava». Le righe ora
+     restano larghe quanto lo schermo e il testo si accorcia coi puntini; #gate non scorre mai di lato. */
+  .gacc,.gacc-list,.gacc-row{min-width:0;max-width:100%}
+  .gacc-txt{overflow:hidden}
+  #gate{overflow-x:hidden}
+  #gate .ob-inner{width:100%}   /* con margin:auto prendeva la larghezza del contenuto, non dello schermo */
   .save{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;background:linear-gradient(135deg,var(--accent),#1c6ff2);color:#fff;font-weight:700;font-size:15px;border:none;padding:15px;border-radius:14px;cursor:pointer;box-shadow:0 12px 28px -10px rgba(63,151,255,.6);transition:transform .15s,opacity .2s}
   .set-btn{width:100%;background:var(--bg2);border:1.5px solid var(--line-strong);color:var(--text);font-weight:700;font-size:14px;padding:13px;border-radius:13px;cursor:pointer;transition:transform .09s,background .15s,border-color .15s}
   .set-btn:disabled{opacity:.6;cursor:default}
@@ -4539,45 +4546,80 @@ function tutRestore(){
 }
 
 /* ---------- i due percorsi ---------- */
-function tutStepsPlayer(){ return [
- {ttl:'Questo \u00e8 un tutorial',
+/* 7.2.5 — TUTORIAL PER RUOLO. Il percorso «player» cambia in base al profilo:
+   - giocatore   (in campo, is_manager=false): presenza, voti, statistiche; niente formazione;
+   - allenatore  (fuori campo, is_player=false): formazione completa e i voti (li da'
+                 solo se l'admin lo abilita per la giornata); niente presenza;
+   - entrambi    : il percorso completo di prima, invariato.
+   Admin e vice fanno prima il percorso del loro ruolo, poi «Parte admin →». */
+function tutRole(){
+  const pl=!(profile && profile.is_player===false), mg=amManager();
+  if(pl && !mg) return 'giocatore';
+  if(!pl && mg) return 'allenatore';
+  return 'entrambi';
+}
+function tutStepsPlayer(){
+  const r=tutRole();
+  const S={
+ intro:{ttl:'Questo \u00e8 un tutorial',
   tx:"In un minuto ti mostro le <b>funzioni principali</b> dell\u2019app: chi gioca, la formazione, i voti e la classifica.<br><br>Quella che vedi \u00e8 una <b>giornata di prova</b>: niente di quello che tocchi viene salvato."},
- {v:'home', el:'.hero',
+ introG:{ttl:'Questo \u00e8 un tutorial',
+  tx:"In un minuto ti mostro cosa fai da <b>giocatore</b>: dici se ci sei, voti gli altri e segui come vai.<br><br>Quella che vedi \u00e8 una <b>giornata di prova</b>: niente di quello che tocchi viene salvato."},
+ introA:{ttl:'Questo \u00e8 un tutorial',
+  tx:"In un minuto ti mostro cosa fai da <b>allenatore</b>: schieri la formazione, segui i voti e scali la classifica.<br><br>Quella che vedi \u00e8 una <b>giornata di prova</b>: niente di quello che tocchi viene salvato."},
+ home:{v:'home', el:'.hero',
   ttl:'La Home',
   tx:"In cima trovi sempre la cosa da fare adesso."},
- {v:'home', el:'#homePresence', tap:true, before:()=>tutKick(60),
+ pres:{v:'home', el:'#homePresence', tap:true, before:()=>tutKick(60),
   ttl:'Ci sei?',
   tx:"Prima di ogni partita l\u2019app chiede chi gioca. Chi non risponde non entra in campo."},
- {v:'formazione', el:'#modPick', before:()=>tutKick(30),
+ mod:{v:'formazione', el:'#modPick', before:()=>tutKick(30),
   ttl:'Il modulo',
   tx:"<b>1-3-1</b> vale 5 punti in pi\u00f9, <b>1-1-3</b> cinque in meno."},
- {v:'formazione', el:'.budget-wrap',
+ cred:{v:'formazione', el:'.budget-wrap',
   ttl:'Cento crediti',
   tx:"Cinque giocatori, 100 crediti. I pi\u00f9 forti costano di pi\u00f9."},
- {v:'formazione', el:'#pitch', tap:true,
+ campo:{v:'formazione', el:'#pitch', tap:true,
   ttl:'Il campo',
   tx:"Tocca uno slot per scegliere. Tocca chi \u00e8 gi\u00e0 in campo per farlo <b>capitano</b>: vale doppio."},
- {v:'formazione', el:'#saveBtn',
+ conf:{v:'formazione', el:'#saveBtn',
   ttl:'Conferma',
   tx:"La formazione vale solo se premi qui. Puoi cambiarla fino a 5 minuti prima del via."},
- {v:'voti', el:'#voteList', tap:true, before:()=>tutKick(-3),
+ voti:{v:'voti', el:'#voteList', tap:true, before:()=>tutKick(-3),
   ttl:'I voti',
   tx:"Dopo la partita voti gli altri da 1 a 10. La <b>\ud83c\udfc6</b> \u00e8 l\u2019MVP."},
- {v:'classifica', el:'#lbList', before:()=>tutKick(30),
+ votiA:{v:'voti', el:'#voteList', tap:true, before:()=>tutKick(-3),
+  ttl:'I voti',
+  tx:"Dopo la partita i giocatori si votano da 1 a 10 e la <b>\ud83c\udfc6</b> \u00e8 l\u2019MVP. Se l\u2019admin ti abilita per una giornata, voti anche tu da qui, cos\u00ec."},
+ classifica:{v:'classifica', el:'#lbList', before:()=>tutKick(30),
   ttl:'La classifica',
   tx:"I punti si sommano. Toccando una squadra si apre la sua bacheca."},
- {v:'home', el:'#homeStatsWrap',
+ classificaG:{v:'classifica', el:'#lbList', before:()=>tutKick(30),
+  ttl:'La classifica',
+  tx:"\u00c8 la sfida tra gli allenatori: tu non ci sei, ma i tuoi voti, gol e assist pesano sulle loro squadre. Toccando una squadra si apre la sua bacheca."},
+ stats:{v:'home', el:'#homeStatsWrap',
   ttl:'Le tue statistiche',
   tx:"Come giochi e come va la squadra. Aprendole trovi trofei e record."},
- {v:'home', el:'#homeRvWrap',
+ statsG:{v:'home', el:'#homeStatsWrap',
+  ttl:'Come vai',
+  tx:"Voto medio, fantavoto medio e stato di forma. Aprendo le tue statistiche trovi anche trofei e record."},
+ statsA:{v:'home', el:'#homeStatsWrap',
+  ttl:'La tua squadra',
+  tx:"Come va la tua squadra giornata dopo giornata. Aprendola trovi trofei e record."},
+ rivivi:{v:'home', el:'#homeRvWrap',
   ttl:'Rivivi',
   tx:"Ogni giornata finita ha il suo pagellone: voti, formazioni e chi ha vinto."},
- {v:'home', el:'#chatFab', before:()=>syncChatFab(),
+ chat:{v:'home', el:'#chatFab', before:()=>syncChatFab(),
   ttl:'Assistenza',
   tx:"Hai un dubbio o un problema? Da questo tasto scrivi direttamente all\u2019<b>assistenza di FantaCalcetto</b>: ti rispondiamo qui, nell\u2019app."},
- {ttl:'Fatto',
+ fine:{ttl:'Fatto',
   tx:"Il tutorial finisce qui. Per rivederlo: <b>Impostazioni \u203a Tutorial</b>."}
-];}
+  };
+  if(r==='giocatore')  return [S.introG,S.home,S.pres,S.voti,S.statsG,S.classificaG,S.rivivi,S.chat,S.fine];
+  if(r==='allenatore') return [S.introA,S.home,S.mod,S.cred,S.campo,S.conf,(canOp()?S.voti:S.votiA),   // admin e vice votano sempre
+                              S.classifica,S.statsA,S.rivivi,S.chat,S.fine];
+  return [S.intro,S.home,S.pres,S.mod,S.cred,S.campo,S.conf,S.voti,S.classifica,S.stats,S.rivivi,S.chat,S.fine];
+}
 
 function tutStepsAdmin(){ return [
  {ttl:'Tutorial \u00b7 da amministratore',
@@ -7419,6 +7461,7 @@ async function loadCanVote(){
 }
 function canIVote(){
   if(!currentMd)return false;
+  if(TUT)return true;               // 7.2.5 — tutorial: la giornata di prova si vota sempre (niente viene salvato)
   if(canOp())return true;          // proprietario/vice puo' sempre votare
   if(iAmExtraVoter)return true;                       // aggiunto a mano per questa giornata
   return players.some(p=>p.owner_id===user.id&&presentId(p.id)); // ha giocato (suo personaggio presente)
