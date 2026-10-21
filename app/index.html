@@ -852,6 +852,15 @@
   .skrow.lb .skdot{width:30px;height:30px;border-radius:9px}
   .skrow.lb .sktot{width:48px;height:18px}
   .skel-anim{animation:skelPulse 1.15s ease-in-out infinite}
+  /* 21/10/2026 — rotella di caricamento (formazioni, pagellone) */
+  .fc-spin{width:24px;height:24px;flex:none;border-radius:50%;border:2.6px solid rgba(150,185,240,.22);border-top-color:var(--accent);animation:fcSpin .75s linear infinite}
+  @keyframes fcSpin{to{transform:rotate(360deg)}}
+  .fc-loadbox{display:flex;flex-direction:column;align-items:center;gap:13px;padding:54px 12px;color:var(--muted);font-size:13.5px;font-weight:600;text-align:center}
+  #fcBusy{position:fixed;left:50%;top:50%;z-index:2000;display:flex;align-items:center;gap:12px;padding:14px 20px 14px 16px;border-radius:18px;
+    background:rgba(14,30,56,.95);border:1px solid rgba(120,170,255,.28);box-shadow:0 16px 36px rgba(0,0,0,.45);
+    color:#eaf2ff;font-size:14px;font-weight:700;white-space:nowrap;opacity:0;pointer-events:none;
+    transform:translate(-50%,-50%) scale(.94);transition:opacity .18s ease,transform .18s ease}
+  #fcBusy.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
   @keyframes skelPulse{0%,100%{opacity:.45}50%{opacity:.95}}
   /* contenitore classifica dentro il Pagellone (scena finale) */
   .pag-lb{width:100%;max-width:380px;margin-top:6px;max-height:56vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:4px 2px}
@@ -7507,6 +7516,18 @@ function filterLeagueRows(rows){
 }
 async function mdRows(mdId){
   const id=parseInt(mdId); if(!isFinite(id)) return [];
+  /* 21/10/2026: classifica di una giornata CHIUSA = non cambia piu', la si tiene in memoria
+     (il pagellone la chiede per ogni giornata fino a quella aperta) */
+  if(fcMdClosed(id)){
+    if(!_mdRowsCache[id]){
+      _mdRowsCache[id]=mdRowsNet(id);
+      _mdRowsCache[id].then(r=>{ if(!r || !r.length) delete _mdRowsCache[id]; }, ()=>{ delete _mdRowsCache[id]; });
+    }
+    return _mdRowsCache[id];
+  }
+  return mdRowsNet(id);
+}
+async function mdRowsNet(id){
   if(mdLeagueRpc!==false){
     try{
       const {data,error}=await sb.rpc('get_standings_md_lega',{md:id});
@@ -11072,12 +11093,14 @@ async function togglePresence(id){
        Ora si aggiorna solo se il salvataggio e' riuscito. */
     if(mdPresent.has(id)){
       const {error:de}=await sb.from('matchday_players').delete().eq('matchday_id',currentMd.id).eq('player_id',id);
+      fcMdCacheClear();   // 21/10/2026: dati di giornata cambiati, la memoria si rinfresca
       if(de){ toast('Presenza non salvata: '+errText(de)); return; }
       mdPresent.delete(id);
       notifyPresenceRemoved(currentMd.id,id);   // 6.0: chi lo aveva schierato va avvisato
     }
     else {
       const {error:ie}=await sb.from('matchday_players').insert({matchday_id:currentMd.id,player_id:id});
+      fcMdCacheClear();   // 21/10/2026: dati di giornata cambiati, la memoria si rinfresca
       if(ie && String(ie.code)!=='23505'){ toast('Presenza non salvata: '+errText(ie)); return; }   // 23505 = era gia' presente
       mdPresent.add(id);
     }
@@ -11570,6 +11593,7 @@ document.getElementById('saveBtn').onclick=async function(){
   const callSave=async()=>{
     try{
       const {error}=await withTimeout(sb.rpc('save_lineup',{p_md:mdId,p_rows:rows,p_module:formModule}),15000,'save_lineup');
+      fcMdCacheClear();   // 21/10/2026: dati di giornata cambiati, la memoria si rinfresca
       return error||null;
     }catch(e){ return e; }
   };
@@ -11590,6 +11614,7 @@ document.getElementById('saveBtn').onclick=async function(){
     err=null;
     try{
       const {error:de}=await sb.from('lineups').delete().eq('matchday_id',mdId).eq('manager_id',user.id);
+      fcMdCacheClear();   // 21/10/2026: dati di giornata cambiati, la memoria si rinfresca
       if(de) throw de;
       const {error:ie}=await sb.from('lineups').insert(rows.map(r=>({matchday_id:mdId,manager_id:user.id,slot:r.slot,player_id:r.player_id,is_captain:r.is_captain})));
       if(ie) throw ie;
@@ -11843,6 +11868,7 @@ async function liveConfirmSave(){
     return {matchday_id:currentMd.id,player_id:p.id,gol:a.gol||0,assist:a.assist||0,autogol:a.og||0,gol_subiti:a.gs||0,rigore_sbagliato:a.rs||0,rigore_parato:a.rp||0,gialli:a.gi||0,esito:a.esito||null}; });
   const btn=document.getElementById('lsSaveBtn'); if(btn){btn.disabled=true;btn.textContent='Salvataggio…';}
   const {error}=await sb.from('match_stats').upsert(rows,{onConflict:'matchday_id,player_id'});
+  fcMdCacheClear();   // 21/10/2026: dati di giornata cambiati, la memoria si rinfresca
   if(error){ toast(errText(error)); if(btn){btn.disabled=false;btn.textContent='✓ Conferma e salva tutto';} return; }
   clearLiveDraft();
   await loadMatchStats(); await loadAverages(); updateScores();
@@ -12479,6 +12505,7 @@ async function submitVotes(){
   const rows=pres.map(p=>({matchday_id:currentMd.id,voter_id:user.id,player_id:p.id,score:myVotes[p.id]}));
   if(b){b.disabled=true;b.textContent='Invio…';b.classList.remove('dirty');}
   const {error}=await sb.from('votes').upsert(rows,{onConflict:'matchday_id,voter_id,player_id'});
+  fcMdCacheClear();   // 21/10/2026: dati di giornata cambiati, la memoria si rinfresca
   if(error){toast(errText(error)); if(b){b.disabled=false;b.textContent='Invia voti';} updateSubmitBtn(); return;}
   // MVP salvato INSIEME ai voti (non più separatamente)
   const {error:eNom}=await sb.from('nominations').upsert({matchday_id:currentMd.id,voter_id:user.id,mvp_player_id:parseInt(myNom.mvp)||null,sega_player_id:null},{onConflict:'matchday_id,voter_id'});
@@ -12555,6 +12582,8 @@ function renderLB(){
     if(hint){hint.textContent='Tocca una squadra per vedere la formazione.';hint.style.display='';}
     if(!mdStandings.length){el.innerHTML='<div class="empty-note">Nessuna squadra per questa giornata.</div>';return;}
     el.innerHTML=mdStandings.map((t,i)=>`<div class="lb-row ${t.team_name===profile.team_name?'me':''}" onclick="openTeamLineup('${t.manager_id}','${t.team_name.replace(/'/g,"\\'")}')" style="cursor:pointer"><div class="rank">${i+1}</div>${teamLogoHTML(t.manager_id,26)}<div class="who"><b>${t.team_name} ›</b><span>${t.player_name}</span></div><div class="tot">${fmtPts(t.points||0)}</div></div>`).join('');
+    fcMdPrefetch(selStandingsMd);      // 21/10/2026: formazioni pronte prima del tocco
+    fcRecapPrefetch(selStandingsMd);   // e anche il pagellone, se la giornata e' chiusa
   }
 }
 /* ==========================================================================
@@ -12656,6 +12685,90 @@ async function onSelectStandingsMd(){
   if(isTop) await loadSeasonNumbers();
   renderLB();
 }
+/* ==========================================================================
+   21/10/2026 — DATI DI GIORNATA VELOCI
+   Prima ogni formazione aperta faceva 6 richieste al database UNA DOPO L'ALTRA
+   (2-5 secondi). Ora:
+   - fcMdData(md) fa tutte le richieste INSIEME e tiene il risultato in memoria:
+     giornata chiusa = per tutta la sessione (non cambia piu'); giornata in corso
+     = 20 secondi (voti e bonus possono ancora cambiare);
+   - la classifica di giornata li chiede in anticipo appena e' a schermo, cosi'
+     toccando una squadra la formazione e' gia' pronta;
+   - formazioni e pagellone li condividono (aprirne uno velocizza l'altro).
+   Le formazioni di TUTTE le squadre si chiedono solo a partita iniziata (prima
+   sono nascoste): prima dell'inizio si legge solo la propria, come sempre.
+   ========================================================================== */
+const _mdCache={}, _mdRowsCache={}, _recapCache={};
+function fcMdClosed(md){ const m=(matchdaysList||[]).find(x=>x.id===Number(md)); return !!(m && m.status==='closed'); }
+function fcMdStarted(md){
+  const m=(matchdaysList||[]).find(x=>x.id===Number(md));
+  return !!(m && (m.status==='closed' || (m.kickoff && Date.now()>=new Date(m.kickoff).getTime())));
+}
+function fcMdData(md){
+  md=parseInt(md);
+  if(!isFinite(md)) return Promise.reject(new Error('giornata'));
+  const c=_mdCache[md], ttl=fcMdClosed(md)?600000:20000;   // chiusa: 10 minuti (correzioni dell'admin); in corso: 20 s
+  if(c && Date.now()-c.at<ttl) return c.p;
+  const p=Promise.all([
+    sb.from('lineups').select('*').eq('matchday_id',md),
+    sb.rpc('get_averages',{md}),
+    sb.from('match_stats').select('*').eq('matchday_id',md),
+    sb.rpc('get_mvp_sega',{md}),
+    sb.from('lineup_modules').select('manager_id,module').eq('matchday_id',md),
+    absentRuleOn(md) ? mdPresentSet(md) : Promise.resolve(null)
+  ]).then(([lnsR,avdR,msdR,msxR,lmdR,pres])=>{
+    if(lnsR.error || avdR.error || msdR.error) throw new Error('lettura giornata');
+    const lns=lnsR.data||[];
+    const avg={}; (avdR.data||[]).forEach(r=>avg[r.player_id]={v:Number(r.v)});
+    if(lns.length && absentRuleOn(md)) markAbsent(avg,lns,pres,md);   // 7.1
+    const stats={}; (msdR.data||[]).forEach(r=>stats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,gi:r.gialli||0,esito:r.esito||''});
+    const mvp=(msxR.data&&msxR.data[0]&&msxR.data[0].mvp)||0;
+    const modBy={}; (lmdR.data||[]).forEach(r=>modBy[r.manager_id]=r.module);
+    return {lns,avg,stats,mvp,modBy};
+  });
+  _mdCache[md]={at:Date.now(),p};
+  p.catch(()=>{ if(_mdCache[md] && _mdCache[md].p===p) delete _mdCache[md]; });   // un errore non resta in memoria
+  return p;
+}
+function fcMdCacheClear(){ try{ for(const k in _mdCache) delete _mdCache[k]; for(const k in _mdRowsCache) delete _mdRowsCache[k]; for(const k in _recapCache) delete _recapCache[k]; }catch(_){ } }
+/* rientro nell'app dopo piu' di un minuto: i dati potrebbero essere cambiati (voti, risultati) */
+let _mdHiddenAt=0;
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) _mdHiddenAt=Date.now(); else if(_mdHiddenAt && Date.now()-_mdHiddenAt>60000) fcMdCacheClear(); });
+/* in anticipo, senza disturbare: se fallisce non succede niente */
+function fcMdPrefetch(md){
+  try{ if(typeof sb==='undefined' || !sb || !fcMdStarted(md)) return; fcMdData(md).catch(()=>{}); }catch(_){ }
+}
+function fcRecapData(md){
+  md=parseInt(md);
+  const c=_recapCache[md];
+  if(c) return c;
+  const p=sb.rpc('get_matchday_recap',{md}).then(r=>{
+    if(r.error || !r.data) throw new Error('pagellone');
+    return r.data;
+  });
+  _recapCache[md]=p;
+  p.then(d=>{ if(!d || d.closed===false) delete _recapCache[md]; }, ()=>{ delete _recapCache[md]; });
+  return p;
+}
+function fcRecapPrefetch(md){
+  try{ if(typeof sb==='undefined' || !sb || !fcMdClosed(md)) return; fcRecapData(md).catch(()=>{}); fcMdData(md).catch(()=>{}); }catch(_){ }
+}
+/* avviso centrale con rotella: compare solo se l'attesa supera 0,2 s (niente lampi) */
+let _fcBusyN=0, _fcBusyT=null;
+function fcBusy(on,label){
+  let el=document.getElementById('fcBusy');
+  if(!el){ el=document.createElement('div'); el.id='fcBusy'; el.setAttribute('role','status'); el.setAttribute('aria-live','polite');
+    el.innerHTML='<span class="fc-spin"></span><span id="fcBusyT"></span>'; document.body.appendChild(el); }
+  if(on){
+    _fcBusyN++; const t=document.getElementById('fcBusyT'); if(t) t.textContent=label||'Caricamento\u2026';
+    if(_fcBusyN===1){ clearTimeout(_fcBusyT); _fcBusyT=setTimeout(()=>{ if(_fcBusyN>0) el.classList.add('on'); },200); }
+  } else {
+    _fcBusyN=Math.max(0,_fcBusyN-1);
+    if(!_fcBusyN){ clearTimeout(_fcBusyT); el.classList.remove('on'); }
+  }
+}
+function fcLoadingHTML(label){ return '<div class="fc-loadbox"><span class="fc-spin"></span><span>'+esc(label||'Caricamento\u2026')+'</span></div>'; }
+let _tlTok=0;
 async function openTeamLineup(managerId, teamName){
   const md=parseInt(selStandingsMd);
   const mdObj=matchdaysList.find(m=>m.id===md);
@@ -12667,13 +12780,40 @@ async function openTeamLineup(managerId, teamName){
     document.getElementById('tlpList').innerHTML='<div class="empty-note" style="padding:18px;line-height:1.5">Le formazioni avversarie si vedono dall\'inizio della partita.</div>';
     openTeamLineupPage(); return;
   }
-  const {data:lns}=await sb.from('lineups').select('*').eq('matchday_id',md).eq('manager_id',managerId);
-  const avg={}; const {data:av}=await sb.rpc('get_averages',{md}); (av||[]).forEach(r=>avg[r.player_id]={v:Number(r.v)});
-  if(lns&&lns.length && absentRuleOn(md)) markAbsent(avg,lns,await mdPresentSet(md),md);   // 7.1
-  const stats={}; const {data:msd}=await sb.from('match_stats').select('*').eq('matchday_id',md); (msd||[]).forEach(r=>stats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,gi:r.gialli||0,esito:r.esito||''});
-  let mvp=0; const {data:msx}=await sb.rpc('get_mvp_sega',{md}); if(msx&&msx[0]){mvp=msx[0].mvp||0;}
-  let mod='1-2-2'; const {data:lm}=await sb.from('lineup_modules').select('module').eq('matchday_id',md).eq('manager_id',managerId).maybeSingle(); if(lm&&MODULES[lm.module])mod=lm.module;
+  // la pagina si apre SUBITO col nome della squadra e la rotella; i dati arrivano dopo
+  const tok=++_tlTok;
   document.getElementById('tlpTitle').textContent=teamName;
+  document.getElementById('tlpHint').textContent='';
+  document.getElementById('tlpList').innerHTML=fcLoadingHTML('Carico la formazione\u2026');
+  openTeamLineupPage();
+  let lns=[], avg={}, stats={}, mvp=0, mod='1-2-2';
+  try{
+    if(started){
+      const d=await fcMdData(md);   // di solito gia' in memoria: la classifica di giornata l'ha chiesto in anticipo
+      lns=d.lns.filter(r=>r.manager_id===managerId); avg=d.avg; stats=d.stats; mvp=d.mvp;
+      if(d.modBy[managerId] && MODULES[d.modBy[managerId]]) mod=d.modBy[managerId];
+    } else {
+      // partita non ancora iniziata (solo la propria squadra): stesse letture di prima, ma insieme
+      const [lnR,avR,msR,mxR,lmR,pres]=await Promise.all([
+        sb.from('lineups').select('*').eq('matchday_id',md).eq('manager_id',managerId),
+        sb.rpc('get_averages',{md}),
+        sb.from('match_stats').select('*').eq('matchday_id',md),
+        sb.rpc('get_mvp_sega',{md}),
+        sb.from('lineup_modules').select('module').eq('matchday_id',md).eq('manager_id',managerId).maybeSingle(),
+        absentRuleOn(md) ? mdPresentSet(md) : Promise.resolve(null)
+      ]);
+      lns=lnR.data||[];
+      (avR.data||[]).forEach(r=>avg[r.player_id]={v:Number(r.v)});
+      if(lns.length && absentRuleOn(md)) markAbsent(avg,lns,pres,md);   // 7.1
+      (msR.data||[]).forEach(r=>stats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,gi:r.gialli||0,esito:r.esito||''});
+      if(mxR.data&&mxR.data[0]) mvp=mxR.data[0].mvp||0;
+      if(lmR.data && MODULES[lmR.data.module]) mod=lmR.data.module;
+    }
+  }catch(_){
+    if(tok===_tlTok) document.getElementById('tlpList').innerHTML='<div class="empty-note">Non riesco a caricare la formazione. Controlla la connessione e riprova.</div>';
+    return;
+  }
+  if(tok!==_tlTok) return;   // nel frattempo e' stata aperta un'altra squadra
   if(!lns||!lns.length){
     document.getElementById('tlpHint').textContent='Questa squadra non ha schierato una formazione in questa giornata.';
     document.getElementById('tlpList').innerHTML='<div class="empty-note">Nessuna formazione.</div>';
@@ -12708,7 +12848,7 @@ async function openTeamLineup(managerId, teamName){
       <span class="tl-dotitem" data-i="1" onclick="tlGoSlide(1)"><i></i>Punti</span>
     </div>
     <div class="tl-swipehint" id="tlSwipeHint">Scorri a sinistra per i punti</div>`;
-  openTeamLineupPage(); initTlSwipe();
+  initTlSwipe();
 }
 function tlUpdatePager(i){
   document.querySelectorAll('#tlpList .tl-dotitem').forEach(d=>d.classList.toggle('on', (+d.dataset.i)===i));
@@ -14396,17 +14536,24 @@ function renderRecapButton(){
   g.innerHTML=h;
   bindTrack('homeRvGrid','homeRvDots'); renderTrackDots('homeRvGrid','homeRvDots');
   if(md) rvFillMd(md.id);
+  /* 21/10/2026: il pagellone dell'ultima giornata si prepara con calma dopo l'avvio, cosi'
+     al tocco si apre subito (senza rubare banda al caricamento iniziale) */
+  if(md) setTimeout(()=>fcRecapPrefetch(md.id), 2500);
 }
 function openRecapLatest(){ const md=latestClosedMd(); if(md) openRecap(md.id,false); }
 
 async function openRecap(md, auto){
   if(recapBusy) return; recapBusy=true;
   try{ pzPreloadSquad(); }catch(_){ }
+  if(!auto) fcBusy(true,'Carico il pagellone\u2026');
   try{
-    const {data,error}=await sb.rpc('get_matchday_recap',{md});
-    if(error||!data||data.closed===false){ if(!auto) toast('Pagellone non ancora disponibile'); return; }
+    /* 21/10/2026: riepilogo e dettagli partono INSIEME (prima uno dopo l'altro) e se la
+       classifica di giornata li aveva gia' chiesti arrivano dalla memoria */
+    const exP=loadRecapExtra(md).catch(()=>({}));
+    let data=null; try{ data=await fcRecapData(md); }catch(_){ data=null; }
+    if(!data||data.closed===false){ if(!auto) toast('Pagellone non ancora disponibile'); return; }
     recapData=data; recapMd=md; recapMode='md'; _shareCanvas=null; _sharePromise=null;
-    try{ recapExtra=await loadRecapExtra(md); }catch(_){ recapExtra={}; }
+    recapExtra=await exP;
     recapCards=buildRecapCards(data,recapExtra); recapIdx=0;
     try{ localStorage.setItem('fc_recap_seen_'+md,'1'); }catch(_){ }
     // auto: se non c'è nulla di interessante (solo copertina+condividi), non aprire da solo
@@ -14415,7 +14562,7 @@ async function openRecap(md, auto){
     document.body.style.overflow='hidden';
     buildProgress(); showRecapCard(0);
   }catch(_){ if(!auto) toast('Errore nel caricare il pagellone'); }
-  finally{ recapBusy=false; }
+  finally{ recapBusy=false; if(!auto) fcBusy(false); }
 }
 /* 15/10 — IL TOCCO CHE FINIVA SOTTO IL PAGELLONE.
    Il pagellone si chiude al rilascio del dito (pointerup); un attimo dopo il telefono manda il «click» di
@@ -14435,21 +14582,15 @@ async function loadRecapExtra(md){
   const pInfo=id=>players.find(x=>x.id===id)||{name:'?',avatar:'',role:''};
   const teamOf=mid=>((standings||[]).find(s=>s.manager_id===mid)||{}).team_name||'';
   try{
-    const [lnsR, avdR, msdR, msxR, lmdR, podR] = await Promise.all([
-      sb.from('lineups').select('*').eq('matchday_id',md),
-      sb.rpc('get_averages',{md}),
-      sb.from('match_stats').select('*').eq('matchday_id',md),
-      sb.rpc('get_mvp_sega',{md}),
-      sb.from('lineup_modules').select('manager_id,module').eq('matchday_id',md),
-      sb.rpc('get_mvp_podium',{md})        // 2º e 3º più votati (per il podio MVP)
+    /* 21/10/2026: lineups, voti, statistiche, MVP, moduli e presenti arrivano da fcMdData
+       (tutti insieme, e dalla memoria se la classifica di giornata li aveva gia' chiesti) */
+    const [D, podR, _rows] = await Promise.all([
+      fcMdData(md),
+      sb.rpc('get_mvp_podium',{md}),       // 2º e 3º più votati (per il podio MVP)
+      mdRows(md).catch(()=>[])             // classifica della giornata: serve piu' sotto, la si chiede subito
     ]);
-    const lns=lnsR.data||[];
-    const avg={}; (avdR.data||[]).forEach(r=>avg[r.player_id]={v:Number(r.v)});
-    if(lns.length && absentRuleOn(md)) markAbsent(avg,lns,await mdPresentSet(md),md);   // 7.1
+    const lns=D.lns, avg=D.avg, stats=D.stats, mvp=D.mvp, modBy=D.modBy;
     const isAbs=pid=>!!(avg[pid]&&avg[pid].absent);
-    const stats={}; (msdR.data||[]).forEach(r=>stats[r.player_id]={gol:r.gol||0,assist:r.assist||0,og:r.autogol||0,gs:r.gol_subiti||0,rs:r.rigore_sbagliato||0,rp:r.rigore_parato||0,gi:r.gialli||0,esito:r.esito||''});
-    const mvp=(msxR.data&&msxR.data[0]&&msxR.data[0].mvp)||0;
-    const modBy={}; (lmdR.data||[]).forEach(r=>modBy[r.manager_id]=r.module);
     ex.mvpPodium=(podR.data||[]).map(r=>({name:r.name,avatar:r.avatar,votes:r.votes}));   // [1º,2º,3º] per nomination
 
     // ---------- LA TUA GIORNATA ----------
