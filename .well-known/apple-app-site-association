@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["G24YJ63WSB.it.fantacalcettoitalia.app"],
+        "components": [
+          { "/": "/app/*", "comment": "App e link d'invito (?lega=...)" }
+        ]
+      }
+    ]
+  }
+}
