@@ -7169,6 +7169,19 @@ let voteTrendSeasonAware=null;   // idem per il grafico voti
    inventare id finti (0, -1) che poi finiscono in una query. */
 const ALLTIME='all';
 let lbScope=null;      // periodo di marcatori/assist: id stagione oppure 'all'
+/* 21/10/2026 — memoria delle schede (giocatore, squadra, andamento voti): la seconda apertura e' istantanea.
+   Scade dopo 5 minuti, si svuota da sola quando cambiano i dati (fcMdCacheClear / loadPlayerStats). Un errore non resta in memoria. */
+var _fcMemo={};
+function fcMemo(key,ttl,fn,ok){
+  const c=_fcMemo[key];
+  if(c && Date.now()-c.at<ttl) return c.p;
+  const p=Promise.resolve().then(fn);
+  _fcMemo[key]={at:Date.now(),p};
+  p.then(v=>{ if(ok && !ok(v) && _fcMemo[key] && _fcMemo[key].p===p) delete _fcMemo[key]; },
+         ()=>{ if(_fcMemo[key] && _fcMemo[key].p===p) delete _fcMemo[key]; });
+  return p;
+}
+function fcMemoClear(){ try{ for(const k in _fcMemo) delete _fcMemo[k]; }catch(_){ } }
 let cardScope=null;    // periodo delle schede: id stagione oppure 'all'
 let _bestVoteTxt='\u2014';   // miglior voto del periodo (lo riempie loadVoteTrend)
 let _avgVote=null;           // voto medio del periodo, dalle stesse giornate
@@ -7396,7 +7409,7 @@ function ensureStats(){players.filter(isPresent).forEach(p=>{if(!adminStats[p.id
 async function loadPlayerStats(){
   // i dati di gioco sono cambiati: le righe grezze di gol/assist/presenze
   // vanno riprese, altrimenti marcatori e schede restano indietro di una giornata
-  allMatchStats=null; allPresRows=null;
+  allMatchStats=null; allPresRows=null; fcMemoClear();
   const {data,error}=await sb.rpc('get_player_stats');
   playerStats={};
   if(!error&&data) data.forEach(r=>playerStats[r.player_id]={presences:r.presences,gol:r.gol,assist:r.assist,voto:Number(r.voto_medio),forma:r.forma});
@@ -9465,7 +9478,10 @@ function _noSeasonArg(err){
   const m=String((err&&err.message)||err||'');
   return /p_season|does not exist|function .* does not exist|PGRST202/i.test(m);
 }
-async function loadPlayerCard(playerId, seasonId){
+function loadPlayerCard(playerId, seasonId){
+  return fcMemo('pc|'+playerId+'|'+seasonId, 300000, ()=>_loadPlayerCardNet(playerId,seasonId), v=>v&&!v.error);
+}
+async function _loadPlayerCardNet(playerId, seasonId){
   if(seasonId!=null && cardSeasonAware!==false){
     try{
       const {data,error}=await sb.rpc('get_player_card',{p_player_id:playerId,p_season:seasonId});
@@ -9477,7 +9493,10 @@ async function loadPlayerCard(playerId, seasonId){
   try{ const {data,error}=await sb.rpc('get_player_card',{p_player_id:playerId}); if(error)return null; return data; }
   catch(_){ return null; }
 }
-async function loadTeamCard(managerId, seasonId){
+function loadTeamCard(managerId, seasonId){
+  return fcMemo('tc|'+managerId+'|'+seasonId, 300000, ()=>_loadTeamCardNet(managerId,seasonId), v=>v&&!v.error);
+}
+async function _loadTeamCardNet(managerId, seasonId){
   if(seasonId!=null && cardSeasonAware!==false){
     try{
       const {data,error}=await sb.rpc('get_team_card',{p_manager_id:managerId,p_season:seasonId});
@@ -10504,7 +10523,7 @@ function openPlayerStats(id){
   paintPlayerGrid(id,null);
   // Bacheca: mostra subito un placeholder, poi carica le targhe in background
   const bch=document.getElementById('statBacheca');
-  if(bch) bch.innerHTML='<div class="bch-empty">Carico la bacheca\u2026</div>';
+  if(bch) bch.innerHTML=fcLoadingHTML('Carico la bacheca\u2026');
   openBacheca('player');
   bindCardSeasonSwipe('pgPlayer','player');   // il gesto vale su tutta la scheda
   refreshPlayerCard(id);
@@ -10551,7 +10570,10 @@ function mdShortLabel(lab,i){ const m=/(\d+)/.exec(lab||''); return m?('G'+m[1])
    tutte). Se la RPC a due argomenti non c'è ancora, ricade su quella storica.
    Non sparisce più in silenzio: senza dati dice perché. */
 /* le righe dei voti di una stagione (o di sempre con seasonId null) */
-async function voteRows(id, seasonId){
+function voteRows(id, seasonId){
+  return fcMemo('vr|'+id+'|'+seasonId, 300000, ()=>_voteRowsNet(id,seasonId), v=>Array.isArray(v)&&v.length>0);
+}
+async function _voteRowsNet(id, seasonId){
   if(seasonId!=null && voteTrendSeasonAware!==false){
     try{
       const r=await sb.rpc('get_player_vote_trend',{p_player:id,p_season:seasonId});
@@ -10573,7 +10595,7 @@ async function loadVoteTrend(id, scope){
   _bestVoteTxt='\u2014'; _avgVote=null; _avgVoteReady=false; applyBestVote();
   _avgFanta=null; _avgFantaReady=false; const ftok=++_fantaTok;
   box.style.display='block';
-  box.innerHTML=chartHeadHTML('\ud83d\udcc8 Andamento voti','')+emptyChartSVG('Carico\u2026');
+  box.innerHTML=chartHeadHTML('\ud83d\udcc8 Andamento voti','')+fcLoadingHTML('Carico l\u2019andamento\u2026');
   const perSeason = (scope===ALLTIME && allSeasons.length>1);
   let pts=[], best=null;      // `best` = record vero, separato dai punti del grafico
   const fRows=[];             // 7.2: (stagione, giornata, voto) per il fantavoto medio
@@ -10787,9 +10809,9 @@ function openTeamCard(managerId){
   document.getElementById('teamName').textContent='Carico\u2026';
   document.getElementById('teamSub').textContent='';
   document.getElementById('teamAv').innerHTML=teamLogoName(managerId)?logoImg(teamLogoName(managerId),46):'\ud83d\udc54';
-  document.getElementById('teamGrid').innerHTML='';
+  document.getElementById('teamGrid').innerHTML=fcLoadingHTML('Carico le statistiche\u2026');
   const _tc=document.getElementById('teamChart'); if(_tc){ _tc.style.display='block'; _tc.innerHTML=''; }
-  document.getElementById('teamBacheca').innerHTML='<div class="bch-empty">Carico la bacheca\u2026</div>';
+  document.getElementById('teamBacheca').innerHTML=fcLoadingHTML('Carico la bacheca\u2026');
   _teamCardId=managerId;
   cardScope=(cardScope===ALLTIME)?ALLTIME:((viewSeasonId!=null)?viewSeasonId:displaySeasonId);
   renderCardScopeBar('team');
@@ -10927,7 +10949,7 @@ function posTrendHTML(pts,teams,sub){
 async function loadPosTrend(managerId, scope){
   const box=document.getElementById('teamChart'); if(!box) return;
   box.style.display='block';
-  box.innerHTML=chartHeadHTML('\ud83d\udcca Andamento posizione','')+emptyChartSVG('Carico\u2026');
+  box.innerHTML=chartHeadHTML('\ud83d\udcca Andamento posizione','')+fcLoadingHTML('Carico l\u2019andamento\u2026');
   const perSeason=(scope===ALLTIME && allSeasons.length>1);
   let pts=[], teams=0;
   try{
@@ -10935,7 +10957,7 @@ async function loadPosTrend(managerId, scope){
       // su All time il passo e' la stagione: dove sei ARRIVATO ogni anno
       const ord=allSeasons.slice().sort((a,b)=>a.number-b.number);
       const res=await Promise.all(ord.map(s=>
-        sb.rpc('get_standings_season',{p_season:s.id}).then(r=>r.data||[]).catch(()=>[]) ));
+        fcMemo('ss|'+s.id,300000,()=>sb.rpc('get_standings_season',{p_season:s.id}).then(r=>r.data||[]).catch(()=>[]),v=>Array.isArray(v)&&v.length>0) ));
       res.forEach((rows,i)=>{
         const arr=(rows||[]).slice().sort((a,b)=>Number(b.points)-Number(a.points));
         const j=arr.findIndex(r=>r.manager_id===managerId);
@@ -12730,7 +12752,7 @@ function fcMdData(md){
   p.catch(()=>{ if(_mdCache[md] && _mdCache[md].p===p) delete _mdCache[md]; });   // un errore non resta in memoria
   return p;
 }
-function fcMdCacheClear(){ try{ for(const k in _mdCache) delete _mdCache[k]; for(const k in _mdRowsCache) delete _mdRowsCache[k]; for(const k in _recapCache) delete _recapCache[k]; }catch(_){ } }
+function fcMdCacheClear(){ try{ fcMemoClear(); for(const k in _mdCache) delete _mdCache[k]; for(const k in _mdRowsCache) delete _mdRowsCache[k]; for(const k in _recapCache) delete _recapCache[k]; }catch(_){ } }
 /* rientro nell'app dopo piu' di un minuto: i dati potrebbero essere cambiati (voti, risultati) */
 let _mdHiddenAt=0;
 document.addEventListener('visibilitychange',()=>{ if(document.hidden) _mdHiddenAt=Date.now(); else if(_mdHiddenAt && Date.now()-_mdHiddenAt>60000) fcMdCacheClear(); });
@@ -12766,6 +12788,24 @@ function fcBusy(on,label){
     _fcBusyN=Math.max(0,_fcBusyN-1);
     if(!_fcBusyN){ clearTimeout(_fcBusyT); el.classList.remove('on'); }
   }
+}
+/* schede giocatori e squadre della lega pronte in memoria prima che servano */
+let _fcWarmAt=0;
+function fcCardsWarm(){
+  try{
+    if(typeof sb==='undefined' || !sb || !user) return;
+    if(navigator.connection && navigator.connection.saveData) return;
+    if(Date.now()-_fcWarmAt<240000) return; _fcWarmAt=Date.now();
+    const scope=(cardScope!=null)?cardScope:((viewSeasonId!=null)?viewSeasonId:displaySeasonId);
+    if(scope==null || scope===ALLTIME) return;
+    loadSeasonNumbers().catch(()=>{});
+    const jobs=[];
+    (players||[]).forEach(p=>jobs.push(()=>loadPlayerCard(p.id,scope)));
+    const mids=new Set([user.id]); document.querySelectorAll('.lb-row[data-id]').forEach(e=>mids.add(e.getAttribute('data-id')));
+    mids.forEach(m=>{ jobs.push(()=>loadTeamCard(m,scope)); jobs.push(()=>loadTeamCard(m,null)); });
+    let i=0; const run=()=>{ const j=jobs[i++]; if(!j) return; j().catch(()=>{}).then(run); };
+    run(); run(); run();
+  }catch(_){ }
 }
 function fcLoadingHTML(label){ return '<div class="fc-loadbox"><span class="fc-spin"></span><span>'+esc(label||'Caricamento\u2026')+'</span></div>'; }
 let _tlTok=0;
@@ -14539,6 +14579,7 @@ function renderRecapButton(){
   /* 21/10/2026: il pagellone dell'ultima giornata si prepara con calma dopo l'avvio, cosi'
      al tocco si apre subito (senza rubare banda al caricamento iniziale) */
   if(md) setTimeout(()=>fcRecapPrefetch(md.id), 2500);
+  setTimeout(fcCardsWarm, 5000);
 }
 function openRecapLatest(){ const md=latestClosedMd(); if(md) openRecap(md.id,false); }
 
