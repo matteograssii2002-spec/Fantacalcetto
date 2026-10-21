@@ -181,8 +181,34 @@
     box-shadow:0 0 12px rgba(63,151,255,.6)}
   .sp-pct{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;
     font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--accent-soft);opacity:.92}
+  /* 21/10/2026 — AGGIORNAMENTO ALL'AVVIO (solo app nativa). Se all'apertura c'e' una versione
+     nuova da scaricare, si resta qui (fuori dall'app) e questo riquadro dice cosa succede e
+     quanto manca. Prende il posto di frase e barra in basso. */
+  .sp-upd{position:absolute;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));transform:translate(-50%,16px);
+    width:calc(100% - 40px);max-width:352px;box-sizing:border-box;padding:16px 18px 14px;border-radius:22px;
+    background:linear-gradient(160deg,rgba(26,56,98,.94),rgba(11,27,52,.96));
+    border:1px solid rgba(120,170,255,.30);
+    box-shadow:0 18px 40px rgba(2,8,20,.55),inset 0 1px 0 rgba(255,255,255,.08);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    opacity:0;pointer-events:none;transition:opacity .35s ease,transform .35s ease;z-index:3}
+  #splash.upd .sp-upd{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+  #splash.upd .sp-tip,#splash.upd .sp-load{opacity:0!important;visibility:hidden;animation:none}
+  .sp-upd-h{display:flex;align-items:center;gap:13px}
+  .sp-upd-ic{flex:none;width:40px;height:40px;border-radius:13px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--accent),#1c6ff2);box-shadow:0 6px 16px rgba(28,111,242,.42)}
+  .sp-upd-ic svg{width:21px;height:21px;animation:spUpdBob 1.3s ease-in-out infinite}
+  @keyframes spUpdBob{0%,100%{transform:translateY(-2px)}50%{transform:translateY(2px)}}
+  .sp-upd-t{display:block;font-family:'Bricolage Grotesque';font-weight:800;font-size:17.5px;letter-spacing:-.015em;color:#eef4fd}
+  .sp-upd-s{display:block;margin-top:3px;font-size:12.5px;line-height:1.4;color:#a9bddb}
+  .sp-upd .sp-bar{margin-top:14px}
+  .sp-upd-row{display:flex;justify-content:space-between;gap:10px;margin-top:8px;
+    font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;font-size:12px;font-weight:700;color:var(--accent-soft)}
+  .sp-upd-skip{display:none;margin:12px auto 0;background:none;border:0;padding:4px 8px;
+    color:#8fb4e8;font:inherit;font-size:12.5px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+  .sp-upd-skip.on{display:block}
   @media (prefers-reduced-motion: reduce){
     .sp-logowrap,.sp-name .np-a,.sp-name .np-b,.sp-tag,.sp-tip,.sp-load,.sp-hero,.sp-logo,.sp-logowrap::after{animation-duration:.01ms;animation-iteration-count:1}
+    .sp-upd-ic svg{animation:none}
   }
 
   /* ---- OFFLINE / nessuna connessione (vale anche da app nativa: è tutto lato client) ---- */
@@ -2637,7 +2663,7 @@
   #setMenu #setPreview img.tlogo{height:58px!important;margin-bottom:12px}
   .prof-emo{position:relative;font-size:40px;margin-bottom:14px}
   #setMenu .prof .pinfo{position:relative;flex:1;min-width:0}
-  #setMenu .prof .pinfo .prof-kick{display:flex;align-items:center;gap:6px;margin:0;font-size:10.5px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#9fd0ff}
+  #setMenu .prof .pinfo .prof-kick{display:flex;align-items:center;gap:6px;margin:0;white-space:nowrap;font-size:10.5px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#9fd0ff}
   #setMenu .prof .pinfo .prof-kick span{display:inline-flex;margin:0}
   .prof-kick .tlogo{width:18px;height:18px}
   #setMenu .prof .pinfo b{display:block;margin-top:3px;font-size:21px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -2863,6 +2889,16 @@
   <div class="sp-load">
     <div class="sp-bar"><i id="spBarFill"></i></div>
     <div class="sp-pct" id="spPct">0%</div>
+  </div>
+  <!-- aggiornamento all'avvio (solo app nativa): vedi fcUpdShow() -->
+  <div class="sp-upd" id="spUpd" role="status" aria-live="polite">
+    <div class="sp-upd-h">
+      <div class="sp-upd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg></div>
+      <div><b class="sp-upd-t" id="spUpdT">Aggiornamento in corso</b><span class="sp-upd-s" id="spUpdS">Sto scaricando la nuova versione. Resta su questa schermata: appena finisce, l’app parte subito.</span></div>
+    </div>
+    <div class="sp-bar"><i id="spUpdFill"></i></div>
+    <div class="sp-upd-row"><span id="spUpdPct">0%</span><span id="spUpdEta">Calcolo il tempo…</span></div>
+    <button type="button" class="sp-upd-skip" id="spUpdSkip" onclick="fcOtaSkip()">Continua senza aggiornare</button>
   </div>
 </div>
 
@@ -4289,6 +4325,8 @@ function avatarPh(px){
 }
 function fcImgRetry(img){
   try{
+    const rem=img.getAttribute('data-remote');   // copia interna dell'app non apribile: si passa a Supabase
+    if(rem){ img.removeAttribute('data-remote'); img.src=rem; return; }
     const n=+(img.getAttribute('data-try')||0);
     if(n<2){
       const base=(img.getAttribute('data-src')||img.src||'').split('#')[0].split(/[?&]r=/)[0];
@@ -4316,7 +4354,7 @@ function ensureAvatars(){
 function avatarImg(name,px){
   const a=avatars.find(x=>x.name===name);
   if(!a){ if(name) ensureAvatars(); return avatarPh(px); }
-  return `<img src="${a.url}" alt="" style="width:${px}px;height:auto;border-radius:8px;display:block" draggable="false" onerror="fcImgRetry(this)">`;
+  return `<img src="${a.url}"${a.remote?` data-remote="${a.remote}"`:''} alt="" style="width:${px}px;height:auto;border-radius:8px;display:block" draggable="false" onerror="fcImgRetry(this)">`;
 }
 /* logo squadra: box quadrato px×px, immagine SEMPRE intera (contain) e mai tagliata.
    Se la squadra non ha ancora scelto un logo -> segnaposto discreto della stessa misura. */
@@ -4331,7 +4369,8 @@ function ensureLogos(){
     _lgBusy=false;
     if(!list.length) return;
     bucketCacheWrite(LG_KEY,list);
-    if(JSON.stringify(list)!==JSON.stringify(logos)){ logos=list; try{ if(profile) renderAll(); }catch(_){ } }
+    const L=fcMedLocal('loghi',list);
+    if(JSON.stringify(L)!==JSON.stringify(logos)){ logos=L; try{ if(profile) renderAll(); }catch(_){ } }
   }).catch(()=>{ _lgBusy=false; });
 }
 function logoImg(name,px){
@@ -4926,8 +4965,13 @@ function maybeShowTutorial(try_n){
 
 /* ---------- SPLASH (logo durante il caricamento) ---------- */
 let _splashGone=false;
+/* 21/10/2026 — mentre c'e' un aggiornamento da scaricare lo splash resta (fcHold): chi chiama
+   hideSplash() viene messo in attesa e parte quando l'attesa finisce. */
+let _fcHold=false,_fcHoldPend=false;
+function fcHold(on){ _fcHold=!!on; if(!on && _fcHoldPend){ _fcHoldPend=false; hideSplash(); } }
 function hideSplash(){
   if(_splashGone)return;
+  if(_fcHold){ _fcHoldPend=true; return; }
   try{ spTo(100); _spPct=100; _spPaint(); }catch(_){ }   // mai sparire a meta' barra
   _splashGone=true;
   const s=document.getElementById('splash'); if(!s)return;
@@ -6999,10 +7043,36 @@ async function bucketList(bucket,re){
 }
 const AV_KEY='fc_bucket_avatars', LG_KEY='fc_bucket_loghi';
 const AV_RE=/\.(png|jpe?g|webp|gif)$/i, LG_RE=/\.(png|jpe?g|webp|gif|svg)$/i;
-function bucketRevalidate(bucket,re,key,apply){
+/* 21/10/2026 — APP NATIVA: avatar e loghi DENTRO l'app.
+   prepara-gioco.sh copia in www/media/ i file dei bucket e scrive l'elenco in
+   window.FC_MEDIA = {avatars:{nome:{v,f}}, loghi:{...}} (stesso ordine di Supabase).
+   Se la copia interna e' la stessa versione del file su Supabase si usa quella:
+   nessun download, immagini subito. Un file nuovo o cambiato dopo la build arriva
+   da Supabase come prima, e con la build/OTA successiva entra anche lui nell'app.
+   Sito e PWA: FC_MEDIA non esiste, non cambia niente (li' c'e' gia' il service worker).
+   Nella copia salvata sul telefono (localStorage) restano SEMPRE gli indirizzi di
+   Supabase: la traduzione in percorso interno si fa ogni volta in lettura. */
+function fcMedia(bucket){ try{ return (IS_NATIVE && window.FC_MEDIA && window.FC_MEDIA[bucket]) || null; }catch(_){ return null; } }
+function fcMedLocal(bucket,list){
+  const m=fcMedia(bucket); if(!m || !Array.isArray(list)) return list;
+  return list.map(it=>{
+    const e=it && m[it.name]; if(!e) return it;
+    const q=String(it.url||'').split('?v=')[1];
+    let v=''; try{ v=q==null?'':decodeURIComponent(q); }catch(_){ return it; }
+    return (v===String(e.v||'')) ? {name:it.name, url:'/media/'+bucket+'/'+e.f, remote:it.url} : it;
+  });
+}
+function fcMedSeed(bucket,re){
+  const m=fcMedia(bucket); if(!m || typeof sb==='undefined' || !sb) return [];
+  return Object.keys(m).filter(n=>re.test(n)).map(n=>{
+    const base=sb.storage.from(bucket).getPublicUrl(n).data.publicUrl;
+    const v=m[n].v; return {name:n, url: v ? base+'?v='+encodeURIComponent(v) : base};
+  });
+}
+function bucketRevalidate(bucket,re,key,apply,prev){
   bucketList(bucket,re).then(list=>{
     if(!list.length) return;
-    const before=JSON.stringify((bucketCacheRead(key)||{}).list||[]);
+    const before=JSON.stringify(prev||(bucketCacheRead(key)||{}).list||[]);
     bucketCacheWrite(key,list);
     if(JSON.stringify(list)!==before){ apply(list); try{ if(profile) renderAll(); }catch(_){ } }
   }).catch(()=>{});
@@ -7010,12 +7080,20 @@ function bucketRevalidate(bucket,re,key,apply){
 async function loadAvatars(){
   const c=bucketCacheRead(AV_KEY);
   if(c){
-    avatars=c.list;
+    avatars=fcMedLocal('avatars',c.list);
     if(avatars.length && !obAvatar) obAvatar=avatars[0].name;
-    if(Date.now()-(c.at||0) >= BUCKET_TTL) bucketRevalidate('avatars',AV_RE,AV_KEY,l=>{avatars=l;});
+    if(Date.now()-(c.at||0) >= BUCKET_TTL) bucketRevalidate('avatars',AV_RE,AV_KEY,l=>{avatars=fcMedLocal('avatars',l);});
     return;
   }
-  try{ avatars=await bucketList('avatars',AV_RE); if(avatars.length) bucketCacheWrite(AV_KEY,avatars); }
+  /* app nativa senza copia sul telefono (primo avvio): elenco dall'app, Supabase controlla dopo */
+  const seed=fcMedSeed('avatars',AV_RE);
+  if(seed.length){
+    avatars=fcMedLocal('avatars',seed);
+    if(!obAvatar) obAvatar=avatars[0].name;
+    bucketRevalidate('avatars',AV_RE,AV_KEY,l=>{avatars=fcMedLocal('avatars',l);},seed);
+    return;
+  }
+  try{ const l=await bucketList('avatars',AV_RE); if(l.length) bucketCacheWrite(AV_KEY,l); avatars=fcMedLocal('avatars',l); }
   catch(e){ avatars=[]; }
   if(avatars.length && !obAvatar) obAvatar=avatars[0].name;
 }
@@ -7023,12 +7101,19 @@ async function loadAvatars(){
 async function loadLogos(){
   const c=bucketCacheRead(LG_KEY);
   if(c){
-    logos=c.list;
+    logos=fcMedLocal('loghi',c.list);
     if(logos.length && !obLogo) obLogo=logos[0].name;
-    if(Date.now()-(c.at||0) >= BUCKET_TTL) bucketRevalidate('loghi',LG_RE,LG_KEY,l=>{logos=l;});
+    if(Date.now()-(c.at||0) >= BUCKET_TTL) bucketRevalidate('loghi',LG_RE,LG_KEY,l=>{logos=fcMedLocal('loghi',l);});
     return;
   }
-  try{ logos=await bucketList('loghi',LG_RE); if(logos.length) bucketCacheWrite(LG_KEY,logos); }
+  const seed=fcMedSeed('loghi',LG_RE);
+  if(seed.length){
+    logos=fcMedLocal('loghi',seed);
+    if(!obLogo) obLogo=logos[0].name;
+    bucketRevalidate('loghi',LG_RE,LG_KEY,l=>{logos=fcMedLocal('loghi',l);},seed);
+    return;
+  }
+  try{ const l=await bucketList('loghi',LG_RE); if(l.length) bucketCacheWrite(LG_KEY,l); logos=fcMedLocal('loghi',l); }
   catch(e){ logos=[]; }
   if(logos.length && !obLogo) obLogo=logos[0].name;
 }
@@ -14953,6 +15038,10 @@ async function avatarBlob(name){
   if(_avBlob[name]==='FAIL') return null;
   if(_avBlob[name]) return _avBlob[name];
   try{
+    const a=avatars.find(x=>x.name===name);
+    if(a && a.url.indexOf('/media/')===0){ const r=await fetch(a.url); if(r.ok){ const u=URL.createObjectURL(await r.blob()); _avBlob[name]=u; return u; } }
+  }catch(_){ }
+  try{
     const {data,error}=await sb.storage.from('avatars').download(name);
     if(error||!data) throw 0;
     const url=URL.createObjectURL(data); _avBlob[name]=url; return url;
@@ -14967,6 +15056,10 @@ async function logoBlob(name){
   const key='__logo__'+name;
   if(_avBlob[key]==='FAIL') return null;
   if(_avBlob[key]) return _avBlob[key];
+  try{
+    const l=logos.find(x=>x.name===name);
+    if(l && l.url.indexOf('/media/')===0){ const r=await fetch(l.url); if(r.ok){ const u=URL.createObjectURL(await r.blob()); _avBlob[key]=u; return u; } }
+  }catch(_){ }
   try{
     const {data,error}=await sb.storage.from('loghi').download(name);
     if(error||!data) throw 0;
@@ -16101,6 +16194,65 @@ async function _otaManifest(){
   if(!d || typeof d.version!=='string') return null;
   return d;
 }
+/* ---- Riquadro «aggiornamento in corso» sullo splash (21/10/2026) ---- */
+const FC_UPD_CAP=180000;      // oltre 3 minuti si entra comunque; il pacchetto resta in scarico per la prossima volta
+const FC_UPD_SKIP_AFTER=25000;
+let _updShown=false,_updT0=0,_updMax=0,_updSkipT=null,_otaWaitRes=null,_otaHoldT=null,_updReq=false;
+const FC_UPD_REQ_TRIES=5;   // aggiornamento obbligatorio: dopo 5 scarichi falliti di fila compare comunque «Continua senza aggiornare»
+function fcUpdShow(force,req){
+  const s=document.getElementById('splash'); if(!s || (_splashGone && !force)) return;
+  _updShown=true; _updT0=Date.now(); _updMax=0; _updReq=!!req;
+  const t=document.getElementById('spUpdT'), d=document.getElementById('spUpdS'), b=document.getElementById('spUpdSkip');
+  if(t) t.textContent='Aggiornamento in corso';
+  if(d) d.textContent= req ? 'Questo aggiornamento \u00e8 necessario per continuare. Resta su questa schermata: appena finisce, l\u2019app parte subito.'
+                           : 'Sto scaricando la nuova versione. Resta su questa schermata: appena finisce, l\u2019app parte subito.';
+  if(b) b.classList.remove('on');
+  fcUpdSet(0);
+  s.classList.add('upd');
+  clearTimeout(_updSkipT);
+  if(!req) _updSkipT=setTimeout(()=>{ const x=document.getElementById('spUpdSkip'); if(x) x.classList.add('on'); }, FC_UPD_SKIP_AFTER);
+}
+function fcUpdHide(){
+  clearTimeout(_updSkipT); _updShown=false;
+  const s=document.getElementById('splash'); if(s) s.classList.remove('upd');
+}
+function fcUpdSet(pct,phase){
+  if(!_updShown) return;
+  pct=Math.max(0,Math.min(100,Number(pct)||0)); if(pct<_updMax) pct=_updMax; _updMax=pct;
+  const f=document.getElementById('spUpdFill'), n=document.getElementById('spUpdPct'), e=document.getElementById('spUpdEta');
+  if(f) f.style.width=pct.toFixed(1)+'%';
+  if(n) n.textContent=Math.round(pct)+'%';
+  let txt;
+  if(phase==='install'){
+    const t=document.getElementById('spUpdT'), d=document.getElementById('spUpdS');
+    if(t) t.textContent='Installazione in corso';
+    if(d) d.textContent='Un attimo: l\u2019app si riavvia da sola.';
+    txt='Quasi fatto';
+  } else {
+    const el=Date.now()-_updT0;
+    if(pct<3 || el<1500) txt='Calcolo il tempo\u2026';
+    else {
+      const rem=el*(100-pct)/pct/1000;   // secondi rimasti, stimati sulla velocita' vera
+      txt = rem<8 ? 'Pochi secondi'
+          : rem<55 ? 'Circa '+(Math.round(rem/5)*5)+' secondi'
+          : 'Circa '+Math.ceil(rem/60)+(rem<=60?' minuto':' minuti');
+    }
+  }
+  if(e) e.textContent=txt;
+}
+function fcUpdRetryMsg(on){ const e=document.getElementById('spUpdEta'); if(on && e) e.textContent='Connessione debole, riprovo\u2026'; }
+function fcUpdAllowSkip(){ const x=document.getElementById('spUpdSkip'); if(x) x.classList.add('on'); }
+function fcOtaSkip(){ try{ if(_otaWaitRes) _otaWaitRes('skip'); }catch(_){ } }
+/* prova del riquadro (dalla console di Safari collegato al telefono): fcUpdDemo() */
+function fcUpdDemo(sec){
+  const s=document.getElementById('splash'); if(!s) return;
+  const was=_splashGone; s.style.display=''; s.classList.remove('gone');
+  fcUpdShow(true); const T=(sec||12)*1000, t0=Date.now();
+  const iv=setInterval(()=>{
+    const p=Math.min(100,(Date.now()-t0)/T*100); fcUpdSet(p);
+    if(p>=100){ clearInterval(iv); fcUpdSet(100,'install'); setTimeout(()=>{ fcUpdHide(); if(was){ s.classList.add('gone'); setTimeout(()=>{ s.style.display='none'; },600); } },1500); }
+  },200);
+}
 async function fcOtaCheck(force,instant){
   const U=_otaU(); if(!U || _otaBusy) return;
   if(!force && Date.now()-_otaAt < 30*60*1000) return;
@@ -16132,7 +16284,54 @@ async function fcOtaCheck(force,instant){
       const l=await U.list();
       b=((l && l.bundles)||[]).find(x=>x.version===m.version && (x.status==='success'||x.status==='pending')) || null;
     }catch(_){ }
-    if(!b) b=await U.download({ url:m.url, version:m.version, checksum:m.checksum.toLowerCase() });
+    if(!b){
+      /* APERTURA DELL'APP con aggiornamento da scaricare: si resta sullo splash (fcHold e'
+         gia' attivo dall'avvio) e dopo 0,7 s compare il riquadro con avanzamento e tempo
+         stimato. Si entra solo a fine scarico, cosi' dentro e' tutto subito pronto.
+         Rete lenta: dopo 25 s compare «Continua senza aggiornare»; dopo 3 minuti si entra
+         da soli; lo scarico prosegue e il pacchetto resta pronto per la volta dopo. */
+      const wait = !!instant && typeof _splashGone!=='undefined' && !_splashGone;
+      const req = m.required===true;   // «obbligatorio» in latest.json: nessuna uscita finche' non e' installato
+      let lh=null, showT=null;
+      if(wait){
+        clearTimeout(_otaHoldT); fcHold(true);   // l'attesa dell'avvio e' finita: da qui lo splash resta fino a fine scarico
+        showT=setTimeout(()=>fcUpdShow(false,req), req?0:700);
+        try{ lh=await U.addListener('download', ev=>{ if(ev && typeof ev.percent==='number') fcUpdSet(ev.percent); }); }catch(_){ }
+      }
+      const dlOnce=()=>U.download({ url:m.url, version:m.version, checksum:m.checksum.toLowerCase() });
+      /* obbligatorio: si riprova da soli finche' non scarica (rete debole, cadute); solo dopo
+         FC_UPD_REQ_TRIES fallimenti di fila, per non lasciare nessuno bloccato per sempre su un
+         pacchetto rotto, compare «Continua senza aggiornare». */
+      const dlReq=async()=>{
+        for(let n=0;;n++){
+          try{ return await dlOnce(); }
+          catch(e){
+            if(n+1>=FC_UPD_REQ_TRIES){ fcUpdAllowSkip(); fcUpdRetryMsg(true); }
+            else fcUpdRetryMsg(true);
+            await new Promise(r=>setTimeout(r,4000));
+            if(n+1>=FC_UPD_REQ_TRIES*3) throw e;   // dopo molti tentativi si arrende (si entra con la versione che c'e')
+          }
+        }
+      };
+      const dl = (wait && req) ? dlReq() : dlOnce();
+      if(wait){
+        let capT=null, res;
+        try{
+          res=await Promise.race([
+            dl,
+            new Promise(r=>{ _otaWaitRes=r; if(!req) capT=setTimeout(()=>r('cap'), FC_UPD_CAP); })
+          ]);
+        } finally {   // anche se lo scarico fallisce: niente timer rimasti in giro, il riquadro non riappare
+          clearTimeout(capT); clearTimeout(showT); _otaWaitRes=null;
+          try{ if(lh) lh.remove(); }catch(_){ }
+        }
+        if(res==='skip' || res==='cap'){
+          dl.then(async bb=>{ try{ if(bb && bb.id) await U.next({ id:bb.id }); }catch(_){ } }).catch(()=>{});
+          return;
+        }
+        b=res;
+      } else b=await dl;
+    }
     if(!b || !b.id) return;
     await U.next({ id:b.id });
     /* ISTANTANEO: se il pacchetto e' arrivato mentre c'e' ancora il logo di avvio
@@ -16140,12 +16339,18 @@ async function fcOtaCheck(force,instant){
        quella nuova. Se e' arrivato tardi, l'app e' in uso: si applica piu' avanti. */
     if(instant && typeof _splashGone!=='undefined' && !_splashGone && !window.__fcReloading){
       window.__fcReloading=true;
+      fcUpdSet(100,'install');
       try{ await U.set({ id:b.id }); return; }catch(_){ window.__fcReloading=false; }
     }
-    try{ await U.setMultiDelay({ delayConditions:[{ kind:'background', value:'600000' }] }); }catch(_){ }
+    try{ await U.setMultiDelay({ delayConditions:[{ kind:'background', value:(m.required===true?'60000':'600000') }] }); }catch(_){ }
   }catch(e){
     try{ console.warn('OTA', e && e.message); }catch(_){ }
-  }finally{ _otaBusy=false; }
+  }finally{
+    _otaBusy=false;
+    /* all'avvio: finito (o fallito, o saltato) il controllo si toglie il riquadro e lo splash
+       puo' andarsene. Se invece sta per ricaricare la versione nuova non si tocca niente. */
+    if(instant && !window.__fcReloading){ clearTimeout(_otaHoldT); fcUpdHide(); fcHold(false); }
+  }
 }
 async function fcOtaStart(){
   if(!IS_NATIVE) return;
@@ -16167,6 +16372,10 @@ async function fcOtaStart(){
       }
     }
   }catch(_){ }
+  /* lo splash non se ne va finche' non si sa se c'e' un aggiornamento da scaricare; se il
+     sito risponde piano (2,5 s) non si aspetta oltre e si entra come sempre. */
+  fcHold(true);
+  _otaHoldT=setTimeout(()=>{ if(!_updShown) fcHold(false); }, 2500);
   fcOtaCheck(true,true);   // subito, in parallelo al caricamento: se e' veloce, parte la versione nuova
   document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) fcOtaCheck(false); });
 }
