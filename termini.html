@@ -23,6 +23,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="sito.css?v=12">
+<script>/* ?app=1: pagina aperta dall'app -> solo il testo, niente barra, menu o pulsanti del sito */
+if(/[?&]app=1(&|$)/.test(location.search)) document.documentElement.classList.add('inapp');</script>
+<style>html.inapp .topbar,html.inapp .crumb,html.inapp footer{display:none!important}html.inapp section{padding-top:28px}html.inapp main{padding-bottom:40px}</style>
 </head>
 <body>
 
@@ -184,6 +187,16 @@
 var APP_URL = '/app/';
 document.querySelectorAll('[data-app-link]').forEach(function(a){ a.href = APP_URL; });
 document.getElementById('yy').textContent = new Date().getFullYear();
+
+/* ?app=1: i collegamenti interni restano in modalita' «solo testo» */
+if(document.documentElement.classList.contains('inapp')){
+  document.querySelectorAll('main a[href]').forEach(function(a){
+    var h=a.getAttribute('href');
+    if(!h || /^(https?:|mailto:|tel:|#)/i.test(h) || h==='/') return;
+    var p=h.split('#'), base=p[0], hash=p[1]?('#'+p[1]):'';
+    a.setAttribute('href', base+(base.indexOf('?')<0?'?':'&')+'app=1'+hash);
+  });
+}
 
 var tb = document.getElementById('topbar');
 function onScroll(){ tb.classList.toggle('stuck', window.scrollY > 8); }
