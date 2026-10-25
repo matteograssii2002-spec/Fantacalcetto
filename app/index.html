@@ -291,6 +291,11 @@
      resta sopra i tasti e iOS non "scrolla" l'overlay fisso creando salti e spazi vuoti. */
   .gate-center{flex:1;min-height:0;justify-content:flex-start}
   .gate-bottom{margin-top:22px}
+  /* 25/10/2026 — pagina Accedi: password dimenticata, Termini e Privacy stanno in fondo allo schermo
+     (prima restavano subito sotto il modulo e lasciavano il vuoto sotto). Il modulo resta fermo in alto;
+     se il contenuto riempie lo schermo (tastiera aperta, telefono basso) non cambia niente. */
+  #gate .gate-bottom{flex:1 0 auto;display:flex;flex-direction:column}
+  #gate .gate-foot{margin-top:auto;padding-top:8px}
   .gate-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 22px}
   .gate-bar .wc-back{align-self:auto;margin:0}
   .gate-desc{color:var(--muted);font-size:14px;line-height:1.55;margin:0}
@@ -1553,11 +1558,21 @@
   .chat-head .ls-ttl small{white-space:normal}
   .chat-body{display:flex;flex-direction:column;padding:4px 16px 14px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   .chat-day{align-self:center;font-size:11px;font-weight:700;color:var(--muted);background:rgba(150,185,240,.08);padding:4px 11px;border-radius:999px;margin:14px 0 8px}
-  .chat-msg{max-width:82%;padding:9px 12px 6px;border-radius:18px;font-size:15px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:3px}
+  .chat-msg{max-width:82%;padding:9px 12px 6px;border-radius:18px;font-size:15px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:10px}
+  /* 25/10/2026 — piu' aria fra i messaggi (prima 3px: si toccavano); quelli di fila dello stesso lato un po' piu' vicini */
+  .chat-msg.me+.chat-msg.me,.chat-msg.them+.chat-msg.them{margin-top:6px}
   .chat-msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#fff;border-bottom-right-radius:6px}
   .chat-msg.them{align-self:flex-start;background:var(--surface);border:1px solid var(--line-strong);color:var(--text);border-bottom-left-radius:6px}
   .chat-msg time{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;opacity:.68;text-align:right;margin-top:3px}
   .chat-msg.pending{opacity:.55}
+  /* 25/10/2026 — spunte sui propri messaggi: orologio = in invio, una spunta = consegnato, due azzurre = visualizzato */
+  .chat-msg time .ck{display:inline-block;vertical-align:-2px;margin-left:4px;width:18px;height:11px}
+  .chat-msg time .ck svg{width:18px;height:11px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;display:block}
+  .chat-msg time .ck.seen{color:#a6f0ff;opacity:1}
+  .chat-msg.me time{opacity:.8}
+  /* tastiera nativa (plugin Keyboard): il pannello sale insieme alla tastiera, con la sua stessa animazione */
+  .chat-ov.kbn{padding-bottom:var(--chat-kb,0px);transition:padding-bottom .26s cubic-bezier(.17,.59,.4,.97)}
+  .chat-ov.kbn.kbup .chat-foot{padding-bottom:10px}
   .chat-empty{margin:auto 0;text-align:center;padding:24px 8px}
   .chat-empty img{width:64px;height:64px;border-radius:18px;display:block;margin:0 auto 12px;box-shadow:0 14px 30px -14px rgba(63,151,255,.6)}
   .chat-empty b{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;display:block}
@@ -3047,8 +3062,10 @@
       <button class="ob-btn" id="gateSaveNewPw">Salva ed entra →</button>
     </div>
     <div class="gate-status" id="gateStatus"></div>
+    <div class="gate-foot">
     <div class="gate-links" id="gateLinks"></div>
     <p class="gate-legal">Proseguendo accetti i <a href="/termini.html" target="_blank" rel="noopener">Termini di servizio</a><br>e dichiari di aver letto l'<a href="/privacy.html" target="_blank" rel="noopener">Informativa privacy</a>.</p>
+    </div>
   </div>
 </div></div>
 
@@ -4075,7 +4092,14 @@ if(IS_NATIVE){
     };
   }catch(_){ }
   // un indirizzo «di casa» (/privacy.html, /termini.html…) dentro l'app non esiste: si apre quello del sito
-  const _ext=(u)=>{ try{ const x=new URL(u, location.href); return (x.origin===location.origin) ? (FC_SITE+x.pathname+x.search+x.hash) : x.href; }catch(_){ return u; } };
+  // 25/10/2026: Privacy e Termini aperti dall'app portano ?app=1, cosi' la pagina mostra solo il testo (niente «Entra e gioca», menu del sito, ecc.)
+  const _ext=(u)=>{ try{
+    const x=new URL(u, location.href);
+    if(x.origin!==location.origin) return x.href;
+    let q=x.search;
+    if(/^\/(privacy|termini)\.html$/i.test(x.pathname) && !/[?&]app=1(&|$)/.test(q)) q=(q?q+'&':'?')+'app=1';
+    return FC_SITE+x.pathname+q+x.hash;
+  }catch(_){ return u; } };
   const _openOut=(u)=>{ const P=_P(); if(P.Browser) P.Browser.open({ url:_ext(u) }).catch(()=>{}); else location.href=_ext(u); };
   const _wo=window.open;
   window.open=function(u,t,f){
@@ -6756,12 +6780,8 @@ function gateSet(mode){
   gateStatus('');
   gateLinks();
   try{ gateAccounts(); }catch(_){ }   // 6.4
-  // 7.2 — se sul telefono c'e' l'accesso rapido, lo propongo da solo (una volta per apertura)
-  try{
-    if(gateMode==='login' && IS_NATIVE && !_bioAuto && bioSavedEmail() && _bioP()){
-      _bioAuto=true; setTimeout(()=>{ const g=document.getElementById('gate'); if(g && !g.classList.contains('hidden') && gateMode==='login' && gateStage==='form') bioLogin(); },500);
-    }
-  }catch(_){ }
+  // 25/10/2026 — Face ID / impronta NON parte piu' da solo all'apertura di «Accedi»:
+  // si avvia solo quando l'utente tocca il pulsante «Entra con impronta o volto» (bioGateBtn -> bioLogin).
 }
 /* i passaggi laterali: si cambia strada senza perdere l'email gi\u00e0 scritta */
 function gateLinks(){
@@ -12999,6 +13019,7 @@ const BACK_LAYERS=[
   {id:'pag',            on:el=>el.classList.contains('open'),    close:()=>closeRecap()},          //  500
   {id:'valuePoll',      on:el=>el.classList.contains('open'),    close:()=>closeValuePoll()},      //  120
   {id:'liveStats',      on:el=>el.classList.contains('open'),    close:()=>closeLiveStats()},      //  120
+  {id:'teamMaker',      on:el=>el.classList.contains('open'),    close:()=>closeTeamMaker()},      //  120 — 25/10/2026: mancava, lo swipe chiudeva la pagina sotto
   {id:'proPage',        on:el=>!el.classList.contains('hidden'), close:()=>closePro()},            //   95
   {id:'bachecaPage',    on:el=>!el.classList.contains('hidden'), close:()=>closeBacheca()},        //   90
   {id:'teamLineupPage', on:el=>!el.classList.contains('hidden'), close:()=>closeTeamLineupPage()}, //   90
@@ -13184,6 +13205,11 @@ function setNav(id){
   let back=false, y=0;
   const k=_setStack.findIndex(x=>x.id===id);
   if(k>=0){ back=true; y=_setStack[k].y; _setStack.length=k; }
+  /* 25/10/2026 — il menu delle Impostazioni e' la radice: arrivandoci il percorso si svuota.
+     Prima, entrando dalla rotella, finiva nella pila la pagina rimasta accesa (es. «Azioni avanzate»
+     lasciata dal tutorial al primo avvio) e da li' «indietro» girava in tondo fra Centro giornata
+     e Azioni avanzate finche' non si ritoccava la rotella. */
+  else if(id==='setMenu'){ _setStack.length=0; }
   else if(curId && curId!==id){
     _setStack.push({id:curId, y:_scrollY()});
     if(_setStack.length>20) _setStack.shift();
@@ -13681,8 +13707,31 @@ function gateAccounts(){
     +l.map(a=>{
       const nm=esc(a.team||a.name||a.email||'Account'), sub=esc([a.league,a.email].filter(Boolean).join(' · '));
       const ini=esc(String(a.team||a.name||a.email||'?').trim().charAt(0).toUpperCase());
-      return `<button type="button" class="gacc-row" onclick="accSwitch('${a.id}')"><span class="gacc-ini">${ini}</span><span class="gacc-txt"><b>${nm}</b><span>${sub}</span></span><span class="gacc-go">Entra ›</span></button>`;
+      return `<button type="button" class="gacc-row" onclick="gateAccGo('${a.id}')"><span class="gacc-ini">${ini}</span><span class="gacc-txt"><b>${nm}</b><span>${sub}</span></span><span class="gacc-go">Entra ›</span></button>`;
     }).join('')+'</div><div class="gacc-or">oppure accedi con un altro account</div>';
+}
+
+/* 25/10/2026 — «Entra ›» su un account salvato: la sessione salvata evita di riscrivere email e
+   password, ma se il telefono ha volto o impronta si chiede sempre quello prima di entrare.
+   Senza biometria (o sul sito/PWA) si entra come prima. Se si annulla, si resta su «Accedi». */
+let _gateAccBusy=false;
+async function gateAccGo(id){
+  if(_gateAccBusy) return;
+  const P=(typeof _bioP==='function')?_bioP():null;
+  if(IS_NATIVE && P){
+    _gateAccBusy=true;
+    let ok=true;
+    try{
+      const c=await bioCaps();
+      if(c && c.ok){
+        try{ await P.verifyIdentity({ reason:'Entra in FantaCalcetto', title:'FantaCalcetto', subtitle:'Conferma che sei tu', negativeButtonText:'Annulla', useFallback:true }); }
+        catch(_){ ok=false; }
+      }
+    }catch(_){ }
+    _gateAccBusy=false;
+    if(!ok){ gateStatus('Accesso annullato: riprova o entra con email e password.',true); return; }
+  }
+  accSwitch(id);
 }
 
 /* ---------- NOTIFICHE PUSH ---------- */
@@ -14200,10 +14249,23 @@ async function chatShowThread(userId, name, sub){
   await chatLoad(true);
   chatStartPoll();
 }
+/* 25/10/2026 — le funzioni *_seen (22_chat_spunte.sql) restituiscono anche seen_at, cioe'
+   quando l'altra parte ha letto il messaggio. Finche' l'SQL non e' lanciato si usano
+   quelle di prima e le spunte restano a una (consegnato). */
+let _chatSeenRpc=true;
+async function _chatThreadRpc(mode, uid){
+  if(_chatSeenRpc){
+    const r = mode==='thread' ? await sb.rpc('sa_support_thread_seen',{p_user:uid}) : await sb.rpc('support_thread_seen');
+    const c=String((r.error&&(r.error.code||''))||''), m=String((r.error&&r.error.message)||'');
+    if(!r.error || !(c==='PGRST202' || c==='42883' || /could not find the function|does not exist/i.test(m))) return r;
+    _chatSeenRpc=false;
+  }
+  return mode==='thread' ? await sb.rpc('sa_support_thread',{p_user:uid}) : await sb.rpc('support_thread');
+}
 async function chatLoad(toEnd){
   const mode=chatMode, uid=chatUser;
   let r;
-  try{ r = mode==='thread' ? await sb.rpc('sa_support_thread',{p_user:uid}) : await sb.rpc('support_thread'); }
+  try{ r = await _chatThreadRpc(mode, uid); }
   catch(e){ r={error:e}; }
   if(chatMode!==mode || chatUser!==uid) return;       // nel frattempo si e' cambiata conversazione
   const body=chatEl('chatBody');
@@ -14212,7 +14274,7 @@ async function chatLoad(toEnd){
     return;
   }
   const rows=r.data||[];
-  const key=rows.map(m=>m.id).join(',');
+  const key=rows.map(m=>m.id+(m.seen_at?'v':'')).join(',');   // anche «visualizzato» conta come novita'
   if(key && key===_chatKey) return;                    // niente di nuovo: lo scroll resta dov'e'
   const atEnd = body.scrollHeight - body.scrollTop - body.clientHeight < 80;
   _chatKey=key; chatMsgs=rows;
@@ -14235,9 +14297,18 @@ function chatRender(){
   chatMsgs.forEach(m=>{
     const day=chatDay(m.created_at);
     if(day!==lastDay){ html+=`<div class="chat-day">${esc(day)}</div>`; lastDay=day; }
-    html+=`<div class="chat-msg ${chatIsMe(m)?'me':'them'}">${esc(m.body)}<time>${chatWhen(m.created_at)}</time></div>`;
+    const me=chatIsMe(m);
+    html+=`<div class="chat-msg ${me?'me':'them'}">${esc(m.body)}<time>${chatWhen(m.created_at)}${me?chatTick(m.seen_at?'seen':'sent'):''}</time></div>`;
   });
   body.innerHTML=html;
+}
+/* spunte: 'wait' (in invio), 'sent' (consegnato: salvato sul server, la notifica parte da li'), 'seen' (letto) */
+function chatTick(st){
+  if(st==='wait') return '<span class="ck" aria-label="In invio"><svg viewBox="0 0 18 11"><circle cx="9" cy="5.5" r="4.3"/><path d="M9 3.3v2.4l1.6 1"/></svg></span>';
+  const one='<path d="M1.2 6l2.8 2.8 6-6.6"/>';
+  return st==='seen'
+    ? '<span class="ck seen" aria-label="Visualizzato"><svg viewBox="0 0 18 11">'+one+'<path d="M7.6 8.2l.6.6 6-6.6"/></svg></span>'
+    : '<span class="ck" aria-label="Consegnato"><svg viewBox="0 0 18 11">'+one+'</svg></span>';
 }
 function chatToEnd(){ const b=chatEl('chatBody'); if(b) requestAnimationFrame(()=>{ b.scrollTop=b.scrollHeight; }); }
 function chatChip(btn){
@@ -14259,6 +14330,7 @@ async function chatSendMsg(){
   const body=chatEl('chatBody');
   if(!chatMsgs.length) body.innerHTML='';
   const tmp=document.createElement('div'); tmp.className='chat-msg me pending'; tmp.textContent=txt;
+  { const tm=document.createElement('time'); tm.innerHTML=chatWhen(new Date().toISOString())+chatTick('wait'); tmp.appendChild(tm); }
   body.appendChild(tmp); chatToEnd();
   let r;
   try{ r = mode==='thread' ? await sb.rpc('sa_support_reply',{p_user:uid,p_body:txt}) : await sb.rpc('support_send',{p_body:txt}); }
@@ -14273,13 +14345,45 @@ async function chatSendMsg(){
   ta.value=''; chatGrow();
   _chatKey=''; await chatLoad(true);
   // la push la manda il server, rileggendo il messaggio appena salvato
-  try{ sb.functions.invoke('notify',{body:{mode:'support_msg', user_id: mode==='thread'?uid:null}}); }catch(_){ }
+  chatNotify(mode==='thread'?uid:null);
+}
+/* 25/10/2026 — prima la chiamata partiva senza controllare la risposta: se cadeva (rete
+   debole, funzione appena svegliata) la notifica non arrivava e nessuno se ne accorgeva.
+   Ora si riprova fino a due volte, solo se la chiamata risulta fallita. Caso raro: se la
+   push era partita ma la risposta si e' persa, puo' arrivarne una doppia (meglio di nessuna). */
+async function chatNotify(userId, n){
+  n=n||0;
+  let ok=false;
+  try{
+    const r=await sb.functions.invoke('notify',{body:{mode:'support_msg', user_id:userId}});
+    ok=!r.error;
+  }catch(_){ ok=false; }
+  if(!ok && n<2) setTimeout(()=>chatNotify(userId,n+1), 2500*(n+1));
 }
 /* Tastiera su iPhone: finche' si scrive il pannello prende l'altezza visibile vera
    (visualViewport), cosi' il campo di testo resta sopra la tastiera. A tastiera
    chiusa torna a tutto schermo come gli altri pannelli. */
+/* 25/10/2026 — Con il plugin Keyboard di Capacitor (app dalla build 7) il pannello non si
+   riposiziona piu' a scatti seguendo visualViewport: la tastiera annuncia l'altezza prima di
+   salire e il pannello alza il fondo con la stessa durata. Senza plugin (sito, PWA, app
+   precedenti) resta il metodo di prima, qui sotto. */
+function _chatKbPlugin(){ try{ return (IS_NATIVE && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Keyboard) || null; }catch(_){ return null; } }
+let _chatKbHandles=[];
+function _chatKbNative(on){
+  const K=_chatKbPlugin(), o=chatEl('chatOv'); if(!K || !o) return false;
+  _chatKbHandles.forEach(h=>{ try{ h && h.remove && h.remove(); }catch(_){ } }); _chatKbHandles=[];
+  o.classList.toggle('kbn',!!on);
+  const set=(h)=>{ o.style.setProperty('--chat-kb', Math.max(0,h|0)+'px'); o.classList.toggle('kbup',h>0); };
+  if(!on){ set(0); return true; }
+  set(0);
+  const add=(ev,fn)=>{ try{ Promise.resolve(K.addListener(ev,fn)).then(h=>{ _chatKbHandles.push(h); }); }catch(_){ } };
+  add('keyboardWillShow', i=>{ set((i&&i.keyboardHeight)||0); setTimeout(chatToEnd,30); setTimeout(chatToEnd,280); });
+  add('keyboardWillHide', ()=>set(0));
+  return true;
+}
 function chatKbSync(){
   const o=chatEl('chatOv'), vv=window.visualViewport; if(!o) return;
+  if(o.classList.contains('kbn')) return;     // ci pensa il plugin nativo
   const typing = document.activeElement===chatEl('chatIn');
   if(vv && typing && o.classList.contains('open')){
     o.style.top=vv.offsetTop+'px'; o.style.height=vv.height+'px'; o.style.bottom='auto';
@@ -14290,6 +14394,7 @@ function chatKbSync(){
 }
 function _chatKbLater(){ setTimeout(()=>{ chatKbSync(); chatToEnd(); },60); }
 function chatKbBind(on){
+  if(_chatKbNative(on)) return;
   const vv=window.visualViewport, ta=chatEl('chatIn');
   if(on){
     if(vv){ vv.addEventListener('resize',chatKbSync); vv.addEventListener('scroll',chatKbSync); }
