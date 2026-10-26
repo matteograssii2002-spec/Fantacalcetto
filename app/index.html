@@ -4165,7 +4165,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='7.2.6';
+const APP_VERSION='7.2.7';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   // nell'app si vede anche il codice del pacchetto: dice se un aggiornamento OTA e' arrivato
@@ -5070,6 +5070,7 @@ function fcIsStandalone(){
    potendo installare benissimo. Se il browser ha offerto il prompt, la
    risposta e' si' a prescindere da cosa dice lo user agent. */
 function fcCanInstall(){
+  if(fcGateStoreLive()) return false;   // 7.2.7 — c'e' l'app vera: non si propone piu' la PWA
   if(fcIsStandalone()) return false;
   if(typeof fcInstallPrompt!=='undefined' && fcInstallPrompt) return true;
   /* Non guardo piu' la parola «Android» nello user agent: i tablet Samsung in
@@ -5811,6 +5812,184 @@ function touchDevice(force, minuti){
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) touchDevice(); });
 
 /* ---------- AUTH / BOOT ---------- */
+/* ==========================================================================
+   7.2.7 — PASSAGGIO ALLE APP DEGLI STORE (26/10/2026)
+   Due controlli all'avvio, comandati dal database (tabella app_gate, file
+   4 - SQL/24_app_gate.sql) e SPENTI finche' non li accende Matt:
+
+   1) SITO / PWA -> APP. Per ogni piattaforma c'e' una data di blocco:
+        - prima della data: avviso una volta al giorno, si puo' chiudere;
+        - dalla data in poi: schermata fissa, la versione web non si usa piu'.
+      iPhone/iPad -> App Store, Android -> Google Play, computer -> QR da
+      inquadrare col telefono (si attiva solo quando ci sono ENTRAMBE le app,
+      con la data piu' lontana delle due). Al blocco la PWA spegne da sola le
+      sue notifiche web, cosi' non arrivano doppie.
+   2) APP DELLO STORE TROPPO VECCHIA. Se la build installata e' sotto la
+      minima (min_build_ios / min_build_android) compare «Aggiorna» fisso.
+      Questo controllo arriva alle app vecchie con l'OTA: per questo deve
+      partire PRIMA di alzare MIN_NATIVE con la build 7.
+
+   Se il database non risponde entro 2,5 s si usa l'ultima risposta salvata
+   sul telefono; senza nemmeno quella si entra come sempre (mai bloccare per
+   un errore di rete).
+   ========================================================================== */
+const FC_GATE_KEY='fc_gate_cfg', FC_GATE_WARN_KEY='fc_gate_warn_day';
+const FC_QR_PATH='M0 0h7v1h-7zM8 0h3v1h-3zM16 0h1v1h-1zM19 0h2v1h-2zM22 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h1v1h-1zM11 1h4v1h-4zM16 1h3v1h-3zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM9 2h2v1h-2zM13 2h4v1h-4zM19 2h2v1h-2zM22 2h1v1h-1zM24 2h3v1h-3zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h4v1h-4zM13 3h5v1h-5zM22 3h1v1h-1zM24 3h3v1h-3zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM9 4h2v1h-2zM14 4h6v1h-6zM22 4h1v1h-1zM24 4h3v1h-3zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM10 5h4v1h-4zM18 5h3v1h-3zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h7v1h-7zM8 7h1v1h-1zM15 7h3v1h-3zM19 7h2v1h-2zM0 8h1v1h-1zM2 8h2v1h-2zM5 8h3v1h-3zM9 8h1v1h-1zM12 8h1v1h-1zM14 8h6v1h-6zM22 8h1v1h-1zM25 8h1v1h-1zM27 8h2v1h-2zM1 9h4v1h-4zM8 9h1v1h-1zM10 9h2v1h-2zM14 9h1v1h-1zM17 9h8v1h-8zM28 9h1v1h-1zM2 10h1v1h-1zM6 10h1v1h-1zM9 10h3v1h-3zM13 10h2v1h-2zM18 10h1v1h-1zM20 10h2v1h-2zM23 10h2v1h-2zM26 10h2v1h-2zM2 11h1v1h-1zM5 11h1v1h-1zM9 11h3v1h-3zM13 11h1v1h-1zM18 11h3v1h-3zM23 11h2v1h-2zM28 11h1v1h-1zM0 12h1v1h-1zM3 12h1v1h-1zM5 12h3v1h-3zM9 12h1v1h-1zM12 12h6v1h-6zM19 12h1v1h-1zM25 12h2v1h-2zM0 13h3v1h-3zM5 13h1v1h-1zM7 13h2v1h-2zM11 13h6v1h-6zM19 13h1v1h-1zM22 13h2v1h-2zM26 13h3v1h-3zM3 14h1v1h-1zM5 14h2v1h-2zM9 14h1v1h-1zM12 14h2v1h-2zM19 14h2v1h-2zM22 14h3v1h-3zM26 14h3v1h-3zM0 15h1v1h-1zM3 15h3v1h-3zM7 15h3v1h-3zM11 15h2v1h-2zM14 15h2v1h-2zM23 15h2v1h-2zM27 15h1v1h-1zM0 16h4v1h-4zM5 16h7v1h-7zM13 16h1v1h-1zM15 16h1v1h-1zM18 16h1v1h-1zM20 16h2v1h-2zM24 16h2v1h-2zM27 16h1v1h-1zM3 17h3v1h-3zM8 17h1v1h-1zM10 17h4v1h-4zM15 17h1v1h-1zM18 17h1v1h-1zM20 17h1v1h-1zM23 17h1v1h-1zM25 17h3v1h-3zM0 18h1v1h-1zM2 18h1v1h-1zM4 18h1v1h-1zM6 18h1v1h-1zM11 18h1v1h-1zM13 18h1v1h-1zM15 18h1v1h-1zM20 18h1v1h-1zM22 18h2v1h-2zM26 18h1v1h-1zM2 19h1v1h-1zM4 19h2v1h-2zM10 19h1v1h-1zM12 19h1v1h-1zM15 19h3v1h-3zM19 19h2v1h-2zM22 19h1v1h-1zM26 19h1v1h-1zM1 20h4v1h-4zM6 20h1v1h-1zM8 20h3v1h-3zM12 20h1v1h-1zM14 20h13v1h-13zM8 21h5v1h-5zM18 21h1v1h-1zM20 21h1v1h-1zM24 21h5v1h-5zM0 22h7v1h-7zM8 22h1v1h-1zM10 22h3v1h-3zM14 22h1v1h-1zM16 22h2v1h-2zM19 22h2v1h-2zM22 22h1v1h-1zM24 22h2v1h-2zM27 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM8 23h2v1h-2zM11 23h4v1h-4zM16 23h1v1h-1zM18 23h1v1h-1zM20 23h1v1h-1zM24 23h2v1h-2zM0 24h1v1h-1zM2 24h3v1h-3zM6 24h1v1h-1zM9 24h4v1h-4zM15 24h1v1h-1zM17 24h1v1h-1zM20 24h5v1h-5zM26 24h3v1h-3zM0 25h1v1h-1zM2 25h3v1h-3zM6 25h1v1h-1zM8 25h2v1h-2zM13 25h4v1h-4zM19 25h3v1h-3zM24 25h2v1h-2zM28 25h1v1h-1zM0 26h1v1h-1zM2 26h3v1h-3zM6 26h1v1h-1zM8 26h1v1h-1zM12 26h1v1h-1zM18 26h2v1h-2zM21 26h1v1h-1zM23 26h1v1h-1zM26 26h1v1h-1zM28 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM9 27h2v1h-2zM15 27h1v1h-1zM18 27h1v1h-1zM20 27h1v1h-1zM23 27h1v1h-1zM25 27h1v1h-1zM27 27h1v1h-1zM0 28h7v1h-7zM8 28h3v1h-3zM12 28h1v1h-1zM14 28h2v1h-2zM18 28h3v1h-3zM25 28h1v1h-1zM27 28h1v1h-1z';
+let _gateP=null, _gateCfg=null;
+function fcGateLoad(){
+  if(_gateP) return _gateP;
+  _gateP=(async()=>{
+    try{
+      const {data,error}=await sb.rpc('get_app_gate');
+      if(error||!data) throw error||new Error('gate');
+      try{ localStorage.setItem(FC_GATE_KEY, JSON.stringify(data)); }catch(_){ }
+      return data;
+    }catch(_){
+      try{ return JSON.parse(localStorage.getItem(FC_GATE_KEY)||'null'); }catch(__){ return null; }
+    }
+  })();
+  return _gateP;
+}
+function fcGateDevice(){
+  const ua=navigator.userAgent||'';
+  if(/iphone|ipad|ipod/i.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints||0)>1)) return 'ios';
+  if(/android/i.test(ua)) return 'android';
+  return 'desktop';
+}
+/* stato della piattaforma: null = spento · {mode:'warn'|'block', at, days} */
+function fcGateState(c, dev){
+  if(!c) return null;
+  const now=Date.parse(c.now)||Date.now();
+  const one=(url,at)=>{ const t=at?Date.parse(at):NaN; return (url && !isNaN(t)) ? t : null; };
+  const ti=one(c.ios_url, c.pwa_block_at_ios), ta=one(c.android_url, c.pwa_block_at_android);
+  let t;
+  if(dev==='ios') t=ti; else if(dev==='android') t=ta;
+  else t=(ti!=null && ta!=null) ? Math.max(ti,ta) : null;
+  if(t==null) return null;
+  return { mode: now>=t ? 'block' : 'warn', at:t, days: Math.max(1, Math.ceil((t-now)/86400000)) };
+}
+/* il sito/PWA non propone piu' di installare la PWA quando c'e' l'app vera */
+function fcGateStoreLive(){ try{ return !IS_NATIVE && !!fcGateState(_gateCfg, fcGateDevice()); }catch(_){ return false; } }
+
+function fcGateOpenStore(url){
+  if(!url) return;
+  /* nell'app: indirizzo diretto, Android e iOS lo passano all'app dello store
+     (non al browser interno, che e' quello di window.open) */
+  try{ location.href=url; }catch(_){ }
+}
+function _gateCss(){
+  if(document.getElementById('fcGateCss')) return;
+  const s=document.createElement('style'); s.id='fcGateCss';
+  s.textContent=
+   '#fcGate{position:fixed;inset:0;z-index:2147483000;background:rgba(5,12,24,.86);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top)) 20px max(24px,env(safe-area-inset-bottom));overflow-y:auto}'
+  +'#fcGate.solid{background:#07111f}'
+  +'#fcGate .gc{width:100%;max-width:360px;background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:22px;padding:24px 22px 20px;text-align:center;box-shadow:0 24px 60px -20px rgba(0,0,0,.7);color:#eaf1fb}'
+  +'#fcGate .gi{font-size:36px;line-height:1;margin-bottom:10px}'
+  +'#fcGate h2{font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:21px;line-height:1.2;margin:0 0 10px}'
+  +'#fcGate p{color:#a9bdd6;font-size:14.5px;line-height:1.55;margin:0 0 14px}'
+  +'#fcGate p b{color:#eaf1fb}'
+  +'#fcGate .gn{background:rgba(255,194,61,.09);border:1px solid rgba(255,194,61,.28);border-radius:13px;padding:10px 12px;color:#e9d6a6;font-size:13px;line-height:1.5;text-align:left;margin:0 0 16px}'
+  +'#fcGate .gb{display:block;width:100%;box-sizing:border-box;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15.5px;border:none;padding:15px;border-radius:14px;cursor:pointer;margin:0 0 9px;text-decoration:none}'
+  +'#fcGate .gb2{background:none;border:1px solid rgba(150,185,240,.25);color:#cfdff5;font-weight:700;font-size:14px;padding:12px}'
+  +'#fcGate .gl{background:none;border:none;color:#8aa3c2;font-weight:700;font-size:13.5px;padding:10px;cursor:pointer;width:100%}'
+  +'#fcGate .gq{background:#fff;border-radius:14px;padding:12px;width:168px;height:168px;margin:2px auto 16px;box-sizing:content-box}'
+  +'#fcGate .gq svg{display:block;width:100%;height:100%}';
+  document.head.appendChild(s);
+}
+function _gateDate(t){ try{ return new Date(t).toLocaleDateString('it-IT',{day:'numeric',month:'long'}); }catch(_){ return ''; } }
+function _gateShow(html, solid){
+  _gateCss();
+  let o=document.getElementById('fcGate');
+  if(!o){ o=document.createElement('div'); o.id='fcGate'; document.body.appendChild(o); }
+  o.className=solid?'solid':'';
+  o.innerHTML='<div class="gc">'+html+'</div>';
+  o.querySelectorAll('[data-store]').forEach(b=>{ b.onclick=()=>fcGateOpenStore(b.getAttribute('data-store')); });
+  const x=o.querySelector('[data-close]'); if(x) x.onclick=()=>o.remove();
+  return o;
+}
+/* la PWA bloccata spegne le sue notifiche web: niente doppioni con l'app */
+async function _gateDropWebPush(){
+  try{
+    if(IS_NATIVE || !('serviceWorker' in navigator)) return;
+    const reg=await navigator.serviceWorker.getRegistration(); if(!reg || !reg.pushManager) return;
+    const sub=await reg.pushManager.getSubscription(); if(sub) await sub.unsubscribe();
+  }catch(_){ }
+}
+function _gateHtmlWeb(c, dev, st){
+  const ios=c.ios_url, and=c.android_url;
+  const block=(st.mode==='block');
+  const quando='tra <b>'+st.days+(st.days===1?' giorno':' giorni')+'</b> ('+_gateDate(st.at)+')';
+  const stesso='Entri con la <b>stessa email e password</b> e ritrovi tutto.';
+  const icona=fcIsStandalone()
+    ? '<div class="gn">Dopo aver installato l’app, <b>elimina questa icona</b> dalla schermata Home: altrimenti ricevi le notifiche due volte.</div>' : '';
+  const later=block?'':'<button class="gl" data-close>Più tardi</button>';
+  if(dev==='desktop'){
+    return '<div class="gi">📱</div><h2>'+(block?'Gioca dal telefono':'FantaCalcetto è un’app')+'</h2>'
+      +'<p>FantaCalcetto è su App Store e Google Play. Inquadra il codice con il telefono per scaricarla. '+stesso+'</p>'
+      +'<div class="gq"><svg viewBox="0 0 29 29" shape-rendering="crispEdges" aria-label="Codice QR per scaricare l’app"><path fill="#07111f" d="'+FC_QR_PATH+'"/></svg></div>'
+      +(block?'<p>La versione web non è più disponibile.</p>':'<p>Da computer la versione web smetterà di funzionare '+quando+'.</p>')
+      +'<button class="gb" data-store="'+esc(ios)+'">App Store</button>'
+      +'<button class="gb gb2" data-store="'+esc(and)+'">Google Play</button>'+later;
+  }
+  const mine=(dev==='ios')?ios:and, other=(dev==='ios')?and:ios;
+  const nm=(dev==='ios')?'App Store':'Google Play', on=(dev==='ios')?'Google Play':'App Store';
+  return '<div class="gi">⚽</div><h2>'+(block?'Installa l’app FantaCalcetto':'FantaCalcetto è su '+nm)+'</h2>'
+    +'<p>'+(block?'La versione web non è più disponibile. Scarica l’app da '+nm+'. ':'Installa l’app da '+nm+'. ')+stesso+'</p>'
+    +(block?'':'<p>Questa versione web smetterà di funzionare '+quando+'.</p>')
+    +icona
+    +'<button class="gb" data-store="'+esc(mine)+'">Scarica da '+nm+'</button>'
+    +(other?'<button class="gl" data-store="'+esc(other)+'">Hai un altro telefono? '+on+'</button>':'')
+    +later;
+}
+async function _gateNativeOld(c){
+  const need=parseInt(NATIVE_OS==='ios'?c.min_build_ios:c.min_build_android,10)||0;
+  const url=NATIVE_OS==='ios'?c.ios_url:c.android_url;
+  if(!need || !url) return false;
+  try{
+    const A=window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+    const info=A ? await A.getInfo() : null;
+    const have=info ? (parseInt(info.build,10)||0) : 0;
+    if(!have || have>=need) return false;
+  }catch(_){ return false; }
+  const nm=NATIVE_OS==='ios'?'App Store':'Google Play';
+  _gateShow('<div class="gi">⬆️</div><h2>Aggiorna FantaCalcetto</h2>'
+    +'<p>È disponibile una nuova versione dell’app, necessaria per continuare a giocare. Ci vuole un attimo e non perdi niente.</p>'
+    +'<button class="gb" data-store="'+esc(url)+'">Aggiorna da '+nm+'</button>', true);
+  return true;
+}
+/* Chiamata da boot(). true = schermata fissa mostrata, l'avvio si ferma qui. */
+async function fcGateCheck(){
+  let c=null;
+  try{ c=await Promise.race([ fcGateLoad(), new Promise(r=>setTimeout(()=>r(undefined),2500)) ]); }catch(_){ c=null; }
+  if(c===undefined){ try{ c=JSON.parse(localStorage.getItem(FC_GATE_KEY)||'null'); }catch(_){ c=null; } }
+  _gateCfg=c||null;
+  if(!c) return false;
+  if(IS_NATIVE){
+    if(await _gateNativeOld(c)){ fcHold(false); hideSplash(); return true; }
+    return false;
+  }
+  const dev=fcGateDevice(), st=fcGateState(c, dev);
+  if(!st) return false;
+  if(st.mode==='block'){
+    _gateShow(_gateHtmlWeb(c, dev, st), true);
+    hideSplash();
+    _gateDropWebPush();
+    return true;
+  }
+  /* avviso: una volta al giorno, appena dentro */
+  let day=''; try{ day=new Date().toISOString().slice(0,10); if(localStorage.getItem(FC_GATE_WARN_KEY)===day) return false; }catch(_){ }
+  let n=0;
+  const wait=()=>{
+    if(typeof _splashGone!=='undefined' && _splashGone){
+      setTimeout(()=>{ _gateShow(_gateHtmlWeb(c, dev, st), false); try{ localStorage.setItem(FC_GATE_WARN_KEY, day); }catch(_){ } }, 900);
+      return;
+    }
+    if(++n<120) setTimeout(wait, 500);
+  };
+  wait();
+  return false;
+}
+
 async function boot(){
   /* lo splash è disegnato e coperto: la copertura d'avvio può andarsene */
   try{
@@ -5848,6 +6027,7 @@ async function boot(){
   let _accAdding=false;
   try{ if(localStorage.getItem(ACC_ADD_KEY)==='1'){ localStorage.removeItem(ACC_ADD_KEY); _accAdding=true; accDropLocalSession(); } }catch(_){ }
   sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+  fcGateLoad();   // 7.2.7 — app degli store: la risposta serve piu' sotto, intanto parte
   spTo(10);
   if(!IS_NATIVE && 'serviceWorker' in navigator){ try{
     await navigator.serviceWorker.register('/sw.js');
@@ -5875,6 +6055,7 @@ async function boot(){
   });
   // se parto senza rete non ha senso proseguire: mostro subito la schermata offline
   if(navigator.onLine===false){ showOffline(); return; }
+  if(await fcGateCheck()) return;   // 7.2.7 — sito/PWA -> app degli store, app troppo vecchia
   let session=null;
   try{ const r=await sb.auth.getSession(); session=r&&r.data?r.data.session:null; }
   catch(_){ if(!await netAlive()){ showOffline(); return; } }
