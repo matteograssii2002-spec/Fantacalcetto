@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scarica l'app — FantaCalcetto</title>
+<meta name="description" content="Scarica l'app FantaCalcetto da App Store o Google Play.">
+<link rel="canonical" href="https://www.fantacalcettoitalia.it/scarica">
+<meta name="theme-color" content="#0a1626">
+<link rel="apple-touch-icon" href="icon-512.png?v=4">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=4">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Hanken+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<!-- 26/10/2026 — Pagina del QR mostrato da computer (app 7.2.7).
+     Da telefono porta dritto allo store giusto; altrimenti mostra i pulsanti.
+     I link arrivano dal database (get_app_gate): finche' un'app non e' pubblica
+     il suo pulsante non compare. -->
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 20px;background:#0a1626;color:#eaf1fb;font-family:'Hanken Grotesk',system-ui,sans-serif}
+  .c{width:100%;max-width:360px;background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:22px;padding:28px 22px 22px;text-align:center}
+  img{width:72px;height:72px;border-radius:18px;margin-bottom:12px}
+  h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:22px;margin:0 0 10px}
+  p{color:#a9bdd6;font-size:15px;line-height:1.55;margin:0 0 18px}
+  a.b{display:block;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15.5px;padding:15px;border-radius:14px;text-decoration:none;margin:0 0 10px}
+  a.b2{background:none;border:1px solid rgba(150,185,240,.25);color:#cfdff5}
+  .m{color:#8aa3c2;font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="c">
+  <img src="icon-512.png?v=4" alt="">
+  <h1>FantaCalcetto</h1>
+  <p>Scarica l'app: entri con la stessa email e password e ritrovi tutto.</p>
+  <div id="btns"><p class="m">Un attimo…</p></div>
+</div>
+<script>
+(function(){
+  var URL_='https://lfvpseusbsyzniugczbx.supabase.co', KEY='sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';
+  var ua=navigator.userAgent||'';
+  var dev=(/iphone|ipad|ipod/i.test(ua)||(/Macintosh/.test(ua)&&(navigator.maxTouchPoints||0)>1))?'ios':(/android/i.test(ua)?'android':'desktop');
+  function show(c){
+    var ios=c&&c.ios_url, and=c&&c.android_url, h='';
+    if(dev==='ios'&&ios){ location.replace(ios); return; }
+    if(dev==='android'&&and){ location.replace(and); return; }
+    if(ios) h+='<a class="b" href="'+ios+'">App Store</a>';
+    if(and) h+='<a class="b'+(ios?' b2':'')+'" href="'+and+'">Google Play</a>';
+    document.getElementById('btns').innerHTML=h||'<p class="m">L’app sarà disponibile a breve.</p>';
+  }
+  fetch(URL_+'/rest/v1/rpc/get_app_gate',{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},body:'{}'})
+    .then(function(r){ return r.ok?r.json():null; }).then(show).catch(function(){ show(null); });
+})();
+</script>
+</body>
+</html>
