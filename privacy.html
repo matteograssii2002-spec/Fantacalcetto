@@ -53,7 +53,7 @@ if(/[?&]app=1(&|$)/.test(location.search)) document.documentElement.classList.ad
     <p class="lead">Informativa resa ai sensi dell'art. 13 del Regolamento (UE) 2016/679 (GDPR) agli utenti del servizio FantaCalcetto, disponibile all'indirizzo www.fantacalcettoitalia.it.</p>
 
     <div class="note">
-      <b>Sintesi.</b> Il Servizio tratta i soli dati necessari al proprio funzionamento: dati identificativi dell'account e dati di gioco. Non è prevista alcuna cessione a terzi per finalità commerciali, non sono presenti inserzioni pubblicitarie né strumenti di statistica di terze parti. La banca dati è ospitata su infrastruttura situata nell'Unione Europea. L'acquisto facoltativo del piano Pro è gestito da Lemon Squeezy: il Titolare non ha accesso ai dati di pagamento. Nell'app per Android le notifiche sono recapitate tramite Firebase Cloud Messaging di Google. L'account può essere cancellato in autonomia e subito dall'applicazione (punto 6).
+      <b>Sintesi.</b> Il Servizio tratta i soli dati necessari al proprio funzionamento: dati identificativi dell'account e dati di gioco. Non è prevista alcuna cessione a terzi per finalità commerciali, non sono presenti inserzioni pubblicitarie né strumenti di statistica di terze parti. La banca dati è ospitata su infrastruttura situata nell'Unione Europea. L'acquisto facoltativo del piano Pro avviene nell'app tramite App Store o Google Play ed è verificato con il servizio RevenueCat: il Titolare non ha accesso ai dati di pagamento. Nelle app per Android e iPhone le notifiche sono recapitate tramite Firebase Cloud Messaging di Google. L'account può essere cancellato in autonomia e subito dall'applicazione (punto 6).
     </div>
 
     <h2>1. Titolare del trattamento</h2>
@@ -78,7 +78,7 @@ if(/[?&]app=1(&|$)/.test(location.search)) document.documentElement.classList.ad
         <tr><td><b>Messaggi della chat di assistenza</b><br><small>testo dei messaggi scambiati con l'assistenza tramite l'applicazione</small></td><td>Risposta alle richieste di assistenza dell'utente. I messaggi sono registrati nella banca dati e consultabili solo dal Titolare e dall'utente che li ha scritti</td><td>Esecuzione del contratto (art. 6.1.b)</td></tr>
         <tr><td><b>Identificativo di sottoscrizione alle notifiche</b> (nelle app per Android e iPhone: codice del dispositivo di Firebase Cloud Messaging)</td><td>Invio delle notifiche relative alle giornate di gioco</td><td>Consenso (art. 6.1.a)</td></tr>
         <tr><td><b>Data dell'ultimo accesso</b></td><td>Individuazione delle leghe inattive ai fini della cancellazione periodica</td><td>Legittimo interesse (art. 6.1.f)</td></tr>
-        <tr><td><b>Dati dell'acquisto del piano Pro</b><br><small>numero d'ordine, importo e valuta, stato (pagato o rimborsato), data, lega e, se l'acquisto è avviato dall'applicazione, account che lo ha avviato, eventuale richiesta di recesso</small></td><td>Attivazione e gestione del piano Pro; gestione di recessi, rimborsi e contestazioni</td><td>Esecuzione del contratto (art. 6.1.b)</td></tr>
+        <tr><td><b>Dati dell'acquisto del piano Pro</b><br><small>store utilizzato (App Store o Google Play), prodotto, identificativo della transazione, importo e valuta, stato (attivo, scaduto o rimborsato), data, lega e account che ha effettuato l'acquisto</small></td><td>Attivazione e gestione del piano Pro; ripristino degli acquisti; gestione di rimborsi e contestazioni</td><td>Esecuzione del contratto (art. 6.1.b)</td></tr>
         <tr><td><b>Dati tecnici di registro</b><br><small>conservati dai fornitori: indirizzo IP, errori applicativi, orario delle richieste</small></td><td>Sicurezza dell'infrastruttura, diagnosi dei malfunzionamenti, prevenzione degli abusi</td><td>Legittimo interesse (art. 6.1.f)</td></tr>
       </tbody>
     </table>
@@ -92,6 +92,7 @@ if(/[?&]app=1(&|$)/.test(location.search)) document.documentElement.classList.ad
       <li>Non sono impiegati strumenti di analisi statistica o di tracciamento di terze parti.</li>
       <li>Non sono effettuate profilazioni a fini commerciali né processi decisionali automatizzati che producano effetti giuridici sull'interessato.</li>
       <li>Non sono trattati dati di geolocalizzazione.</li>
+      <li>Non sono trattati dati biometrici: l'accesso con impronta o volto, se attivato, è verificato interamente dal sistema del telefono e il Servizio ne riceve soltanto l'esito.</li>
     </ul>
 
     <h2>3. Visibilità dei dati all'interno del Servizio</h2>
@@ -113,22 +114,22 @@ if(/[?&]app=1(&|$)/.test(location.search)) document.documentElement.classList.ad
         <tr><td><b>Cloudflare</b></td><td>Distribuzione del sito e dell'applicazione</td><td>Stati Uniti</td></tr>
         <tr><td><b>Resend</b></td><td>Recapito delle comunicazioni email</td><td>Stati Uniti</td></tr>
         <tr><td><b>Google (Firebase Cloud Messaging)</b></td><td>Recapito delle notifiche alle app per Android e iPhone (su iPhone attraverso il servizio notifiche di Apple)</td><td>Stati Uniti</td></tr>
+        <tr><td><b>RevenueCat</b></td><td>Verifica degli acquisti effettuati nell'app presso App Store e Google Play e loro ripristino</td><td>Stati Uniti</td></tr>
         <tr><td><b>Aruba</b></td><td>Registrazione del dominio e gestione dei relativi record</td><td>Italia (UE)</td></tr>
       </tbody>
     </table>
     <p>Le comunicazioni automatiche del Servizio sono inviate dall'indirizzo <b>noreply@fantacalcettoitalia.it</b>, che non riceve risposte. La corrispondenza indirizzata all'assistenza (<b>assistenza.fantacalcetto@gmail.com</b>) è gestita tramite il servizio Gmail di <b>Google</b>, che la tratta secondo le proprie condizioni, anche al di fuori dello Spazio economico europeo.</p>
-    <h3>Pagamenti: Lemon Squeezy</h3>
-    <p>L'acquisto del piano FantaCalcetto Pro è gestito da <b>Lemon Squeezy, LLC</b> (Stati Uniti), che agisce in qualità di venditore ufficiale e di <b>titolare autonomo</b> del trattamento dei dati raccolti nel modulo di pagamento (quali nome, indirizzo email, Paese e dati dello strumento di pagamento), secondo la propria informativa. <b>Il Titolare non ha accesso ai dati degli strumenti di pagamento e non li conserva.</b></p>
-    <p>All'apertura del modulo di pagamento l'applicazione trasmette a Lemon Squeezy l'indirizzo email dell'account, al solo fine di precompilare il modulo, e gli identificativi tecnici della lega e dell'account, necessari ad associare l'acquisto alla lega. Al termine del pagamento Lemon Squeezy invia al Titolare una notifica dell'acquisto, della quale sono conservati esclusivamente i dati indicati al punto 2.</p>
-    <p><b>Acquisto dal sito.</b> Il piano può essere acquistato anche dalla pagina www.fantacalcettoitalia.it/pro, senza accedere con un account: in questo caso l'interessato indica il nome della lega, il sito ne verifica l'esistenza interrogando la banca dati e trasmette a Lemon Squeezy il solo identificativo tecnico della lega. L'indirizzo email e i dati di pagamento sono inseriti direttamente nel modulo di Lemon Squeezy e non sono ricevuti dal Titolare. L'acquisto è registrato senza alcun collegamento a un account.</p>
+    <h3>Pagamenti: App Store e Google Play</h3>
+    <p>L'acquisto del piano FantaCalcetto Pro avviene esclusivamente nell'applicazione, con il sistema di pagamento dello store da cui è stata scaricata: <b>Apple</b> (App Store) o <b>Google</b> (Google Play). Lo store agisce in qualità di <b>titolare autonomo</b> del trattamento dei dati del proprio account e dello strumento di pagamento, secondo la propria informativa. <b>Il Titolare non ha accesso ai dati degli strumenti di pagamento e non li conserva.</b></p>
+    <p>Per verificare gli acquisti e consentirne il ripristino l'applicazione si avvale di <b>RevenueCat, Inc.</b>, responsabile del trattamento, al quale sono comunicati l'identificativo tecnico dell'account (mai l'indirizzo email), i dati dell'acquisto ricevuti dallo store e alcuni dati tecnici del dispositivo (sistema operativo, versione dell'applicazione, Paese dello store). Al termine dell'acquisto RevenueCat invia al Titolare una notifica, della quale sono conservati esclusivamente i dati indicati al punto 2.</p>
     <p>I dati non sono comunicati ad altri soggetti, salvo che ciò risulti necessario per adempiere a obblighi di legge o a richieste dell'autorità giudiziaria.</p>
 
     <h2>5. Trasferimenti verso Paesi terzi</h2>
     <p>La banca dati, che contiene la generalità dei dati personali trattati, è ospitata in <b>Irlanda</b> e non è pertanto oggetto di trasferimento al di fuori dello Spazio economico europeo.</p>
-    <p>I fornitori Cloudflare e Resend sono società di diritto statunitense: nei loro confronti ha luogo un trasferimento di dati verso un Paese terzo, assistito dalle <b>clausole contrattuali tipo</b> adottate dalla Commissione europea e dagli accordi sul trattamento dei dati stipulati con i medesimi fornitori. I dati oggetto di tale trasferimento sono limitati ai dati tecnici di connessione e all'indirizzo email di destinazione delle comunicazioni.</p>
+    <p>I fornitori Cloudflare, Resend e RevenueCat sono società di diritto statunitense: nei loro confronti ha luogo un trasferimento di dati verso un Paese terzo, assistito dalle <b>clausole contrattuali tipo</b> adottate dalla Commissione europea e dagli accordi sul trattamento dei dati stipulati con i medesimi fornitori. I dati oggetto di tale trasferimento sono limitati ai dati tecnici di connessione, all'indirizzo email di destinazione delle comunicazioni e, per RevenueCat, ai dati degli acquisti indicati al punto 4.</p>
     <p>Le notifiche delle app per Android e iPhone transitano da <b>Firebase Cloud Messaging</b>, servizio di Google (su iPhone il recapito finale avviene tramite l'<b>Apple Push Notification service</b> di Apple), società di diritto statunitense che aderisce al <b>Data Privacy Framework UE-USA</b>: sono trattati il codice di recapito del dispositivo e il testo della notifica (titolo e messaggio), senza alcun dato di profilazione. Il Servizio non utilizza Firebase Analytics né altri strumenti di misurazione.</p>
     <p>La corrispondenza inviata all'indirizzo di assistenza è conservata da Google, che aderisce al <b>Data Privacy Framework UE-USA</b>; sono trattati esclusivamente l'indirizzo del mittente e il contenuto del messaggio.</p>
-    <p>In occasione dell'acquisto del piano Pro, i dati indicati al punto 4 sono trasmessi a <b>Lemon Squeezy, LLC</b>, con sede negli Stati Uniti. Il trasferimento avviene solo se e quando l'amministratore avvia il pagamento, è necessario all'esecuzione del contratto richiesto dall'interessato (art. 49.1.b del GDPR), e il successivo trattamento è regolato dall'informativa di Lemon Squeezy.</p>
+    <p>In occasione dell'acquisto del piano Pro i dati dell'account dello store e del pagamento sono trattati direttamente da Apple o da Google, secondo le rispettive informative, anche al di fuori dello Spazio economico europeo.</p>
 
     <h2>6. Periodo di conservazione</h2>
     <ul>
@@ -175,7 +176,7 @@ if(/[?&]app=1(&|$)/.test(location.search)) document.documentElement.classList.ad
       <li>il <b>service worker</b>, necessario al funzionamento dell'applicazione installata e alla ricezione delle notifiche.</li>
     </ul>
     <p>Tali strumenti rientrano nell'esenzione dal consenso e sono soggetti al solo obbligo di informativa, assolto con il presente documento. L'eventuale futura introduzione di strumenti di misurazione dell'utilizzo comporterà l'adozione di un banner di consenso e il preventivo aggiornamento della presente informativa.</p>
-    <p>Il modulo di pagamento del piano Pro è fornito da Lemon Squeezy ed è caricato dai suoi server <b>soltanto quando l'acquirente avvia il pagamento</b>, sia dall'applicazione sia dalla pagina di acquisto del sito. All'interno del modulo Lemon Squeezy può impiegare strumenti tecnici necessari al pagamento e alla prevenzione delle frodi, secondo la propria informativa.</p>
+    <p>Il pagamento del piano Pro avviene nella schermata di acquisto dello store (Apple o Google), che può impiegare strumenti tecnici necessari al pagamento e alla prevenzione delle frodi, secondo la propria informativa.</p>
 
     <h2>11. Misure di sicurezza</h2>
     <p>Le password sono conservate in forma cifrata dal fornitore del servizio di autenticazione e non sono accessibili al Titolare. Le comunicazioni tra dispositivo e infrastruttura avvengono tramite protocollo cifrato (HTTPS). L'accesso ai dati è regolato a livello di banca dati mediante politiche di sicurezza per riga, che circoscrivono la visibilità ai soli dati della lega di appartenenza.</p>
@@ -184,7 +185,7 @@ if(/[?&]app=1(&|$)/.test(location.search)) document.documentElement.classList.ad
     <h2>12. Modifiche alla presente informativa</h2>
     <p>La presente informativa può essere aggiornata, in particolare in caso di introduzione di nuovi fornitori o di variazione delle finalità del trattamento. Le modifiche sostanziali sono segnalate all'interno dell'applicazione. La data indicata in calce riporta l'ultima revisione.</p>
 
-    <p style="margin-top:34px;color:var(--muted);font-size:14px">Ultimo aggiornamento: 21 ottobre 2026 · Titolare del trattamento: Matteo Grassi · <a href="termini.html">Termini di servizio</a></p>
+    <p style="margin-top:34px;color:var(--muted);font-size:14px">Ultimo aggiornamento: 27 ottobre 2026 · Titolare del trattamento: Matteo Grassi · <a href="termini.html">Termini di servizio</a></p>
   </div>
 </section>
 </main>

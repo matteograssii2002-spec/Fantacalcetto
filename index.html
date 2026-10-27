@@ -138,7 +138,7 @@
     background:rgba(255,194,61,.16);color:var(--gold);font-size:12px;font-weight:800}
   @media (max-width:360px){ .pfound{padding:18px 12px 14px} .pfound .pf-l{gap:6px} .pfound .pf-l span{font-size:11.5px;padding:10px 2px 9px} }
   /* Sessione 68: il pulsante Pro esce dalla vetrina. Da qui non si sa di che
-     lega sei, quindi il passaggio si fa dalla pagina /pro (20/10/2026: nome lega, senza login). Stili qui e non in
+     lega sei, quindi il passaggio si fa dall'app (27/10/2026: acquisti in-app, /pro tolta). Stili qui e non in
      sito.css per lo stesso motivo della regola sopra. */
   .calc .cvat{color:var(--muted);font-size:12.5px;font-weight:600;margin:-2px 0 10px}
   .calc .cwhere{display:flex;align-items:center;justify-content:center;gap:9px;text-align:left;max-width:380px;
@@ -163,7 +163,7 @@
   "description":"App per giocare al fantacalcio sulla partita di calcetto tra amici: presenze, formazione a 5, crediti, voti, pagellone e classifica di stagione. Gratis fino a 15 giocatori.",
   "offers":[
     {"@type":"Offer","name":"FantaCalcetto","price":"0","priceCurrency":"EUR","description":"Gratis per sempre, fino a 15 giocatori per lega."},
-    {"@type":"Offer","name":"FantaCalcetto Pro","price":"29.90","priceCurrency":"EUR","description":"Prezzo di lancio a stagione, per tutta la lega: giocatori illimitati e tutte le stagioni archiviate."}
+    {"@type":"Offer","name":"FantaCalcetto Pro","price":"29.99","priceCurrency":"EUR","description":"Prezzo di lancio, per tutta la lega, 12 mesi o 38 giornate: giocatori illimitati e tutte le stagioni archiviate. Si acquista nell'app."}
   ]
 }
 </script>
@@ -172,7 +172,7 @@
   "@context":"https://schema.org",
   "@type":"FAQPage",
   "mainEntity":[
-    {"@type":"Question","name":"Quanto costa FantaCalcetto?","acceptedAnswer":{"@type":"Answer","text":"Giocare è gratis, per sempre e senza pubblicità: fino a 15 giocatori la lega ha il gioco completo, pagellone e classifica compresi. FantaCalcetto Pro costa 29,90 euro a stagione per tutta la lega, non a testa, e serve se siete più di 15 o se volete tenere le stagioni passate."}},
+    {"@type":"Question","name":"Quanto costa FantaCalcetto?","acceptedAnswer":{"@type":"Answer","text":"Giocare è gratis, per sempre e senza pubblicità: fino a 15 giocatori la lega ha il gioco completo, pagellone e classifica compresi. FantaCalcetto Pro costa 29,99 euro a stagione per tutta la lega, non a testa, e serve se siete più di 15 o se volete tenere le stagioni passate."}},
     {"@type":"Question","name":"Quante persone servono per giocare?","acceptedAnswer":{"@type":"Answer","text":"Da dieci in su, così le formazioni possono essere diverse tra loro. Con quindici è perfetto. La versione gratuita arriva fino a 15 giocatori; oltre serve Pro, che non ha nessun tetto. Chi è già nella lega non viene mai tolto."}},
     {"@type":"Question","name":"Si può giocare senza scendere in campo?","acceptedAnswer":{"@type":"Answer","text":"Sì. Chi non gioca a calcetto entra come solo allenatore: ha la sua squadra, schiera la formazione e sta in classifica. Non prende voti e non compare nel sondaggio delle presenze."}},
     {"@type":"Question","name":"Bisogna scaricare l'app da App Store o Play Store?","acceptedAnswer":{"@type":"Answer","text":"No, è una PWA. È un sito che si aggiunge alla schermata Home e da lì funziona come un'app: icona sua, schermo intero e notifiche. Gli aggiornamenti arrivano da soli, senza passare dagli store."}},
@@ -586,7 +586,7 @@
 
       <div class="plan pro">
         <h3>FantaCalcetto <span class="gd">Pro</span></h3>
-        <div class="pcost"><s>€39,90</s>€29,90<small>a stagione, tutta la lega, IVA inclusa</small></div>
+        <div class="pcost"><s>€39,99</s>€29,99<small>a stagione, tutta la lega, IVA inclusa</small></div>
         <ul>
           <li><span class="tk">✓</span><span><b>Giocatori illimitati</b></span></li>
           <li><span class="tk">✓</span><span>Storico di <b>tutte le stagioni</b></span></li>
@@ -600,11 +600,11 @@
     <div class="calc rise">
       <span class="cribbon">Prezzo di lancio</span>
       <div class="ceye">Pro · una stagione</div>
-      <div class="cwas"><s>€39,90</s><i>dalla prossima stagione</i></div>
-      <div class="cbig">€29,90</div>
+      <div class="cwas"><s>€39,99</s><i>dalla prossima stagione</i></div>
+      <div class="cbig">€29,99</div>
       <div class="cvat">IVA inclusa</div>
       <div class="cwhat">Per <u>tutta la lega</u>, non a testa.</div>
-      <div class="cwhen">Una stagione è <b>fino a 38 giornate</b>.</div>
+      <div class="cwhen">Vale <b>12 mesi o 38 giornate</b>.</div>
 
       <div class="csep"></div>
 
@@ -613,13 +613,13 @@
              aria-label="Quante persone ci sono nella lega">
       <div class="cscale"><span>16</span><span>40</span></div>
 
-      <div class="chead"><b id="pxEach">€2,00</b><span>a testa, per tutta la stagione</span></div>
+      <div class="chead"><b id="pxEach">€1,88</b><span>a testa, per tutta la stagione</span></div>
 
       <div class="cflags">
         <span class="cflag"><b>✓</b> Nessun rinnovo automatico</span>
         <span class="cflag"><b>✓</b> Si paga una volta e basta</span>
       </div>
-      <a class="cwhere" href="/pro"><span class="ic">⭐</span><span><b>Passa a Pro</b> <u>→</u></span></a>
+      <div class="cwhere"><span class="ic">⭐</span><span><b>Pro si attiva dall'app</b>: Impostazioni › FantaCalcetto Pro</span></div>
     </div>
 
     <div class="pfound rise">
@@ -689,8 +689,8 @@
       <h2>Domande frequenti</h2>
     </div>
     <div class="faq rise">
-      <details><summary>Quanto costa?</summary><div class="a"><p><b>Giocare è gratis</b>, per sempre e senza pubblicità: fino a 15 giocatori avete il gioco completo, pagellone e classifica compresi. <b>Pro costa €29,90 a stagione per tutta la lega</b> (non a testa, IVA inclusa) e serve se siete più di 15 o se volete tenere le stagioni passate. <a href="#prezzi">Vedi i prezzi</a>.</p></div></details>
-      <details><summary>Come si passa a Pro?</summary><div class="a"><p><b>Dal sito.</b> Basta la pagina <a href="/pro">Passa a Pro</a>: scrivi il nome della lega e paghi, senza accedere. Vale per tutti i partecipanti.</p></div></details>
+      <details><summary>Quanto costa?</summary><div class="a"><p><b>Giocare è gratis</b>, per sempre e senza pubblicità: fino a 15 giocatori avete il gioco completo, pagellone e classifica compresi. <b>Pro costa €29,99 a stagione per tutta la lega</b> (non a testa, IVA inclusa) e serve se siete più di 15 o se volete tenere le stagioni passate. <a href="#prezzi">Vedi i prezzi</a>.</p></div></details>
+      <details><summary>Come si passa a Pro?</summary><div class="a"><p><b>Dall'app.</b> L'amministratore della lega va in Impostazioni › FantaCalcetto Pro e paga con App Store o Google Play. Vale per tutti i partecipanti, per 12 mesi o 38 giornate, senza rinnovo automatico.</p></div></details>
       <details><summary>C'è una prova a tempo?</summary><div class="a"><p><b>No, e non serve.</b> La versione gratuita non è una prova: è il gioco completo, senza scadenza e senza carta di credito. Pro si prende solo quando serve davvero, cioè quando superate i 15 giocatori o quando volete rivedere le stagioni passate.</p></div></details>
       <details><summary>Quanti bisogna essere?</summary><div class="a"><p><b>Da dieci in su</b>, così le formazioni possono essere diverse tra loro. Con quindici è perfetto. La versione gratuita arriva <b>fino a 15 giocatori</b>; oltre serve Pro, e lì non c'è nessun tetto. Chi è già dentro <b>non viene mai tolto</b>.</p></div></details>
       <details><summary>Si può giocare senza scendere in campo?</summary><div class="a"><p><b>Sì.</b> Chi non gioca a calcetto — un amico, la fidanzata, chi è infortunato a lungo — entra come <b>solo allenatore</b>: ha la sua squadra, schiera la formazione e sta in classifica come tutti. Non prende voti, perché non gioca, e non compare nel sondaggio delle presenze. Se possa votare i giocatori lo decide l'organizzatore.</p></div></details>
@@ -815,7 +815,7 @@ document.getElementById('yy').textContent = new Date().getFullYear();
 
 var pxR = document.getElementById('pxRange');
 if (pxR) {
-  var PX_TOT = 29.90;
+  var PX_TOT = 29.99;
   var pxN = document.getElementById('pxN'), pxE = document.getElementById('pxEach');
   function pxDraw(){
     var n = Math.max(1, parseInt(pxR.value, 10) || 16);
