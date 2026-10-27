@@ -599,7 +599,10 @@
 <script>
 const SUPABASE_URL  = 'https://lfvpseusbsyzniugczbx.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_Sw4thSu5edmpN7oCJ0nlAg_QMWwA9lw';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+/* 27/10/2026 — la console salva l'accesso in un posto SUO (storageKey): prima usava lo stesso
+   del gioco (stesso sito), quindi entrare/uscire dal gioco nello stesso browser cancellava
+   l'accesso della console e tornava a chiedere mail e codice. */
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ storageKey:'fc-admin-auth', persistSession:true, autoRefreshToken:true } });
 
 const WD = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
 const MIN=60000, HOUR=3600000;
