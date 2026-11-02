@@ -26,6 +26,33 @@
   #preboot span i{font-style:normal;color:#dbe5f6}
   html.ready #preboot{opacity:0;visibility:hidden;transition:opacity .3s ease}
   @keyframes pbGiveUp{to{opacity:0;visibility:hidden}}
+  /* 02/11/2026 — avviso «presto sugli store» (apertura + installazione) */
+  .soon{position:relative;display:flex;align-items:center;justify-content:space-between;gap:18px 26px;flex-wrap:wrap;
+    margin:0 0 30px;padding:18px 20px;border-radius:20px;isolation:isolate;
+    background:linear-gradient(135deg,rgba(63,151,255,.16),rgba(255,194,61,.08) 70%),#0e1d34;
+    box-shadow:0 24px 60px -34px rgba(0,6,20,.95), 0 0 0 1px rgba(150,185,240,.14) inset}
+  .soon::before{content:"";position:absolute;inset:-1px;border-radius:21px;padding:1px;z-index:-1;
+    background:linear-gradient(110deg,#3f97ff,#7ec2ff 30%,#ffc23d 55%,#3f97ff 80%);background-size:250% 100%;
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+    animation:soonFlow 6s linear infinite}
+  .soon-tx{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1 1 300px}
+  .soon-kick{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;font-weight:700;letter-spacing:.2em;
+    text-transform:uppercase;color:#ffc23d;display:inline-flex;align-items:center;gap:8px}
+  .soon-kick i{width:8px;height:8px;border-radius:50%;background:#ffc23d;box-shadow:0 0 0 0 rgba(255,194,61,.7);animation:soonPing 1.8s ease-out infinite}
+  .soon-tx b{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;font-size:clamp(19px,2.3vw,24px);line-height:1.2;letter-spacing:-.02em;color:#eef4fd}
+  .soon-tx b em{font-style:normal;color:#7ec2ff}
+  .soon-sub{font-size:14.5px;line-height:1.5;color:#9bb2d6}
+  .soon-stores{display:flex;gap:10px;flex-wrap:wrap}
+  .store{display:inline-flex;align-items:center;gap:10px;padding:9px 15px 9px 12px;border-radius:13px;
+    background:#05101f;color:#eef4fd;border:1px solid rgba(150,185,240,.22);text-decoration:none;white-space:nowrap}
+  .store svg{width:24px;height:24px;flex:none}
+  .store>span{display:flex;flex-direction:column;line-height:1.1;font-weight:700;font-size:16px;letter-spacing:-.01em}
+  .store small{font-size:10.5px;font-weight:500;color:#9bb2d6;letter-spacing:.02em}
+  .soon.mini{margin:0 0 22px}
+  @keyframes soonFlow{to{background-position:-250% 0}}
+  @keyframes soonPing{70%{box-shadow:0 0 0 9px rgba(255,194,61,0)}100%{box-shadow:0 0 0 0 rgba(255,194,61,0)}}
+  @media (prefers-reduced-motion:reduce){.soon::before,.soon-kick i{animation:none}}
+  @media (max-width:560px){.soon{padding:16px}.soon-stores{width:100%}.store{flex:1 1 0;justify-content:center}}
 </style>
 
 <!-- ------------------------------------------------------------------
@@ -175,7 +202,7 @@
     {"@type":"Question","name":"Quanto costa FantaCalcetto?","acceptedAnswer":{"@type":"Answer","text":"Giocare è gratis, per sempre e senza pubblicità: fino a 15 giocatori la lega ha il gioco completo, pagellone e classifica compresi. FantaCalcetto Pro costa 29,99 euro a stagione per tutta la lega, non a testa, e serve se siete più di 15 o se volete tenere le stagioni passate."}},
     {"@type":"Question","name":"Quante persone servono per giocare?","acceptedAnswer":{"@type":"Answer","text":"Da dieci in su, così le formazioni possono essere diverse tra loro. Con quindici è perfetto. La versione gratuita arriva fino a 15 giocatori; oltre serve Pro, che non ha nessun tetto. Chi è già nella lega non viene mai tolto."}},
     {"@type":"Question","name":"Si può giocare senza scendere in campo?","acceptedAnswer":{"@type":"Answer","text":"Sì. Chi non gioca a calcetto entra come solo allenatore: ha la sua squadra, schiera la formazione e sta in classifica. Non prende voti e non compare nel sondaggio delle presenze."}},
-    {"@type":"Question","name":"Bisogna scaricare l'app da App Store o Play Store?","acceptedAnswer":{"@type":"Answer","text":"No, è una PWA. È un sito che si aggiunge alla schermata Home e da lì funziona come un'app: icona sua, schermo intero e notifiche. Gli aggiornamenti arrivano da soli, senza passare dagli store."}},
+    {"@type":"Question","name":"Bisogna scaricare l'app da App Store o Play Store?","acceptedAnswer":{"@type":"Answer","text":"Sta per arrivare su App Store e Google Play. Nel frattempo si gioca come PWA: un sito che si aggiunge alla schermata Home e da lì funziona come un'app, con icona sua, schermo intero e notifiche."}},
     {"@type":"Question","name":"Chi assegna i voti ai giocatori?","acceptedAnswer":{"@type":"Answer","text":"I giocatori stessi: a fine partita ognuno vota gli altri e la media è il voto di giornata. L'organizzatore inserisce solo gol, assist, rigori, cartellini e risultato."}},
     {"@type":"Question","name":"L'organizzatore deve mandare avanti tutto a mano?","acceptedAnswer":{"@type":"Answer","text":"No. La giornata si apre da sola, i promemoria partono da soli e la giornata si chiude quando arrivano i voti. Resta solo da segnare com'è finita la partita."}},
     {"@type":"Question","name":"Che dati raccoglie FantaCalcetto?","acceptedAnswer":{"@type":"Answer","text":"Il minimo per far funzionare il gioco: email, nome, soprannome, nome squadra e presenze. Niente pubblicità e nessuna rivendita di dati."}}
@@ -195,10 +222,10 @@
     <nav class="topnav" data-nav aria-label="Sezioni">
       <a href="#anteprima">Anteprima</a>
       <a href="#come-funziona">Come funziona</a>
-      <a href="#installa">Installazione</a>
-      <a href="#prezzi">Prezzi</a>
       <a href="#funzioni">Funzioni</a>
+      <a href="#prezzi">Prezzi</a>
       <a href="#punteggi">Punteggi e Regolamento</a>
+      <a href="#installa">Installazione</a>
       <a href="#domande">Domande</a>
     </nav>
     <a class="btn btn-primary btn-sm" data-app-link href="#">Gioca ora</a>
@@ -217,10 +244,10 @@
   </div>
   <a href="#anteprima">Anteprima</a>
   <a href="#come-funziona">Come funziona</a>
-  <a href="#installa">Installazione</a>
-  <a href="#prezzi">Prezzi</a>
   <a href="#funzioni">Funzioni</a>
+  <a href="#prezzi">Prezzi</a>
   <a href="#punteggi">Punteggi e Regolamento</a>
+  <a href="#installa">Installazione</a>
   <a href="#domande">Domande</a>
   <a class="btn btn-primary" data-app-link href="#">Gioca ora</a>
 </aside>
@@ -245,6 +272,19 @@
      ============================================================ -->
 <section class="hero">
   <div class="wrap hero-head">
+    <!-- 02/11/2026 — avviso «presto sugli store». All'uscita: i due riquadri
+         diventano link veri (App Store / Google Play) e «In arrivo» si toglie. -->
+    <div class="soon rise" role="note" aria-label="Presto su App Store e Google Play">
+      <div class="soon-tx">
+        <span class="soon-kick"><i></i>In arrivo</span>
+        <b>FantaCalcetto sta arrivando su <em>App Store</em> e <em>Google Play</em></b>
+        <span class="soon-sub">Ci siamo quasi. Nel frattempo si gioca già da qui, nel browser o installandola sulla Home.</span>
+      </div>
+      <div class="soon-stores">
+        <span class="store"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.73c-.03-2.6 2.12-3.85 2.22-3.91-1.21-1.77-3.09-2.01-3.76-2.04-1.6-.16-3.12.94-3.93.94-.81 0-2.06-.92-3.39-.89-1.74.03-3.35 1.01-4.25 2.57-1.81 3.14-.46 7.79 1.3 10.34.86 1.25 1.89 2.65 3.24 2.6 1.3-.05 1.79-.84 3.36-.84 1.57 0 2.01.84 3.38.81 1.4-.02 2.29-1.27 3.14-2.53.99-1.45 1.4-2.86 1.42-2.93-.03-.01-2.72-1.04-2.73-4.12zM13.79 5.1c.72-.87 1.2-2.07 1.07-3.27-1.03.04-2.28.69-3.02 1.55-.66.77-1.24 2-1.09 3.18 1.15.09 2.32-.58 3.04-1.46z"/></svg><span><small>Presto su</small>App Store</span></span>
+        <span class="store"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#2fd98a" d="M3.6 2.3 13.3 12l-9.7 9.7c-.35-.2-.6-.6-.6-1.1V3.4c0-.5.25-.9.6-1.1z"/><path fill="#3f97ff" d="m16.7 8.6-3.4 3.4-9.7-9.7c.3-.17.7-.18 1.05.02z"/><path fill="#ff5d6b" d="m16.7 15.4-11.75 6.7c-.35.2-.75.2-1.05.02L13.3 12z"/><path fill="#ffc23d" d="m20.4 10.5-3.7-1.9-3.4 3.4 3.4 3.4 3.7-1.9c1-.6 1-2.4 0-3z"/></svg><span><small>Presto su</small>Google Play</span></span>
+      </div>
+    </div>
     <span class="eyebrow">Il fantacalcio del calcetto</span>
     <h1>Per chi gioca a <em>calcetto</em>.<br>Ora c'è <em>il fanta</em>.</h1>
     <p class="lead">Crea una lega, schiera cinque amici, scendi in campo con loro, vota a fine partita. A punti, crediti e classifica pensa l'app.</p>
@@ -426,6 +466,128 @@
 
 
 <!-- ============================================================
+     FUNZIONI
+     ============================================================ -->
+<section id="funzioni">
+  <div class="wrap">
+    <div class="sec-head rise">
+      <span class="eyebrow">Funzioni</span>
+      <h2>Cosa contiene l'app</h2>
+    </div>
+    <div class="feat rise">
+      <div class="fi" style="--chip:rgba(255,194,61,.14)"><span class="ic">💰</span><div class="tx"><b>Crediti che si muovono</b><span>Chi rende più di quanto costa sale, chi delude scende.</span></div></div>
+      <div class="fi" style="--chip:rgba(63,151,255,.14)"><span class="ic">🃏</span><div class="tx"><b>Card dei giocatori</b><span>Ruolo, valore e voto medio, sempre a portata di tocco.</span></div></div>
+      <div class="fi" style="--chip:rgba(255,194,61,.14)"><span class="ic">🏆</span><div class="tx"><b>Bacheca dei trofei</b><span>Traguardi di carriera e titoli di ogni stagione.</span></div></div>
+      <div class="fi" style="--chip:rgba(47,217,138,.14)"><span class="ic">🔔</span><div class="tx"><b>Promemoria automatici</b><span>Presenze, formazione, ultima ora, giornata chiusa.</span></div></div>
+      <div class="fi" style="--chip:rgba(126,194,255,.14)"><span class="ic">📆</span><div class="tx"><b>Stagioni e recap</b><span>Fino a 38 giornate, poi l'archivio con premi e record.</span></div></div>
+      <div class="fi" style="--chip:rgba(255,93,107,.14)"><span class="ic">🧤</span><div class="tx"><b>Regole su misura</b><span>Portiere, presenze e valori li imposta l'organizzatore.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PREZZI
+     Il TOTALE e' il prezzo. Il costo a testa e' solo la
+     rassicurazione, e si calcola dal cursore: senza JavaScript
+     resta il valore di partenza (16 persone), che e' gia' giusto.
+     ============================================================ -->
+<section id="prezzi">
+  <div class="wrap">
+    <div class="sec-head rise">
+      <span class="eyebrow">Prezzi</span>
+      <h2>Gratis per giocare. Pro se crescete.</h2>
+      <p class="lead">Il gioco è tutto nella versione gratuita. Pro serve quando siete più di 15, o quando le stagioni cominciano a essere più di una.</p>
+    </div>
+
+    <div class="plans rise">
+      <div class="plan">
+        <h3>FantaCalcetto</h3>
+        <div class="pcost"><s class="ghost"> </s>Gratis<small>per sempre</small></div>
+        <ul>
+          <li><span class="tk">✓</span><span>Fino a <b>15 giocatori</b></span></li>
+          <li><span class="tk">✓</span><span>Tutto il gioco</span></li>
+          <li><span class="tk">✓</span><span>Pagellone e classifica</span></li>
+          <li><span class="tk">✓</span><span>Storico dell'<b>ultima stagione</b></span></li>
+          <li><span class="tk">✓</span><span>Zero pubblicità</span></li>
+        </ul>
+      </div>
+
+      <div class="plan pro">
+        <h3>FantaCalcetto <span class="gd">Pro</span></h3>
+        <div class="pcost"><s>€39,99</s>€29,99<small>a stagione, tutta la lega, IVA inclusa</small></div>
+        <ul>
+          <li><span class="tk">✓</span><span><b>Giocatori illimitati</b></span></li>
+          <li><span class="tk">✓</span><span>Storico di <b>tutte le stagioni</b></span></li>
+          <li><span class="tk">✓</span><span>Albo d'oro completo</span></li>
+          <li><span class="tk">✓</span><span>Tutto quello del gratis</span></li>
+          <li><span class="tk">✓</span><span>Nessun rinnovo automatico</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="calc rise">
+      <span class="cribbon">Prezzo di lancio</span>
+      <div class="ceye">Pro · una stagione</div>
+      <div class="cwas"><s>€39,99</s><i>dalla prossima stagione</i></div>
+      <div class="cbig">€29,99</div>
+      <div class="cvat">IVA inclusa</div>
+      <div class="cwhat">Per <u>tutta la lega</u>, non a testa.</div>
+      <div class="cwhen">Vale <b>12 mesi o 38 giornate</b>.</div>
+
+      <div class="csep"></div>
+
+      <div class="cq">Quanti siete? <b id="pxN">16</b></div>
+      <input type="range" id="pxRange" min="16" max="40" step="1" value="16"
+             aria-label="Quante persone ci sono nella lega">
+      <div class="cscale"><span>16</span><span>40</span></div>
+
+      <div class="chead"><b id="pxEach">€1,88</b><span>a testa, per tutta la stagione</span></div>
+
+      <div class="cflags">
+        <span class="cflag"><b>✓</b> Nessun rinnovo automatico</span>
+        <span class="cflag"><b>✓</b> Si paga una volta e basta</span>
+      </div>
+      <div class="cwhere"><span class="ic">⭐</span><span><b>Pro si attiva dall'app</b>: Impostazioni › FantaCalcetto Pro</span></div>
+    </div>
+
+    <div class="pfound rise">
+      <span class="pf-k">🏅 Leghe fondatrici</span>
+      <p class="pf-t">Le prime 20 leghe hanno <em>Pro gratis, per sempre</em>.</p>
+      <div class="pf-l"><span><i>✓</i>Giocatori illimitati</span><span><i>✓</i>Tutte le stagioni</span><span><i>✓</i>Mai a pagamento</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PUNTEGGI — la tabellina, il resto sta nel regolamento
+     ============================================================ -->
+<section id="punteggi">
+  <div class="wrap">
+    <div class="sec-head rise">
+      <span class="eyebrow">Regolamento</span>
+      <h2>Bonus, malus e moltiplicatori</h2>
+      <p class="lead">Il punto di partenza è il voto medio degli altri. Poi si somma quello che è successo in campo.</p>
+    </div>
+    <div class="ptgrid rise">
+      <div class="prow"><span class="e">⚽</span><span class="l">Gol</span><span class="pt pos">+3</span></div>
+      <div class="prow"><span class="e">👟</span><span class="l">Assist</span><span class="pt pos">+1,5</span></div>
+      <div class="prow"><span class="e">🧤</span><span class="l">Porta inviolata</span><span class="pt pos">+3</span></div>
+      <div class="prow"><span class="e">🙌</span><span class="l">Rigore parato</span><span class="pt pos">+3</span></div>
+      <div class="prow"><span class="e">✅</span><span class="l">Vittoria</span><span class="pt pos">+2</span></div>
+      <div class="prow"><span class="e">🏆</span><span class="l">MVP</span><span class="pt pos">+3</span></div>
+      <div class="prow"><span class="e">🅰️</span><span class="l">Autogol</span><span class="pt neg">−3</span></div>
+      <div class="prow"><span class="e">🚫</span><span class="l">Rigore sbagliato</span><span class="pt neg">−3</span></div>
+      <div class="prow"><span class="e">🔴</span><span class="l">Gol subito</span><span class="pt neg">−1</span></div>
+      <div class="prow"><span class="e">🟨</span><span class="l">Cartellino giallo</span><span class="pt neg">−0,5</span></div>
+      <div class="prow"><span class="e">©</span><span class="l">Capitano</span><span class="pt x2">voto ×2</span></div>
+    </div>
+    <div class="btn-row">
+      <a class="btn btn-ghost" href="regolamento.html">Regolamento completo &nbsp;→</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
      INSTALLAZIONE — linguette iPhone/Android, passi in carosello.
      Il cerchio rosso (.hot) indica cosa toccare: posizione e
      misura in percentuale sullo screenshot, vedi sito.css.
@@ -436,6 +598,17 @@
       <span class="eyebrow">Installazione</span>
       <h2>Come installarla sulla Home</h2>
       <p class="lead">Installata si comporta come un'app: icona sua, schermo intero, niente barra del browser. Su iPhone è anche l'unico modo per ricevere le notifiche.</p>
+    </div>
+
+    <div class="soon mini rise" role="note">
+      <div class="soon-tx">
+        <span class="soon-kick"><i></i>In arrivo</span>
+        <span class="soon-sub">Tra poco FantaCalcetto si scarica da <b style="font-size:inherit;font-family:inherit;color:#eef4fd">App Store e Google Play</b>. Fino ad allora si installa sulla Home così.</span>
+      </div>
+      <div class="soon-stores">
+        <span class="store"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.73c-.03-2.6 2.12-3.85 2.22-3.91-1.21-1.77-3.09-2.01-3.76-2.04-1.6-.16-3.12.94-3.93.94-.81 0-2.06-.92-3.39-.89-1.74.03-3.35 1.01-4.25 2.57-1.81 3.14-.46 7.79 1.3 10.34.86 1.25 1.89 2.65 3.24 2.6 1.3-.05 1.79-.84 3.36-.84 1.57 0 2.01.84 3.38.81 1.4-.02 2.29-1.27 3.14-2.53.99-1.45 1.4-2.86 1.42-2.93-.03-.01-2.72-1.04-2.73-4.12zM13.79 5.1c.72-.87 1.2-2.07 1.07-3.27-1.03.04-2.28.69-3.02 1.55-.66.77-1.24 2-1.09 3.18 1.15.09 2.32-.58 3.04-1.46z"/></svg><span><small>Presto su</small>App Store</span></span>
+        <span class="store"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#2fd98a" d="M3.6 2.3 13.3 12l-9.7 9.7c-.35-.2-.6-.6-.6-1.1V3.4c0-.5.25-.9.6-1.1z"/><path fill="#3f97ff" d="m16.7 8.6-3.4 3.4-9.7-9.7c.3-.17.7-.18 1.05.02z"/><path fill="#ff5d6b" d="m16.7 15.4-11.75 6.7c-.35.2-.75.2-1.05.02L13.3 12z"/><path fill="#ffc23d" d="m20.4 10.5-3.7-1.9-3.4 3.4 3.4 3.4 3.7-1.9c1-.6 1-2.4 0-3z"/></svg><span><small>Presto su</small>Google Play</span></span>
+      </div>
     </div>
 
     <div class="warn rise">
@@ -558,128 +731,6 @@
 </section>
 
 <!-- ============================================================
-     PREZZI
-     Il TOTALE e' il prezzo. Il costo a testa e' solo la
-     rassicurazione, e si calcola dal cursore: senza JavaScript
-     resta il valore di partenza (16 persone), che e' gia' giusto.
-     ============================================================ -->
-<section id="prezzi">
-  <div class="wrap">
-    <div class="sec-head rise">
-      <span class="eyebrow">Prezzi</span>
-      <h2>Gratis per giocare. Pro se crescete.</h2>
-      <p class="lead">Il gioco è tutto nella versione gratuita. Pro serve quando siete più di 15, o quando le stagioni cominciano a essere più di una.</p>
-    </div>
-
-    <div class="plans rise">
-      <div class="plan">
-        <h3>FantaCalcetto</h3>
-        <div class="pcost"><s class="ghost"> </s>Gratis<small>per sempre</small></div>
-        <ul>
-          <li><span class="tk">✓</span><span>Fino a <b>15 giocatori</b></span></li>
-          <li><span class="tk">✓</span><span>Tutto il gioco</span></li>
-          <li><span class="tk">✓</span><span>Pagellone e classifica</span></li>
-          <li><span class="tk">✓</span><span>Storico dell'<b>ultima stagione</b></span></li>
-          <li><span class="tk">✓</span><span>Zero pubblicità</span></li>
-        </ul>
-      </div>
-
-      <div class="plan pro">
-        <h3>FantaCalcetto <span class="gd">Pro</span></h3>
-        <div class="pcost"><s>€39,99</s>€29,99<small>a stagione, tutta la lega, IVA inclusa</small></div>
-        <ul>
-          <li><span class="tk">✓</span><span><b>Giocatori illimitati</b></span></li>
-          <li><span class="tk">✓</span><span>Storico di <b>tutte le stagioni</b></span></li>
-          <li><span class="tk">✓</span><span>Albo d'oro completo</span></li>
-          <li><span class="tk">✓</span><span>Tutto quello del gratis</span></li>
-          <li><span class="tk">✓</span><span>Nessun rinnovo automatico</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="calc rise">
-      <span class="cribbon">Prezzo di lancio</span>
-      <div class="ceye">Pro · una stagione</div>
-      <div class="cwas"><s>€39,99</s><i>dalla prossima stagione</i></div>
-      <div class="cbig">€29,99</div>
-      <div class="cvat">IVA inclusa</div>
-      <div class="cwhat">Per <u>tutta la lega</u>, non a testa.</div>
-      <div class="cwhen">Vale <b>12 mesi o 38 giornate</b>.</div>
-
-      <div class="csep"></div>
-
-      <div class="cq">Quanti siete? <b id="pxN">16</b></div>
-      <input type="range" id="pxRange" min="16" max="40" step="1" value="16"
-             aria-label="Quante persone ci sono nella lega">
-      <div class="cscale"><span>16</span><span>40</span></div>
-
-      <div class="chead"><b id="pxEach">€1,88</b><span>a testa, per tutta la stagione</span></div>
-
-      <div class="cflags">
-        <span class="cflag"><b>✓</b> Nessun rinnovo automatico</span>
-        <span class="cflag"><b>✓</b> Si paga una volta e basta</span>
-      </div>
-      <div class="cwhere"><span class="ic">⭐</span><span><b>Pro si attiva dall'app</b>: Impostazioni › FantaCalcetto Pro</span></div>
-    </div>
-
-    <div class="pfound rise">
-      <span class="pf-k">🏅 Leghe fondatrici</span>
-      <p class="pf-t">Le prime 20 leghe hanno <em>Pro gratis, per sempre</em>.</p>
-      <div class="pf-l"><span><i>✓</i>Giocatori illimitati</span><span><i>✓</i>Tutte le stagioni</span><span><i>✓</i>Mai a pagamento</span></div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
-     FUNZIONI
-     ============================================================ -->
-<section id="funzioni">
-  <div class="wrap">
-    <div class="sec-head rise">
-      <span class="eyebrow">Funzioni</span>
-      <h2>Cosa contiene l'app</h2>
-    </div>
-    <div class="feat rise">
-      <div class="fi" style="--chip:rgba(255,194,61,.14)"><span class="ic">💰</span><div class="tx"><b>Crediti che si muovono</b><span>Chi rende più di quanto costa sale, chi delude scende.</span></div></div>
-      <div class="fi" style="--chip:rgba(63,151,255,.14)"><span class="ic">🃏</span><div class="tx"><b>Card dei giocatori</b><span>Ruolo, valore e voto medio, sempre a portata di tocco.</span></div></div>
-      <div class="fi" style="--chip:rgba(255,194,61,.14)"><span class="ic">🏆</span><div class="tx"><b>Bacheca dei trofei</b><span>Traguardi di carriera e titoli di ogni stagione.</span></div></div>
-      <div class="fi" style="--chip:rgba(47,217,138,.14)"><span class="ic">🔔</span><div class="tx"><b>Promemoria automatici</b><span>Presenze, formazione, ultima ora, giornata chiusa.</span></div></div>
-      <div class="fi" style="--chip:rgba(126,194,255,.14)"><span class="ic">📆</span><div class="tx"><b>Stagioni e recap</b><span>Fino a 38 giornate, poi l'archivio con premi e record.</span></div></div>
-      <div class="fi" style="--chip:rgba(255,93,107,.14)"><span class="ic">🧤</span><div class="tx"><b>Regole su misura</b><span>Portiere, presenze e valori li imposta l'organizzatore.</span></div></div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
-     PUNTEGGI — la tabellina, il resto sta nel regolamento
-     ============================================================ -->
-<section id="punteggi">
-  <div class="wrap">
-    <div class="sec-head rise">
-      <span class="eyebrow">Regolamento</span>
-      <h2>Bonus, malus e moltiplicatori</h2>
-      <p class="lead">Il punto di partenza è il voto medio degli altri. Poi si somma quello che è successo in campo.</p>
-    </div>
-    <div class="ptgrid rise">
-      <div class="prow"><span class="e">⚽</span><span class="l">Gol</span><span class="pt pos">+3</span></div>
-      <div class="prow"><span class="e">👟</span><span class="l">Assist</span><span class="pt pos">+1,5</span></div>
-      <div class="prow"><span class="e">🧤</span><span class="l">Porta inviolata</span><span class="pt pos">+3</span></div>
-      <div class="prow"><span class="e">🙌</span><span class="l">Rigore parato</span><span class="pt pos">+3</span></div>
-      <div class="prow"><span class="e">✅</span><span class="l">Vittoria</span><span class="pt pos">+2</span></div>
-      <div class="prow"><span class="e">🏆</span><span class="l">MVP</span><span class="pt pos">+3</span></div>
-      <div class="prow"><span class="e">🅰️</span><span class="l">Autogol</span><span class="pt neg">−3</span></div>
-      <div class="prow"><span class="e">🚫</span><span class="l">Rigore sbagliato</span><span class="pt neg">−3</span></div>
-      <div class="prow"><span class="e">🔴</span><span class="l">Gol subito</span><span class="pt neg">−1</span></div>
-      <div class="prow"><span class="e">🟨</span><span class="l">Cartellino giallo</span><span class="pt neg">−0,5</span></div>
-      <div class="prow"><span class="e">©</span><span class="l">Capitano</span><span class="pt x2">voto ×2</span></div>
-    </div>
-    <div class="btn-row">
-      <a class="btn btn-ghost" href="regolamento.html">Regolamento completo &nbsp;→</a>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
      DOMANDE FREQUENTI
      ============================================================ -->
 <section id="domande">
@@ -694,7 +745,7 @@
       <details><summary>C'è una prova a tempo?</summary><div class="a"><p><b>No, e non serve.</b> La versione gratuita non è una prova: è il gioco completo, senza scadenza e senza carta di credito. Pro si prende solo quando serve davvero, cioè quando superate i 15 giocatori o quando volete rivedere le stagioni passate.</p></div></details>
       <details><summary>Quanti bisogna essere?</summary><div class="a"><p><b>Da dieci in su</b>, così le formazioni possono essere diverse tra loro. Con quindici è perfetto. La versione gratuita arriva <b>fino a 15 giocatori</b>; oltre serve Pro, e lì non c'è nessun tetto. Chi è già dentro <b>non viene mai tolto</b>.</p></div></details>
       <details><summary>Si può giocare senza scendere in campo?</summary><div class="a"><p><b>Sì.</b> Chi non gioca a calcetto — un amico, la fidanzata, chi è infortunato a lungo — entra come <b>solo allenatore</b>: ha la sua squadra, schiera la formazione e sta in classifica come tutti. Non prende voti, perché non gioca, e non compare nel sondaggio delle presenze. Se possa votare i giocatori lo decide l'organizzatore.</p></div></details>
-      <details><summary>Serve scaricarla dagli store?</summary><div class="a"><p><b>No, è una PWA.</b> È un sito che si aggiunge alla schermata Home e da lì funziona come un'app: <b>icona sua, schermo intero, notifiche</b>. Gli aggiornamenti arrivano da soli, senza passare da App Store o Play Store.</p></div></details>
+      <details><summary>Serve scaricarla dagli store?</summary><div class="a"><p><b>Sta per arrivare su App Store e Google Play.</b> Nel frattempo si gioca come PWA: un sito che si aggiunge alla schermata Home e da lì funziona come un'app, con <b>icona sua, schermo intero e notifiche</b>. <a href="#installa">Come installarla</a>.</p></div></details>
       <details><summary>Chi assegna i voti?</summary><div class="a"><p><b>I giocatori.</b> A fine partita ognuno vota gli altri e <b>la media è il voto di giornata</b>. L'organizzatore inserisce solo i fatti: gol, assist, rigori, cartellini, risultato.</p></div></details>
       <details><summary>Deve fare tutto l'organizzatore?</summary><div class="a"><p><b>No</b>, ed è la cosa a cui teniamo di più. La giornata <b>si apre da sola</b>, i promemoria partono da soli, la giornata <b>si chiude quando arrivano i voti</b>. All'organizzatore resta solo da segnare com'è finita la partita.</p></div></details>
       <details><summary>Che dati raccogliete?</summary><div class="a"><p><b>Il minimo per far funzionare il gioco</b>: email, nome, soprannome, nome squadra e presenze. Le password le custodisce il servizio di accesso, <b>non le vediamo mai</b>. <b>Niente pubblicità, nessuna rivendita di dati.</b></p></div></details>
@@ -916,7 +967,7 @@ document.querySelectorAll('[data-crsl]').forEach(initCrsl);
    ------------------------------------------------------------ */
 (function(){
   var navs = Array.prototype.slice.call(document.querySelectorAll('[data-nav]'));
-  var ids  = ['anteprima','come-funziona','funzioni','installa','punteggi','domande'];
+  var ids  = ['anteprima','come-funziona','funzioni','prezzi','punteggi','installa','domande'];
   var secs = ids.map(function(id){ return document.getElementById(id); });
   var cur = -1;
   function spy(){
