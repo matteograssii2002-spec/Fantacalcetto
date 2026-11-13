@@ -45,12 +45,10 @@
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png?v=4">
 <link rel="shortcut icon" href="/icon-512.png?v=4">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- media="print" + onload: il browser lo scarica senza fermare il disegno della
      pagina, poi lo applica. Con una rete lenta erano secondi di schermo bianco. -->
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"></noscript>
+<link href="/app/fonts/fonts.css" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="/app/fonts/fonts.css" rel="stylesheet"></noscript>
 <style>
   :root{--sab:max(env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px));--bg:#0a1626;--bg2:#0e1d34;--surface:#15294b;--surface2:#1f3a6c;--line:rgba(150,185,240,.07);--line-strong:rgba(150,185,240,.15);
     --text:#eef4fd;--muted:#9bb2d6;--accent:#3f97ff;--accent-soft:#7ec2ff;--accent-deep:#1c6ff2;--gold:#ffc23d;--gold-soft:#ffd470;--green:#2fd98a;--red:#ff5d6b;--neutral:#e8eef9;--maxw:460px;
@@ -1565,6 +1563,19 @@
   .chat-msg.them{align-self:flex-start;background:var(--surface);border:1px solid var(--line-strong);color:var(--text);border-bottom-left-radius:6px}
   .chat-msg time{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;opacity:.68;text-align:right;margin-top:3px}
   .chat-msg.pending{opacity:.55}
+  /* 13/11/2026 — selezione dei messaggi come WhatsApp: tieni premuto, tocca gli altri, Copia */
+  .chat-msg{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:transform .15s ease,box-shadow .15s ease}
+  .chat-msg.press{transform:scale(.97)}
+  .chat-msg.sel{box-shadow:0 0 0 2px var(--accent-soft),0 0 0 6px rgba(126,194,255,.18)}
+  .chat-body.selmode .chat-msg{cursor:pointer}
+  .chat-selbar{position:absolute;left:0;right:0;top:0;z-index:3;display:none;align-items:center;gap:12px;padding:calc(16px + env(safe-area-inset-top)) 18px 12px;
+    background:linear-gradient(180deg,#14305a,#0f2546);border-bottom:1px solid var(--line-strong);animation:chatSelIn .18s ease both}
+  .chat-ov.selmode .chat-selbar{display:flex}
+  .chat-selbar b{flex:1;font-family:'Bricolage Grotesque',sans-serif;font-size:17px}
+  .chat-selbar button{height:42px;min-width:42px;background:var(--surface);border:1px solid var(--line-strong);color:var(--text);font-family:inherit;font-weight:800;font-size:15px;padding:0 12px;border-radius:13px;cursor:pointer}
+  .chat-selbar .cs-copy{background:linear-gradient(135deg,var(--accent),var(--accent-deep));border-color:transparent;color:#fff;padding:0 18px}
+  @keyframes chatSelIn{from{opacity:0;transform:translateY(-8px)}}
+  .chat-ov.kbn .chat-foot{transition:padding-bottom .26s cubic-bezier(.17,.59,.4,.97)}
   /* 25/10/2026 — spunte sui propri messaggi: orologio = in invio, una spunta = consegnato, due azzurre = visualizzato */
   .chat-msg time .ck{display:inline-block;vertical-align:-2px;margin-left:4px;width:18px;height:11px}
   .chat-msg time .ck svg{width:18px;height:11px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;display:block}
@@ -2598,6 +2609,52 @@
   .pro-page .bch-page-bar{background:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none}
   .pro-page .bch-page-bar .bch-back{pointer-events:auto;box-shadow:0 10px 24px -10px rgba(0,0,0,.8)}
 
+  /* --- 27/10/2026 PRO: barra ferma come nelle altre pagine e tutto in uno schermo --- */
+  .pro-page{display:flex;flex-direction:column}
+  .pro-page>.bch-page-bar{position:relative;flex:none;z-index:2;padding-bottom:4px}
+  .pro-scroll{position:relative;top:auto;left:auto;right:auto;bottom:auto;flex:1 1 auto;min-height:0}
+  .pro-page .bch-page-inner{padding-top:0;padding-bottom:calc(6px + var(--sab))}
+  .pro-hero{margin:0 0 8px}
+  .pro-kicker{margin-top:0;font-size:11px}
+  .pro-word{font-size:40px}
+  .pro-page #proWhy{margin-top:4px;font-size:13px;line-height:1.4}
+  .pro-on{padding:12px 14px;margin-bottom:10px;border-radius:18px}
+  .pro-on .ic{width:40px;height:40px;font-size:21px}
+  .pro-amount{padding:11px 16px;margin-bottom:8px;border-radius:20px}
+  .pro-price-top{margin-bottom:2px}
+  .pro-amount .pro-row b{font-size:34px}
+  .pro-amount .pro-amount-sub{margin-top:4px;font-size:12px;line-height:1.4}
+  .pro-amount .pro-each{margin-top:8px;padding-top:8px}
+  .pro-tab{margin-bottom:10px;border-radius:20px}
+  .pro-tab .pt-h .k{padding:7px 0 5px}
+  .pro-tab .pt-r{font-size:13px}
+  .pro-tab .pt-r .k{padding:3px 8px 3px 0;gap:9px}
+  .pro-tab .pt-r .k .ic{width:22px;height:22px;font-size:12px;border-radius:7px}
+  .pro-tab .pt-h .a,.pro-tab .pt-h .b,.pro-tab .pt-r .a,.pro-tab .pt-r .b{width:56px}
+  .pro-tab .ck,.pro-tab .no{width:20px;height:20px;font-size:11px}
+  .pro-tab .pt-r:last-child .b{border-radius:0 0 19px 0}
+  .pro-tab .pt-h .b{border-radius:0 19px 0 0}
+  .pro-btn{padding:14px;font-size:16px}
+  .pro-page .pro-status{margin-top:6px}
+  .pro-page .pro-status:empty{display:none}
+  .pro-foot{margin:8px 0 0;font-size:11.5px;line-height:1.45}
+  /* le scritte finali stanno in fondo allo schermo; sugli schermi alti (iPhone) si usa lo spazio in piu' */
+  .pro-page .bch-page-inner{display:flex;flex-direction:column;min-height:100%;box-sizing:border-box}
+  .pro-page .pro-foot{margin-top:auto;padding-top:8px}
+  @media (min-height:760px){
+    .pro-kicker{font-size:12.5px}
+    .pro-word{font-size:52px}
+    .pro-page #proWhy{margin-top:8px;font-size:14px}
+    .pro-hero{margin-bottom:18px}
+    .pro-amount{padding:14px 18px;margin-bottom:14px}
+    .pro-amount .pro-row b{font-size:40px}
+    .pro-tab{margin-bottom:20px}
+    .pro-tab .pt-h .k{padding:9px 0 7px}
+    .pro-tab .pt-r .k{padding:4px 8px 4px 0}
+    .pro-btn{padding:16px;font-size:17px}
+    .pro-page .pro-foot{padding-top:16px}
+  }
+
   /* --- REGOLAMENTO: la C del capitano accesa --- */
   .rg-t .ic.cap{background:linear-gradient(145deg,#ffe08a,#ffb020);box-shadow:0 0 16px rgba(255,194,61,.55),inset 0 1px 0 rgba(255,255,255,.55)}
   .rg-t .ic.cap b{font-family:'Bricolage Grotesque';font-weight:800;font-size:19px;line-height:1;color:#241800}
@@ -3064,7 +3121,7 @@
     <div class="gate-status" id="gateStatus"></div>
     <div class="gate-foot">
     <div class="gate-links" id="gateLinks"></div>
-    <p class="gate-legal">Proseguendo accetti i <a href="/termini.html" target="_blank" rel="noopener">Termini di servizio</a><br>e dichiari di aver letto l'<a href="/privacy.html" target="_blank" rel="noopener">Informativa privacy</a>.</p>
+    <p class="gate-legal">Proseguendo dichiari di avere almeno 14 anni, accetti i <a href="/termini.html" target="_blank" rel="noopener">Termini di servizio</a><br>e dichiari di aver letto l'<a href="/privacy.html" target="_blank" rel="noopener">Informativa privacy</a>.</p>
     </div>
   </div>
 </div></div>
@@ -3421,6 +3478,7 @@
       <button class="navrow gold adminRow" id="rowAdminHub" onclick="setNav('page-admin')" style="display:none"><span class="ic">🛠️</span><span class="lab">Amministra la lega<small id="admHubSub">Utenti, Regole, Stagione, Assistenza, Eliminazione</small></span><span class="go">›</span></button>
       <div class="setgrp">Altro</div>
       <button class="navrow t-slate" id="rowInstall" onclick="openInstallHelp()"><span class="ic">📲</span><span class="lab">Installa sulla Home<small id="rowInstallSub">Icona sua, schermo intero, notifiche</small></span><span class="go">›</span></button>
+      <button class="navrow t-slate" id="rowReview" onclick="fcReviewOpen()" style="display:none"><span class="ic">⭐</span><span class="lab">Lascia una recensione<small>Ci aiuti a far conoscere FantaCalcetto</small></span><span class="go">›</span></button>
       <button class="navrow t-slate" onclick="setNav('page-privacy')"><span class="ic">🔒</span><span class="lab">Privacy e dati<small>Informativa, termini, cancellazione</small></span><span class="go">›</span></button>
       <button class="navrow t-slate" id="rowAccounts" onclick="openAccounts()"><span class="ic">👥</span><span class="lab">Cambia account<small>Passa a un altro tuo account o aggiungilo</small></span><span class="go">›</span></button>
       <div class="setfoot">
@@ -3736,6 +3794,7 @@
       <button class="navrow gold" id="inviteCard" onclick="setNav('page-invita')"><span class="ic">✉️</span><span class="lab">Invita nella lega<small>Link d'invito e password</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="manageCard" onclick="setNav('page-giocatori')"><span class="ic">👥</span><span class="lab">Giocatori<small id="manageSub">—</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="viceCard" onclick="setNav('page-vice')" style="display:none"><span class="ic">🛡️</span><span class="lab">Vice-admin<small>Chi gestisce le giornate al posto tuo</small></span><span class="go">›</span></button>
+      <button class="navrow gold" id="membriCard" onclick="setNav('page-membri')" style="display:none"><span class="ic">🚪</span><span class="lab">Partecipanti<small>Chi c’è nella lega · far uscire qualcuno</small></span><span class="go">›</span></button>
       <button class="navrow gold" id="pushCard" onclick="setNav('page-avvisi')"><span class="ic">🔔</span><span class="lab">Chi riceve gli avvisi<small id="avvisiSub">—</small></span><span class="go">›</span></button>
     </div>
 
@@ -3780,6 +3839,14 @@
       <div class="section-h"><h2>Vice-admin</h2></div>
       <p class="setintro">Aprono e chiudono le giornate, inseriscono bonus e presenze. Non toccano le regole della lega.</p>
       <div class="set-card"><div id="viceList"></div></div>
+    </div>
+
+    <!-- ===== LEGA: PARTECIPANTI (7.3) ===== -->
+    <div class="setpage" id="page-membri">
+      <button class="subback" onclick="setNav('page-lega')">‹ Utenti</button>
+      <div class="section-h"><h2>Partecipanti</h2></div>
+      <p class="setintro" id="membriIntro">Chi c’è nella lega.</p>
+      <div class="set-card"><div id="membriList"></div></div>
     </div>
 
     <!-- ===== AIUTO E MANUTENZIONE =====
@@ -3899,16 +3966,13 @@
          l'overlay intero: la barra «Indietro» con backdrop-filter sfocava i raggi
          in un rettangolo netto, e il rimbalzo di iOS scopriva una fascia. -->
     <div class="pro-aura" aria-hidden="true"><i></i><i></i><i></i></div>
-    <div class="pro-scroll" id="proScroll">
+    <!-- 27/10/2026: la barra «Indietro» sta FUORI da #proScroll (non si muove mai) e la medaglia rotante e' tolta -->
     <div class="bch-page-bar">
       <button class="bch-back" onclick="closePro()" aria-label="Indietro">‹ Indietro</button>
     </div>
+    <div class="pro-scroll" id="proScroll">
     <div class="bch-page-inner">
       <div class="pro-hero">
-        <div class="pro-medal">
-          <span class="pro-rays"></span><span class="pro-ring"></span>
-          <span class="pro-coin"><img src="/icon-512.png?v=4" alt="" onerror="this.style.display='none'"></span>
-        </div>
         <div class="pro-kicker">FantaCalcetto</div>
         <div class="pro-word">PRO</div>
         <span id="proWhy">—</span>
@@ -3959,10 +4023,11 @@
       <div class="chat-av"><img src="/icon-512.png?v=3" alt=""></div>
       <div class="ls-ttl"><b id="chatTtl">Assistenza FantaCalcetto</b><small id="chatSub">—</small></div>
     </div>
+    <div class="chat-selbar" id="chatSelBar"><button onclick="chatSelClear()" aria-label="Annulla">✕</button><b id="chatSelN">1</b><button class="cs-copy" onclick="chatSelCopy()">Copia</button></div>
     <div class="ls-body chat-body" id="chatBody"></div>
     <div class="chat-foot" id="chatFoot">
       <textarea id="chatIn" rows="1" maxlength="2000" placeholder="Scrivi un messaggio…" oninput="chatGrow()"></textarea>
-      <button class="chat-send" id="chatSend" onclick="chatSendMsg()" aria-label="Invia"><svg viewBox="0 0 24 24"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg></button>
+      <button class="chat-send" id="chatSend" onpointerdown="event.preventDefault()" onclick="chatSendMsg()" aria-label="Invia"><svg viewBox="0 0 24 24"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg></button>
     </div>
   </div>
 
@@ -4032,7 +4097,8 @@ const NATIVE_OS=(function(){
 /* 7.2.6 — App dello store su iPhone. Qui Pro non si nomina: niente badge, niente «con Pro»,
    niente pulsanti, niente rimandi al sito (regole Apple 3.1.1/3.1.3). Chi ha una lega Pro la vede
    Pro come sempre (isPro()); chi non lo e' trova solo le cose gratuite. Android, sito e PWA non cambiano. */
-const IOS_APP=(IS_NATIVE && NATIVE_OS==='ios');
+/* 7.3 — Pro si compra con l'acquisto in-app anche su iPhone: niente piu' differenze (era IS_NATIVE && ios) */
+const IOS_APP=false;
 /* 7.2 — Indirizzo vero del sito. Nell'app con i file dentro, la pagina vive su
    https://localhost: tutto cio' che esce dal telefono (link d'invito, email di
    reset, pagine legali, link esterni) deve puntare al sito, mai a localhost.
@@ -4142,7 +4208,7 @@ const SPLASH_TIPS=[
   'Conto chi ha detto «ci sono» e poi sparisce',
   'Il capitano vale doppio. Sceglilo bene.',
   'Metto le pettorine in lavatrice…',
-  'Il 1-3-1 vale +5. Coraggio o incoscienza?',
+  'Il 1-3-1 vale +3. Coraggio o incoscienza?',
   'Aggiorno la classifica. Spoiler: sei sempre lì.',
   'Chi perde paga il campo…',
   'Rileggo i voti: qualcuno si è dato 8',
@@ -4165,7 +4231,7 @@ const BUDGET=100;
    restava comodo per i confronti, ma a schermo diceva «v27», che sembra il
    ventisettesimo tentativo invece di una versione.
    ⬅️ cambiala a ogni deploy: in fondo alle Impostazioni si vede quale codice è online */
-const APP_VERSION='7.2.7';
+const APP_VERSION='7.3';
 function refreshVersionLine(){
   const _av=document.getElementById('appVersion');
   // nell'app si vede anche il codice del pacchetto: dice se un aggiornamento OTA e' arrivato
@@ -4259,8 +4325,8 @@ let obLogo=null, setLogoDraft=null, obStep=0;   // loghi: scelta in onboarding e
    POR sulla linea dell'area di rigore nostra. */
 const MODULES={
   '1-2-2':{bonus:0, slots:[{key:"a1",label:"ATT",x:26,y:4},{key:"a2",label:"ATT",x:74,y:4},{key:"d1",label:"DIF",x:18,y:36.5},{key:"d2",label:"DIF",x:82,y:36.5},{key:"g1",label:"POR",x:50,y:70}]},
-  '1-3-1':{bonus:5, slots:[{key:"a1",label:"ATT",x:50,y:4},{key:"d1",label:"DIF",x:15,y:33.5},{key:"d2",label:"DIF",x:50,y:39.5},{key:"d3",label:"DIF",x:85,y:33.5},{key:"g1",label:"POR",x:50,y:70}]},
-  '1-1-3':{bonus:-5, slots:[{key:"a1",label:"ATT",x:20,y:3},{key:"a2",label:"ATT",x:50,y:9},{key:"a3",label:"ATT",x:80,y:3},{key:"d1",label:"DIF",x:50,y:37},{key:"g1",label:"POR",x:50,y:70}]}
+  '1-3-1':{bonus:3, slots:[{key:"a1",label:"ATT",x:50,y:4},{key:"d1",label:"DIF",x:15,y:33.5},{key:"d2",label:"DIF",x:50,y:39.5},{key:"d3",label:"DIF",x:85,y:33.5},{key:"g1",label:"POR",x:50,y:70}]},
+  '1-1-3':{bonus:-3, slots:[{key:"a1",label:"ATT",x:20,y:3},{key:"a2",label:"ATT",x:50,y:9},{key:"a3",label:"ATT",x:80,y:3},{key:"d1",label:"DIF",x:50,y:37},{key:"g1",label:"POR",x:50,y:70}]}
 };
 let formModule='1-2-2';
 let SLOTS=MODULES[formModule].slots;
@@ -4292,7 +4358,16 @@ function fieldAvailability(){
   if(available.size===0) available.add('1-2-2');
   return {nATT,nDIF,available,freeRoles:false};
 }
-function moduleBonus(){return MODULES[formModule]?MODULES[formModule].bonus:0;}
+/* 13/11/2026 — bonus moduli da ±5 a ±3, NON retroattivo: valgono ±3 le giornate con id >= FC_MOD3_FROM
+   (la prima creata dopo il cambio). Le giornate gia' esistenti restano a ±5.
+   Stesso confine in SQL: _md_points_calc (4 - SQL/39_moduli_tre.sql). Se cambia, cambiarli insieme. */
+const FC_MOD3_FROM=149;
+function modBonusOf(mod, md){
+  const b=MODULES[mod]?MODULES[mod].bonus:0;
+  if(!b) return 0;
+  return (md && md<FC_MOD3_FROM) ? Math.sign(b)*5 : b;
+}
+function moduleBonus(){ return modBonusOf(formModule, (typeof currentMd!=='undefined' && currentMd)?currentMd.id:0); }
 /* 7.1 — REGOLE DEL PORTIERE
    - chi ha ruolo POR gioca solo in porta (fisso e rotazione);
    - portiere fisso: in porta solo un POR, ma se fra i presenti non ce n'e'
@@ -4332,7 +4407,7 @@ function renderModulePicker(){
   const av=fieldAvailability();
   box.innerHTML=Object.keys(MODULES).map(m=>{
     const ok=av.available.has(m);
-    const b=MODULES[m].bonus, sub=b>0?('parti +'+b):(b<0?('parti '+b):'nessun bonus');
+    const b=modBonusOf(m,(currentMd&&currentMd.id)||0), sub=b>0?('parti +'+b):(b<0?('parti '+b):'nessun bonus');
     const need=MODULE_NEED[m];
     const dis=(lk||!ok);
     const title=ok?'':`Servono ${need.ATT} ATT e ${need.DIF} DIF presenti`;
@@ -4651,7 +4726,7 @@ function tutStepsPlayer(){
   tx:"Prima di ogni partita l\u2019app chiede chi gioca. Chi non risponde non entra in campo."},
  mod:{v:'formazione', el:'#modPick', before:()=>tutKick(30),
   ttl:'Il modulo',
-  tx:"<b>1-3-1</b> vale 5 punti in pi\u00f9, <b>1-1-3</b> cinque in meno."},
+  tx:"<b>1-3-1</b> vale 3 punti in pi\u00f9, <b>1-1-3</b> tre in meno."},
  cred:{v:'formazione', el:'.budget-wrap',
   ttl:'Cento crediti',
   tx:"Cinque giocatori, 100 crediti. I pi\u00f9 forti costano di pi\u00f9."},
@@ -5880,20 +5955,53 @@ function fcGateOpenStore(url){
 function _gateCss(){
   if(document.getElementById('fcGateCss')) return;
   const s=document.createElement('style'); s.id='fcGateCss';
+  /* 13/11/2026 — avvisi «passa all'app» rifatti: l'app come un passo avanti */
   s.textContent=
-   '#fcGate{position:fixed;inset:0;z-index:2147483000;background:rgba(5,12,24,.86);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top)) 20px max(24px,env(safe-area-inset-bottom));overflow-y:auto}'
-  +'#fcGate.solid{background:#07111f}'
-  +'#fcGate .gc{width:100%;max-width:360px;background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:22px;padding:24px 22px 20px;text-align:center;box-shadow:0 24px 60px -20px rgba(0,0,0,.7);color:#eaf1fb}'
+   '#fcGate{position:fixed;inset:0;z-index:2147483000;background:rgba(4,10,20,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:max(20px,env(safe-area-inset-top)) 18px max(20px,env(safe-area-inset-bottom));overflow-y:auto;animation:gIn .35s ease both}'
+  +'#fcGate.solid{background:radial-gradient(120% 70% at 50% 0%,#12305a 0%,#07111f 60%)}'
+  +'#fcGate .gc{position:relative;isolation:isolate;width:100%;max-width:372px;margin:auto;border-radius:26px;padding:26px 20px 16px;text-align:center;color:#eef4fd;'
+  +'background:radial-gradient(90% 55% at 50% 0%,rgba(63,151,255,.28),transparent 70%),linear-gradient(180deg,#11284a,#0b1a31);box-shadow:0 30px 80px -24px rgba(0,0,0,.85);animation:gUp .5s cubic-bezier(.2,.8,.2,1) both}'
+  +'#fcGate .gc::before{content:"";position:absolute;inset:0;border-radius:26px;padding:1px;z-index:-1;background:linear-gradient(110deg,#3f97ff,#7ec2ff 30%,#ffc23d 55%,#3f97ff 80%);background-size:250% 100%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:gFlow 6s linear infinite}'
+  +'#fcGate .gx{position:relative;width:70px;height:70px;margin:0 auto 12px}'
+  +'#fcGate .gx img{width:70px;height:70px;border-radius:19px;display:block;box-shadow:0 18px 40px -12px rgba(63,151,255,.75);animation:gFloat 3.2s ease-in-out infinite}'
+  +'#fcGate .gx::after{content:"";position:absolute;inset:-10px;border-radius:30px;background:radial-gradient(closest-side,rgba(63,151,255,.45),transparent);z-index:-1;animation:gGlow 3.2s ease-in-out infinite}'
+  +'#fcGate .gk{display:inline-flex;align-items:center;gap:7px;font-family:\'JetBrains Mono\',ui-monospace,monospace;font-size:10.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#ffc23d;margin:0 0 8px}'
+  +'#fcGate .gk i{width:7px;height:7px;border-radius:50%;background:#ffc23d;animation:gPing 1.8s ease-out infinite}'
+  +'#fcGate h2{font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:24px;line-height:1.15;letter-spacing:-.02em;margin:0 0 8px}'
+  +'#fcGate h2 em{font-style:normal;background:linear-gradient(90deg,#7ec2ff,#ffc23d);-webkit-background-clip:text;background-clip:text;color:transparent}'
+  +'#fcGate p{color:#a9bdd6;font-size:14.5px;line-height:1.5;margin:0 0 14px}'
+  +'#fcGate p b{color:#eef4fd}'
+  +'#fcGate .gp{display:grid;gap:6px;margin:0 0 14px;text-align:left}'
+  +'#fcGate .gp>div{display:flex;align-items:center;gap:11px;padding:8px 11px;border-radius:14px;background:rgba(150,185,240,.07);border:1px solid rgba(150,185,240,.12);animation:gUp .45s cubic-bezier(.2,.8,.2,1) both}'
+  +'#fcGate .gp>div:nth-child(1){animation-delay:.12s}#fcGate .gp>div:nth-child(2){animation-delay:.2s}#fcGate .gp>div:nth-child(3){animation-delay:.28s}#fcGate .gp>div:nth-child(4){animation-delay:.36s}'
+  +'#fcGate .gp span{flex:none;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:17px;background:linear-gradient(135deg,rgba(63,151,255,.3),rgba(63,151,255,.1))}'
+  +'#fcGate .gp b{display:block;font-size:14px;color:#eef4fd;line-height:1.25}'
+  +'#fcGate .gp small{display:block;font-size:12.5px;color:#93a9c9;line-height:1.35;margin-top:1px}'
+  +'#fcGate .gt{display:inline-flex;align-items:center;gap:7px;margin:0 0 14px;padding:7px 12px;border-radius:999px;background:rgba(255,194,61,.1);border:1px solid rgba(255,194,61,.3);color:#f3dfae;font-size:12.5px;font-weight:600}'
+  +'#fcGate .gn{background:rgba(63,151,255,.08);border:1px solid rgba(63,151,255,.25);border-radius:13px;padding:9px 12px;color:#c4d6f0;font-size:12.5px;line-height:1.45;text-align:left;margin:0 0 14px}'
+  +'#fcGate .gn b{color:#eef4fd}'
   +'#fcGate .gi{font-size:36px;line-height:1;margin-bottom:10px}'
-  +'#fcGate h2{font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:21px;line-height:1.2;margin:0 0 10px}'
-  +'#fcGate p{color:#a9bdd6;font-size:14.5px;line-height:1.55;margin:0 0 14px}'
-  +'#fcGate p b{color:#eaf1fb}'
-  +'#fcGate .gn{background:rgba(255,194,61,.09);border:1px solid rgba(255,194,61,.28);border-radius:13px;padding:10px 12px;color:#e9d6a6;font-size:13px;line-height:1.5;text-align:left;margin:0 0 16px}'
-  +'#fcGate .gb{display:block;width:100%;box-sizing:border-box;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15.5px;border:none;padding:15px;border-radius:14px;cursor:pointer;margin:0 0 9px;text-decoration:none}'
-  +'#fcGate .gb2{background:none;border:1px solid rgba(150,185,240,.25);color:#cfdff5;font-weight:700;font-size:14px;padding:12px}'
-  +'#fcGate .gl{background:none;border:none;color:#8aa3c2;font-weight:700;font-size:13.5px;padding:10px;cursor:pointer;width:100%}'
-  +'#fcGate .gq{background:#fff;border-radius:14px;padding:12px;width:168px;height:168px;margin:2px auto 16px;box-sizing:content-box}'
-  +'#fcGate .gq svg{display:block;width:100%;height:100%}';
+  +'#fcGate .gb{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;box-sizing:border-box;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:16px;border:none;padding:15px;border-radius:15px;cursor:pointer;margin:0 0 8px;text-decoration:none;box-shadow:0 14px 30px -12px rgba(28,111,242,.9)}'
+  +'#fcGate .gb::after{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);animation:gShine 3.4s ease-in-out 1.2s infinite}'
+  +'#fcGate .gb svg{width:22px;height:22px;flex:none}'
+  +'#fcGate .gb2{background:#05101f;border:1px solid rgba(150,185,240,.25);color:#eef4fd;font-weight:700;font-size:15px;box-shadow:none}'
+  +'#fcGate .gb2::after{display:none}'
+  +'#fcGate .gs{font-size:12.5px;color:#8aa3c2;margin:2px 0 4px}'
+  +'#fcGate .grs{display:flex;justify-content:center;gap:6px;margin:2px 0 12px;font-size:30px;line-height:1;color:#ffc23d}'
+  +'#fcGate .grs i{font-style:normal;text-shadow:0 6px 18px rgba(255,194,61,.45);animation:gUp .4s cubic-bezier(.2,.8,.2,1) both}'
+  +'#fcGate .grs i:nth-child(2){animation-delay:.08s}#fcGate .grs i:nth-child(3){animation-delay:.16s}#fcGate .grs i:nth-child(4){animation-delay:.24s}#fcGate .grs i:nth-child(5){animation-delay:.32s}'
+  +'#fcGate .gl{display:block;background:none;border:none;color:#8aa3c2;font-weight:700;font-size:13.5px;padding:10px;cursor:pointer;width:100%}'
+  +'#fcGate .gq{background:#fff;border-radius:16px;padding:12px;width:156px;height:156px;margin:2px auto 14px;box-sizing:content-box;box-shadow:0 16px 40px -16px rgba(63,151,255,.7)}'
+  +'#fcGate .gq svg{display:block;width:100%;height:100%}'
+  +'@keyframes gIn{from{opacity:0}}'
+  +'@keyframes gUp{from{opacity:0;transform:translateY(14px) scale(.98)}}'
+  +'@keyframes gFlow{to{background-position:-250% 0}}'
+  +'@keyframes gFloat{50%{transform:translateY(-5px)}}'
+  +'@keyframes gGlow{50%{opacity:.55;transform:scale(1.08)}}'
+  +'@keyframes gPing{70%{box-shadow:0 0 0 8px rgba(255,194,61,0)}100%{box-shadow:0 0 0 0 rgba(255,194,61,0)}}'
+  +'@keyframes gShine{0%,60%{left:-60%}100%{left:130%}}'
+  +'@media (prefers-reduced-motion:reduce){#fcGate *,#fcGate .gc::before,#fcGate .gb::after{animation:none!important}}'
+  +'@media (max-height:760px){#fcGate .gp small{display:none}#fcGate .gx,#fcGate .gx img{width:56px;height:56px}#fcGate h2{font-size:21px}#fcGate .gc{padding-top:20px}}';
   document.head.appendChild(s);
 }
 function _gateDate(t){ try{ return new Date(t).toLocaleDateString('it-IT',{day:'numeric',month:'long'}); }catch(_){ return ''; } }
@@ -5915,30 +6023,60 @@ async function _gateDropWebPush(){
     const sub=await reg.pushManager.getSubscription(); if(sub) await sub.unsubscribe();
   }catch(_){ }
 }
+/* pezzi comuni degli avvisi «passa all'app» (sito/PWA e link d'invito) */
+const FC_SVG_APPLE='<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.73c-.03-2.6 2.12-3.85 2.22-3.91-1.21-1.77-3.09-2.01-3.76-2.04-1.6-.16-3.12.94-3.93.94-.81 0-2.06-.92-3.39-.89-1.74.03-3.35 1.01-4.25 2.57-1.81 3.14-.46 7.79 1.3 10.34.86 1.25 1.89 2.65 3.24 2.6 1.3-.05 1.79-.84 3.36-.84 1.57 0 2.01.84 3.38.81 1.4-.02 2.29-1.27 3.14-2.53.99-1.45 1.4-2.86 1.42-2.93-.03-.01-2.72-1.04-2.73-4.12zM13.79 5.1c.72-.87 1.2-2.07 1.07-3.27-1.03.04-2.28.69-3.02 1.55-.66.77-1.24 2-1.09 3.18 1.15.09 2.32-.58 3.04-1.46z"/></svg>';
+const FC_SVG_PLAY='<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#2fd98a" d="M3.6 2.3 13.3 12l-9.7 9.7c-.35-.2-.6-.6-.6-1.1V3.4c0-.5.25-.9.6-1.1z"/><path fill="#3f97ff" d="m16.7 8.6-3.4 3.4-9.7-9.7c.3-.17.7-.18 1.05.02z"/><path fill="#ff5d6b" d="m16.7 15.4-11.75 6.7c-.35.2-.75.2-1.05.02L13.3 12z"/><path fill="#ffc23d" d="m20.4 10.5-3.7-1.9-3.4 3.4 3.4 3.4 3.7-1.9c1-.6 1-2.4 0-3z"/></svg>';
+function _gateHero(kick){
+  return '<div class="gx"><img src="/icon-512.png?v=3" alt=""></div>'
+    +'<div class="gk"><i></i>'+kick+'</div>';
+}
+/* cosa guadagni con l'app: solo cose vere dell'app dello store */
+function _gatePerks(dev, short){
+  const bio=(dev==='ios')?'Face ID':(dev==='android'?'Impronta o volto':'Face ID o impronta');
+  const p=[
+    ['🔔','Notifiche puntuali','Giornata aperta, formazione, voti: non ti sfugge niente.'],
+    ['⚡','Più veloce','Il gioco è già nel telefono: si apre al volo.'],
+    ['🔐','Entri con '+bio,'Niente password da riscrivere.'],
+    ['🔗','Inviti diretti','I link della lega aprono subito l’app.']
+  ];
+  return '<div class="gp">'+(short?p.slice(0,3):p).map(x=>'<div><span>'+x[0]+'</span><div><b>'+x[1]+'</b><small>'+x[2]+'</small></div></div>').join('')+'</div>';
+}
+function _gateStoreBtn(dev, url, cls){
+  const ios=(dev==='ios');
+  return '<button class="gb'+(cls?' '+cls:'')+'" data-store="'+esc(url)+'">'+(ios?FC_SVG_APPLE:FC_SVG_PLAY)+'<span>Scarica gratis da '+(ios?'App Store':'Google Play')+'</span></button>';
+}
 function _gateHtmlWeb(c, dev, st){
   const ios=c.ios_url, and=c.android_url;
   const block=(st.mode==='block');
-  const quando='tra <b>'+st.days+(st.days===1?' giorno':' giorni')+'</b> ('+_gateDate(st.at)+')';
-  const stesso='Entri con la <b>stessa email e password</b> e ritrovi tutto.';
+  const data=_gateDate(st.at);
+  const stesso='<p class="gs">Stessa email e password: ritrovi lega, squadra e storico.</p>';
   const icona=fcIsStandalone()
-    ? '<div class="gn">Dopo aver installato l’app, <b>elimina questa icona</b> dalla schermata Home: altrimenti ricevi le notifiche due volte.</div>' : '';
+    ? '<div class="gn">📲 Appena entri nell’app, <b>togli questa icona dalla Home</b>: così ogni notifica arriva una volta sola.</div>' : '';
   const later=block?'':'<button class="gl" data-close>Più tardi</button>';
   if(dev==='desktop'){
-    return '<div class="gi">📱</div><h2>'+(block?'Gioca dal telefono':'FantaCalcetto è un’app')+'</h2>'
-      +'<p>FantaCalcetto è su App Store e Google Play. Inquadra il codice con il telefono per scaricarla. '+stesso+'</p>'
+    return _gateHero(block?'Ora si gioca dall’app':'Novità')
+      +'<h2>'+(block?'FantaCalcetto ora è <em>un’app</em>':'FantaCalcetto è diventato <em>un’app</em>')+'</h2>'
+      +'<p>Inquadra il codice con il telefono: ti porta dritto allo store giusto.</p>'
       +'<div class="gq"><svg viewBox="0 0 29 29" shape-rendering="crispEdges" aria-label="Codice QR per scaricare l’app"><path fill="#07111f" d="'+FC_QR_PATH+'"/></svg></div>'
-      +(block?'<p>La versione web non è più disponibile.</p>':'<p>Da computer la versione web smetterà di funzionare '+quando+'.</p>')
-      +'<button class="gb" data-store="'+esc(ios)+'">App Store</button>'
-      +'<button class="gb gb2" data-store="'+esc(and)+'">Google Play</button>'+later;
+      +_gatePerks(dev, true)
+      +(block?'':'<div class="gt">⏳ Da computer puoi giocare fino al '+data+'</div>')
+      +'<button class="gb gb2" data-store="'+esc(ios)+'">'+FC_SVG_APPLE+'<span>App Store</span></button>'
+      +'<button class="gb gb2" data-store="'+esc(and)+'">'+FC_SVG_PLAY+'<span>Google Play</span></button>'
+      +stesso+later;
   }
   const mine=(dev==='ios')?ios:and, other=(dev==='ios')?and:ios;
-  const nm=(dev==='ios')?'App Store':'Google Play', on=(dev==='ios')?'Google Play':'App Store';
-  return '<div class="gi">⚽</div><h2>'+(block?'Installa l’app FantaCalcetto':'FantaCalcetto è su '+nm)+'</h2>'
-    +'<p>'+(block?'La versione web non è più disponibile. Scarica l’app da '+nm+'. ':'Installa l’app da '+nm+'. ')+stesso+'</p>'
-    +(block?'':'<p>Questa versione web smetterà di funzionare '+quando+'.</p>')
+  const on=(dev==='ios')?'Google Play':'App Store';
+  return _gateHero(block?'È il momento':'Novità')
+    +'<h2>'+(block?'Benvenuto nella <em>nuova FantaCalcetto</em>':'FantaCalcetto è diventato <em>un’app</em>')+'</h2>'
+    +'<p>'+(block
+        ? 'La versione web è andata in pensione: ora FantaCalcetto è un’app vera, ed è <b>meglio in tutto</b>.'
+        : 'È arrivata su '+((dev==='ios')?'App Store':'Google Play')+', gratis. Più comoda, più veloce, più tua.')+'</p>'
+    +_gatePerks(dev, false)
+    +(block?'':'<div class="gt">⏳ Passa all’app entro il '+data+'</div>')
     +icona
-    +'<button class="gb" data-store="'+esc(mine)+'">Scarica da '+nm+'</button>'
-    +(other?'<button class="gl" data-store="'+esc(other)+'">Hai un altro telefono? '+on+'</button>':'')
+    +_gateStoreBtn(dev, mine)
+    +stesso
+    +(other?'<button class="gl" data-store="'+esc(other)+'">Hai un '+((dev==='ios')?'Android':'iPhone')+'? Scaricala da '+on+'</button>':'')
     +later;
 }
 async function _gateNativeOld(c){
@@ -5980,6 +6118,7 @@ async function fcGateCheck(){
   let day=''; try{ day=new Date().toISOString().slice(0,10); if(localStorage.getItem(FC_GATE_WARN_KEY)===day) return false; }catch(_){ }
   let n=0;
   const wait=()=>{
+    if(window._fcInviteShown) return;   // c'e' gia' l'invito a scaricare l'app
     if(typeof _splashGone!=='undefined' && _splashGone){
       setTimeout(()=>{ _gateShow(_gateHtmlWeb(c, dev, st), false); try{ localStorage.setItem(FC_GATE_WARN_KEY, day); }catch(_){ } }, 900);
       return;
@@ -6106,6 +6245,9 @@ async function afterLogin(){
   document.getElementById('gate').classList.add('hidden');
   document.getElementById('welcome').classList.add('hidden');
   if(!profile){
+    /* 7.3 — uscito dalla lega (l'ha fatto uscire l'amministratore): non e' una
+       lega sparita. Resta collegato e gli si apre il rientro nella sua lega. */
+    { const _rem=await fcMyRemoval(); if(_rem){ fcShowRemoved(_rem); return; } }
     /* Profilo assente: due casi diversi, non uno solo.
        a) Mi sono appena registrato o ho appena fatto l'accesso (_interactiveAuth):
           è il flusso normale, vado a scegliere/creare la lega.
@@ -6163,6 +6305,7 @@ async function afterLogin(){
     maybeShowLogoIntro();    // novità loghi: chiede di scegliere il logo a chi non ce l'ha ancora
     maybeAskPassword();      // chi c'era prima del login a password: gliela chiedo una volta sola
     maybePlanFullNotice();   // lega arrivata al tetto: una volta sola, e solo all'admin
+    fcProStartup();          // 7.3 — Pro: acquisti in attesa, scelta della stagione, pausa sopra i 15, scadenza
     const _qs=new URLSearchParams(location.search);
     /* 7.1 — dalla push della chat: si apre la chat e si toglie ?chat dall'indirizzo,
        cosi' ricaricando la pagina non si riapre da sola */
@@ -6178,6 +6321,7 @@ async function afterLogin(){
       maybeShowSeasonRecap().then(shown=>{ if(!shown) maybeShowRecap(); });
     }
     maybeAskPush();          // invito notifiche alla prima apertura (una volta per dispositivo)
+    try{ fcReviewMaybe(0); }catch(_){ }   // 13/11/2026 — recensione dopo 20 giorni (app Android)
     // prima l'installazione, poi le notifiche: senza app sulla Home le push
     // non possono funzionare (su iPhone PushManager non esiste nemmeno), quindi
     // i due banner non escono mai insieme e questo ha la precedenza
@@ -6647,7 +6791,7 @@ function lgSearchNow(){
       const {data}=await sb.rpc('find_leagues',{p_query:q});
       const box=document.getElementById('lgResults');
       box.innerHTML=(data&&data.length)
-        ? data.map(l=>`<div class="lg-res" data-id="${l.id}" data-name="${(l.name||'').replace(/"/g,'&quot;')}">${l.name}</div>`).join('')
+        ? data.map(l=>`<div class="lg-res" data-id="${l.id}" data-name="${(l.name||'').replace(/"/g,'&quot;')}">${esc(l.name)}</div>`).join('')
         : '<div class="vs" style="color:var(--muted);padding:10px 2px;font-size:13px">Nessuna lega trovata con questo nome.</div>';
       box.querySelectorAll('.lg-res').forEach(el=>el.onclick=()=>lgSelect({id:Number(el.dataset.id),name:el.dataset.name}));
     }catch(_){}
@@ -6671,6 +6815,7 @@ document.getElementById('lgJoinBtn').onclick=async function(){
   if(error||!data||!data[0]){ lgStatus('Password errata.'); return; }
   pendingLeague={id:data[0].id,name:data[0].name,slug:data[0].slug,password:pwd};
   justCreatedLeague=false;
+  if(_fcRemoval && Number(_fcRemoval.league_id)===Number(pendingLeague.id)){ await fcRejoin(this); return; }   // 7.3 — rientro
   document.getElementById('league').classList.add('hidden');
   showOnboard();
 };
@@ -6704,14 +6849,11 @@ function inviteMsg(){
   const link=(document.getElementById('invLink')||{}).value||'';
   const pwd =(document.getElementById('invPwd') ||{}).value||'';
   const nome=(myLeague&&myLeague.name)||'la nostra lega';   // myLeague, non il badge: quello ha l'emoji attaccata
-  return 'Ti ho invitato su FantaCalcetto \u2014 il fanta del nostro calcetto \u26bd\n\n'
+  /* 13/11/2026: messaggio corto. Il link apre l'app se c'e', altrimenti porta allo store */
+  return 'Ti ho invitato su FantaCalcetto \ud83d\udc47\n\n'
+    +link+'\n'
     +'Lega: '+nome+'\n'
-    +'Password: '+pwd+'\n\n'
-    +'Come entrare:\n'
-    +'1. Apri questo link dal telefono e aggiungi l\u2019app alla Home:\n'+link+'\n'
-    +'2. Apri l\u2019app dall\u2019icona sulla Home.\n'
-    +'3. Tocca \u00abEntra in una lega\u00bb, registrati, poi cerca \u00ab'+nome+'\u00bb e scrivi la password.\n\n'
-    +'Importante: l\u2019app va aggiunta alla Home. Dal browser le notifiche non arrivano, e su iPhone \u00e8 l\u2019unico modo per riceverle.';
+    +'Password: '+pwd;
 }
 async function shareInvite(){
   const t=inviteMsg();
@@ -6765,9 +6907,9 @@ async function sharePushNudge(){
   const senza=pushRows.filter(r=>!r.has_push).map(r=>r.player_name||r.team_name||'').filter(Boolean);
   if(!senza.length) return;
   const t='\u26bd FantaCalcetto \u2014 '+senza.join(', ')+'\n\n'
-    +'Non vi arrivano le notifiche, quindi vi perdete l\u2019apertura della giornata e l\u2019avviso quando scade la formazione. Due cose, un minuto:\n\n'
-    +'1) Aggiungete l\u2019app alla Home (Condividi \u2192 Aggiungi a Home). Su iPhone dal browser le notifiche non arrivano proprio.\n'
-    +'2) Apritela da l\u00ec e in Impostazioni \u203a Notifiche premete \u00abAttiva le notifiche\u00bb.';
+    +'Non vi arrivano le notifiche: vi perdete l\u2019apertura della giornata e il promemoria della formazione.\n\n'
+    +'1) Scaricate l\u2019app da App Store o Google Play: https://www.fantacalcettoitalia.it/scarica\n'
+    +'2) Entrate con la vostra email e attivate le notifiche (Impostazioni \u203a Notifiche).';
   try{ if(navigator.share){ await navigator.share({text:t}); return; } }catch(_){ return; }
   try{ await navigator.clipboard.writeText(t); toast('Messaggio copiato \u2705'); }
   catch(_){ toast('Copia non riuscita'); }
@@ -6962,7 +7104,7 @@ function gateSet(mode){
   gateLinks();
   try{ gateAccounts(); }catch(_){ }   // 6.4
   // 25/10/2026 — Face ID / impronta NON parte piu' da solo all'apertura di «Accedi»:
-  // si avvia solo quando l'utente tocca il pulsante «Entra con impronta o volto» (bioGateBtn -> bioLogin).
+  // si avvia solo quando l'utente tocca un account salvato (gateAccGo -> bioLogin). 27/10/2026: tasto separato tolto.
 }
 /* i passaggi laterali: si cambia strada senza perdere l'email gi\u00e0 scritta */
 function gateLinks(){
@@ -6970,8 +7112,7 @@ function gateLinks(){
   if(gateStage!=='form'){ box.innerHTML=''; return; }
   let h='';
   if(gateMode==='login'){
-    h=(typeof bioGateBtn==='function'?bioGateBtn():'')
-     +'<a onclick="gateGo(\'signup\')">Non hai un account? <b>Registrati</b></a>'
+    h='<a onclick="gateGo(\'signup\')">Non hai un account? <b>Registrati</b></a>'
      +'<a onclick="gateGo(\'reset\')">Password dimenticata?</a>'
      +'<a class="small" onclick="gateGo(\'reset\')">Non ne hai mai avuta una? <b>Impostala qui</b></a>';
   } else if(gateMode==='signup'){
@@ -9473,7 +9614,7 @@ async function obCreate(btn){
            messaggio non lo colpevolizza e non gli propone di pagare: il
            passaggio a Pro lo fa l'admin, che intanto viene avvisato per nome. */
         if(_cd.indexOf('FC015')>=0 || m.indexOf('FC015')>=0 || _cd.indexOf('league_full')>=0 || /raggiunto i \d+ membri/.test(m)){
-          obErr('obStatusTeam','Questa lega è al completo: ha raggiunto il numero massimo di persone. Abbiamo avvisato l\u2019amministratore, che pu\u00f2 ampliarla — riprova pi\u00f9 tardi o chiediglielo di persona.');
+          obErr('obStatusTeam','La lega è al completo: senza Pro il massimo è 15 persone. Abbiamo avvisato l\u2019amministratore: per farti entrare deve passare a Pro.');
           try{ await sb.rpc('log_join_attempt',{p_league:pendingLeague.id,p_name:pname}); }catch(_){ }
           return;
         }
@@ -9483,6 +9624,7 @@ async function obCreate(btn){
         else if(m.includes('team_taken')) obErr(_box, soloPlayer?'Prova a cambiare il nome del personaggio.':'Questo nome squadra \u00e8 gi\u00e0 in uso in questa lega.', soloPlayer?'playerInput':'teamInput');
         else if(m.includes('player_taken')){ obErr('obStatusChar','Questo nome giocatore è già in uso in questa lega.','playerInput'); obGo(1); }
         else if(m.includes('password')){ toast('Password della lega errata'); showLeague(); }
+        else if(m.includes('removed_other_league')) obErr(_box,'Questo account \u00e8 uscito da un\u2019altra lega e pu\u00f2 rientrare solo l\u00ec. Per un\u2019altra lega usa un altro account.');   // 7.3
         else obErr(_box,'Errore profilo: '+m);
         return;   // il finally riabilita il pulsante
       }
@@ -9542,7 +9684,8 @@ function applyProfile(){
   const pc=document.getElementById('presCard'); if(pc)pc.style.display=(canOp()&&!presenceSelf)?'':'none';
   const vtc=document.getElementById('voterCard'); if(vtc)vtc.style.display=canOp()?'':'none';
   const mtc=document.getElementById('maintCard'); if(mtc)mtc.style.display=isSuperAdmin()?'':'none';   // app offline: solo super-admin, non gli admin delle altre leghe
-  const vcc=document.getElementById('viceCard'); if(vcc)vcc.style.display=profile.is_admin?'':'none';     // gestione vice (solo proprietario)
+  const vcc=document.getElementById('viceCard'); if(vcc)vcc.style.display=profile.is_admin?'':'none';
+  const mbc=document.getElementById('membriCard'); if(mbc)mbc.style.display=profile.is_admin?'':'none';   // 7.3 — far uscire (solo proprietario)     // gestione vice (solo proprietario)
   const _adm=canOp();
   document.querySelectorAll('.navrow.adminRow').forEach(r=>{ r.style.display=_adm?'flex':'none'; });
   // ownerRow: pagine che il vice non deve nemmeno vedere (regole, stagione, manutenzione).
@@ -9799,7 +9942,12 @@ async function loadMyPlan(){
     if(error||!r) throw error||new Error('no plan');
     myPlan={ plan:r.plan||'free', founder:!!r.founder, is_pro:!!r.is_pro,
              members:Number(r.members||0), member_cap:Number(r.member_cap||15),
-             seats_left:Number(r.seats_left||0), loaded:true };
+             seats_left:Number(r.seats_left||0), loaded:true,
+             // 7.3 — Pro a periodi (12 mesi o 38 giornate)
+             league_id:r.league_id||null, pro_until:r.pro_until||null,
+             md_left:(r.md_left==null?null:Number(r.md_left)), md_total:(r.md_total==null?null:Number(r.md_total)),
+             md_before:Number(r.md_before||0), choice_pending:!!r.choice_pending, queued:Number(r.queued||0),
+             over_cap:!!r.over_cap, held:Number(r.held||0), store_managed:!!r.store_managed };
   }catch(_){
     myPlan={ plan:'pro', founder:false, is_pro:true, members:0, member_cap:15, seats_left:99, loaded:false };
   }
@@ -9826,6 +9974,8 @@ function proWhyText(reason){
     case 'muro':    return 'Numero massimo di partecipanti raggiunto ('+n+'/'+cap+'). Con Pro la lega pu\u00f2 accogliere nuovi giocatori.';
     case 'tetto':   return 'Partecipanti: '+n+' su '+cap+'. Con Pro non \u00e8 previsto alcun limite.';
     case 'storico': return 'Le stagioni archiviate sono consultabili con Pro.';
+    case 'scaduto': return 'Pro non \u00e8 attivo e siete '+n+': senza Pro il massimo \u00e8 '+cap+'.';
+    case 'rinnovo': return 'La nuova stagione parte quando finisce quella in corso.';
     default:        return 'Per le leghe con pi\u00f9 di '+cap+' partecipanti e per consultare le stagioni archiviate.';
   }
 }
@@ -9839,17 +9989,28 @@ const PRO_TAB=[
   ['\ud83d\uddc2\ufe0f','Tutte le stagioni',   0,1],
   ['\ud83c\udfc6','Albo d\u2019oro',        0,1]
 ];
-const PRO_FULL=39.90, PRO_NOW=29.90;
+const PRO_FULL=39.99, PRO_NOW=29.99;   // 7.3 — nell'app il prezzo vero arriva dallo store (FCPay)
 function eur(v){ return v.toFixed(2).replace('.',',')+'\u00a0\u20ac'; }
+/* 27/10/2026 — importi nella valuta dello store: in prova (TestFlight/sandbox) Apple puo' dare
+   il prezzo in un'altra valuta; cosi' quota a testa e prezzo barrato restano coerenti. */
+function proMoney(v,cur){
+  if(!cur || cur==='EUR') return eur(v);
+  try{ return new Intl.NumberFormat('it-IT',{style:'currency',currency:cur}).format(v); }catch(_){ return v.toFixed(2)+' '+cur; }
+}
 function proPriceHTML(){
   const n=Number(myPlan.members)||0;
+  // 7.3 — prezzo dello store se c'e' (FCPay.prod), altrimenti quello di lancio
+  const sp=(typeof FCPay!=='undefined' && FCPay.prod) ? FCPay.prod : null;
+  const now=(sp && Number(sp.price)>0) ? Number(sp.price) : PRO_NOW;
+  const nowTxt=(sp && sp.priceString) ? esc(sp.priceString) : eur(PRO_NOW);
+  const cur=(sp && sp.priceString && sp.currencyCode) ? String(sp.currencyCode).toUpperCase() : 'EUR';
   // per eccesso ai centesimi: la somma delle quote non deve stare SOTTO il totale
-  const each=n>0 ? Math.ceil(PRO_NOW*100/n)/100 : null;
-  return '<div class="pro-price-top"><span class="pro-ribbon">Prezzo di lancio</span><s>'+eur(PRO_FULL)+'</s></div>'
-    +'<div class="pro-row"><b>'+eur(PRO_NOW)+'</b><span>/stagione</span></div>'
-    +'<div class="pro-amount-sub">Per l\u2019intera lega, non per singolo partecipante. IVA inclusa, nessun rinnovo automatico.</div>'
+  const each=n>0 ? Math.ceil(now*100/n)/100 : null;
+  return '<div class="pro-price-top"><span class="pro-ribbon">Prezzo di lancio</span>'+(cur==='EUR'?'<s>'+eur(PRO_FULL)+'</s>':'')+'</div>'
+    +'<div class="pro-row"><b>'+nowTxt+'</b><span>1 stagione</span></div>'
+    +'<div class="pro-amount-sub">Tutta la lega \u00b7 12 mesi o 38 giornate \u00b7 nessun rinnovo</div>'
     +(each!=null
-      ? '<div class="pro-each"><span class="pro-each-ic">\ud83d\udc64</span><b>'+eur(each)+'</b><span>per partecipante \u00b7 '+n+' nella lega</span></div>'
+      ? '<div class="pro-each"><span class="pro-each-ic">\ud83d\udc64</span><b>'+proMoney(each,cur)+'</b><span>per partecipante \u00b7 '+n+' nella lega</span></div>'
       : '');
 }
 function proTabHTML(){
@@ -9873,9 +10034,7 @@ function nativeProNotice(){
   o.querySelector('#pnOk').onclick=()=>o.remove();
 }
 function openPro(reason){
-  /* App dello store: niente prezzi ne' acquisti (regole Google/Apple). Chi e' Pro vede lo stato. */
-  if(IOS_APP && !isPro()){ toast('Non disponibile per questa lega'); return; }
-  if(IS_NATIVE && !isPro()){ nativeProNotice(); return; }
+  /* 7.3 — nell'app Pro si compra con l'acquisto in-app: la pagina si apre ovunque */
   const pg=document.getElementById('proPage'); if(!pg) return;
   renderProPage(reason||'info');
   // l'ingresso a cascata riparte a ogni apertura
@@ -9897,8 +10056,16 @@ function renderProPage(reason){
   const tab=document.getElementById('proTab');
   const on=document.getElementById('proOn');
   const owner=!!(profile&&profile.is_admin);
+  const app=FCPay.available();
   if(tab) tab.innerHTML=proTabHTML();
   if(price) price.innerHTML=proPriceHTML();
+  // 7.3 — nell'app il prezzo arriva dallo store: appena c'e', si ridisegna
+  if(app && owner && !myPlan.founder && !FCPay.prod && !FCPay._tried){
+    FCPay.loadProduct().then(()=>{ const pg=document.getElementById('proPage'); if(pg && !pg.classList.contains('hidden')) renderProPage(reason); });
+  }
+  const priceTxt=FCPay.priceString();
+  const restore=app && owner ? '<br><a href="#" onclick="proRestore(event)">Ripristina acquisti</a>' : '';
+  const terms='Pagamento unico tramite '+(app?FCPay.storeName():'lo store')+', nessun rinnovo automatico. Proseguendo accetti i <a href="/termini.html" target="_blank" rel="noopener">Termini di servizio</a>.';
 
   /* Chi e' gia' Pro non deve leggere un'offerta: legge uno stato. */
   if(isPro()){
@@ -9906,17 +10073,17 @@ function renderProPage(reason){
       ? 'Tutte le funzionalit\u00e0 attive, senza scadenza.'
       : 'Tutte le funzionalit\u00e0 attive per la lega.';
     if(price) price.style.display='none';
+    const left=(!myPlan.founder && myPlan.store_managed) ? proLeftText() : '';
     if(on) on.innerHTML='<div class="pro-on"><span class="ic"><span>'+(myPlan.founder?'\ud83c\udfc5':'\u2b50')+'</span></span>'
       +'<div><b>'+(myPlan.founder?'Lega fondatrice':'Pro attivo')+'</b>'
-      +'<small>'+(myPlan.founder?'Una delle prime 20 leghe: Pro incluso, senza scadenza.':'Partecipanti illimitati e accesso a tutte le stagioni.')+'</small></div></div>';
-    /* Il super-admin ha la Fossa fondatrice: senza questo pulsante non potrebbe
-       mai provare il pagamento dall'icona sulla Home, dove ?piano=free non
-       arriva. Il server gli da' il link SOLO in modalita' test. */
-    /* Il pulsante di prova compare SOLO se il checkout e' in modalita' test
-       (pro_checkout.mode='test'): in live sparisce da solo, senza toccare il file. */
-    if(cta) cta.innerHTML='';
+      +'<small>'+(myPlan.founder?'Una delle prime 20 leghe: Pro incluso, senza scadenza.':(left?esc(left):'Partecipanti illimitati e accesso a tutte le stagioni.'))+'</small></div></div>';
+    /* 7.3 — il proprietario puo' aggiungere la stagione successiva (parte alla fine di questa) */
+    if(cta) cta.innerHTML = (owner && !myPlan.founder && app)
+      ? '<button class="pro-test" onclick="proBuy(this)">Aggiungi un\u2019altra stagione'+(priceTxt?' \u00b7 '+esc(priceTxt):'')+'</button>'
+        +'<div class="pro-status" id="proStatus"></div>'
+      : '';
     if(isSuperAdmin()) proTestSlot();
-    if(foot) foot.innerHTML='';
+    if(foot) foot.innerHTML = (owner && !myPlan.founder && app) ? terms+restore : '';
     proWdRender(owner);
     return;
   }
@@ -9925,11 +10092,16 @@ function renderProPage(reason){
   if(price) price.style.display='';
   if(why) why.textContent = proWhyText(reason);
 
-  if(owner){
-    /* L'admin e' l'unico che puo' pagare: a lui il pulsante. */
-    if(cta) cta.innerHTML='<button class="pro-btn" onclick="proCheckout(this)"><span>\u2b50 Passa a Pro</span></button>'
-      +'<div class="pro-status" id="proStatus"></div>';
-    if(foot) foot.innerHTML='Proseguendo accetti i <a href="/termini.html" target="_blank" rel="noopener">Termini di servizio</a>.';
+  if(owner && app){
+    /* L'admin e' l'unico che puo' pagare: a lui il pulsante (acquisto in-app). */
+    if(cta) cta.innerHTML='<button class="pro-btn" onclick="proBuy(this)"><span>\u2b50 Passa a Pro'+(priceTxt?' \u00b7 '+esc(priceTxt):'')+'</span></button>'
+      +'<div class="pro-status" id="proStatus">'+(FCPay.prod||!FCPay._loading?'':'Carico il prezzo\u2026')+'</div>';
+    if(foot) foot.innerHTML=terms+restore;
+  }else if(owner){
+    /* Sito e PWA: Pro si compra solo dall'app */
+    if(cta) cta.innerHTML='<div class="pro-status" style="margin:0 0 12px">Pro si attiva dall\u2019app FantaCalcetto.</div>'
+      +proStoreButtonsHTML();
+    if(foot) foot.innerHTML='';
   }else{
     /* Un membro che preme «Passa a Pro» e scopre di non poter fare niente e'
        un'occasione buttata: gli si da' una cosa che puo' fare davvero. */
@@ -10216,7 +10388,8 @@ function proWdAsk(){
 }
 function proTellAdmin(){
   const nm=(myLeague&&myLeague.name)?(' per la lega '+myLeague.name):'';
-  const tx="Proposta"+nm+": FantaCalcetto Pro, con partecipanti illimitati e accesso a tutte le stagioni. 29,90 \u20ac a stagione per l'intera lega, IVA inclusa. Si attiva dall'app, in Impostazioni \u2192 FantaCalcetto Pro. www.fantacalcettoitalia.it/#prezzi";
+  const pr=(typeof FCPay!=='undefined' && FCPay.priceString()) || '29,99 \u20ac';
+  const tx="Proposta"+nm+": FantaCalcetto Pro, con partecipanti illimitati e accesso a tutte le stagioni. "+pr+" per una stagione (12 mesi o 38 giornate) per l'intera lega, pagamento unico. Si attiva dall'app FantaCalcetto, in Impostazioni \u2192 FantaCalcetto Pro.";
   if(navigator.share){
     navigator.share({text:tx}).catch(()=>{});
     return;
@@ -10225,14 +10398,366 @@ function proTellAdmin(){
   catch(_){ toast('Copia questo: '+tx.slice(0,40)+'\u2026'); }
 }
 
+/* ==========================================================================
+   7.3 — ACQUISTI IN-APP (App Store + Google Play, tramite RevenueCat)
+   UN SOLO MODULO, FCPay, parla col plugin degli acquisti: prodotti, acquisto,
+   ripristino. Se un domani si cambia sistema, si cambia solo qui.
+   Chi e' Pro lo decide il DATABASE (pro_periods, 26_pro_store_attiva.sql):
+   dopo l'acquisto l'app chiede alla Edge Function «revenuecat» di verificarlo
+   e applicarlo, poi rilegge il piano. Lo stesso fa «Ripristina acquisti».
+   Le due chiavi qui sotto sono PUBBLICHE per natura (stanno dentro ogni app).
+   ========================================================================== */
+const RC_PUBLIC_KEYS={ ios:'appl_gyYokkhHRGkVfwTebtsPJRgroUX', android:'goog_BtODhMxPDHFtzrDoJpRucXRJuOr' };
+const PRO_PRODUCT_ID='it.fantacalcettoitalia.app.pro_stagione';
+const FCPay={
+  _ready:false, _uid:null, prod:null, _loading:null, _tried:false,
+  plugin(){ try{ return (IS_NATIVE && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases) || null; }catch(_){ return null; } },
+  available(){ return !!this.plugin(); },
+  storeName(){ return NATIVE_OS==='ios' ? 'App Store' : 'Google Play'; },
+  async ensure(){
+    const P=this.plugin(); if(!P || !user) throw new Error('pay_unavailable');
+    const key=RC_PUBLIC_KEYS[NATIVE_OS==='ios'?'ios':'android'];
+    if(!this._ready){
+      await P.configure({ apiKey:key, appUserID:user.id });
+      this._ready=true; this._uid=user.id;
+    } else if(this._uid!==user.id){
+      await P.logIn({ appUserID:user.id }); this._uid=user.id;
+    }
+    return P;
+  },
+  /* prezzo e nome arrivano dallo store (mai scritti a mano) */
+  async loadProduct(){
+    if(this.prod) return this.prod;
+    if(this._loading) return this._loading;
+    this._tried=true;
+    this._loading=(async()=>{
+      try{
+        const P=await this.ensure();
+        const r=await P.getProducts({ productIdentifiers:[PRO_PRODUCT_ID], type:'NON_SUBSCRIPTION' });
+        const list=(r && (r.products||r)) || [];
+        this.prod=(Array.isArray(list)?list:[]).find(p=>p && p.identifier===PRO_PRODUCT_ID) || null;
+      }catch(e){ try{ console.warn('FCPay product', e && e.message); }catch(_){ } this.prod=null; }
+      this._loading=null;
+      return this.prod;
+    })();
+    return this._loading;
+  },
+  priceString(){ return (this.prod && this.prod.priceString) || ''; },
+  /* 'ok' | 'cancel' ; errore = eccezione */
+  async buy(){
+    const P=await this.ensure();
+    const prod=await this.loadProduct();
+    if(!prod) throw new Error('product_unavailable');
+    try{
+      await P.purchaseStoreProduct({ product:prod });
+      return 'ok';
+    }catch(e){
+      const c=String((e && (e.code!=null?e.code:'')) || ''), m=String((e && e.message) || '');
+      if(c==='1' || (e && e.userCancelled) || /cancel/i.test(m)) return 'cancel';
+      throw e;
+    }
+  },
+  async restore(){ const P=await this.ensure(); await P.restorePurchases(); return await this.sync(); },
+  /* verifica sul server: la Edge Function chiede a RevenueCat e applica (una volta sola) */
+  async sync(){
+    const { data, error }=await sb.functions.invoke('revenuecat', { body:{ mode:'sync' } });
+    if(error) throw error;
+    return data;
+  },
+  errText(e){
+    const m=String((e && e.message) || e || ''), c=String((e && e.code!=null) ? e.code : '');
+    if(/pay_unavailable/.test(m)) return 'Per passare a Pro aggiorna l’app FantaCalcetto dallo store.';
+    if(/product_unavailable/.test(m)) return 'Il prodotto non è disponibile in questo momento. Riprova più tardi.';
+    if(c==='20' || /pending/i.test(m)) return 'Pagamento in sospeso: Pro si attiva appena lo store lo conferma.';
+    if(c==='2' || /store problem|network/i.test(m)) return 'Lo store non risponde. Controlla la connessione e riprova.';
+    if(c==='3' || /not allowed/i.test(m)) return 'Gli acquisti non sono consentiti su questo dispositivo.';
+    return 'Acquisto non completato. Riprova tra poco.';
+  }
+};
+let _proBuying=false;
+const _proSleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function proBuy(btn){
+  if(_proBuying) return;
+  if(!(profile && profile.is_admin)){ toast('Può attivarlo solo l’amministratore della lega'); return; }
+  _proBuying=true; if(btn) btn.disabled=true;
+  const st=()=>document.getElementById('proStatus');
+  try{
+    const r=await FCPay.buy();
+    if(r==='cancel'){ if(st()) st().textContent=''; return; }
+    if(st()) st().textContent='Pagamento ricevuto: attivo FantaCalcetto Pro…';
+    await proAfterPurchase();
+  }catch(e){
+    if(st()) st().textContent=FCPay.errText(e); else toast(FCPay.errText(e));
+  }finally{ _proBuying=false; if(btn) btn.disabled=false; }
+}
+/* il server applica l'acquisto: si verifica e si rilegge il piano finche' non cambia */
+async function proAfterPurchase(){
+  const was=isPro(), q0=Number(myPlan.queued||0), u0=myPlan.pro_until||null;
+  let changed=false;
+  for(let i=0;i<6 && !changed;i++){
+    try{ await FCPay.sync(); }catch(_){ }
+    await loadMyPlan();
+    changed=(isPro() && !was) || Number(myPlan.queued||0)>q0 || (myPlan.pro_until||null)!==u0;
+    if(!changed) await _proSleep(2500);
+  }
+  renderPlanUI();
+  const pg=document.getElementById('proPage');
+  if(pg && !pg.classList.contains('hidden')) renderProPage('info');
+  if(changed){
+    if(navigator.vibrate){ try{ navigator.vibrate([10,40,10]); }catch(_){ } }
+    toast(was ? 'Stagione Pro aggiunta' : 'FantaCalcetto Pro attivo per la lega');
+    maybeProChoice();
+  } else {
+    const s=document.getElementById('proStatus');
+    if(s) s.textContent='Pagamento ricevuto: l’attivazione può richiedere qualche minuto. Poi, se serve, premi «Ripristina acquisti».';
+  }
+}
+async function proRestore(ev){
+  if(ev) ev.preventDefault();
+  const s=document.getElementById('proStatus');
+  if(s) s.textContent='Controllo i tuoi acquisti…';
+  try{
+    await FCPay.restore();
+    await loadMyPlan(); renderPlanUI(); renderProPage('info');
+    toast(isPro() ? 'Acquisti ripristinati' : 'Nessun acquisto da ripristinare');
+    maybeProChoice();
+  }catch(e){ if(s) s.textContent=FCPay.errText(e); }
+}
+/* quanto resta di Pro, in una riga */
+function proLeftText(){
+  const p=myPlan||{}, bits=[];
+  if(p.md_left!=null) bits.push('Restano '+p.md_left+(Number(p.md_left)===1?' giornata':' giornate'));
+  if(p.pro_until) bits.push('fino al '+fmtWd(p.pro_until,false));
+  let t=bits.join(' · ');
+  if(Number(p.queued||0)>0) t+=(t?'. ':'')+'Un’altra stagione è già pronta e parte quando finisce questa.';
+  return t;
+}
+/* link agli store per chi usa il sito o la PWA (dal database, app_gate) */
+function proStoreButtonsHTML(){
+  const c=(typeof _gateCfg!=='undefined' && _gateCfg) || null;
+  const b=[];
+  if(c && c.ios_url) b.push('<button class="pro-btn" onclick="fcGateOpenStore(\''+esc(c.ios_url)+'\')"><span>App Store</span></button>');
+  if(c && c.android_url) b.push('<button class="pro-test" style="margin-top:10px" onclick="fcGateOpenStore(\''+esc(c.android_url)+'\')">Google Play</button>');
+  return b.join('');
+}
+
+/* finestra semplice, stesso stile degli altri avvisi */
+function fcModal(html){
+  const o=document.createElement('div');
+  o.className='fc-modal';
+  o.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(5,12,24,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px';
+  o.innerHTML='<div style="max-width:360px;width:100%;max-height:88%;overflow-y:auto;background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:20px;padding:22px;box-shadow:0 24px 60px -20px rgba(0,0,0,.7);color:#eaf1fb">'+html+'</div>';
+  document.body.appendChild(o);
+  return o;
+}
+const FC_MB='width:100%;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;border:none;padding:14px;border-radius:13px;cursor:pointer';
+const FC_MB2='width:100%;margin-top:9px;background:none;border:1px solid rgba(150,185,240,.25);color:#cfdff5;font-weight:700;font-size:14px;padding:12px;border-radius:12px;cursor:pointer';
+const FC_ML='width:100%;margin-top:6px;background:none;border:none;color:#8aa3c2;font-weight:700;font-size:13.5px;padding:10px;cursor:pointer';
+const FC_MT='font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px;text-align:center';
+const FC_MP='color:#a9bdd6;font-size:14px;line-height:1.55;margin:0 0 14px';
+
+/* SCELTA DOPO L'ACQUISTO A STAGIONE INIZIATA (solo il proprietario, una volta) */
+let _proChoiceOpen=false;
+function maybeProChoice(){
+  if(_proChoiceOpen || !(profile && profile.is_admin) || !myPlan || !myPlan.choice_pending) return;
+  _proChoiceOpen=true;
+  const before=Number(myPlan.md_before||0), left=Math.max(1,38-before);
+  const sn=currentSeason ? currentSeason.number : '';
+  const fino=myPlan.pro_until ? fmtWd(myPlan.pro_until,false) : '';
+  const o=fcModal(
+     '<div style="font-size:34px;text-align:center;margin-bottom:6px">⭐</div>'
+    +'<div style="'+FC_MT+'">Come vuoi usare Pro?</div>'
+    +'<p style="'+FC_MP+'">La Stagione '+esc(String(sn))+' è già iniziata: '+before+(before===1?' giornata giocata.':' giornate giocate.')+'</p>'
+    +'<button id="pcNew" style="'+FC_MB+';text-align:left"><div>Nuova stagione · 38 giornate</div>'
+    +'<div style="font-weight:500;font-size:12.5px;opacity:.9;margin-top:3px">Chiude la Stagione '+esc(String(sn))+' e ne inizia una nuova.</div></button>'
+    +'<button id="pcCont" style="'+FC_MB2+';text-align:left"><div>Continua la Stagione '+esc(String(sn))+' · '+left+(left===1?' giornata':' giornate')+'</div>'
+    +'<div style="font-weight:500;font-size:12.5px;opacity:.85;margin-top:3px">Classifica e statistiche continuano.</div></button>'
+    +(left<=5?'<p style="color:#e9d6a6;font-size:12.5px;line-height:1.5;margin:12px 0 0">Restano poche giornate.</p>':'')
+    +(fino?'<p style="color:#8aa3c2;font-size:12.5px;line-height:1.5;margin:12px 0 0">Pro vale al massimo fino al '+esc(fino)+'.</p>':'')
+    +'<button id="pcLater" style="'+FC_ML+'">Decido dopo</button>');
+  const done=()=>{ o.remove(); _proChoiceOpen=false; };
+  o.querySelector('#pcLater').onclick=done;
+  const pick=async(mode,btn)=>{
+    if(mode==='new' && !confirm('Chiudere la Stagione '+sn+' e iniziare una nuova stagione con 38 giornate?')) return;
+    btn.disabled=true; btn.style.opacity='.6';
+    try{
+      const {error}=await sb.rpc('pro_choose_season',{p_mode:mode});
+      if(error) throw error;
+    }catch(e){
+      btn.disabled=false; btn.style.opacity='';
+      const m=String((e&&e.message)||'');
+      if(/matchday_open/.test(m)) toast('C’è una giornata aperta: chiudila e poi scegli «Nuova stagione»');
+      else if(/choice_closed/.test(m)){ toast('Scelta già fatta'); done(); }
+      else toast(errText(e));
+      return;
+    }
+    done();
+    await loadMyPlan(); renderPlanUI();
+    if(mode==='new'){ try{ await loadSeason(); await loadStandings(); await loadMatchdaysList(); renderAll(); renderHomeBcards(true); }catch(_){ } }
+    toast(mode==='new' ? 'Nuova stagione Pro iniziata 🏁' : 'Pro attivo: la stagione continua');
+  };
+  o.querySelector('#pcNew').onclick=e=>pick('new',e.currentTarget);
+  o.querySelector('#pcCont').onclick=e=>pick('continue',e.currentTarget);
+}
+
+/* LEGA SOPRA I 15 SENZA PRO (scaduto o rimborsato): niente giornate nuove */
+let _overCapShown=false;
+function maybeOverCapNotice(){
+  if(_overCapShown || !myPlan || !myPlan.over_cap || isPro()) return;
+  const n=Number(myPlan.members)||0, cap=Number(myPlan.member_cap)||15;
+  const owner=!!(profile && profile.is_admin);
+  if(!owner){
+    const k='fc_overcap_day_'+((profile&&profile.league_id)||0);
+    try{ const d=new Date().toISOString().slice(0,10); if(localStorage.getItem(k)===d) return; localStorage.setItem(k,d); }catch(_){ }
+  }
+  _overCapShown=true;
+  const o=fcModal(
+     '<div style="font-size:34px;text-align:center;margin-bottom:6px">⏸️</div>'
+    +'<div style="'+FC_MT+'">La lega è in pausa</div>'
+    +'<p style="'+FC_MP+'">Pro non è attivo e siete <b style="color:#eaf1fb">'+n+'</b>: senza Pro il massimo è '+cap+'. '
+    +(owner ? 'Rinnova Pro per aprire nuove giornate, oppure fai uscire qualcuno (non perde i suoi dati).'
+            : 'Le nuove giornate ripartono quando l’amministratore rinnova Pro: chiediglielo.')+'</p>'
+    +(owner ? '<button id="ocPro" style="'+FC_MB+'">Rinnova FantaCalcetto Pro</button><button id="ocMem" style="'+FC_MB2+'">Gestisci i partecipanti</button>' : '')
+    +'<button id="ocOk" style="'+FC_ML+'">'+(owner?'Più tardi':'Ho capito')+'</button>');
+  o.querySelector('#ocOk').onclick=()=>o.remove();
+  const a=o.querySelector('#ocPro'); if(a) a.onclick=()=>{ o.remove(); openPro('scaduto'); };
+  const b=o.querySelector('#ocMem'); if(b) b.onclick=()=>{ o.remove(); openMembersPage(); };
+}
+
+/* AVVISI DI SCADENZA all'amministratore: a 30 giorni o 3 giornate, poi a 7 giorni o 1 giornata */
+function maybeProExpiryNotice(){
+  const p=myPlan||{};
+  if(!(profile && profile.is_admin) || !isPro() || p.founder || !p.store_managed || !p.pro_until) return;
+  if(Number(p.queued||0)>0) return;   // c'e' gia' la stagione dopo
+  const days=Math.ceil((Date.parse(p.pro_until)-Date.now())/86400000);
+  const md=(p.md_left==null)?99:Number(p.md_left);
+  const lvl=(days<=7 || md<=1) ? 2 : ((days<=30 || md<=3) ? 1 : 0);
+  if(!lvl) return;
+  const k='fc_pro_warn_'+(p.league_id||0)+'_'+p.pro_until+'_'+lvl;
+  try{ if(localStorage.getItem(k)) return; localStorage.setItem(k,'1'); }catch(_){ return; }
+  const n=Number(p.members)||0, cap=Number(p.member_cap)||15;
+  const o=fcModal(
+     '<div style="font-size:34px;text-align:center;margin-bottom:6px">⏳</div>'
+    +'<div style="'+FC_MT+'">Pro sta per finire</div>'
+    +'<p style="'+FC_MP+'">'+esc(proLeftText())+'.</p>'
+    +(n>cap ? '<p style="'+FC_MP+'">Siete <b style="color:#eaf1fb">'+n+'</b>: senza rinnovo, alla scadenza le nuove giornate si bloccano finché non tornate a '+cap+'.</p>' : '')
+    +'<button id="exPro" style="'+FC_MB+'">Rinnova adesso</button>'
+    +'<button id="exOk" style="'+FC_ML+'">Più tardi</button>');
+  o.querySelector('#exOk').onclick=()=>o.remove();
+  o.querySelector('#exPro').onclick=()=>{ o.remove(); openPro('rinnovo'); };
+}
+
+/* all'avvio, dopo il piano: acquisti in attesa, scelta, pausa, scadenza */
+async function fcProStartup(){
+  try{
+    if(myPlan && Number(myPlan.held||0)>0){
+      const {data}=await sb.rpc('pro_claim_held');
+      if(data && /^assegnati/.test(String(data))){ await loadMyPlan(); renderPlanUI(); toast('FantaCalcetto Pro attivo per la lega'); }
+    }
+  }catch(_){ }
+  // nell'app, all'amministratore il prezzo si prepara in anticipo
+  try{ if(FCPay.available() && profile && profile.is_admin && !(myPlan && myPlan.founder)) FCPay.loadProduct(); }catch(_){ }
+  setTimeout(()=>{
+    try{
+      if(document.querySelector('.fc-modal')) return;
+      if(myPlan && myPlan.choice_pending) maybeProChoice();
+      else if(myPlan && myPlan.over_cap) maybeOverCapNotice();
+      else maybeProExpiryNotice();
+    }catch(_){ }
+  }, 1800);
+}
+
+/* PARTECIPANTI — il proprietario puo' far uscire qualcuno (mai cancellare:
+   chi esce ritrova voti, formazioni e statistiche se rientra). */
+function openMembersPage(){ try{ go('settings'); setNav('page-membri'); }catch(_){ } }
+async function renderMembers(){
+  const box=document.getElementById('membriList'); if(!box) return;
+  if(!(profile && profile.is_admin)){ box.innerHTML=''; return; }
+  const cap=Number(myPlan.member_cap)||15;
+  const intro=document.getElementById('membriIntro');
+  if(intro) intro.textContent = isPro()
+    ? 'Con FantaCalcetto Pro non c’è un numero massimo di partecipanti.'
+    : 'Senza Pro il massimo è '+cap+'. Chi esce non perde i suoi dati e può rientrare se c’è posto.';
+  box.innerHTML='<div class="vs" style="color:var(--muted)">Carico…</div>';
+  try{
+    const {data,error}=await sb.rpc('list_league_members'); if(error) throw error;
+    const rows=data||[];
+    box.innerHTML='<div class="presbar"><span><b>'+rows.length+'</b> partecipanti'+(isPro()?'':' su '+cap)+'</span></div>'
+      +rows.map(m=>{
+        const nm=esc(m.player_name||m.team_name||'Membro');
+        const sub=m.is_owner?'Proprietario':(m.is_vice?'Vice-admin':(m.team_name&&m.player_name?esc(m.team_name):''));
+        return '<div style="display:flex;align-items:center;gap:10px;padding:9px 2px;border-top:1px solid var(--line)">'
+          +'<span class="pc-av">'+teamLogoHTML(m.id,28)+'</span>'
+          +'<span style="flex:1;min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+nm+'</b>'
+          +(sub?'<small style="color:var(--muted)">'+sub+'</small>':'')+'</span>'
+          +(m.is_owner?'':'<button class="set-btn" style="width:auto;padding:8px 12px;font-size:12.5px" onclick="removeMember(\''+m.id+'\',this)" data-nm="'+nm+'">Fai uscire</button>')
+          +'</div>';
+      }).join('');
+  }catch(e){ box.innerHTML='<div class="vs" style="color:var(--red)">Errore nel caricamento.</div>'; }
+}
+async function removeMember(uid, btn){
+  const nm=(btn && btn.dataset.nm) || 'questo partecipante';
+  if(!confirm('Far uscire '+nm+'?\n\nNon perde i suoi dati e può rientrare se c’è posto.')) return;
+  if(btn){ btn.disabled=true; btn.style.opacity='.6'; }
+  try{
+    const {error}=await sb.rpc('remove_member',{p_user:uid}); if(error) throw error;
+  }catch(e){
+    if(btn){ btn.disabled=false; btn.style.opacity=''; }
+    toast(/cannot_remove_owner/.test(String(e&&e.message))?'Il proprietario non può uscire da qui.':errText(e)); return;
+  }
+  toast(nm+' è uscito dalla lega');
+  try{ _leagueMembers=null; }catch(_){ }
+  await loadMyPlan(); renderPlanUI(); renderMembers();
+}
+
+/* CHI E' USCITO: all'accesso non trova la lega. Gli si dice cos'e' successo e
+   si apre l'ingresso nella sua lega: con la password rientra dritto, senza
+   rifare squadra e personaggio. */
+let _fcRemoval=null;
+async function fcMyRemoval(){
+  try{
+    const {data,error}=await sb.rpc('get_my_removal');
+    if(error || !data || !data.slug) return null;
+    const {data:l}=await sb.rpc('league_by_slug',{p_slug:data.slug});
+    const lg=(l&&l[0])||null;
+    return lg ? { league_id:lg.id, league_name:lg.name||data.league_name, slug:lg.slug } : null;
+  }catch(_){ return null; }
+}
+function fcShowRemoved(rem){
+  _fcRemoval=rem;
+  showLeague('join');
+  try{ lgSelect({ id:rem.league_id, name:rem.league_name }); }catch(_){ }
+  lgStatus('Sei uscito dalla lega «'+rem.league_name+'». Inserisci la password per rientrare: ritrovi tutti i tuoi dati.');
+}
+async function fcRejoin(btn){
+  const pl=pendingLeague; if(!pl) return;
+  if(btn) btn.disabled=true;
+  lgStatus('Rientro nella lega…');
+  const {error}=await sb.rpc('onboard_join',{ p_league:pl.id, p_password:pl.password, p_team:'', p_player:'', p_role:'', p_avatar:'', p_is_player:false });
+  if(btn) btn.disabled=false;
+  if(error){
+    const m=String(error.message||''), cd=String(error.code||'')+' '+String(error.hint||'');
+    if(/FC015|league_full/.test(cd) || /raggiunto i \d+ membri/.test(m)){
+      lgStatus('La lega è al completo: senza Pro il massimo è 15 persone. Abbiamo avvisato l’amministratore: per farti rientrare deve passare a Pro.');
+      try{ await sb.rpc('log_join_attempt',{ p_league:pl.id, p_name:'' }); }catch(_){ }
+    } else if(/password/i.test(m)) lgStatus('Password errata.');
+    else lgStatus(errText(error));
+    return;
+  }
+  _fcRemoval=null;
+  toast('Bentornato nella lega 👋');
+  fcReload();
+}
+
 /* ---------- QUELLO CHE IL PIANO CAMBIA A SCHERMO ---------- */
 function renderPlanUI(){
   try{ renderSeasonRecapButton(); }catch(_){ }   // l'Albo d'oro dipende dal piano: si riallinea quando il piano cambia
   const r=document.getElementById('rowPro'), sub=document.getElementById('proRowSub');
   if(r&&sub){
-    r.style.display = (profile && (!IS_NATIVE || isPro())) ? 'flex' : 'none';
+    r.style.display = profile ? 'flex' : 'none';   // 7.3 — anche nelle app
     sub.textContent = myPlan.founder ? 'Lega fondatrice \u00b7 Pro per sempre'
-                    : isPro()        ? 'La tua lega \u00e8 Pro'
+                    : isPro()        ? ((myPlan.store_managed && myPlan.md_left!=null) ? 'Pro attivo \u00b7 restano '+myPlan.md_left+(myPlan.md_left===1?' giornata':' giornate') : 'La tua lega \u00e8 Pro')
+                    : myPlan.over_cap ? 'Pro non attivo \u00b7 lega in pausa'
                     : 'Giocatori illimitati e tutte le stagioni';
   }
   const b=document.getElementById('planSeats');
@@ -10242,10 +10767,16 @@ function renderPlanUI(){
     if(show){
       const n=myPlan.members, cap=myPlan.member_cap, left=myPlan.seats_left, full=(left<=0);
       b.className='plan-seats'+(full?' full':'');
+      if(myPlan.over_cap){   // 7.3 — Pro finito con piu' di 15: niente giornate nuove
+        b.innerHTML='<b>Rosa: '+n+' di '+cap+'</b><span>Senza Pro il massimo \u00e8 '+cap+': nuove giornate bloccate.</span>'
+          +'<button onclick="openPro(\'scaduto\')">Rinnova Pro \u203a</button>'
+          +((profile&&profile.is_admin)?'<button onclick="setNav(\'page-membri\')">Partecipanti \u203a</button>':'');
+        return;
+      }
       b.innerHTML='<b>Rosa: '+n+' di '+cap+'</b><span>'
-        +(full ? 'Numero massimo raggiunto: chi prova a entrare adesso resta fuori.'
+        +(full ? 'Numero massimo raggiunto: chi prova a entrare adesso resta fuori. Passa a Pro per non avere limiti.'
                : (left===1?'Resta un posto.':'Restano '+left+' posti.')+(IOS_APP?'':' Il piano gratuito arriva a '+cap+' persone.'))
-        +'</span>'+(IOS_APP?'':'<button onclick="openPro(\''+(full?'muro':'tetto')+'\')">FantaCalcetto Pro \u203a</button>');
+        +'</span>'+(IOS_APP?'':'<button onclick="openPro(\''+(full?'muro':'tetto')+'\')">Passa a Pro \u203a</button>');
     }
   }
 }
@@ -10265,9 +10796,9 @@ function maybePlanFullNotice(){
   o.innerHTML='<div style="max-width:340px;background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:20px;padding:22px;text-align:center;box-shadow:0 24px 60px -20px rgba(0,0,0,.7)">'
     +'<div style="font-size:34px;margin-bottom:10px">\u26a0\ufe0f</div>'
     +'<div style="font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px;color:#eaf1fb">La lega \u00e8 al completo</div>'
-    +'<p style="color:#8aa3c2;font-size:14px;line-height:1.55;margin:0 0 18px">Siete <b>'+myPlan.members+'</b>, il massimo '+(IOS_APP?'consentito':'del piano gratuito')+'. La lega continua a funzionare, ma il prossimo che prova a entrare resta fuori.</p>'
-    +'<button id="pfOk" style="width:100%;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;border:none;padding:14px;border-radius:13px;cursor:pointer">Ho capito</button>'
-    +(IOS_APP?'':'<button id="pfPro" style="width:100%;margin-top:9px;background:none;border:none;color:#ffc23d;font-weight:700;font-size:13.5px;padding:8px;cursor:pointer">Vedi FantaCalcetto Pro</button>')+'</div>';
+    +'<p style="color:#8aa3c2;font-size:14px;line-height:1.55;margin:0 0 18px">Siete <b>'+myPlan.members+'</b>, il massimo '+(IOS_APP?'consentito':'senza Pro')+': chi prova a entrare adesso resta fuori.'+(IOS_APP?'':' Passa a Pro per avere partecipanti illimitati.')+'</p>'
+    +(IOS_APP?'':'<button id="pfPro" style="width:100%;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;border:none;padding:14px;border-radius:13px;cursor:pointer">Passa a Pro</button>')
+    +'<button id="pfOk" style="width:100%;'+(IOS_APP?'background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;padding:14px;border-radius:13px':'margin-top:9px;background:none;color:#8aa3c2;font-weight:700;font-size:13.5px;padding:8px')+';border:none;cursor:pointer">'+(IOS_APP?'Ho capito':'Più tardi')+'</button></div>';
   document.body.appendChild(o);
   o.querySelector('#pfOk').onclick=()=>o.remove();
   const _pf=o.querySelector('#pfPro'); if(_pf) _pf.onclick=()=>{ o.remove(); openPro('muro'); };
@@ -11579,7 +12110,7 @@ function renderPitch(){
     el.className=`slot ${cap?'captain':''} ${isPor?'por':''}${filled&&isAbsentOwn(p.id)?' absent':''}`;
     el.style.left=s.x+'%';el.style.top=s.y+'%';el.onclick=()=>slotTap(s.key);
     el.innerHTML=filled
-      ?`<div class="pawn">${avatarImg(p.avatar,104)}<span class="cap">C</span><span class="yc" id="yc-${s.key}" style="display:none"></span></div><div class="tag">${p.name}<span id="tg-${s.key}"></span></div><div class="scoreline" id="sl-${s.key}"></div><div class="evs" id="ev-${s.key}"></div>`
+      ?`<div class="pawn">${avatarImg(p.avatar,104)}<span class="cap">C</span><span class="yc" id="yc-${s.key}" style="display:none"></span></div><div class="tag">${esc(p.name)}<span id="tg-${s.key}"></span></div><div class="scoreline" id="sl-${s.key}"></div><div class="evs" id="ev-${s.key}"></div>`
       :`<div class="disc"><span class="plus">+</span></div><div class="tag empty">${s.label}</div>`;
     pitch.appendChild(el);
   });
@@ -11749,7 +12280,7 @@ function openPickerSheet(key){
   document.getElementById('sheetHint').textContent=eligible.length?('Solo presenti'+(isPor?(gkOnlyPor()?' · solo portieri (POR)':' (chiunque)'):(free?' · chiunque (ruoli liberi)':' · '+slot.label))+` · ${remaining} cr rimasti`):'Nessun giocatore presente per questo ruolo.';
   document.getElementById('sheetList').innerHTML=eligible.map(p=>{const taken=used.includes(p.id);const tooExp=!taken&&p.cost>remaining;const dis=taken||tooExp;
     return `<div class="opt ${dis?'dis':''}" onclick="${dis?'':`pick('${key}',${p.id})`}"><div class="oav">${avatarImg(p.avatar,38)}</div>
-      <div class="info"><b>${p.name}</b><span>${roleLabel(p.role)}${taken?' · già schierato':(tooExp?' · troppo caro':'')}</span></div>
+      <div class="info"><b>${esc(p.name)}</b><span>${roleLabel(p.role)}${taken?' · già schierato':(tooExp?' · troppo caro':'')}</span></div>
       <span class="pr">${p.cost} cr</span></div>`;}).join('');
   openSheet();
 }
@@ -11763,7 +12294,7 @@ function openCaptainSheet(key){
   document.getElementById('sheetTitle').textContent=p.name;
   document.getElementById('sheetHint').textContent='Cosa vuoi fare con questo giocatore?';
   document.getElementById('sheetList').innerHTML=`
-    <div class="opt" onclick="setCaptain('${key}')"><div class="icocircle cap">C</div><div class="info"><b>Nomina capitano</b><span>Raddoppia i punti di ${p.name}</span></div></div>
+    <div class="opt" onclick="setCaptain('${key}')"><div class="icocircle cap">C</div><div class="info"><b>Nomina capitano</b><span>Raddoppia i punti di ${esc(p.name)}</span></div></div>
     <div class="opt" onclick="removePlayer('${key}')"><div class="icocircle">✕</div><div class="info"><b>Rimuovi dal campo</b><span>Libera lo slot e ${costOf(lineup[key])} crediti</span></div><span class="rm">Rimuovi</span></div>`;
   openSheet();
 }
@@ -11919,7 +12450,7 @@ function renderVoti(){
     return `<div class="vrow">
       <button class="mvpstar ${isMvp?'on':''}" type="button" ${dis} onclick="pickMvp(${p.id})" aria-label="MVP" title="Segna come MVP">🏆</button>
       <div class="oav">${avatarImg(p.avatar,34)}</div>
-      <div class="pinfo"><b>${p.name}</b><div class="avg" id="avg-${p.id}">${sub}</div></div>
+      <div class="pinfo"><b>${esc(p.name)}</b><div class="avg" id="avg-${p.id}">${sub}</div></div>
       <input class="voteinp" id="v-${p.id}" type="text" inputmode="decimal" enterkeyhint="done" maxlength="4" ${dis} placeholder="voto" value="${mv==null?'':fmtVote(mv)}" onchange="onVote(${p.id},this.value)"></div>`;}).join('')
     :'<div class="empty-note">Nessun giocatore presente da votare.</div>');
   updateSubmitBtn();
@@ -12023,7 +12554,7 @@ function renderLive(){
       return `<div class="ls-prow">
         <div class="ls-tap" onclick="liveAdd(${p.id},'${m.key}',1)">
           <div class="lpav">${avatarImg(p.avatar,40)}</div>
-          <div class="lpn">${p.name}</div>
+          <div class="lpn">${esc(p.name)}</div>
           <div class="lpc ${c?'':'zero'}" id="lpc-${p.id}">${c}</div>
         </div>
         <button class="ls-step minus" id="lpm-${p.id}" ${c?'':'disabled'} onclick="liveAdd(${p.id},'${m.key}',-1)">−</button>
@@ -12042,7 +12573,7 @@ function renderLive(){
           const pill=state==='win'?'✓ Vince +2':(state==='lose'?'':'Pareggio');   // 5.9: il rosso della riga basta, niente '0' scritto
           return `<div class="ls-wrow ${state}" onclick="liveToggleWin(${p.id})">
             <div class="lpav">${avatarImg(p.avatar,40)}</div>
-            <div class="lpn">${p.name}</div>
+            <div class="lpn">${esc(p.name)}</div>
             <div class="ls-wpill">${pill}</div>
           </div>`; }).join('')
     ) : '<div class="ls-note">Nessun giocatore presente in questa giornata.</div>');
@@ -12804,7 +13335,7 @@ function renderLB(){
   } else {
     if(hint){hint.textContent='Tocca una squadra per vedere la formazione.';hint.style.display='';}
     if(!mdStandings.length){el.innerHTML='<div class="empty-note">Nessuna squadra per questa giornata.</div>';return;}
-    el.innerHTML=mdStandings.map((t,i)=>`<div class="lb-row ${t.team_name===profile.team_name?'me':''}" onclick="openTeamLineup('${t.manager_id}','${t.team_name.replace(/'/g,"\\'")}')" style="cursor:pointer"><div class="rank">${i+1}</div>${teamLogoHTML(t.manager_id,26)}<div class="who"><b>${t.team_name} ›</b><span>${t.player_name}</span></div><div class="tot">${fmtPts(t.points||0)}</div></div>`).join('');
+    el.innerHTML=mdStandings.map((t,i)=>`<div class="lb-row ${t.team_name===profile.team_name?'me':''}" onclick="openTeamLineup('${t.manager_id}','${t.team_name.replace(/'/g,"\\'")}')" style="cursor:pointer"><div class="rank">${i+1}</div>${teamLogoHTML(t.manager_id,26)}<div class="who"><b>${esc(t.team_name)} ›</b><span>${esc(t.player_name)}</span></div><div class="tot">${fmtPts(t.points||0)}</div></div>`).join('');
     fcMdPrefetch(selStandingsMd);      // 21/10/2026: formazioni pronte prima del tocco
     fcRecapPrefetch(selStandingsMd);   // e anche il pagellone, se la giornata e' chiusa
   }
@@ -13065,7 +13596,7 @@ async function openTeamLineup(managerId, teamName){
     const p=players.find(x=>x.id===r.player_id);
     const sc=scoreOf(r.player_id,s.key,r.is_captain,avg,stats,mvp,mdObj?mdObj.season_id:null);
     return {p,sc,cap:!!r.is_captain,mvp:r.player_id===mvp}; };
-  const mb=MODULES[mod]?MODULES[mod].bonus:0;
+  const mb=modBonusOf(mod, md);
   let tot=mb;
   lns.forEach(r=>{ tot+=scoreOf(r.player_id,r.slot,r.is_captain,avg,stats,mvp,mdObj?mdObj.season_id:null).score; });
   document.getElementById('tlpHint').innerHTML=`Modulo <b>${mod}</b> · Totale <b>${tot.toFixed(1)}</b> pt`;
@@ -13169,7 +13700,7 @@ function renderBonusMalus(){
             :(any?'<span class="bm-res">PARI</span>':''));
     return `<div class="bm-row">
       <div class="bm-av">${avatarImg(p.avatar,40)}</div>
-      <div class="bm-id"><b>${p.name}${(mvpPid&&p.id===mvpPid)?' 🏆':''}</b>
+      <div class="bm-id"><b>${esc(p.name)}${(mvpPid&&p.id===mvpPid)?' 🏆':''}</b>
         <div class="bm-ev">${chips||'<i class="none">nessun bonus</i>'}</div></div>
       ${res}</div>`;
   }).join('');
@@ -13380,6 +13911,7 @@ function _scrollTo(y){
 }
 function setNav(id){
   if(id==='page-avvisi') loadPushStatus();   // il dato si legge solo entrando qui
+  if(id==='page-membri') renderMembers();    // 7.3
 
   const cur=document.querySelector('#v-settings .setpage.on');
   const curId=cur?cur.id:null;
@@ -13523,7 +14055,7 @@ document.getElementById('logoutBtn').onclick=async()=>{
 function renderManage(){
   document.getElementById('manageList').innerHTML=players.map(p=>`
     <div class="mrow"><div class="mav">${avatarImg(p.avatar,28)}</div>
-      <div class="mn"><b>${p.name}${isOwnChar(p)?' (tu)':''}${p.injured?' 🚑':''}</b><span>${p.role} · ${p.injured?'infortunato':(p.present?'presente':'assente')}</span></div>
+      <div class="mn"><b>${esc(p.name)}${isOwnChar(p)?' (tu)':''}${p.injured?' 🚑':''}</b><span>${p.role} · ${p.injured?'infortunato':(p.present?'presente':'assente')}</span></div>
       <div class="mbtn ${p.injured?'inj on':'inj'}" onclick="toggleInjured(${p.id})" title="Infortunio">🚑</div>
       <div class="mbtn" onclick="openEditPlayer(${p.id})">✏️</div>
       <div class="mbtn del" onclick="deletePlayer(${p.id})">🗑</div>
@@ -13732,6 +14264,9 @@ function errText(e){
     return 'Sei gi\u00e0 tu il proprietario della lega.';
   if(/not_member/i.test(m))
     return 'Quella persona non \u00e8 un membro attivo della lega.';
+  /* 7.3 — Pro finito con piu' partecipanti del piano gratuito */
+  if(c==='FC016' || /league_over_cap|piu' partecipanti di quelli consentiti/i.test(m))
+    return 'Senza Pro il massimo \u00e8 15: rinnova Pro per aprire nuove giornate, oppure fai uscire qualcuno (Utenti \u203a Partecipanti).';
   if(/not_authenticated|no_profile/i.test(m))
     return 'Sessione non valida: esci e rientra.';
   /* 4.4 — errori con un nome, alzati da save_lineup */
@@ -13882,14 +14417,28 @@ function openAccounts(){
 function gateAccounts(){
   const box=document.getElementById('gateAccounts'); if(!box) return;
   const l=(gateMode==='login')?accList().sort((a,b)=>(b.used||0)-(a.used||0)):[];
-  if(!l.length){ box.style.display='none'; box.innerHTML=''; return; }
+  // 27/10/2026 — l'account con impronta/volto compare sempre qui (anche se la sua sessione e' scaduta):
+  // e' l'unico modo per usarlo, il tasto separato non c'e' piu'.
+  let bioRow='';
+  try{
+    const be=(gateMode==='login' && IS_NATIVE && typeof _bioP==='function' && _bioP()) ? String(bioSavedEmail()||'') : '';
+    if(be && !l.some(x=>String(x.email||'').toLowerCase()===be.toLowerCase())){
+      bioRow=`<button type="button" class="gacc-row" onclick="gateBioGo()"><span class="gacc-ini">${esc(be.charAt(0).toUpperCase())}</span><span class="gacc-txt"><b>${esc(be)}</b><span>Impronta o volto</span></span><span class="gacc-go">Entra ›</span></button>`;
+    }
+  }catch(_){ }
+  if(!l.length && !bioRow){ box.style.display='none'; box.innerHTML=''; return; }
   box.style.display='';
   box.innerHTML='<div class="gacc-lab">Account su questo telefono</div><div class="gacc-list">'
     +l.map(a=>{
       const nm=esc(a.team||a.name||a.email||'Account'), sub=esc([a.league,a.email].filter(Boolean).join(' · '));
       const ini=esc(String(a.team||a.name||a.email||'?').trim().charAt(0).toUpperCase());
       return `<button type="button" class="gacc-row" onclick="gateAccGo('${a.id}')"><span class="gacc-ini">${ini}</span><span class="gacc-txt"><b>${nm}</b><span>${sub}</span></span><span class="gacc-go">Entra ›</span></button>`;
-    }).join('')+'</div><div class="gacc-or">oppure accedi con un altro account</div>';
+    }).join('')+bioRow+'</div><div class="gacc-or">oppure accedi con un altro account</div>';
+}
+async function gateBioGo(){
+  if(_gateAccBusy) return;
+  _gateAccBusy=true;
+  try{ await bioLogin(true); }finally{ _gateAccBusy=false; }
 }
 
 /* 25/10/2026 — «Entra ›» su un account salvato: la sessione salvata evita di riscrivere email e
@@ -13899,6 +14448,15 @@ let _gateAccBusy=false;
 async function gateAccGo(id){
   if(_gateAccBusy) return;
   const P=(typeof _bioP==='function')?_bioP():null;
+  // 27/10/2026 — se per questo account e' attivo l'accesso con impronta/volto si entra da qui:
+  // una sola richiesta (che legge anche i dati salvati) e si entra, senza il tasto in fondo.
+  const a=accList().find(x=>x.id===id);
+  const be=String(bioSavedEmail()||'').toLowerCase();
+  if(IS_NATIVE && P && be && a && String(a.email||'').toLowerCase()===be){
+    _gateAccBusy=true;
+    try{ await bioLogin(true); }finally{ _gateAccBusy=false; }
+    return;
+  }
   if(IS_NATIVE && P){
     _gateAccBusy=true;
     let ok=true;
@@ -14157,8 +14715,9 @@ async function _natAskPush(n){
   if(p==='granted' || p==='unknown') return;
   const busy=(typeof TUT!=='undefined' && TUT) || document.getElementById('lnOk') || _recapPending
     || document.getElementById('pag').classList.contains('open')
-    || (typeof tutBusy==='function' && tutBusy());
-  if(busy){ if((n||0)<10) setTimeout(()=>_natAskPush((n||0)+1),4000); return; }
+    || (typeof tutBusy==='function' && tutBusy())
+    || _bioPending || document.getElementById('fcGate');           // prima la scheda Face ID / impronta
+  if(busy){ if((n||0)<30) setTimeout(()=>_natAskPush((n||0)+1),4000); return; }
   const now=Date.now();
   // ritmo: la prima volta subito, poi ogni 3 aperture dell'app oppure ogni 72 ore (vale il primo dei due)
   let last=0, cnt=0;
@@ -14167,9 +14726,23 @@ async function _natAskPush(n){
   if(last && cnt<3 && now-last < 72*3600*1000) return;
   _natAskedNow=true;
   try{ localStorage.setItem('fc_push_last', String(now)); localStorage.setItem('fc_push_n','0'); localStorage.setItem('fc_push_asked','1'); }catch(_){ }
-  if(p==='denied'){ document.getElementById('pushBg').classList.add('open'); document.getElementById('pushDenModal').classList.add('open'); return; }
-  const no=document.querySelector('#pushModal .set-btn'); if(no) no.textContent='Non ora';
-  openPushPrompt();
+  _natPushCard(p==='denied');
+}
+/* 13/11/2026 — invito alle notifiche nello stile degli avvisi dell'app */
+function _natPushCard(denied){
+  const rows='<div class="gp">'
+    +'<div><span>📅</span><div><b>Giornata aperta</b><small>Segni subito se ci sei.</small></div></div>'
+    +'<div><span>📝</span><div><b>Formazione</b><small>Il promemoria prima che si chiuda.</small></div></div>'
+    +'<div><span>⭐</span><div><b>Voti e pagellone</b><small>Sai subito com’è andata.</small></div></div>'
+    +'</div>';
+  _gateShow(_gateHero('Non perderti niente')
+    +(denied
+      ? '<h2>Accendi le <em>notifiche</em></h2><p>Sono spente nelle impostazioni del telefono: si riattivano in due tocchi.</p>'
+      : '<h2>Attiva le <em>notifiche</em></h2><p>Ti avvisiamo solo quando serve. Niente spam.</p>')
+    +rows
+    +'<button class="gb" id="pushYes"><span>🔔 '+(denied?'Apri le impostazioni':'Attiva le notifiche')+'</span></button>'
+    +'<button class="gl" data-close>Non ora</button>', false);
+  document.getElementById('pushYes').onclick=()=>{ _fcCardClose(); if(denied) natOpenNotifSettings(); else enablePush(); };
 }
 function closePushDen(){ document.getElementById('pushBg').classList.remove('open'); const m=document.getElementById('pushDenModal'); if(m) m.classList.remove('open'); }
 async function natOpenNotifSettings(){
@@ -14341,17 +14914,18 @@ function openChat(){
   if(TUT){ toast('La chat si apre fuori dal tutorial'); return; }
   const r=chatRole(); if(!r) return;
   chatEl('chatOv').classList.add('open');
-  chatKbBind(true);
+  chatKbBind(true); chatAnchor(true);
   if(r==='super') chatShowInbox(); else chatShowThread(null);
 }
 function closeChat(){
   chatStopPoll(); chatMode=null;
   const ta=chatEl('chatIn'); if(ta) ta.blur();
-  chatKbBind(false);
+  chatKbBind(false); chatAnchor(false); chatSelClear();
   chatEl('chatOv').classList.remove('open');
   refreshChatUnread();
 }
 function chatBack(){
+  if(_chatSel.size){ chatSelClear(); return; }
   if(chatMode==='thread') chatShowInbox();
   else closeChat();
 }
@@ -14421,7 +14995,7 @@ function chatOpenUser(i){
 /* --- conversazione --- */
 async function chatShowThread(userId, name, sub){
   chatMode = userId ? 'thread' : 'mine';
-  chatUser = userId||null; chatMsgs=[]; _chatKey='';
+  chatUser = userId||null; chatMsgs=[]; _chatKey=''; chatSelClear();
   if(chatMode==='thread') chatHead(name||'Utente', sub||('Rispondi come '+CHAT_STAFF), '‹');
   else chatHead(CHAT_STAFF,'Ti rispondiamo qui, il prima possibile','✕');
   chatEl('chatFoot').style.display='flex';
@@ -14475,11 +15049,11 @@ function chatRender(){
     return;
   }
   let html='', lastDay='';
-  chatMsgs.forEach(m=>{
+  chatMsgs.forEach((m,i)=>{
     const day=chatDay(m.created_at);
     if(day!==lastDay){ html+=`<div class="chat-day">${esc(day)}</div>`; lastDay=day; }
     const me=chatIsMe(m);
-    html+=`<div class="chat-msg ${me?'me':'them'}">${esc(m.body)}<time>${chatWhen(m.created_at)}${me?chatTick(m.seen_at?'seen':'sent'):''}</time></div>`;
+    html+=`<div class="chat-msg ${me?'me':'them'}${_chatSel.has(i)?' sel':''}" data-i="${i}">${esc(m.body)}<time>${chatWhen(m.created_at)}${me?chatTick(m.seen_at?'seen':'sent'):''}</time></div>`;
   });
   body.innerHTML=html;
 }
@@ -14548,7 +15122,7 @@ async function chatNotify(userId, n){
    riposiziona piu' a scatti seguendo visualViewport: la tastiera annuncia l'altezza prima di
    salire e il pannello alza il fondo con la stessa durata. Senza plugin (sito, PWA, app
    precedenti) resta il metodo di prima, qui sotto. */
-function _chatKbPlugin(){ try{ return (IS_NATIVE && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Keyboard) || null; }catch(_){ return null; } }
+function _chatKbPlugin(){ try{ return (IS_NATIVE && NATIVE_OS==='ios' && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Keyboard) || null; }catch(_){ return null; } }
 let _chatKbHandles=[];
 function _chatKbNative(on){
   const K=_chatKbPlugin(), o=chatEl('chatOv'); if(!K || !o) return false;
@@ -14558,7 +15132,7 @@ function _chatKbNative(on){
   if(!on){ set(0); return true; }
   set(0);
   const add=(ev,fn)=>{ try{ Promise.resolve(K.addListener(ev,fn)).then(h=>{ _chatKbHandles.push(h); }); }catch(_){ } };
-  add('keyboardWillShow', i=>{ set((i&&i.keyboardHeight)||0); setTimeout(chatToEnd,30); setTimeout(chatToEnd,280); });
+  add('keyboardWillShow', i=>{ set((i&&i.keyboardHeight)||0); });   // 13/11: la chat resta ferma (chatAnchor), niente salti
   add('keyboardWillHide', ()=>set(0));
   return true;
 }
@@ -14573,7 +15147,7 @@ function chatKbSync(){
     o.style.top=''; o.style.height=''; o.style.bottom=''; o.classList.remove('kb');
   }
 }
-function _chatKbLater(){ setTimeout(()=>{ chatKbSync(); chatToEnd(); },60); }
+function _chatKbLater(){ setTimeout(chatKbSync,60); }
 function chatKbBind(on){
   if(_chatKbNative(on)) return;
   const vv=window.visualViewport, ta=chatEl('chatIn');
@@ -14586,7 +15160,140 @@ function chatKbBind(on){
     chatKbSync();
   }
 }
+/* 13/11/2026 — CHAT COME LE APP DI MESSAGGI
+   1) ANCORA: la distanza dal fondo resta la stessa quando l'area dei messaggi cambia altezza
+      (tastiera che sale o scende, su iPhone col plugin e su Android/PWA col visualViewport):
+      l'ultimo messaggio resta attaccato al campo di testo, niente salti.
+   2) TASTIERA: un tocco sui messaggi o un trascinamento verso il basso la chiude; il tasto
+      Invia non la chiude (onpointerdown in HTML).
+   3) SELEZIONE: tieni premuto un messaggio -> selezionato; tocca gli altri per aggiungerli o
+      toglierli; «Copia» copia il testo. ✕ o Indietro annullano. */
+let _chatFromBottom=0, _chatRO=null, _chatSel=new Set(), _chatLp=null, _chatTouch=null;
+function _chatOnScroll(){ const b=chatEl('chatBody'); if(b) _chatFromBottom=Math.max(0,b.scrollHeight-b.clientHeight-b.scrollTop); }
+function chatAnchor(on){
+  const b=chatEl('chatBody'); if(!b) return;
+  if(on){
+    _chatFromBottom=0;
+    if(!_chatRO && window.ResizeObserver) _chatRO=new ResizeObserver(()=>{ const t=b.scrollHeight-b.clientHeight-_chatFromBottom; if(Math.abs(b.scrollTop-t)>1) b.scrollTop=t; });
+    if(_chatRO) _chatRO.observe(b);
+    b.addEventListener('scroll',_chatOnScroll,{passive:true});
+    b.addEventListener('touchstart',_chatTs,{passive:true});
+    b.addEventListener('touchmove',_chatTm,{passive:true});
+    b.addEventListener('touchend',_chatTe);
+    b.addEventListener('touchcancel',_chatLpStop);
+    b.addEventListener('click',_chatClick);
+    b.addEventListener('contextmenu',_chatCtx);
+  }else{
+    if(_chatRO) _chatRO.disconnect();
+    b.removeEventListener('scroll',_chatOnScroll);
+    b.removeEventListener('touchstart',_chatTs); b.removeEventListener('touchmove',_chatTm);
+    b.removeEventListener('touchend',_chatTe); b.removeEventListener('touchcancel',_chatLpStop);
+    b.removeEventListener('click',_chatClick); b.removeEventListener('contextmenu',_chatCtx);
+  }
+}
+function _chatMsgOf(t){ const m=t && t.closest && t.closest('.chat-msg[data-i]'); return (m && !m.classList.contains('pending')) ? m : null; }
+function _chatKbDown(){ const ta=chatEl('chatIn'); if(ta && document.activeElement===ta) ta.blur(); }
+function _chatTs(e){
+  const t=e.touches&&e.touches[0]; if(!t) return;
+  _chatTouch={x:t.clientX,y:t.clientY,moved:false,long:false};
+  const m=_chatMsgOf(e.target);
+  if(m && !_chatSel.size){
+    m.classList.add('press');
+    _chatLp=setTimeout(()=>{ m.classList.remove('press'); if(_chatTouch) _chatTouch.long=true; _chatKbDown(); chatSelToggle(m); try{ navigator.vibrate && navigator.vibrate(12); }catch(_){ } },420);
+  }
+}
+function _chatLpStop(){ if(_chatLp){ clearTimeout(_chatLp); _chatLp=null; } document.querySelectorAll('#chatBody .chat-msg.press').forEach(x=>x.classList.remove('press')); }
+function _chatTm(e){
+  const t=e.touches&&e.touches[0]; if(!t || !_chatTouch) return;
+  const dx=t.clientX-_chatTouch.x, dy=t.clientY-_chatTouch.y;
+  if(Math.abs(dx)>8 || Math.abs(dy)>8){ _chatTouch.moved=true; _chatLpStop(); }
+  if(dy>36) _chatKbDown();                       // trascini verso il basso: la tastiera scende
+}
+function _chatTe(e){
+  _chatLpStop();
+  if(_chatTouch && _chatTouch.long){ e.preventDefault(); }   // la pressione lunga non diventa anche un tocco
+}
+function _chatClick(e){
+  if(_chatTouch && (_chatTouch.long || _chatTouch.moved)){ _chatTouch=null; return; }
+  _chatTouch=null;
+  const m=_chatMsgOf(e.target);
+  if(_chatSel.size){ if(m) chatSelToggle(m); return; }
+  if(!e.target.closest('button')) _chatKbDown();  // tocco sui messaggi: la tastiera scende
+}
+function _chatCtx(e){ const m=_chatMsgOf(e.target); if(!m) return; e.preventDefault(); if(!_chatSel.size) chatSelToggle(m); }   // computer: tasto destro
+function chatSelToggle(m){
+  const i=parseInt(m.getAttribute('data-i'),10); if(isNaN(i)) return;
+  if(_chatSel.has(i)){ _chatSel.delete(i); m.classList.remove('sel'); } else { _chatSel.add(i); m.classList.add('sel'); }
+  _chatSelSync();
+}
+function _chatSelSync(){
+  const o=chatEl('chatOv'), b=chatEl('chatBody'), n=_chatSel.size;
+  if(o) o.classList.toggle('selmode',n>0);
+  if(b) b.classList.toggle('selmode',n>0);
+  const l=chatEl('chatSelN'); if(l) l.textContent=n===1?'1 messaggio':n+' messaggi';
+}
+function chatSelClear(){
+  _chatSel.clear();
+  document.querySelectorAll('#chatBody .chat-msg.sel').forEach(x=>x.classList.remove('sel'));
+  _chatSelSync();
+}
+async function chatSelCopy(){
+  const ids=[..._chatSel].sort((a,b)=>a-b);
+  const txt=ids.map(i=>(chatMsgs[i]&&chatMsgs[i].body)||'').filter(Boolean).join('\n\n');
+  let ok=false;
+  try{ await navigator.clipboard.writeText(txt); ok=true; }catch(_){ }
+  if(!ok){
+    try{
+      const t=document.createElement('textarea'); t.value=txt; t.setAttribute('readonly','');
+      t.style.cssText='position:fixed;top:-1000px;opacity:0'; document.body.appendChild(t);
+      t.select(); ok=document.execCommand('copy'); t.remove();
+    }catch(_){ }
+  }
+  chatSelClear();
+  toast(ok ? (ids.length>1?'Messaggi copiati':'Messaggio copiato') : 'Copia non riuscita');
+}
 /* ===== fine CHAT ================================================================= */
+
+/* ===== 13/11/2026 — RECENSIONI SUGLI STORE ==========================================
+   - Riga «Lascia una recensione» in Impostazioni, solo nell'app (iPhone e Android): apre la
+     pagina dello store per scriverla.
+   - Avviso automatico dopo 20 giorni dal primo utilizzo dell'app: SOLO ANDROID. Su iPhone
+     Apple vieta gli avvisi fatti da noi (linea guida 5.6.1: va usata la finestrella di
+     sistema, che serve un plugin nativo -> prossima build dallo store).
+     «Più tardi» = ritorna dopo 10 giorni; «Scrivi» o «No, grazie» = mai piu'. */
+const FC_REVIEW_IOS='https://apps.apple.com/app/id6826225028?action=write-review';
+const FC_REVIEW_AND='https://play.google.com/store/apps/details?id=it.fantacalcettoitalia.app';
+function fcReviewUrl(){ return NATIVE_OS==='ios' ? FC_REVIEW_IOS : FC_REVIEW_AND; }
+(function(){ try{ if(IS_NATIVE && !localStorage.getItem('fc_first_use')) localStorage.setItem('fc_first_use', String(Date.now())); }catch(_){ } })();
+function fcReviewOpen(){ try{ localStorage.setItem('fc_review','done'); }catch(_){ } fcGateOpenStore(fcReviewUrl()); }
+function fcReviewSyncRow(){ const r=document.getElementById('rowReview'); if(r) r.style.display=IS_NATIVE?'':'none'; }
+function fcReviewMaybe(n){
+  fcReviewSyncRow();
+  if(!IS_NATIVE || NATIVE_OS==='ios') return;
+  let first=0, st='', next=0;
+  try{ first=parseInt(localStorage.getItem('fc_first_use')||'0',10)||0; st=localStorage.getItem('fc_review')||''; next=parseInt(localStorage.getItem('fc_review_next')||'0',10)||0; }catch(_){ return; }
+  if(st==='done' || st==='never' || !first) return;
+  const now=Date.now();
+  if(now-first < 20*86400000 || now < next) return;
+  const busy=!profile || (typeof TUT!=='undefined' && TUT) || (typeof tutBusy==='function' && tutBusy())
+    || document.getElementById('fcGate') || _bioPending || _recapPending
+    || document.getElementById('pag').classList.contains('open');
+  if(busy){ if((n||0)<20) setTimeout(()=>fcReviewMaybe((n||0)+1),6000); return; }
+  setTimeout(()=>{
+    if(document.getElementById('fcGate')) return;
+    _gateShow(_gateHero('Ti piace FantaCalcetto?')
+      +'<h2>Lasciaci una <em>recensione</em></h2>'
+      +'<div class="grs" aria-hidden="true"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></div>'
+      +'<p>Ci vuole un minuto e aiuta altri gruppi di calcetto a trovarci.</p>'
+      +'<button class="gb" id="revYes"><span>⭐ Scrivi una recensione</span></button>'
+      +'<button class="gl" id="revLater">Più tardi</button>'
+      +'<button class="gl" id="revNo" style="opacity:.7;padding-top:0">No, grazie</button>', false);
+    document.getElementById('revYes').onclick=()=>{ _fcCardClose(); fcReviewOpen(); };
+    document.getElementById('revLater').onclick=()=>{ _fcCardClose(); try{ localStorage.setItem('fc_review_next', String(Date.now()+10*86400000)); }catch(_){ } };
+    document.getElementById('revNo').onclick=()=>{ _fcCardClose(); try{ localStorage.setItem('fc_review','never'); }catch(_){ } };
+  }, 2500);
+}
+/* ===== fine RECENSIONI ============================================================== */
 
 /* ===== NOVITÀ — avviso al primo ingresso dopo un aggiornamento importante ======
    7.1 — prende il posto dell'avviso «nuovo logo» (scaduto il 15/07), stessa grafica.
@@ -14594,9 +15301,7 @@ function chatKbBind(on){
    Per un avviso nuovo: cambia `id` (altrimenti chi ha gia' visto il vecchio non lo
    vede), `until`, titolo e testo. Per non mostrare niente: `NEWS=null`.
    Solo per le cose importanti: per le piccole non serve. */
-const NEWS={id:'2026-10-fantavoto', until:'2026-11-16T00:00:00+01:00',   // 16/10/2026 (7.2): fantavoto medio nella scheda giocatore
-  title:'Novità: fantavoto medio',
-  html:'Nella scheda di ogni giocatore, accanto al voto medio, trovi ora il <b>fantavoto medio</b>: la media dei voti con bonus e malus.'};
+const NEWS=null;   // 13/11/2026: tolto l'avviso «fantavoto medio» (compariva anche a chi installa ora l'app dagli store)
 function maybeShowNews(){
   if(!NEWS) return;
   const key='fc_news_'+NEWS.id;
@@ -14925,7 +15630,7 @@ async function loadRecapExtra(md){
     const myLns=lns.filter(r=>r.manager_id===myId);
     if(myLns.length){
       const mod=(modBy[myId]&&MODULES[modBy[myId]])?modBy[myId]:'1-2-2';
-      const mb=MODULES[mod]?MODULES[mod].bonus:0;
+      const mb=modBonusOf(mod, md);
       let tot=mb, best=null, worst=null, cap=null, realW=0, realL=0;
       const ord={a1:1,a2:2,a3:3,d1:4,d2:5,d3:6,g1:7};
       const rosa=myLns.map(r=>{
@@ -16427,30 +17132,34 @@ try{
   const _sb=document.getElementById('sheetBg'), _sh=document.getElementById('sheet');
   if(_sb&&_sh){ document.body.appendChild(_sb); document.body.appendChild(_sh); }
 }catch(_){ }
-/* ===== 7.2 — LINK D'INVITO SENZA L'APP: porta al Play Store (solo sito, solo Android) ======
-   Con l'app installata il link d'invito apre direttamente l'app (App Links, vedi sotto) e questa
-   pagina non si vede nemmeno. Se l'app NON c'e', il link arriva nel browser: su un telefono
-   Android mostro «Installa l'app» che porta al Play Store (restando possibile «Continua dal
-   browser»). iPhone e computer proseguono come prima sul sito.
-   INTERRUTTORE: metti FC_PLAY_LIVE=true quando l'app e' pubblica sul Play Store (finche' e' solo
-   nel test chiuso, chi non e' tester troverebbe una pagina vuota). */
-const FC_PLAY_LIVE=false;
+/* ===== 13/11/2026 — LINK D'INVITO SENZA L'APP: porta allo store (iPhone e Android) ======
+   Con l'app installata il link d'invito apre direttamente l'app (App Links su Android,
+   Universal Links su iPhone: vedi sotto e /.well-known/) e questa pagina non si vede.
+   Se l'app NON c'e', il link arriva nel browser del telefono: mostro l'invito a scaricare
+   l'app dallo store giusto (restando possibile «Continua dal browser»). Computer: sito come prima.
+   Gli store non passano il link all'app appena installata: per questo si dice di toccarlo di nuovo. */
+const FC_PLAY_LIVE=true;   // 13/11/2026: app pubblica su Google Play e App Store
 const FC_PLAY_URL='https://play.google.com/store/apps/details?id=it.fantacalcettoitalia.app';
+const FC_IOS_URL='https://apps.apple.com/it/app/id6826225028';
 (function(){
   try{
-    if(!FC_PLAY_LIVE || IS_NATIVE || !/Android/i.test(navigator.userAgent||'')) return;
+    if(!FC_PLAY_LIVE || IS_NATIVE) return;
+    const dev=fcGateDevice(); if(dev==='desktop') return;
     if(fcIsStandalone()) return;                                   // gia' la PWA installata
     const slug=new URLSearchParams(location.search).get('lega'); if(!slug) return;
     try{ if(sessionStorage.getItem('fc_play_skip')) return; }catch(_){ }
-    const d=document.createElement('div');
-    d.id='playInvite';
-    d.style.cssText='position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;color:var(--text);font-family:inherit';
-    d.innerHTML='<div style="font-size:54px;margin-bottom:10px">⚽</div>'
-      +'<b style="font-family:\'Bricolage Grotesque\';font-size:24px;margin-bottom:8px">Sei stato invitato in una lega</b>'
-      +'<p style="color:var(--muted);font-size:14px;line-height:1.5;max-width:320px;margin-bottom:22px">Con l’app di FantaCalcetto ricevi gli avvisi della giornata e entri più veloce. Installala, poi tocca di nuovo il link d’invito.</p>'
-      +'<a href="'+FC_PLAY_URL+'&referrer='+encodeURIComponent('lega='+slug)+'" style="display:block;width:100%;max-width:340px;background:linear-gradient(135deg,var(--accent),#1c6ff2);color:#fff;font-weight:700;font-size:16px;padding:17px;border-radius:15px;text-decoration:none">Installa da Google Play</a>'
-      +'<button id="playInviteGo" style="margin-top:16px;background:none;border:none;color:var(--muted);font-size:14px;text-decoration:underline;padding:10px">Continua dal browser</button>';
-    const add=()=>{ document.body.appendChild(d); document.getElementById('playInviteGo').onclick=()=>{ try{ sessionStorage.setItem('fc_play_skip','1'); }catch(_){ } d.remove(); }; };
+    const url=(dev==='ios')?FC_IOS_URL:(FC_PLAY_URL+'&referrer='+encodeURIComponent('lega='+slug));
+    const html=_gateHero('Sei stato invitato')
+      +'<h2>Una lega <em>ti aspetta</em></h2>'
+      +'<p>Scarica l’app FantaCalcetto, poi <b>tocca di nuovo il link d’invito</b>: si apre direttamente la lega.</p>'
+      +_gatePerks(dev, true)
+      +_gateStoreBtn(dev, url)
+      +'<button class="gl" id="playInviteGo">Continua dal browser</button>';
+    const add=()=>{
+      window._fcInviteShown=true;
+      const o=_gateShow(html, false);
+      document.getElementById('playInviteGo').onclick=()=>{ try{ sessionStorage.setItem('fc_play_skip','1'); }catch(_){ } o.remove(); };
+    };
     if(document.body) add(); else document.addEventListener('DOMContentLoaded',add);
   }catch(_){ }
 })();
@@ -16502,11 +17211,16 @@ async function bioCaps(){
   const P=_bioP(); if(!P) return (_bioAvail={ok:false,strong:false});
   try{
     const r=await P.isAvailable({ useFallback:false });
-    _bioAvail={ ok:!!(r && r.isAvailable), strong:!!(r && r.strongBiometryIsAvailable) };
+    _bioAvail={ ok:!!(r && r.isAvailable), strong:!!(r && r.strongBiometryIsAvailable), type:(r && r.biometryType)||0 };
   }catch(_){ _bioAvail={ok:false,strong:false}; }
   return _bioAvail;
 }
-function _bioLabel(){ return 'impronta o volto'; }
+/* 13/11/2026 — il nome che la persona conosce: Face ID / Touch ID su iPhone (biometryType 2 / 1) */
+function _bioLabel(){
+  const t=(_bioAvail && _bioAvail.type)||0;
+  if(NATIVE_OS==='ios') return t===1 ? 'Touch ID' : 'Face ID';
+  return 'impronta o volto';
+}
 async function bioSave(email,pw){
   const P=_bioP(); if(!P) return false;
   const caps=await bioCaps(); if(!caps.ok) return false;
@@ -16527,7 +17241,7 @@ async function bioForget(){
   const P=_bioP();
   try{ if(P) await P.deleteCredentials({ server:BIO_SERVER }); }catch(_){ }
   try{ localStorage.removeItem('fc_bio_cred'); localStorage.removeItem('fc_bio_mode'); }catch(_){ }
-  bioRefreshRow(); try{ gateLinks(); }catch(_){ }
+  bioRefreshRow(); try{ gateLinks(); gateAccounts(); }catch(_){ }
 }
 async function bioRead(){
   const P=_bioP(); if(!P) return null;
@@ -16539,15 +17253,10 @@ async function bioRead(){
     return await P.getCredentials({ server:BIO_SERVER });
   }catch(_){ return null; }
 }
-/* tasto «Entra con impronta o volto» sopra i link dell'accesso */
-function bioGateBtn(){
-  if(!IS_NATIVE || !_bioP() || !bioSavedEmail()) return '';
-  return '<button class="ob-btn ghost" style="margin-top:0" onclick="bioLogin()">🔐 Entra con impronta o volto</button>';
-}
-async function bioLogin(){
+async function bioLogin(fromRow){
   if(!IS_NATIVE || !sb) return;
   const c=await bioRead();
-  if(!c || !c.username || !c.password){ gateStatus('Non sono riuscito a leggere i dati salvati: entra con email e password.',true); return; }
+  if(!c || !c.username || !c.password){ gateStatus(fromRow?'Accesso annullato: riprova o entra con email e password.':'Non sono riuscito a leggere i dati salvati: entra con email e password.',true); return; }
   const em=document.getElementById('gateEmail'); if(em) em.value=c.username;
   gateStatus('Accesso in corso…');
   const {data,error}=await sb.auth.signInWithPassword({email:c.username,password:c.password});
@@ -16565,27 +17274,37 @@ function bioNote(email,pw){ if(IS_NATIVE && _bioP() && !bioSavedEmail()){ _bioPe
 function bioOfferSoon(n){
   if(!_bioPending) return;
   try{ if(localStorage.getItem('fc_bio_no')==='1'){ _bioPending=null; return; } }catch(_){ }
-  const busy=(typeof TUT!=='undefined' && TUT) || (typeof tutBusy==='function' && tutBusy());
+  const busy=(typeof TUT!=='undefined' && TUT) || (typeof tutBusy==='function' && tutBusy())
+    || document.getElementById('fcGate');                      // c'e' gia' un altro avviso (notifiche, aggiorna)
   if(busy || !profile){ if(n<40) setTimeout(()=>bioOfferSoon(n+1),3000); return; }
   bioCaps().then(c=>{
     if(!c.ok || !_bioPending){ _bioPending=null; return; }
-    document.getElementById('sheetTitle').textContent='Entra più in fretta';
-    document.getElementById('sheetHint').textContent='Con '+_bioLabel()+' del telefono la prossima volta non devi scrivere email e password. Restano salvate in modo protetto, solo su questo telefono.';
-    document.getElementById('sheetList').innerHTML=
-      '<button class="save" onclick="bioOfferYes()">🔐 Attiva</button>'+
-      '<button class="set-btn" style="margin-top:10px" onclick="bioOfferNo(false)">Non ora</button>'+
-      '<button class="set-btn" style="margin-top:10px;opacity:.7" onclick="bioOfferNo(true)">Non chiedermelo più</button>';
-    openSheet();
+    /* 13/11/2026 — scheda «Entra con Face ID» nello stile degli avvisi dell'app */
+    const nm=_bioLabel(), dev=(NATIVE_OS==='ios')?'ios':'android';
+    _gateShow(_gateHero('Accesso rapido')
+      +'<h2>Entra con <em>'+nm+'</em></h2>'
+      +'<p>La prossima volta un tocco e sei dentro: niente email e password da riscrivere.</p>'
+      +'<div class="gp">'
+        +'<div><span>⚡</span><div><b>Un tocco e sei dentro</b><small>Tocchi il tuo profilo salvato e '+(dev==='ios'?'guardi il telefono':'appoggi il dito')+'.</small></div></div>'
+        +'<div><span>🛡️</span><div><b>Protetto dal telefono</b><small>I dati restano cifrati, solo su questo telefono.</small></div></div>'
+      +'</div>'
+      +'<button class="gb" id="bioYes"><span>🔐 Attiva '+nm+'</span></button>'
+      +'<button class="gl" id="bioLater">Non ora</button>'
+      +'<button class="gl" id="bioNever" style="opacity:.7;padding-top:0">Non chiedermelo più</button>', false);
+    document.getElementById('bioYes').onclick=bioOfferYes;
+    document.getElementById('bioLater').onclick=()=>bioOfferNo(false);
+    document.getElementById('bioNever').onclick=()=>bioOfferNo(true);
   });
 }
+function _fcCardClose(){ const o=document.getElementById('fcGate'); if(o) o.remove(); }
 async function bioOfferYes(){
-  const c=_bioPending; closeSheet(); _bioPending=null;
+  const c=_bioPending; _fcCardClose(); _bioPending=null;
   if(!c) return;
   const ok=await bioSave(c.email,c.pw);
   toast(ok ? 'Accesso rapido attivato ✓' : 'Non attivato: riprova da Impostazioni');
   bioRefreshRow();
 }
-function bioOfferNo(never){ closeSheet(); _bioPending=null; if(never){ try{ localStorage.setItem('fc_bio_no','1'); }catch(_){ } } }
+function bioOfferNo(never){ _fcCardClose(); _bioPending=null; if(never){ try{ localStorage.setItem('fc_bio_no','1'); }catch(_){ } } }
 /* Impostazioni */
 async function bioRefreshRow(){
   const r=document.getElementById('rowBio'); if(!r) return;
