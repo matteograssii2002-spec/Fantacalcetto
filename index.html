@@ -42,13 +42,33 @@
   .soon-tx b{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;font-size:clamp(19px,2.3vw,24px);line-height:1.2;letter-spacing:-.02em;color:#eef4fd}
   .soon-tx b em{font-style:normal;color:#7ec2ff}
   .soon-sub{font-size:14.5px;line-height:1.5;color:#9bb2d6}
-  .soon-stores{display:flex;gap:10px;flex-wrap:wrap}
+  .soon-stores{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   .store{display:inline-flex;align-items:center;gap:10px;padding:9px 15px 9px 12px;border-radius:13px;
     background:#05101f;color:#eef4fd;border:1px solid rgba(150,185,240,.22);text-decoration:none;white-space:nowrap}
   .store svg{width:24px;height:24px;flex:none}
   .store>span{display:flex;flex-direction:column;line-height:1.1;font-weight:700;font-size:16px;letter-spacing:-.01em}
   .store small{font-size:10.5px;font-weight:500;color:#9bb2d6;letter-spacing:.02em}
   .soon.mini{margin:0 0 22px}
+  #scarica{scroll-margin-top:96px}
+  .soon-qr{display:none;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:#9bb2d6;font-weight:600}
+  .soon-qr svg{width:84px;height:84px;border-radius:10px}
+  @media (min-width:761px) and (hover:hover){.soon-qr{display:flex}}
+  .rv-strip{overflow:hidden;padding:6px 0 10px;-webkit-mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+  .rv-track{display:flex;gap:14px;width:max-content;animation:rvMove var(--rv-dur,40s) linear infinite}
+  .rv-strip:hover .rv-track{animation-play-state:paused}
+  .rv{width:300px;flex:none;padding:16px 17px;border-radius:18px;background:#0e1d34;box-shadow:0 0 0 1px rgba(150,185,240,.14) inset,0 20px 40px -30px rgba(0,6,20,.9)}
+  .rv-st{color:#ffc23d;letter-spacing:2px;font-size:15px}
+  .rv b{display:block;margin:7px 0 5px;color:#eef4fd;font-size:15.5px;line-height:1.3}
+  .rv p{margin:0;color:#9bb2d6;font-size:14px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+  .rv small{display:flex;align-items:center;gap:6px;margin-top:10px;color:#7f97bb;font-size:12px}
+  .rv small svg{width:14px;height:14px}
+  @keyframes rvMove{to{transform:translateX(-50%)}}
+  @media (prefers-reduced-motion:reduce){.rv-track{animation:none}.rv-strip{overflow-x:auto}}
+  .dlqr{display:flex;align-items:center;gap:18px;margin:0 0 22px;padding:16px 18px;border-radius:18px;background:#0e1d34;box-shadow:0 0 0 1px rgba(150,185,240,.14) inset}
+  .dlqr svg{width:112px;height:112px;flex:none;border-radius:10px}
+  .dlqr p{font-size:15px;line-height:1.5;color:#9bb2d6;margin:0}
+  .dlqr b{color:#eef4fd}
+  @media (max-width:760px),(hover:none){.dlqr{display:none}}
   @keyframes soonFlow{to{background-position:-250% 0}}
   @keyframes soonPing{70%{box-shadow:0 0 0 9px rgba(255,194,61,0)}100%{box-shadow:0 0 0 0 rgba(255,194,61,0)}}
   @media (prefers-reduced-motion:reduce){.soon::before,.soon-kick i{animation:none}}
@@ -79,7 +99,7 @@
 </script>
 
 <title>FantaCalcetto - Il fanta del tuo calcetto</title>
-<meta name="description" content="Trasforma il calcetto tra amici in un campionato: presenze, formazione a 5 con crediti e capitano, voti tra giocatori, pagellone e classifica di stagione. Gratis, senza scaricare niente.">
+<meta name="description" content="Trasforma il calcetto tra amici in un campionato: presenze, formazione a 5 con crediti e capitano, voti tra giocatori, pagellone e classifica di stagione. Gratis su App Store e Google Play.">
 <link rel="canonical" href="https://www.fantacalcettoitalia.it/">
 
 <meta name="theme-color" content="#0a1626">
@@ -200,7 +220,7 @@
     {"@type":"Question","name":"Quanto costa FantaCalcetto?","acceptedAnswer":{"@type":"Answer","text":"Giocare è gratis, per sempre e senza pubblicità: fino a 15 giocatori la lega ha il gioco completo, pagellone e classifica compresi. FantaCalcetto Pro costa 29,99 euro a stagione per tutta la lega, non a testa, e serve se siete più di 15 o se volete tenere le stagioni passate."}},
     {"@type":"Question","name":"Quante persone servono per giocare?","acceptedAnswer":{"@type":"Answer","text":"Da dieci in su, così le formazioni possono essere diverse tra loro. Con quindici è perfetto. La versione gratuita arriva fino a 15 giocatori; oltre serve Pro, che non ha nessun tetto. Chi è già nella lega non viene mai tolto."}},
     {"@type":"Question","name":"Si può giocare senza scendere in campo?","acceptedAnswer":{"@type":"Answer","text":"Sì. Chi non gioca a calcetto entra come solo allenatore: ha la sua squadra, schiera la formazione e sta in classifica. Non prende voti e non compare nel sondaggio delle presenze."}},
-    {"@type":"Question","name":"Bisogna scaricare l'app da App Store o Play Store?","acceptedAnswer":{"@type":"Answer","text":"Sta per arrivare su App Store e Google Play. Nel frattempo si gioca come PWA: un sito che si aggiunge alla schermata Home e da lì funziona come un'app, con icona sua, schermo intero e notifiche."}},
+    {"@type":"Question","name":"Bisogna scaricare l'app da App Store o Play Store?","acceptedAnswer":{"@type":"Answer","text":"Sì: FantaCalcetto si scarica gratis da App Store (iPhone) e da Google Play (Android). Si entra con email e password e le notifiche avvisano quando si apre la giornata, quando schierare e quando votare."}},
     {"@type":"Question","name":"Chi assegna i voti ai giocatori?","acceptedAnswer":{"@type":"Answer","text":"I giocatori stessi: a fine partita ognuno vota gli altri e la media è il voto di giornata. L'organizzatore inserisce solo gol, assist, rigori, cartellini e risultato."}},
     {"@type":"Question","name":"L'organizzatore deve mandare avanti tutto a mano?","acceptedAnswer":{"@type":"Answer","text":"No. La giornata si apre da sola, i promemoria partono da soli e la giornata si chiude quando arrivano i voti. Resta solo da segnare com'è finita la partita."}},
     {"@type":"Question","name":"Che dati raccoglie FantaCalcetto?","acceptedAnswer":{"@type":"Answer","text":"Il minimo per far funzionare il gioco: email, nome, soprannome, nome squadra e presenze. Niente pubblicità e nessuna rivendita di dati."}}
@@ -223,7 +243,7 @@
       <a href="#funzioni">Funzioni</a>
       <a href="#prezzi">Prezzi</a>
       <a href="#punteggi">Punteggi e Regolamento</a>
-      <a href="#installa">Installazione</a>
+      <a href="#scarica">Scarica l'app</a>
       <a href="#domande">Domande</a>
     </nav>
     <a class="btn btn-primary btn-sm" data-app-link href="#">Gioca ora</a>
@@ -245,23 +265,11 @@
   <a href="#funzioni">Funzioni</a>
   <a href="#prezzi">Prezzi</a>
   <a href="#punteggi">Punteggi e Regolamento</a>
-  <a href="#installa">Installazione</a>
+  <a href="#scarica">Scarica l'app</a>
   <a href="#domande">Domande</a>
   <a class="btn btn-primary" data-app-link href="#">Gioca ora</a>
 </aside>
 
-<!-- Avviso «prima installala»: compare da telefono quando si preme «Gioca ora»
-     senza aver aggiunto l'app alla Home. Su iPhone e' l'unico modo per avere le
-     notifiche, quindi vale la pena fermarli un attimo. Una volta sola: chi
-     sceglie «continua nel browser» non lo rivede piu'. -->
-<div class="scrim" id="instScrim" onclick="closeInst()"></div>
-<div class="instbox" id="instBox" role="dialog" aria-modal="true" aria-labelledby="instT">
-  <span class="ic">📲</span>
-  <h3 id="instT">Installa sulla Home</h3>
-  <p>L'installazione si fa <b>dalla pagina del gioco</b>, non da questa. Una volta aggiunta alla schermata Home, l'app ha icona propria, si apre a schermo intero e riceve le notifiche.<br><b>Su iPhone le notifiche funzionano solo con l'app installata.</b></p>
-  <button class="btn btn-primary" type="button" onclick="goApp()">Vai al gioco &nbsp;→</button>
-  <a class="btn btn-ghost" href="#installa" onclick="closeInst()">Come installarla</a>
-</div>
 
 <main id="top">
 
@@ -270,17 +278,17 @@
      ============================================================ -->
 <section class="hero">
   <div class="wrap hero-head">
-    <!-- 02/11/2026 — avviso «presto sugli store». All'uscita: i due riquadri
-         diventano link veri (App Store / Google Play) e «In arrivo» si toglie. -->
-    <div class="soon rise" role="note" aria-label="Presto su App Store e Google Play">
+    <!-- 13/11/2026 — app pubblicata su App Store e Google Play -->
+    <div class="soon rise" id="scarica" role="note" aria-label="Su App Store e Google Play">
       <div class="soon-tx">
-        <span class="soon-kick"><i></i>In arrivo</span>
-        <b>FantaCalcetto sta arrivando su <em>App Store</em> e <em>Google Play</em></b>
-        <span class="soon-sub">Ci siamo quasi. Nel frattempo si gioca già da qui, nel browser o installandola sulla Home.</span>
+        <span class="soon-kick"><i></i>Ora disponibile</span>
+        <b>FantaCalcetto è su <em>App Store</em> e <em>Google Play</em></b>
+        <span class="soon-sub">Scaricala gratis: entri con la stessa email e password e ritrovi la tua lega.</span>
       </div>
       <div class="soon-stores">
-        <span class="store"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.73c-.03-2.6 2.12-3.85 2.22-3.91-1.21-1.77-3.09-2.01-3.76-2.04-1.6-.16-3.12.94-3.93.94-.81 0-2.06-.92-3.39-.89-1.74.03-3.35 1.01-4.25 2.57-1.81 3.14-.46 7.79 1.3 10.34.86 1.25 1.89 2.65 3.24 2.6 1.3-.05 1.79-.84 3.36-.84 1.57 0 2.01.84 3.38.81 1.4-.02 2.29-1.27 3.14-2.53.99-1.45 1.4-2.86 1.42-2.93-.03-.01-2.72-1.04-2.73-4.12zM13.79 5.1c.72-.87 1.2-2.07 1.07-3.27-1.03.04-2.28.69-3.02 1.55-.66.77-1.24 2-1.09 3.18 1.15.09 2.32-.58 3.04-1.46z"/></svg><span><small>Presto su</small>App Store</span></span>
-        <span class="store"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#2fd98a" d="M3.6 2.3 13.3 12l-9.7 9.7c-.35-.2-.6-.6-.6-1.1V3.4c0-.5.25-.9.6-1.1z"/><path fill="#3f97ff" d="m16.7 8.6-3.4 3.4-9.7-9.7c.3-.17.7-.18 1.05.02z"/><path fill="#ff5d6b" d="m16.7 15.4-11.75 6.7c-.35.2-.75.2-1.05.02L13.3 12z"/><path fill="#ffc23d" d="m20.4 10.5-3.7-1.9-3.4 3.4 3.4 3.4 3.7-1.9c1-.6 1-2.4 0-3z"/></svg><span><small>Presto su</small>Google Play</span></span>
+        <a class="store" href="https://apps.apple.com/it/app/id6826225028" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.73c-.03-2.6 2.12-3.85 2.22-3.91-1.21-1.77-3.09-2.01-3.76-2.04-1.6-.16-3.12.94-3.93.94-.81 0-2.06-.92-3.39-.89-1.74.03-3.35 1.01-4.25 2.57-1.81 3.14-.46 7.79 1.3 10.34.86 1.25 1.89 2.65 3.24 2.6 1.3-.05 1.79-.84 3.36-.84 1.57 0 2.01.84 3.38.81 1.4-.02 2.29-1.27 3.14-2.53.99-1.45 1.4-2.86 1.42-2.93-.03-.01-2.72-1.04-2.73-4.12zM13.79 5.1c.72-.87 1.2-2.07 1.07-3.27-1.03.04-2.28.69-3.02 1.55-.66.77-1.24 2-1.09 3.18 1.15.09 2.32-.58 3.04-1.46z"/></svg><span><small>Scarica su</small>App Store</span></a>
+        <a class="store" href="https://play.google.com/store/apps/details?id=it.fantacalcettoitalia.app" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#2fd98a" d="M3.6 2.3 13.3 12l-9.7 9.7c-.35-.2-.6-.6-.6-1.1V3.4c0-.5.25-.9.6-1.1z"/><path fill="#3f97ff" d="m16.7 8.6-3.4 3.4-9.7-9.7c.3-.17.7-.18 1.05.02z"/><path fill="#ff5d6b" d="m16.7 15.4-11.75 6.7c-.35.2-.75.2-1.05.02L13.3 12z"/><path fill="#ffc23d" d="m20.4 10.5-3.7-1.9-3.4 3.4 3.4 3.4 3.7-1.9c1-.6 1-2.4 0-3z"/></svg><span><small>Disponibile su</small>Google Play</span></a>
+        <span class="soon-qr"><svg viewBox="-2 -2 33 33" shape-rendering="crispEdges" aria-label="Codice QR per scaricare l’app"><rect x="-2" y="-2" width="33" height="33" fill="#fff"/><path fill="#07111f" d="M0 0h7v1h-7zM8 0h3v1h-3zM16 0h1v1h-1zM19 0h2v1h-2zM22 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h1v1h-1zM11 1h4v1h-4zM16 1h3v1h-3zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM9 2h2v1h-2zM13 2h4v1h-4zM19 2h2v1h-2zM22 2h1v1h-1zM24 2h3v1h-3zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h4v1h-4zM13 3h5v1h-5zM22 3h1v1h-1zM24 3h3v1h-3zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM9 4h2v1h-2zM14 4h6v1h-6zM22 4h1v1h-1zM24 4h3v1h-3zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM10 5h4v1h-4zM18 5h3v1h-3zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h7v1h-7zM8 7h1v1h-1zM15 7h3v1h-3zM19 7h2v1h-2zM0 8h1v1h-1zM2 8h2v1h-2zM5 8h3v1h-3zM9 8h1v1h-1zM12 8h1v1h-1zM14 8h6v1h-6zM22 8h1v1h-1zM25 8h1v1h-1zM27 8h2v1h-2zM1 9h4v1h-4zM8 9h1v1h-1zM10 9h2v1h-2zM14 9h1v1h-1zM17 9h8v1h-8zM28 9h1v1h-1zM2 10h1v1h-1zM6 10h1v1h-1zM9 10h3v1h-3zM13 10h2v1h-2zM18 10h1v1h-1zM20 10h2v1h-2zM23 10h2v1h-2zM26 10h2v1h-2zM2 11h1v1h-1zM5 11h1v1h-1zM9 11h3v1h-3zM13 11h1v1h-1zM18 11h3v1h-3zM23 11h2v1h-2zM28 11h1v1h-1zM0 12h1v1h-1zM3 12h1v1h-1zM5 12h3v1h-3zM9 12h1v1h-1zM12 12h6v1h-6zM19 12h1v1h-1zM25 12h2v1h-2zM0 13h3v1h-3zM5 13h1v1h-1zM7 13h2v1h-2zM11 13h6v1h-6zM19 13h1v1h-1zM22 13h2v1h-2zM26 13h3v1h-3zM3 14h1v1h-1zM5 14h2v1h-2zM9 14h1v1h-1zM12 14h2v1h-2zM19 14h2v1h-2zM22 14h3v1h-3zM26 14h3v1h-3zM0 15h1v1h-1zM3 15h3v1h-3zM7 15h3v1h-3zM11 15h2v1h-2zM14 15h2v1h-2zM23 15h2v1h-2zM27 15h1v1h-1zM0 16h4v1h-4zM5 16h7v1h-7zM13 16h1v1h-1zM15 16h1v1h-1zM18 16h1v1h-1zM20 16h2v1h-2zM24 16h2v1h-2zM27 16h1v1h-1zM3 17h3v1h-3zM8 17h1v1h-1zM10 17h4v1h-4zM15 17h1v1h-1zM18 17h1v1h-1zM20 17h1v1h-1zM23 17h1v1h-1zM25 17h3v1h-3zM0 18h1v1h-1zM2 18h1v1h-1zM4 18h1v1h-1zM6 18h1v1h-1zM11 18h1v1h-1zM13 18h1v1h-1zM15 18h1v1h-1zM20 18h1v1h-1zM22 18h2v1h-2zM26 18h1v1h-1zM2 19h1v1h-1zM4 19h2v1h-2zM10 19h1v1h-1zM12 19h1v1h-1zM15 19h3v1h-3zM19 19h2v1h-2zM22 19h1v1h-1zM26 19h1v1h-1zM1 20h4v1h-4zM6 20h1v1h-1zM8 20h3v1h-3zM12 20h1v1h-1zM14 20h13v1h-13zM8 21h5v1h-5zM18 21h1v1h-1zM20 21h1v1h-1zM24 21h5v1h-5zM0 22h7v1h-7zM8 22h1v1h-1zM10 22h3v1h-3zM14 22h1v1h-1zM16 22h2v1h-2zM19 22h2v1h-2zM22 22h1v1h-1zM24 22h2v1h-2zM27 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM8 23h2v1h-2zM11 23h4v1h-4zM16 23h1v1h-1zM18 23h1v1h-1zM20 23h1v1h-1zM24 23h2v1h-2zM0 24h1v1h-1zM2 24h3v1h-3zM6 24h1v1h-1zM9 24h4v1h-4zM15 24h1v1h-1zM17 24h1v1h-1zM20 24h5v1h-5zM26 24h3v1h-3zM0 25h1v1h-1zM2 25h3v1h-3zM6 25h1v1h-1zM8 25h2v1h-2zM13 25h4v1h-4zM19 25h3v1h-3zM24 25h2v1h-2zM28 25h1v1h-1zM0 26h1v1h-1zM2 26h3v1h-3zM6 26h1v1h-1zM8 26h1v1h-1zM12 26h1v1h-1zM18 26h2v1h-2zM21 26h1v1h-1zM23 26h1v1h-1zM26 26h1v1h-1zM28 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM9 27h2v1h-2zM15 27h1v1h-1zM18 27h1v1h-1zM20 27h1v1h-1zM23 27h1v1h-1zM25 27h1v1h-1zM27 27h1v1h-1zM0 28h7v1h-7zM8 28h3v1h-3zM12 28h1v1h-1zM14 28h2v1h-2zM18 28h3v1h-3zM25 28h1v1h-1zM27 28h1v1h-1z"/></svg>Inquadra col telefono</span>
       </div>
     </div>
     <span class="eyebrow">Il fantacalcio del calcetto</span>
@@ -586,146 +594,19 @@
 </section>
 
 <!-- ============================================================
-     INSTALLAZIONE — linguette iPhone/Android, passi in carosello.
-     Il cerchio rosso (.hot) indica cosa toccare: posizione e
-     misura in percentuale sullo screenshot, vedi sito.css.
+     RECENSIONI (13/11/2026) — scorrono da sole. Restano NASCOSTE finche'
+     l'elenco REVIEWS in fondo alla pagina e' vuoto. Solo recensioni vere
+     prese dagli store, copiate cosi' come sono.
      ============================================================ -->
-<section id="installa">
+<section id="recensioni" hidden>
   <div class="wrap">
     <div class="sec-head rise">
-      <span class="eyebrow">Installazione</span>
-      <h2>Come installarla sulla Home</h2>
-      <p class="lead">Installata si comporta come un'app: icona sua, schermo intero, niente barra del browser. Su iPhone è anche l'unico modo per ricevere le notifiche.</p>
-    </div>
-
-    <div class="soon mini rise" role="note">
-      <div class="soon-tx">
-        <span class="soon-kick"><i></i>In arrivo</span>
-        <span class="soon-sub">Tra poco FantaCalcetto si scarica da <b style="font-size:inherit;font-family:inherit;color:#eef4fd">App Store e Google Play</b>. Fino ad allora si installa sulla Home così.</span>
-      </div>
-      <div class="soon-stores">
-        <span class="store"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.73c-.03-2.6 2.12-3.85 2.22-3.91-1.21-1.77-3.09-2.01-3.76-2.04-1.6-.16-3.12.94-3.93.94-.81 0-2.06-.92-3.39-.89-1.74.03-3.35 1.01-4.25 2.57-1.81 3.14-.46 7.79 1.3 10.34.86 1.25 1.89 2.65 3.24 2.6 1.3-.05 1.79-.84 3.36-.84 1.57 0 2.01.84 3.38.81 1.4-.02 2.29-1.27 3.14-2.53.99-1.45 1.4-2.86 1.42-2.93-.03-.01-2.72-1.04-2.73-4.12zM13.79 5.1c.72-.87 1.2-2.07 1.07-3.27-1.03.04-2.28.69-3.02 1.55-.66.77-1.24 2-1.09 3.18 1.15.09 2.32-.58 3.04-1.46z"/></svg><span><small>Presto su</small>App Store</span></span>
-        <span class="store"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#2fd98a" d="M3.6 2.3 13.3 12l-9.7 9.7c-.35-.2-.6-.6-.6-1.1V3.4c0-.5.25-.9.6-1.1z"/><path fill="#3f97ff" d="m16.7 8.6-3.4 3.4-9.7-9.7c.3-.17.7-.18 1.05.02z"/><path fill="#ff5d6b" d="m16.7 15.4-11.75 6.7c-.35.2-.75.2-1.05.02L13.3 12z"/><path fill="#ffc23d" d="m20.4 10.5-3.7-1.9-3.4 3.4 3.4 3.4 3.7-1.9c1-.6 1-2.4 0-3z"/></svg><span><small>Presto su</small>Google Play</span></span>
-      </div>
-    </div>
-
-    <div class="warn rise">
-      <span class="ic">⚠️</span>
-      <p><b>Prima clicca «Gioca ora», poi installa sulla Home.</b> Se aggiungi alla Home da questa pagina, sulla Home finisce questa pagina.</p>
-    </div>
-
-    <p class="tabs-lab rise">Scegli il tuo telefono: le istruzioni cambiano</p>
-    <div class="tabs rise" role="tablist">
-      <button role="tab" id="tab-ios" aria-controls="p-ios" aria-selected="true" onclick="setTab('ios')"><span class="ic">🍎</span>iPhone</button>
-      <button role="tab" id="tab-and" aria-controls="p-and" aria-selected="false" onclick="setTab('and')"><span class="ic">🤖</span>Android</button>
-    </div>
-
-    <div class="panel" id="p-ios" role="tabpanel" aria-labelledby="tab-ios">
-      <div class="crsl" data-crsl>
-        <div class="crsl-track">
-
-          <div class="crsl-item istep">
-            <div class="phone" style="--ar:640/1387"><div class="phone-screen">
-              <img src="sito/ios-1.webp" alt="Il gioco aperto in Safari, con il pulsante del menu in basso a destra" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
-              <span class="hot" style="--x:85%;--y:93.2%;--w:13%;--h:6%"></span>
-            </div></div>
-            <div class="n">1</div>
-            <h3>Apri il gioco in Safari</h3>
-            <p>Tocca «Gioca ora», poi il pulsante <code>•••</code> in basso a destra.</p>
-          </div>
-
-          <div class="crsl-item istep">
-            <div class="phone" style="--ar:640/1387"><div class="phone-screen">
-              <img src="sito/ios-2.webp" alt="Il menu di Safari con la voce Condividi" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
-              <span class="hot" style="--x:49%;--y:61%;--w:26%;--h:3.6%"></span>
-            </div></div>
-            <div class="n">2</div>
-            <h3>Scegli Condividi</h3>
-            <p>La prima voce del menu: <code>Condividi</code>, in inglese <code>Share</code>.</p>
-          </div>
-
-          <div class="crsl-item istep">
-            <div class="phone" style="--ar:640/1387"><div class="phone-screen">
-              <img src="sito/ios-3.webp" alt="Il pannello Condividi di iOS con la voce Aggiungi a Home" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
-              <span class="hot" style="--x:35.5%;--y:95%;--w:56%;--h:3.4%"></span>
-            </div></div>
-            <div class="n">3</div>
-            <h3>Aggiungi a Home</h3>
-            <p>Scorri l'elenco fino in fondo: <code>Aggiungi a Home</code>, in inglese <code>Add to Home Screen</code>.</p>
-          </div>
-
-          <div class="crsl-item istep">
-            <div class="phone" style="--ar:640/1387"><div class="phone-screen">
-              <img src="sito/ios-4.webp" alt="La conferma con il nome dell'app e il pulsante Aggiungi" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
-              <span class="hot" style="--x:87.8%;--y:12.5%;--w:18%;--h:4.2%"></span>
-            </div></div>
-            <div class="n">4</div>
-            <h3>Conferma</h3>
-            <p>Tocca <code>Aggiungi</code> in alto a destra. Il nome lascialo com'è.</p>
-          </div>
-
-          <div class="crsl-item istep">
-            <div class="phone" style="--ar:640/1387"><div class="phone-screen">
-              <img src="sito/ios-5.webp" alt="L'icona di FantaCalcetto sulla schermata Home dell'iPhone" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
-              <span class="hot" style="--x:15.3%;--y:48.5%;--w:19%;--h:8.5%"></span>
-            </div></div>
-            <div class="n">5</div>
-            <h3>Apri dall'icona</h3>
-            <p>Da adesso entra sempre da qui, e la prima volta accetta le notifiche.</p>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-    <div class="panel" id="p-and" role="tabpanel" aria-labelledby="tab-and" hidden>
-      <div class="crsl" data-crsl>
-        <div class="crsl-track">
-
-          <div class="crsl-item istep">
-            <div class="phone and" style="--ar:640/1387"><div class="phone-screen">
-              <img src="sito/and-1.webp" alt="Il gioco aperto in Chrome, con il menu in alto a destra" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
-              <span class="hot" style="--x:90%;--y:7.4%;--w:10%;--h:4.4%"></span>
-            </div></div>
-            <div class="n">1</div>
-            <h3>Apri il gioco in Chrome</h3>
-            <p>Tocca «Gioca ora», poi il menu <code>⋮</code> in alto a destra.</p>
-          </div>
-
-          <div class="crsl-item istep">
-            <div class="phone and" style="--ar:640/1387"><div class="phone-screen">
-              <img src="sito/and-2.webp" alt="Il menu di Chrome con la voce per installare l'app" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
-              <span class="hot" style="--x:56.5%;--y:56.8%;--w:54%;--h:4%"></span>
-            </div></div>
-            <div class="n">2</div>
-            <h3>Installa app</h3>
-            <p>Su alcuni telefoni la voce si chiama <code>Installa e crea scorciatoia</code>.</p>
-          </div>
-
-          <div class="crsl-item istep">
-            <div class="phone and" style="--ar:640/1387"><div class="phone-screen">
-              <img src="sito/and-3.webp" alt="La finestra di conferma Installa app" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
-              <span class="hot" style="--x:81.9%;--y:60.3%;--w:17%;--h:3.4%"></span>
-            </div></div>
-            <div class="n">3</div>
-            <h3>Conferma</h3>
-            <p>Tocca <code>Installa</code>. Spesso Chrome lo propone anche da solo.</p>
-          </div>
-
-          <div class="crsl-item istep">
-            <div class="phone and" style="--ar:640/1387"><div class="phone-screen">
-              <img src="sito/and-4.webp" alt="L'icona di FantaCalcetto sulla schermata Home di Android" loading="lazy" width="640" height="1387" onerror="this.classList.add('missing')">
-              <span class="hot" style="--x:15.2%;--y:73.4%;--w:19%;--h:9%"></span>
-            </div></div>
-            <div class="n">4</div>
-            <h3>Apri dall'icona</h3>
-            <p>La trovi tra le app. Aprila da lì e accetta le notifiche.</p>
-          </div>
-
-        </div>
-      </div>
+      <span class="eyebrow">Recensioni</span>
+      <h2>Chi gioca, ne parla così</h2>
+      <p class="lead" id="rvAvg"></p>
     </div>
   </div>
+  <div class="rv-strip rise" aria-label="Recensioni da App Store e Google Play"><div class="rv-track" id="rvTrack"></div></div>
 </section>
 
 <!-- ============================================================
@@ -743,7 +624,7 @@
       <details><summary>C'è una prova a tempo?</summary><div class="a"><p><b>No, e non serve.</b> La versione gratuita non è una prova: è il gioco completo, senza scadenza e senza carta di credito. Pro si prende solo quando serve davvero, cioè quando superate i 15 giocatori o quando volete rivedere le stagioni passate.</p></div></details>
       <details><summary>Quanti bisogna essere?</summary><div class="a"><p><b>Da dieci in su</b>, così le formazioni possono essere diverse tra loro. Con quindici è perfetto. La versione gratuita arriva <b>fino a 15 giocatori</b>; oltre serve Pro, e lì non c'è nessun tetto. Chi è già dentro <b>non viene mai tolto</b>.</p></div></details>
       <details><summary>Si può giocare senza scendere in campo?</summary><div class="a"><p><b>Sì.</b> Chi non gioca a calcetto — un amico, la fidanzata, chi è infortunato a lungo — entra come <b>solo allenatore</b>: ha la sua squadra, schiera la formazione e sta in classifica come tutti. Non prende voti, perché non gioca, e non compare nel sondaggio delle presenze. Se possa votare i giocatori lo decide l'organizzatore.</p></div></details>
-      <details><summary>Serve scaricarla dagli store?</summary><div class="a"><p><b>Sta per arrivare su App Store e Google Play.</b> Nel frattempo si gioca come PWA: un sito che si aggiunge alla schermata Home e da lì funziona come un'app, con <b>icona sua, schermo intero e notifiche</b>. <a href="#installa">Come installarla</a>.</p></div></details>
+      <details><summary>Serve scaricarla dagli store?</summary><div class="a"><p><b>Sì, è gratis.</b> FantaCalcetto è su <b>App Store</b> per iPhone e su <b>Google Play</b> per Android. Entri con email e password e ritrovi la tua lega. <a href="#scarica">Scarica l'app</a>.</p></div></details>
       <details><summary>Chi assegna i voti?</summary><div class="a"><p><b>I giocatori.</b> A fine partita ognuno vota gli altri e <b>la media è il voto di giornata</b>. L'organizzatore inserisce solo i fatti: gol, assist, rigori, cartellini, risultato.</p></div></details>
       <details><summary>Deve fare tutto l'organizzatore?</summary><div class="a"><p><b>No</b>, ed è la cosa a cui teniamo di più. La giornata <b>si apre da sola</b>, i promemoria partono da soli, la giornata <b>si chiude quando arrivano i voti</b>. All'organizzatore resta solo da segnare com'è finita la partita.</p></div></details>
       <details><summary>Che dati raccogliete?</summary><div class="a"><p><b>Il minimo per far funzionare il gioco</b>: email, nome, soprannome, nome squadra e presenze. Le password le custodisce il servizio di accesso, <b>non le vediamo mai</b>. <b>Niente pubblicità, nessuna rivendita di dati.</b></p></div></details>
@@ -761,7 +642,7 @@
       <p class="lead">Crea la lega, manda il link agli amici, apri la prima giornata.</p>
       <div class="btn-row">
         <a class="btn btn-primary" data-app-link href="#">Gioca ora &nbsp;→</a>
-        <a class="btn btn-ghost" href="#installa">Come si installa</a>
+        <a class="btn btn-ghost" href="#scarica">Scarica l'app</a>
       </div>
     </div>
   </div>
@@ -774,7 +655,7 @@
     <small>© <span id="yy">2026</span> FantaCalcetto</small>
     <nav>
       <a href="regolamento.html">Regolamento</a>
-      <a href="#installa">Installazione</a>
+      <a href="#scarica">Scarica l'app</a>
       <a href="privacy.html">Privacy</a>
       <a href="termini.html">Termini</a>
       <a data-app-link href="#">Gioca ora</a>
@@ -794,63 +675,43 @@
 </footer>
 
 <script>
-/* ------------------------------------------------------------
-   1) DOVE STA IL GIOCO — unico punto da cambiare.
-   L'app vive in /app/; questa pagina è la vetrina alla radice.
-   ------------------------------------------------------------ */
-var APP_URL = '/app/';
+/* 13/11/2026 — «Gioca ora» porta all'app degli store: iPhone/iPad -> App Store,
+   Android -> Google Play, computer -> sezione «Scarica l'app» col QR.
+   Chi ha ancora la PWA sulla Home entra comunque nel gioco (script in testa),
+   e li' trova l'avviso di passaggio comandato dal database (app_gate). */
+var IOS_URL = 'https://apps.apple.com/it/app/id6826225028';
+var AND_URL = 'https://play.google.com/store/apps/details?id=it.fantacalcettoitalia.app';
+function storeUrl(){
+  var ua = navigator.userAgent || '';
+  if (/iphone|ipad|ipod/i.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1)) return IOS_URL;
+  if (/android/i.test(ua)) return AND_URL;
+  return '#scarica';
+}
+document.querySelectorAll('[data-app-link]').forEach(function(a){ a.href = storeUrl(); });
 
-/* PRIMA INSTALLALA. Chi arriva dal motore di ricerca puo' non aver visto la
-   sezione installazione: se preme «Gioca ora» da telefono e l'app non e' sulla
-   Home, gli si ricorda una volta sola. Chi ce l'ha gia' installata (o ha gia'
-   scelto di continuare nel browser) va dritto al gioco senza intoppi. */
-function isStandalone(){
-  try{ return (window.matchMedia && matchMedia('(display-mode: standalone)').matches)
-              || navigator.standalone === true; }catch(e){ return false; }
-}
-function isPhone(){ return /iphone|ipad|ipod|android/i.test(navigator.userAgent || ''); }
-/* Torna a farsi vedere. Prima bastava un «continua nel browser» per non
-   rivederlo mai: chi gioca da mesi dal browser non se lo sarebbe mai
-   ricordato, e su iPhone e' l'unico modo per avere le notifiche.
-   Ora il rifiuto vale 7 giorni, poi l'avviso riappare — sempre e solo al
-   momento in cui si preme «Gioca ora», mai all'apertura della pagina.
-   NOTA ONESTA: da questa pagina NON si puo' sapere se l'app e' gia' sulla
-   Home. Chi la installa poi apre direttamente l'app (lo script in testa lo
-   manda su /app/), quindi chi arriva qui e preme «Gioca ora» quasi sempre
-   non ce l'ha. Meglio ricordarglielo ogni tanto che mai. */
-var INST_SNOOZE = 7 * 24 * 60 * 60 * 1000;
-function instSeen(){
-  try{
-    var t = parseInt(localStorage.getItem('fc_inst_ok') || '0', 10);
-    return !!t && (Date.now() - t) < INST_SNOOZE;
-  }catch(e){ return true; }
-}
-function openInst(){
-  document.getElementById('instScrim').classList.add('open');
-  document.getElementById('instBox').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeInst(){
-  document.getElementById('instScrim').classList.remove('open');
-  document.getElementById('instBox').classList.remove('open');
-  document.body.style.overflow = '';
-}
-/* «Vai al gioco» e' l'azione PRINCIPALE: l'avviso ricorda, non sbarra la strada.
-   Le istruzioni del sito dicono «prima Gioca ora, poi installa», perche' quello
-   che va aggiunto alla Home e' /app/ e non questa pagina: un avviso che
-   pretendesse l'installazione prima manderebbe la gente in un vicolo cieco. */
-function goApp(){
-  try{ localStorage.setItem('fc_inst_ok', String(Date.now())); }catch(e){}
-  closeInst(); location.href = APP_URL;
-}
-document.querySelectorAll('[data-app-link]').forEach(function(a){
-  a.href = APP_URL;
-  a.addEventListener('click', function(e){
-    if (isStandalone() || !isPhone() || instSeen()) return;   // niente intoppo
-    e.preventDefault(); openInst();
-  });
-});
-addEventListener('keydown', function(e){ if (e.key === 'Escape') closeInst(); });
+/* RECENSIONI VERE dagli store. Per aggiungerne una: {stelle, titolo, testo, nome, store:'ios'|'android'}.
+   Elenco vuoto = sezione nascosta. */
+var REVIEWS = [];
+(function(){
+  var sec = document.getElementById('recensioni'), tr = document.getElementById('rvTrack');
+  if (!sec || !tr || !REVIEWS.length) return;
+  function e(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  var ic = { ios:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M16.37 12.73c-.03-2.6 2.12-3.85 2.22-3.91-1.21-1.77-3.09-2.01-3.76-2.04-1.6-.16-3.12.94-3.93.94-.81 0-2.06-.92-3.39-.89-1.74.03-3.35 1.01-4.25 2.57-1.81 3.14-.46 7.79 1.3 10.34.86 1.25 1.89 2.65 3.24 2.6 1.3-.05 1.79-.84 3.36-.84 1.57 0 2.01.84 3.38.81 1.4-.02 2.29-1.27 3.14-2.53.99-1.45 1.4-2.86 1.42-2.93-.03-.01-2.72-1.04-2.73-4.12zM13.79 5.1c.72-.87 1.2-2.07 1.07-3.27-1.03.04-2.28.69-3.02 1.55-.66.77-1.24 2-1.09 3.18 1.15.09 2.32-.58 3.04-1.46z"/></svg>App Store',
+             android:'<svg viewBox="0 0 24 24"><path fill="#2fd98a" d="M3.6 2.3 13.3 12l-9.7 9.7c-.35-.2-.6-.6-.6-1.1V3.4c0-.5.25-.9.6-1.1z"/><path fill="#3f97ff" d="m16.7 8.6-3.4 3.4-9.7-9.7c.3-.17.7-.18 1.05.02z"/><path fill="#ff5d6b" d="m16.7 15.4-11.75 6.7c-.35.2-.75.2-1.05.02L13.3 12z"/><path fill="#ffc23d" d="m20.4 10.5-3.7-1.9-3.4 3.4 3.4 3.4 3.7-1.9c1-.6 1-2.4 0-3z"/></svg>Google Play' };
+  function card(r){
+    var n = Math.max(1, Math.min(5, r.stelle|0));
+    return '<article class="rv"><div class="rv-st" aria-label="' + n + ' stelle su 5">' + '★★★★★'.slice(0, n) + '<span style="opacity:.25">' + '★★★★★'.slice(n) + '</span></div>'
+      + (r.titolo ? '<b>' + e(r.titolo) + '</b>' : '<b></b>') + '<p>' + e(r.testo) + '</p>'
+      + '<small>' + e(r.nome) + ' · ' + (ic[r.store] || '') + '</small></article>';
+  }
+  var one = REVIEWS.map(card).join(''), copies = REVIEWS.length < 4 ? 4 : 2;
+  var html = ''; for (var i = 0; i < copies; i++) html += one;
+  tr.innerHTML = html;
+  tr.style.setProperty('--rv-dur', Math.max(25, REVIEWS.length * copies * 4) + 's');
+  var avg = REVIEWS.reduce(function(a, r){ return a + (r.stelle|0); }, 0) / REVIEWS.length;
+  document.getElementById('rvAvg').textContent = avg.toFixed(1).replace('.', ',') + ' su 5 · ' + REVIEWS.length + (REVIEWS.length === 1 ? ' recensione' : ' recensioni') + ' su App Store e Google Play';
+  sec.hidden = false;
+})();
 document.getElementById('yy').textContent = new Date().getFullYear();
 
 /* ------------------------------------------------------------
@@ -965,7 +826,7 @@ document.querySelectorAll('[data-crsl]').forEach(initCrsl);
    ------------------------------------------------------------ */
 (function(){
   var navs = Array.prototype.slice.call(document.querySelectorAll('[data-nav]'));
-  var ids  = ['anteprima','come-funziona','funzioni','prezzi','punteggi','installa','domande'];
+  var ids  = ['anteprima','come-funziona','funzioni','prezzi','punteggi','domande'];
   var secs = ids.map(function(id){ return document.getElementById(id); });
   var cur = -1;
   function spy(){
@@ -984,22 +845,7 @@ document.querySelectorAll('[data-crsl]').forEach(initCrsl);
   addEventListener('scroll', spy, {passive:true}); spy();
 })();
 
-/* ------------------------------------------------------------
-   6) LINGUETTE iPhone / Android
-   Il pannello nascosto ha larghezza zero: quando torna visibile
-   il suo carosello va ricalcolato, altrimenti i puntini restano
-   fermi sul primo.
-   ------------------------------------------------------------ */
-function setTab(k){
-  var ios = k === 'ios';
-  document.getElementById('tab-ios').setAttribute('aria-selected', ios);
-  document.getElementById('tab-and').setAttribute('aria-selected', !ios);
-  document.getElementById('p-ios').hidden = !ios;
-  document.getElementById('p-and').hidden = ios;
-  var shown = document.getElementById(ios ? 'p-ios' : 'p-and');
-  shown.querySelectorAll('[data-crsl]').forEach(function(c){ if (c.sync) c.sync(); });
-}
-if (/Android/i.test(navigator.userAgent)) setTab('and');
+/* 6) (13/11/2026) linguette iPhone/Android tolte con le istruzioni PWA */
 
 /* 7) COMPARSA ALLO SCROLL */
 (function(){

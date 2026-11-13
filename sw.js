@@ -10,7 +10,7 @@
      La copia si usa SOLO quando la rete fallisce: la regola dell'HTML fresca
      non cambia.
 */
-const SW_VERSION = '2026-09-20-v42';   // cambia questa stringa a OGNI deploy
+const SW_VERSION = '2026-11-13-v44';   // cambia questa stringa a OGNI deploy
 const CACHE      = 'fc-shell-' + SW_VERSION;
 
 /* IMMAGINI DI AVATAR E LOGHI — cache a parte, che sopravvive ai deploy.
@@ -186,7 +186,16 @@ self.addEventListener('push', event => {
 
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  const url = (event.notification.data && event.notification.data.url) || '/';
+  // 03/11/2026 (sicurezza): apri solo indirizzi del nostro sito, mai un sito esterno
+  // messo nella notifica. Tutto il resto diventa la home dell'app.
+  let url = '/app/';
+  try {
+    const raw = (event.notification.data && event.notification.data.url) || '/app/';
+    const u = new URL(raw, self.location.origin);
+    if (u.origin === self.location.origin && u.pathname.indexOf('/app') === 0) {
+      url = u.pathname + u.search + u.hash;
+    }
+  } catch (e) {}
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
       for (const c of list) { if ('focus' in c) return c.focus(); }
