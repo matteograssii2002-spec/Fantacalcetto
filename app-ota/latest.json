@@ -1,9 +1,9 @@
 {
-  "version": "4b9206b0a8234f43",
-  "url": "https://www.fantacalcettoitalia.it/app-ota/app.zip?v=4b9206b0a8234f43",
-  "checksum": "d22aac619ff6eb2abad410e17dae3ffa1d3ceaa6c915256cd916fdb1d2e41d92",
+  "version": "8bbb6184ba52e5e2",
+  "url": "https://www.fantacalcettoitalia.it/app-ota/app.zip?v=8bbb6184ba52e5e2",
+  "checksum": "e6b7eba95ead89e77861003440915d53ff547c807a22d74717805416bd81cb0c",
   "min_native": 7,
   "required": false,
   "app_version": "7.3",
-  "published": "2026-11-13T22:17:36Z"
+  "published": "2026-11-13T22:46:12Z"
 }
