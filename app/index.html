@@ -6138,8 +6138,8 @@ async function fcGateCheck(){
     _gateDropWebPush();
     return true;
   }
-  /* avviso: una volta al giorno, appena dentro */
-  let day=''; try{ day=new Date().toISOString().slice(0,10); if(localStorage.getItem(FC_GATE_WARN_KEY)===day) return false; }catch(_){ }
+  /* avviso: a OGNI apertura (13/11/2026, prima una volta al giorno), appena dentro */
+  let day=''; try{ day=new Date().toISOString().slice(0,10); }catch(_){ }
   let n=0;
   const wait=()=>{
     if(window._fcInviteShown) return;   // c'e' gia' l'invito a scaricare l'app
