@@ -353,6 +353,11 @@
   .drow.dead{opacity:.5}
   .fltr{display:flex;gap:7px;margin:2px 0 12px;flex-wrap:wrap}
   .fltr button{font-size:11.5px;font-weight:700;padding:6px 12px;border-radius:9px;background:transparent;border:1px solid var(--line-strong);color:var(--muted)}
+  .tg.as{background:rgba(63,151,255,.16);color:var(--accent-soft)}
+  .tg.gp{background:rgba(47,217,138,.15);color:var(--green)}
+  .tg.pw{background:rgba(255,184,77,.15);color:var(--amber)}
+  .tg.br{background:rgba(155,178,214,.14);color:var(--muted)}
+  .tg.main{box-shadow:0 0 0 1.5px currentColor inset}
   .fltr button.on{background:rgba(63,151,255,.14);border-color:rgba(63,151,255,.42);color:var(--accent-soft)}
   .qbad{color:var(--red);font-weight:700} .qwarn{color:var(--amber);font-weight:700}
 
@@ -453,6 +458,7 @@
     <button class="orow" id="chkCard" style="--c:47,217,138" onclick="openDetail('chk')"><span class="oi">&#129658;</span><span class="ol"><b>Controlli</b><small>Se tutto quello che deve girare sta girando</small><span class="rt" id="chkCount"></span></span><span class="oc">&rsaquo;</span></button>
     <button class="orow" id="liveCard" style="display:none;--c:63,151,255" onclick="openDetail('live')"><span class="oi">&#9917;</span><span class="ol"><b>Giornate vive adesso</b><small>Aperte in questo momento, in tutte le leghe</small><span class="rt" id="liveCount"></span></span><span class="oc">&rsaquo;</span></button>
     <button class="orow" id="ovlCard" style="--c:140,92,255" onclick="openDetail('ovl')"><span class="oi">&#128201;</span><span class="ol"><b>Limiti dei servizi</b><small>Connessioni, email, richieste, quota</small><span class="rt" id="ovlCount"></span></span><span class="oc">&rsaquo;</span></button>
+    <button class="orow" style="--c:255,194,61" onclick="openDetail('can')"><span class="oi">&#128241;</span><span class="ol"><b>Da dove giocano</b><small>App Store, Google Play, PWA, browser</small><span class="rt" id="canBase"></span></span><span class="oc">&rsaquo;</span></button>
     <button class="orow" style="--c:46,196,255" onclick="openDetail('ado')"><span class="oi">&#128242;</span><span class="ol"><b>Come viene usata</b><small>App sulla Home, notifiche, versione</small><span class="rt" id="adoBase"></span></span><span class="oc">&rsaquo;</span></button>
   </div>
 
@@ -574,6 +580,10 @@
     </div>
     <div class="dtsec" id="dt-live" style="display:none">
       <div class="card"><div id="liveBody"></div></div>
+    </div>
+    <div class="dtsec" id="dt-can" style="display:none">
+      <div class="card"><div id="canBars"><div class="skel">Carico&hellip;</div></div></div>
+      <div class="card"><div id="canList"></div></div>
     </div>
     <div class="dtsec" id="dt-ado" style="display:none">
       <div class="card"><div id="adoBars"><div class="skel">Carico&hellip;</div></div></div>
@@ -739,7 +749,7 @@ async function loadAll(silent){
   const b=document.getElementById('refBtn'); b.classList.add('spin'); b.disabled=true;
   /* quattro chiamate in parallelo, ognuna col suo paracadute: se una manca la
      console non deve spegnersi, deve solo mostrare un po' meno. */
-  const [ov, he, lg, pl, ck, ad, inc, cap, adp, acc, cst] = await Promise.all([
+  const [ov, he, lg, pl, ck, ad, inc, cap, adp, acc, cst, can] = await Promise.all([
     sb.rpc('sa_overview').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_health').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_leagues_full').then(r=>r.error?null:r.data).catch(()=>null),
@@ -750,7 +760,8 @@ async function loadAll(silent){
     sb.rpc('capacity_status').then(r=>r.error?null:(r.data&&r.data[0])).catch(()=>null),
     sb.rpc('sa_adoption_persone').then(r=>r.error?null:r.data).catch(()=>null),
     sb.rpc('sa_last_access').then(r=>r.error?null:r.data).catch(()=>null),
-    sb.rpc('sa_costs_list').then(r=>r.error?null:r.data).catch(()=>null)
+    sb.rpc('sa_costs_list').then(r=>r.error?null:r.data).catch(()=>null),
+    sb.rpc('sa_canali').then(r=>r.error?null:r.data).catch(()=>null)
   ]);
   if(my!==_loadSeq) return;
   costs=Array.isArray(cst)?cst:null;
@@ -767,6 +778,7 @@ async function loadAll(silent){
   if(Array.isArray(acc)){ accessById={}; acc.forEach(r=>{ accessById[String(r.league_id)]=r.last_access; }); }
   _adp=(adp&&Array.isArray(adp.versioni))?adp:null;
   renderAdoption(ad,_adp);
+  _can=can||null; renderCanali();
   if(lg){ leagues=lg||[]; }
   else {
     const old=await sb.rpc('sa_leagues').then(r=>r.error?null:r.data).catch(()=>null);
@@ -880,6 +892,8 @@ const DETAILS={
         s:'Quante persone sono dentro adesso, e quante volte negli ultimi 7 giorni l\u2019app ha sbattuto contro un limite dei servizi che usa: connessioni del database finite, email bloccate, troppe richieste insieme, quota mensile esaurita. Non sono errori di programmazione: sono i confini del piano gratuito. Se questi numeri crescono, conviene passare a un piano a pagamento prima che qualcuno resti fuori.'},
   live:{t:'Giornate vive adesso',
         s:'Le giornate aperte in questo momento in tutte le leghe, con la fase in cui sono e i promemoria che dovevano partire.'},
+  can: {t:'Da dove giocano',
+        s:'Per ogni account: App Store, Google Play, PWA sulla Home o browser. Conta il dispositivo usato per ultimo negli ultimi 30 giorni; i bollini mostrano tutti quelli usati.'},
   ado: {t:'Come viene usata',
         s:'Quante persone hanno davvero l\u2019app sulla Home, quante hanno le notifiche accese e quante sono sulla versione pi\u00f9 recente. La base del conto \u00e8 chi ha aperto l\u2019app almeno una volta da quando la misuriamo.'}
 };
@@ -1009,6 +1023,64 @@ function bar(cls,titolo,n,base,nota){
     +(nota?'<div class="chk" style="padding:6px 0 0;border:none"><span>'+esc(nota)+'</span></div>':'')
     +'</div>';
 }
+/* ---------- DA DOVE GIOCANO (14/11/2026, sa_canali in 4 - SQL/40_console_canali.sql) ----------
+   Canale del dispositivo: ios-app = App Store, android-app = Google Play, icona sulla Home = PWA,
+   il resto = browser. Le barre contano ogni persona UNA volta, col dispositivo usato per ultimo;
+   i bollini nell'elenco mostrano tutti i canali usati negli ultimi 30 giorni (il contorno = l'ultimo). */
+let _can=null, _canF='tutti', _canQ='';
+const CAN_NOMI={app_store:'App Store',play_store:'Google Play',pwa:'PWA',browser:'Browser',fermi:'Fermi',mai:'Mai aperta'};
+const CAN_TAG={app_store:['as','App Store'],play_store:['gp','Google Play'],pwa:['pw','PWA'],browser:['br','Browser']};
+function canTags(canali, main){
+  return ['app_store','play_store','pwa','browser'].filter(k=>(canali||[]).indexOf(k)>=0)
+    .map(k=>'<span class="tg '+CAN_TAG[k][0]+(k===main?' main':'')+'">'+CAN_TAG[k][1]+'</span>').join('');
+}
+function renderCanali(){
+  const bx=document.getElementById('canBars'), ls=document.getElementById('canList'), rt=document.getElementById('canBase');
+  if(!bx) return;
+  if(!_can || !_can.principale){
+    bx.innerHTML='<div class="skel">Numeri non disponibili. Esegui <span class="num">40_console_canali.sql</span>.</div>';
+    if(ls) ls.innerHTML=''; if(rt) rt.textContent=''; return;
+  }
+  const P=_can.principale, A=_can.almeno||{}, T=_can.totale||0;
+  const nApp=(P.app_store||0)+(P.play_store||0);
+  if(rt) rt.textContent=nApp+' su '+T+' con l’app';
+  bx.innerHTML='<div class="sect" style="margin:0 0 10px">Ogni persona una volta<small>ultimo dispositivo</small></div>'
+    + bar('', 'App Store (iPhone)', P.app_store||0, T, '')
+    + bar('g','Google Play (Android)', P.play_store||0, T, '')
+    + bar('o','PWA sulla Home', P.pwa||0, T, (P.pwa? 'Dal 24 novembre la PWA si blocca: devono passare all’app.':''))
+    + bar('', 'Solo browser', P.browser||0, T, '')
+    + '<div class="vrow"><span>Fermi da oltre '+(_can.giorni||30)+' giorni</span><b>'+(P.fermi||0)+'</b></div>'
+    + '<div class="vrow"><span>Mai aperta da quando la misuriamo</span><b>'+(P.mai||0)+'</b></div>'
+    + '<div class="sect" style="margin:14px 0 6px">Chi ha usato almeno una volta<small>ultimi '+(_can.giorni||30)+' giorni</small></div>'
+    + ['app_store','play_store','pwa','browser'].map(k=>'<div class="vrow"><span>'+CAN_NOMI[k]+'</span><b>'+(A[k]||0)+'</b></div>').join('');
+  if(ls && !document.getElementById('canRows'))
+    ls.innerHTML='<div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.5" y2="16.5"/></svg>'
+      +'<input id="canQ" type="search" placeholder="Cerca nome, squadra, email o lega&hellip;" oninput="_canQ=this.value;renderCanList()" autocomplete="off"></div><div id="canRows"></div>';
+  renderCanList();
+}
+function setCanF(f){ _canF=f; renderCanList(); }
+function renderCanList(){
+  const ls=document.getElementById('canRows'); if(!ls || !_can) return;
+  const all=Array.isArray(_can.persone)?_can.persone:[];
+  const cnt=k=>all.filter(p=>p.principale===k).length;
+  const q=_canQ.trim().toLowerCase();
+  const vis=all.filter(p=>(_canF==='tutti'||p.principale===_canF)
+    && (!q || [p.team_name,p.player_name,p.email,p.lega].join(' ').toLowerCase().indexOf(q)>=0));
+  let h='';
+  h+='<div class="fltr">'+['tutti','app_store','play_store','pwa','browser','fermi','mai'].map(k=>
+      '<button class="'+(_canF===k?'on':'')+'" onclick="setCanF(\''+k+'\')">'+(k==='tutti'?'Tutti ('+all.length+')':CAN_NOMI[k]+' ('+cnt(k)+')')+'</button>').join('')+'</div>';
+  if(!vis.length){ ls.innerHTML=h+'<div class="empty">Nessuno.</div>'; return; }
+  h+=vis.map(p=>{
+    const tags=canTags(p.canali,p.principale)
+      || '<span class="tg '+(p.principale==='mai'?'bad':'warn')+'">'+esc(CAN_NOMI[p.principale]||'—')+'</span>';
+    const sub=[esc(p.player_name||''), esc(p.lega||'—'), esc(p.email||'—'),
+               p.ultimo?('ultimo accesso '+ago(p.ultimo)):'mai aperta'].filter(Boolean).join(' · ');
+    return '<div class="prow"><div class="phead" style="cursor:default"><div class="pinfo"><b>'+esc(p.team_name||'—')+'</b><small>'+sub+'</small></div>'
+      +'<div class="ptags">'+tags+'</div></div></div>';
+  }).join('');
+  ls.innerHTML=h;
+}
+
 let _adp=null;
 function renderAdoption(a,p){
   if(!a && p && p.persone) a={};
@@ -1553,12 +1625,14 @@ function pwaSostituita(d, vivi){
 }
 function personKinds(m){
   const vivi=devVivi(m);
-  return { ps:vivi.some(isPS), pwa:vivi.some(d=>d&&d.standalone&&!isPS(d)&&!pwaSostituita(d,vivi)) };
+  const as=vivi.some(d=>String(d&&d.platform)==='ios-app'), gp=vivi.some(d=>String(d&&d.platform)==='android-app');
+  return { ps:as||gp, as:as, gp:gp, pwa:vivi.some(d=>d&&d.standalone&&!isPS(d)&&!pwaSostituita(d,vivi)) };
 }
 function kindTags(m){
   const k=personKinds(m); let h='';
-  if(k.ps)  h+='<span class="tg ok">PS</span>';
-  if(k.pwa) h+='<span class="tg ok">PWA</span>';
+  if(k.as)  h+='<span class="tg as">App Store</span>';
+  if(k.gp)  h+='<span class="tg gp">Google Play</span>';
+  if(k.pwa) h+='<span class="tg pw">PWA</span>';
   if(!k.ps&&!k.pwa) h+='<span class="tg warn">\ud83c\udf10</span>';
   return h;
 }
@@ -1570,6 +1644,7 @@ function renderPeople(){
   const tot=mem.length;
 
   const nPS=mem.filter(m=>personKinds(m).ps).length;
+  const nAS=mem.filter(m=>personKinds(m).as).length, nGP=mem.filter(m=>personKinds(m).gp).length;
   const nPWA=mem.filter(m=>personKinds(m).pwa).length;
   const nHome=mem.filter(m=>{const k=personKinds(m);return k.ps||k.pwa;}).length;
   const nPush=mem.filter(m=>m.push_state).length;
@@ -1582,7 +1657,8 @@ function renderPeople(){
 
   h+=bar('g','PWA sulla Home', nPWA, tot,
          nHome<tot?'Su iPhone senza icona sulla Home le notifiche non arrivano proprio.':'')
-   + bar('o','App Play Store', nPS, tot,
+   + bar('','App Store (iPhone)', nAS, tot, '')
+   + bar('o','Google Play (Android)', nGP, tot,
          nPS===0?'Nessuno ha ancora l\u2019app dello store.':'')
    + bar('','Notifiche accese', nPush, tot,
          nPush<tot?(tot-nPush)+(tot-nPush===1?' persona non riceve niente.':' persone non ricevono niente.'):'')
@@ -1626,7 +1702,7 @@ function renderPeople(){
         '<div class="drow">'
           +'<b>'+esc(d.version||'?')+'</b>'
           +'<span>'+esc(d.platform||'?')+' \u00b7 '+esc(d.browser||'?')
-          +(isPS(d)?' \u00b7 app Play Store':(d.standalone?(pwaSostituita(d,vivi)?' \u00b7 PWA sostituita dall\u2019app dello store':' \u00b7 PWA sulla Home'):' \u00b7 dal browser'))
+          +(isPS(d)?(String(d.platform)==='ios-app'?' \u00b7 app App Store':' \u00b7 app Google Play'):(d.standalone?(pwaSostituita(d,vivi)?' \u00b7 PWA sostituita dall\u2019app dello store':' \u00b7 PWA sulla Home'):' \u00b7 dal browser'))
           +' \u00b7 notifiche '+esc(d.push||'?')+'</span>'
           +'<b style="color:var(--muted);font-weight:600">'+(d.last_seen?ago(d.last_seen):'\u2014')+'</b></div>').join('');
       if(nascosti>0)
