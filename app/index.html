@@ -5993,6 +5993,11 @@ function _gateCss(){
   +'#fcGate .gl{display:block;background:none;border:none;color:#8aa3c2;font-weight:700;font-size:13.5px;padding:10px;cursor:pointer;width:100%}'
   +'#fcGate .gq{background:#fff;border-radius:16px;padding:12px;width:156px;height:156px;margin:2px auto 14px;box-sizing:content-box;box-shadow:0 16px 40px -16px rgba(63,151,255,.7)}'
   +'#fcGate .gq svg{display:block;width:100%;height:100%}'
+  +'#fcGate .gc.sm{max-width:330px;padding:20px 18px 10px}'
+  +'#fcGate .gc.sm .gx,#fcGate .gc.sm .gx img{width:58px;height:58px}#fcGate .gc.sm .gx img{border-radius:16px}'
+  +'#fcGate .gc.sm h2{font-size:21px}#fcGate .gc.sm p{font-size:14px;margin-bottom:14px}'
+  +'#fcGate .gc.sm .gq{width:132px;height:132px;padding:10px}'
+  +'#fcGate .gc.sm .gb2{padding:12px;font-size:14.5px}'
   +'@keyframes gIn{from{opacity:0}}'
   +'@keyframes gUp{from{opacity:0;transform:translateY(14px) scale(.98)}}'
   +'@keyframes gFlow{to{background-position:-250% 0}}'
@@ -6005,12 +6010,12 @@ function _gateCss(){
   document.head.appendChild(s);
 }
 function _gateDate(t){ try{ return new Date(t).toLocaleDateString('it-IT',{day:'numeric',month:'long'}); }catch(_){ return ''; } }
-function _gateShow(html, solid){
+function _gateShow(html, solid, small){
   _gateCss();
   let o=document.getElementById('fcGate');
   if(!o){ o=document.createElement('div'); o.id='fcGate'; document.body.appendChild(o); }
   o.className=solid?'solid':'';
-  o.innerHTML='<div class="gc">'+html+'</div>';
+  o.innerHTML='<div class="gc'+(small?' sm':'')+'">'+html+'</div>';
   o.querySelectorAll('[data-store]').forEach(b=>{ b.onclick=()=>fcGateOpenStore(b.getAttribute('data-store')); });
   const x=o.querySelector('[data-close]'); if(x) x.onclick=()=>o.remove();
   return o;
@@ -6053,6 +6058,25 @@ function _gateHtmlWeb(c, dev, st){
   const icona=fcIsStandalone()
     ? '<div class="gn">📲 Appena entri nell’app, <b>togli questa icona dalla Home</b>: così ogni notifica arriva una volta sola.</div>' : '';
   const later=block?'':'<button class="gl" data-close>Più tardi</button>';
+  /* 13/11/2026 sera — l'avviso dei 10 giorni e' corto: novita' + data + tasto */
+  if(!block){
+    const bio=(dev==='ios')?'Face ID':'accesso rapido';
+    if(dev==='desktop'){
+      return _gateHero('Novità')
+        +'<h2>FantaCalcetto ora è <em>un’app</em></h2>'
+        +'<p>Inquadra il codice e scaricala. Dal <b>'+data+'</b> la versione web non funzionerà più.</p>'
+        +'<div class="gq"><svg viewBox="0 0 29 29" shape-rendering="crispEdges" aria-label="Codice QR per scaricare l’app"><path fill="#07111f" d="'+FC_QR_PATH+'"/></svg></div>'
+        +'<button class="gb gb2" data-store="'+esc(ios)+'">'+FC_SVG_APPLE+'<span>App Store</span></button>'
+        +'<button class="gb gb2" data-store="'+esc(and)+'">'+FC_SVG_PLAY+'<span>Google Play</span></button>'
+        +later;
+    }
+    return _gateHero('Novità')
+      +'<h2>FantaCalcetto ora è <em>un’app</em></h2>'
+      +'<p>Più veloce, con notifiche puntuali e '+bio+'. Dal <b>'+data+'</b> questa versione web non funzionerà più.</p>'
+      +_gateStoreBtn(dev, (dev==='ios')?ios:and)
+      +(fcIsStandalone()?'<p class="gs">Poi elimina questa icona dalla Home, così non ricevi notifiche doppie.</p>':'')
+      +later;
+  }
   if(dev==='desktop'){
     return _gateHero(block?'Ora si gioca dall’app':'Novità')
       +'<h2>'+(block?'FantaCalcetto ora è <em>un’app</em>':'FantaCalcetto è diventato <em>un’app</em>')+'</h2>'
@@ -6120,7 +6144,7 @@ async function fcGateCheck(){
   const wait=()=>{
     if(window._fcInviteShown) return;   // c'e' gia' l'invito a scaricare l'app
     if(typeof _splashGone!=='undefined' && _splashGone){
-      setTimeout(()=>{ _gateShow(_gateHtmlWeb(c, dev, st), false); try{ localStorage.setItem(FC_GATE_WARN_KEY, day); }catch(_){ } }, 900);
+      setTimeout(()=>{ _gateShow(_gateHtmlWeb(c, dev, st), false, true); try{ localStorage.setItem(FC_GATE_WARN_KEY, day); }catch(_){ } }, 900);
       return;
     }
     if(++n<120) setTimeout(wait, 500);
