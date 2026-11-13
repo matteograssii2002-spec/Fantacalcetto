@@ -5998,6 +5998,11 @@ function _gateCss(){
   +'#fcGate .gc.sm h2{font-size:21px}#fcGate .gc.sm p{font-size:14px;margin-bottom:14px}'
   +'#fcGate .gc.sm .gq{width:132px;height:132px;padding:10px}'
   +'#fcGate .gc.sm .gb2{padding:12px;font-size:14.5px}'
+  +'#fcGate.out{animation:gOut .3s ease forwards}#fcGate.out .gc{transition:transform .3s ease;transform:scale(.96)}'
+  +'@keyframes gOut{to{opacity:0}}'
+  +'#fcGate .gdel{display:flex;gap:9px;align-items:flex-start;text-align:left;background:rgba(255,77,94,.12);border:1px solid rgba(255,93,107,.45);border-radius:13px;padding:10px 12px;margin:2px 0 8px;color:#ffb3ba;font-size:13px;line-height:1.4}'
+  +'#fcGate .gdel b{color:#ff6b78}'
+  +'#fcGate .gdel span{font-size:17px;line-height:1.1}'
   +'@keyframes gIn{from{opacity:0}}'
   +'@keyframes gUp{from{opacity:0;transform:translateY(14px) scale(.98)}}'
   +'@keyframes gFlow{to{background-position:-250% 0}}'
@@ -6010,6 +6015,16 @@ function _gateCss(){
   document.head.appendChild(s);
 }
 function _gateDate(t){ try{ return new Date(t).toLocaleDateString('it-IT',{day:'numeric',month:'long'}); }catch(_){ return ''; } }
+/* 13/11/2026 — chiusura «morbida»: il riquadro sparisce in dissolvenza ma il velo resta
+   sopra la pagina altri 350 ms e si mangia i tocchi, cosi' il dito che ha premuto un tasto
+   non apre niente di quello che c'e' sotto (succedeva su iPhone e Android). */
+function _gateFade(o){
+  if(!o || o._closing) return; o._closing=true;
+  o.classList.add('out'); o.removeAttribute('id');   // l'id torna libero subito per l'avviso dopo
+  const eat=e=>{ e.preventDefault(); e.stopPropagation(); };
+  ['click','touchstart','touchend','pointerdown','pointerup'].forEach(t=>o.addEventListener(t,eat,true));
+  setTimeout(()=>{ try{ o.remove(); }catch(_){ } },380);
+}
 function _gateShow(html, solid, small){
   _gateCss();
   let o=document.getElementById('fcGate');
@@ -6017,7 +6032,7 @@ function _gateShow(html, solid, small){
   o.className=solid?'solid':'';
   o.innerHTML='<div class="gc'+(small?' sm':'')+'">'+html+'</div>';
   o.querySelectorAll('[data-store]').forEach(b=>{ b.onclick=()=>fcGateOpenStore(b.getAttribute('data-store')); });
-  const x=o.querySelector('[data-close]'); if(x) x.onclick=()=>o.remove();
+  const x=o.querySelector('[data-close]'); if(x) x.onclick=(e)=>{ if(e){ e.preventDefault(); e.stopPropagation(); } _gateFade(o); };
   return o;
 }
 /* la PWA bloccata spegne le sue notifiche web: niente doppioni con l'app */
@@ -6074,7 +6089,7 @@ function _gateHtmlWeb(c, dev, st){
       +'<h2>FantaCalcetto ora è <em>un’app</em></h2>'
       +'<p>Più veloce, con notifiche puntuali e '+bio+'. Dal <b>'+data+'</b> questa versione web non funzionerà più.</p>'
       +_gateStoreBtn(dev, (dev==='ios')?ios:and)
-      +(fcIsStandalone()?'<p class="gs">Poi elimina questa icona dalla Home, così non ricevi notifiche doppie.</p>':'')
+      +(fcIsStandalone()?'<div class="gdel"><span>🗑️</span><div><b>Poi elimina questa icona dalla Home.</b> Verrà spenta, e intanto riceveresti le notifiche doppie.</div></div>':'')
       +later;
   }
   if(dev==='desktop'){
@@ -14754,19 +14769,13 @@ async function _natAskPush(n){
 }
 /* 13/11/2026 — invito alle notifiche nello stile degli avvisi dell'app */
 function _natPushCard(denied){
-  const rows='<div class="gp">'
-    +'<div><span>📅</span><div><b>Giornata aperta</b><small>Segni subito se ci sei.</small></div></div>'
-    +'<div><span>📝</span><div><b>Formazione</b><small>Il promemoria prima che si chiuda.</small></div></div>'
-    +'<div><span>⭐</span><div><b>Voti e pagellone</b><small>Sai subito com’è andata.</small></div></div>'
-    +'</div>';
   _gateShow(_gateHero('Non perderti niente')
     +(denied
-      ? '<h2>Accendi le <em>notifiche</em></h2><p>Sono spente nelle impostazioni del telefono: si riattivano in due tocchi.</p>'
-      : '<h2>Attiva le <em>notifiche</em></h2><p>Ti avvisiamo solo quando serve. Niente spam.</p>')
-    +rows
+      ? '<h2>Accendi le <em>notifiche</em></h2><p>Sono spente: si attivano dalle impostazioni del telefono.</p>'
+      : '<h2>Attiva le <em>notifiche</em></h2><p>Giornata aperta, formazione, voti: ti avvisiamo noi.</p>')
     +'<button class="gb" id="pushYes"><span>🔔 '+(denied?'Apri le impostazioni':'Attiva le notifiche')+'</span></button>'
-    +'<button class="gl" data-close>Non ora</button>', false);
-  document.getElementById('pushYes').onclick=()=>{ _fcCardClose(); if(denied) natOpenNotifSettings(); else enablePush(); };
+    +'<button class="gl" data-close>Non ora</button>', false, true);
+  document.getElementById('pushYes').onclick=(e)=>{ e.preventDefault(); _fcCardClose(); if(denied) natOpenNotifSettings(); else enablePush(); };
 }
 function closePushDen(){ document.getElementById('pushBg').classList.remove('open'); const m=document.getElementById('pushDenModal'); if(m) m.classList.remove('open'); }
 async function natOpenNotifSettings(){
@@ -15312,9 +15321,9 @@ function fcReviewMaybe(n){
       +'<button class="gb" id="revYes"><span>⭐ Scrivi una recensione</span></button>'
       +'<button class="gl" id="revLater">Più tardi</button>'
       +'<button class="gl" id="revNo" style="opacity:.7;padding-top:0">No, grazie</button>', false);
-    document.getElementById('revYes').onclick=()=>{ _fcCardClose(); fcReviewOpen(); };
-    document.getElementById('revLater').onclick=()=>{ _fcCardClose(); try{ localStorage.setItem('fc_review_next', String(Date.now()+10*86400000)); }catch(_){ } };
-    document.getElementById('revNo').onclick=()=>{ _fcCardClose(); try{ localStorage.setItem('fc_review','never'); }catch(_){ } };
+    document.getElementById('revYes').onclick=(e)=>{ e.preventDefault(); _fcCardClose(); fcReviewOpen(); };
+    document.getElementById('revLater').onclick=(e)=>{ e.preventDefault(); _fcCardClose(); try{ localStorage.setItem('fc_review_next', String(Date.now()+10*86400000)); }catch(_){ } };
+    document.getElementById('revNo').onclick=(e)=>{ e.preventDefault(); _fcCardClose(); try{ localStorage.setItem('fc_review','never'); }catch(_){ } };
   }, 2500);
 }
 /* ===== fine RECENSIONI ============================================================== */
@@ -17182,7 +17191,7 @@ const FC_IOS_URL='https://apps.apple.com/it/app/id6826225028';
     const add=()=>{
       window._fcInviteShown=true;
       const o=_gateShow(html, false);
-      document.getElementById('playInviteGo').onclick=()=>{ try{ sessionStorage.setItem('fc_play_skip','1'); }catch(_){ } o.remove(); };
+      document.getElementById('playInviteGo').onclick=(e)=>{ e.preventDefault(); try{ sessionStorage.setItem('fc_play_skip','1'); }catch(_){ } _gateFade(o); };
     };
     if(document.body) add(); else document.addEventListener('DOMContentLoaded',add);
   }catch(_){ }
@@ -17307,20 +17316,16 @@ function bioOfferSoon(n){
     const nm=_bioLabel(), dev=(NATIVE_OS==='ios')?'ios':'android';
     _gateShow(_gateHero('Accesso rapido')
       +'<h2>Entra con <em>'+nm+'</em></h2>'
-      +'<p>La prossima volta un tocco e sei dentro: niente email e password da riscrivere.</p>'
-      +'<div class="gp">'
-        +'<div><span>⚡</span><div><b>Un tocco e sei dentro</b><small>Tocchi il tuo profilo salvato e '+(dev==='ios'?'guardi il telefono':'appoggi il dito')+'.</small></div></div>'
-        +'<div><span>🛡️</span><div><b>Protetto dal telefono</b><small>I dati restano cifrati, solo su questo telefono.</small></div></div>'
-      +'</div>'
+      +'<p>Un tocco e sei dentro, senza password.</p>'
       +'<button class="gb" id="bioYes"><span>🔐 Attiva '+nm+'</span></button>'
       +'<button class="gl" id="bioLater">Non ora</button>'
-      +'<button class="gl" id="bioNever" style="opacity:.7;padding-top:0">Non chiedermelo più</button>', false);
-    document.getElementById('bioYes').onclick=bioOfferYes;
-    document.getElementById('bioLater').onclick=()=>bioOfferNo(false);
-    document.getElementById('bioNever').onclick=()=>bioOfferNo(true);
+      +'<button class="gl" id="bioNever" style="opacity:.7;padding-top:0">Non chiedermelo più</button>', false, true);
+    document.getElementById('bioYes').onclick=(e)=>{ e.preventDefault(); bioOfferYes(); };
+    document.getElementById('bioLater').onclick=(e)=>{ e.preventDefault(); bioOfferNo(false); };
+    document.getElementById('bioNever').onclick=(e)=>{ e.preventDefault(); bioOfferNo(true); };
   });
 }
-function _fcCardClose(){ const o=document.getElementById('fcGate'); if(o) o.remove(); }
+function _fcCardClose(){ _gateFade(document.getElementById('fcGate')); }
 async function bioOfferYes(){
   const c=_bioPending; _fcCardClose(); _bioPending=null;
   if(!c) return;
