@@ -7,13 +7,21 @@
 <meta name="description" content="Scarica l'app FantaCalcetto da App Store o Google Play.">
 <link rel="canonical" href="https://www.fantacalcettoitalia.it/scarica">
 <meta name="theme-color" content="#0a1626">
+<meta property="og:title" content="Scarica FantaCalcetto">
+<meta property="og:description" content="Il fantacalcio per il calcetto a 5. Gratis su App Store e Google Play.">
+<meta property="og:url" content="https://www.fantacalcettoitalia.it/scarica">
+<meta property="og:image" content="https://www.fantacalcettoitalia.it/icon-512.png?v=4">
+<meta property="og:type" content="website">
 <link rel="apple-touch-icon" href="icon-512.png?v=4">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=4">
 <link href="/app/fonts/fonts.css" rel="stylesheet">
 <!-- 26/10/2026 — Pagina del QR mostrato da computer (app 7.2.7).
      Da telefono porta dritto allo store giusto; altrimenti mostra i pulsanti.
      I link arrivano dal database (get_app_gate): finche' un'app non e' pubblica
-     il suo pulsante non compare. -->
+     il suo pulsante non compare.
+     15/11/2026 — Link unico per bio Instagram/TikTok: se il database non risponde
+     entro 2,5 s si usano i link scritti qui sotto (FALLBACK), cosi' chi arriva dai
+     social non vede mai la pagina vuota. Se cambiano i link, cambiarli anche qui. -->
 <style>
   *{box-sizing:border-box}
   body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 20px;background:#0a1626;color:#eaf1fb;font-family:'Hanken Grotesk',system-ui,sans-serif}
@@ -46,8 +54,12 @@
     if(and) h+='<a class="b'+(ios?' b2':'')+'" href="'+and+'">Google Play</a>';
     document.getElementById('btns').innerHTML=h||'<p class="m">L’app sarà disponibile a breve.</p>';
   }
+  var FALLBACK={ios_url:'https://apps.apple.com/it/app/id6826225028',android_url:'https://play.google.com/store/apps/details?id=it.fantacalcettoitalia.app'};
+  var done=false;
+  function once(c){ if(done) return; done=true; show(c&&(c.ios_url||c.android_url)?c:FALLBACK); }
+  setTimeout(function(){ once(null); },2500);
   fetch(URL_+'/rest/v1/rpc/get_app_gate',{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},body:'{}'})
-    .then(function(r){ return r.ok?r.json():null; }).then(show).catch(function(){ show(null); });
+    .then(function(r){ return r.ok?r.json():null; }).then(once).catch(function(){ once(null); });
 })();
 </script>
 </body>
