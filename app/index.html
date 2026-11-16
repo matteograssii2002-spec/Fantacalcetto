@@ -772,6 +772,32 @@
   .cs-warn{background:rgba(255,194,61,.1);border:1px solid rgba(255,194,61,.34);color:var(--gold-soft);font-size:12.5px;line-height:1.55;padding:11px 12px;border-radius:14px;margin:2px 0 12px}
   .cs-warn b{color:var(--gold)}
   .cs-mini{display:flex;gap:8px;margin-top:10px}
+  /* 7.x — pubblica le squadre agli allenatori */
+  .cs-pub{width:100%;margin-top:9px;background:rgba(63,151,255,.12);border:1.5px solid rgba(63,151,255,.45);border-radius:13px;padding:12px 6px;color:var(--accent-soft);font-family:'Hanken Grotesk';font-weight:700;font-size:13px;cursor:pointer}
+  .cs-pubok{margin-top:9px;text-align:center;font-size:12px;line-height:1.45;color:var(--green);font-weight:700}
+  .cs-pubok.off{color:var(--muted);font-weight:600}
+  /* 7.x — SQUADRE DELLA PARTITA in Schiera formazione */
+  .mdt{background:linear-gradient(160deg,#10294d,#0a1830);border:1px solid rgba(63,151,255,.32);border-radius:14px;padding:11px 13px;margin-top:12px}
+  .mdt.empty{border-color:var(--line-strong)}
+  .mdt-h{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .mdt-t{font-weight:800;font-size:14px}
+  .mdt.empty .mdt-t{color:var(--muted)}
+  .mdt-ch{color:var(--accent-soft);font-size:13px;transition:transform .2s;flex:none}
+  .mdt.closed .mdt-ch{transform:rotate(180deg)}
+  .mdt-s{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .mdt-g{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:9px}
+  .mdt.closed .mdt-g,.mdt.closed .mdt-leg{display:none}
+  .mdt-c h4{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 3px;font-family:'Bricolage Grotesque';font-size:13px}
+  .mdt-c.a h4{color:var(--accent-soft)} .mdt-c.b h4{color:var(--gold)}
+  .mdt-c h4 s{text-decoration:none;font-family:'JetBrains Mono';font-size:11.5px;color:var(--text)}
+  .mdt-p{display:flex;align-items:center;gap:6px;padding:4px 0;border-top:1px solid var(--line);font-size:12.5px;min-width:0}
+  .mdt-p .r{font-family:'JetBrains Mono';font-size:10.5px;color:var(--muted);width:26px;flex:none}
+  .mdt-p .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .mdt-p .me{color:var(--green);font-size:10px;flex:none}
+  .mdt-p .gt{color:var(--gold);font-size:10.5px;flex:none}
+  .mdt-leg{font-size:11px;color:var(--muted);margin-top:7px}
+  .mdt-e{font-size:13px;margin-top:6px;line-height:1.4}
+  .mdt-e small{display:block;font-size:11.5px;color:var(--muted)}
   .cs-mini button{flex:1;background:var(--bg2);border:1.5px solid var(--line-strong);border-radius:13px;padding:11px 6px;color:var(--text);font-family:'Hanken Grotesk';font-weight:700;font-size:12.5px;cursor:pointer}
   .cs-mini button:active{transform:scale(.97)}
   .cs-mini button:disabled{opacity:.45}
@@ -1563,6 +1589,26 @@
   .chat-msg.them{align-self:flex-start;background:var(--surface);border:1px solid var(--line-strong);color:var(--text);border-bottom-left-radius:6px}
   .chat-msg time{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;opacity:.68;text-align:right;margin-top:3px}
   .chat-msg.pending{opacity:.55}
+  /* 15/11/2026 — risposta a un messaggio preciso ed eliminazione */
+  .chat-msg .cm-q{display:block;margin:-2px -4px 6px;padding:6px 9px;border-radius:11px;border-left:3px solid var(--accent-soft);background:rgba(10,22,38,.28);font-size:12.5px;line-height:1.35;cursor:pointer;white-space:normal}
+  .chat-msg.me .cm-q{border-left-color:#fff;background:rgba(255,255,255,.16)}
+  .chat-msg .cm-q b{display:block;font-size:11.5px;color:var(--accent-soft)}
+  .chat-msg.me .cm-q b{color:#fff}
+  .chat-msg .cm-q span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;opacity:.85}
+  .chat-msg.del{font-style:italic;opacity:.62}
+  .chat-msg.me.del{background:var(--surface2)}
+  .chat-msg.flash{box-shadow:0 0 0 2px var(--accent-soft)}
+  .chat-reply{display:none;align-items:center;gap:10px;max-width:var(--maxw);width:100%;margin:0 auto;padding:8px 14px 0;background:var(--bg);border-top:1px solid var(--line)}
+  .chat-reply.on{display:flex}
+  .chat-reply.on+.chat-foot{border-top:none}
+  .chat-reply .cr-q{flex:1;min-width:0;border-left:3px solid var(--accent-soft);padding:3px 0 3px 9px;font-size:13px;line-height:1.35}
+  .chat-reply .cr-q b{display:block;font-size:11.5px;color:var(--accent-soft)}
+  .chat-reply .cr-q span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+  .chat-reply button{flex:none;width:32px;height:32px;border-radius:50%;border:1px solid var(--line-strong);background:var(--surface);color:var(--text);font-size:14px;cursor:pointer}
+  .chat-selbar .cs-ic{display:none;padding:0;width:42px}
+  .chat-selbar .cs-ic.on{display:inline-grid;place-items:center}
+  .chat-selbar .cs-ic svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .chat-selbar .cs-del{color:var(--red)}
   /* 13/11/2026 — selezione dei messaggi come WhatsApp: tieni premuto, tocca gli altri, Copia */
   .chat-msg{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:transform .15s ease,box-shadow .15s ease}
   .chat-msg.press{transform:scale(.97)}
@@ -3413,6 +3459,7 @@
       <div class="budget-top"><span class="lab">Budget</span><span class="val"><b id="spent">0</b> / 100 cr · <span id="left" style="color:var(--muted)">100 rimasti</span></span></div>
       <div class="meter"><i id="meterFill"></i></div>
     </div>
+    <div class="mdt" id="mdTeams" style="display:none"></div>
     <div class="campo-team" id="campoTeam" style="display:none"></div>
     <div class="pitch" id="pitch">
       <div class="mark m-box top"></div><div class="mark m-box bot"></div>
@@ -4023,8 +4070,9 @@
       <div class="chat-av"><img src="/icon-512.png?v=3" alt=""></div>
       <div class="ls-ttl"><b id="chatTtl">Assistenza FantaCalcetto</b><small id="chatSub">—</small></div>
     </div>
-    <div class="chat-selbar" id="chatSelBar"><button onclick="chatSelClear()" aria-label="Annulla">✕</button><b id="chatSelN">1</b><button class="cs-copy" onclick="chatSelCopy()">Copia</button></div>
+    <div class="chat-selbar" id="chatSelBar"><button onclick="chatSelClear()" aria-label="Annulla">✕</button><b id="chatSelN">1</b><button class="cs-ic" id="chatSelReply" onclick="chatSelReply()" aria-label="Rispondi"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v4"/></svg></button><button class="cs-ic cs-del" id="chatSelDel" onclick="chatSelDelete()" aria-label="Elimina"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button><button class="cs-copy" onclick="chatSelCopy()">Copia</button></div>
     <div class="ls-body chat-body" id="chatBody"></div>
+    <div class="chat-reply" id="chatReply"><div class="cr-q" id="chatReplyQ"></div><button onclick="chatReplyClear()" aria-label="Annulla risposta">✕</button></div>
     <div class="chat-foot" id="chatFoot">
       <textarea id="chatIn" rows="1" maxlength="2000" placeholder="Scrivi un messaggio…" oninput="chatGrow()"></textarea>
       <button class="chat-send" id="chatSend" onpointerdown="event.preventDefault()" onclick="chatSendMsg()" aria-label="Invia"><svg viewBox="0 0 24 24"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg></button>
@@ -7978,7 +8026,7 @@ async function loadMatchdayData(){
   lineup={}; captain=null; myVotes={}; averages={}; adminStats={}; myNom={mvp:'',sega:''}; mvpPid=0; segaPid=0; formModule='1-2-2'; SLOTS=MODULES[formModule].slots; voteDirty=false;
   if(currentMd){
     await Promise.all([loadLineup(), loadMyVotes(), loadAverages(),
-                       loadMatchStats(), loadMyNom(), loadMvpSega()]);
+                       loadMatchStats(), loadMyNom(), loadMvpSega(), loadMdTeams(true)]);
     subscribeLive();
   }
   await Promise.all([loadMdPresent(), loadPlayerStats(), loadCanVote()]);
@@ -9709,6 +9757,7 @@ function go(v){
   syncChatFab();   // 7.1 — il tasto chat sta solo in Home
   if(v==='settings'){ _setStack.length=0; setNav('setMenu'); openSettings(); }
   if(v==='classifica'){ maybeAnimateLega(); }
+  if(v==='formazione'){ try{ loadMdTeams(false); }catch(_){ } }   // 7.x — squadre della partita
   /* stessa scheda toccata di nuovo, o Impostazioni: in cima.
      Un'altra scheda: dove la si era lasciata. */
   const y = (wasV===v || v==='settings') ? 0 : (_tabY[v]||0);
@@ -9735,6 +9784,70 @@ function applyProfile(){
   renderRuleRows();
 }
 function renderAll(){renderHero();renderMatchday();renderMarket();renderPitch();renderVoti();renderLB();renderMini();renderPresence();renderVoters();renderHomePresence();renderHomeValuePoll();renderLeagueName();renderSeasonUI();renderRecapButton();renderSeasonRecapButton();renderHomeBcards();renderCampoTeam();renderPlanUI();renderTeamMakerRow();}
+/* 7.x — SQUADRE DELLA PARTITA
+   Le squadre fatte con «Crea le squadre» e pubblicate dall'admin (o dal vice)
+   si vedono qui, sopra il campo, prima di schierare. Il database tiene solo
+   gli id dei giocatori (nomi e ruoli si prendono dal listone di adesso) e,
+   per gli ospiti, nome e ruolo. Se non c'e' niente di pubblicato, o il file
+   42_squadre_partita.sql non e' ancora stato lanciato, compare l'avviso
+   «Nessuna anteprima disponibile». Aperto/chiuso resta sul telefono. */
+let mdTeams=null, _mdtFor=null, _mdtAt=0;
+let mdtOpen=(()=>{ try{ return localStorage.getItem('fc_mdt_open')!=='0'; }catch(_){ return true; } })();
+async function loadMdTeams(force){
+  const md=currentMd;
+  if(!md||md.status==='closed'||Number(md.id)<0){ mdTeams=null; _mdtFor=null; renderMdTeams(); return; }
+  if(!force && _mdtFor===md.id && Date.now()-_mdtAt<30000){ renderMdTeams(); return; }
+  try{
+    const {data,error}=await sb.rpc('get_md_teams',{p_md:md.id});
+    if(md!==currentMd) return;   // giornata cambiata nel frattempo
+    if(!error){ mdTeams=data||null; _mdtFor=md.id; _mdtAt=Date.now(); }
+  }catch(_){ }
+  renderMdTeams();
+}
+function mdtToggle(){
+  mdtOpen=!mdtOpen;
+  try{ localStorage.setItem('fc_mdt_open',mdtOpen?'1':'0'); }catch(_){ }
+  renderMdTeams();
+}
+function renderMdTeams(){
+  const el=document.getElementById('mdTeams'); if(!el) return;
+  const md=currentMd;
+  if(!profile||!md||md.status==='closed'||Number(md.id)<0||!amManager()){ el.style.display='none'; return; }
+  el.style.display='block';
+  const t=(_mdtFor===md.id)?mdTeams:null;
+  if(!t||!Array.isArray(t.a)||!Array.isArray(t.b)){
+    el.className='mdt empty';
+    el.innerHTML='<div class="mdt-h"><span class="mdt-t">👥 Squadre della partita</span></div>'
+      +'<div class="mdt-e">Nessuna anteprima disponibile.<small>Squadre non inserite nell’app.</small></div>';
+    return;
+  }
+  const mine=new Set(Object.values(lineup||{}));
+  const ord={POR:0,DIF:1,ATT:2};
+  const rows=arr=>arr.map(e=>{
+      if(e&&e.p!=null){
+        const p=players.find(x=>x.id===Number(e.p)); if(!p) return null;
+        return {n:p.name, r:p.role||'', me:mine.has(p.id), g:false};
+      }
+      if(e&&e.g) return {n:String(e.g), r:e.r||'', me:false, g:true};
+      return null;
+    }).filter(Boolean)
+    .sort((x,y)=>((x.r in ord)?ord[x.r]:3)-((y.r in ord)?ord[y.r]:3))
+    .map(x=>'<div class="mdt-p"><span class="r">'+(x.r?esc(x.r):'—')+'</span><span class="n">'+esc(x.n)+'</span>'
+      +(x.me?'<span class="me">●</span>':'')+(x.g?'<span class="gt">ospite</span>':'')+'</div>').join('');
+  const fa=Number(t.fa), fb=Number(t.fb);
+  let pa='', pb='';
+  if(isFinite(fa)&&isFinite(fb)&&(fa+fb)>0){ const a=Math.round(fa/(fa+fb)*100); pa=a+'%'; pb=(100-a)+'%'; }
+  let quando='';
+  try{ const d=new Date(t.at); if(!isNaN(d)) quando=' · aggiornate alle '+d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}); }catch(_){ }
+  const anyMe=[...t.a,...t.b].some(e=>e&&e.p!=null&&mine.has(Number(e.p)));
+  el.className='mdt'+(mdtOpen?'':' closed');
+  el.innerHTML='<div class="mdt-h" onclick="mdtToggle()"><span class="mdt-t">👥 Squadre della partita</span><span class="mdt-ch">▲</span></div>'
+    +'<div class="mdt-s">Fatte dall’admin'+quando+'</div>'
+    +'<div class="mdt-g"><div class="mdt-c a"><h4>🔵 Blu<s>'+pa+'</s></h4>'+rows(t.a)+'</div>'
+    +'<div class="mdt-c b"><h4>⚪ Bianchi<s>'+pb+'</s></h4>'+rows(t.b)+'</div></div>'
+    +(anyMe?'<div class="mdt-leg"><span style="color:var(--green)">●</span> già nella tua formazione</div>':'');
+}
+
 /* striscia squadra (logo + nome) sopra il campo verde */
 function renderCampoTeam(){
   const el=document.getElementById('campoTeam'); if(!el)return;
@@ -12140,6 +12253,7 @@ function renderMarket(){
 }
 function renderPitch(){
   ensureValidModule();
+  try{ renderMdTeams(); }catch(_){ }   // 7.x — il pallino verde segue la formazione
   renderModulePicker();
   const pitch=document.getElementById('pitch');
   pitch.querySelectorAll('.slot').forEach(e=>e.remove());
@@ -12727,6 +12841,7 @@ let csGVote=6;
 let csGName='';                 // nome dell'ospite mentre lo si scrive: sopravvive al cambio di voto
 let csGRole='';                 // ruolo dell'ospite: '' = non si sa, sta dove serve
 let csEditK=null;               // ospite che si sta modificando (null = nuovo)
+let csPub=false;                // 7.x — squadre di questa bozza pubblicate agli allenatori
 
 /* ---------- la stima di forza ----------
    media e scarto quadratico medio di una serie: servono a trasformare
@@ -12831,11 +12946,11 @@ function csDraftKey(){ return CS_KEY+(currentMd?currentMd.id:'next'); }
 function csSaveDraft(){
   try{
     localStorage.setItem(csDraftKey(),JSON.stringify({
-      g:csGuests, seq:csSeq, off:Array.from(csOff), t:csTeams, hand:csHand}));
+      g:csGuests, seq:csSeq, off:Array.from(csOff), t:csTeams, hand:csHand, pub:csPub}));
   }catch(_){}
 }
 function csLoadDraft(){
-  csGuests=[]; csSeq=1; csOff=new Set(); csTeams=null; csHand=false;
+  csGuests=[]; csSeq=1; csOff=new Set(); csTeams=null; csHand=false; csPub=false;
   try{
     const mine=csDraftKey();
     for(let i=localStorage.length-1;i>=0;i--){
@@ -12847,7 +12962,7 @@ function csLoadDraft(){
     csGuests=Array.isArray(d.g)?d.g:[];
     csSeq=Number(d.seq)||(csGuests.length+1);
     csOff=new Set(Array.isArray(d.off)?d.off:[]);
-    csHand=!!d.hand;
+    csHand=!!d.hand; csPub=!!d.pub;
     if(d.t && Array.isArray(d.t.a) && Array.isArray(d.t.b)) csTeams=d.t;
   }catch(_){}
 }
@@ -12942,7 +13057,7 @@ function csMake(){
 function csRegen(){
   if(!csAlts.length){ csMake(); return; }
   csAltIdx=(csAltIdx+1)%csAlts.length; csSel=null;
-  csApplyAlt(); csSaveDraft();
+  csApplyAlt(); csSaveDraft(); csRepublishSoon();
   if(navigator.vibrate){ try{navigator.vibrate(8);}catch(_){} }
   renderTeamMaker();
 }
@@ -12961,7 +13076,7 @@ function openTeamMaker(){
   if(!profile||!canOp()) return;
   csLoadDraft();
   csSel=null; csAlts=[]; csAltIdx=0; csGVote=6; csGName=''; csGRole=''; csEditK=null;
-  if(!csDraftStillValid()) csTeams=null;
+  if(!csDraftStillValid()){ csTeams=null; csUnpublish(); }
   /* 5.6 — si apre sempre sull'elenco: prima si controlla chi gioca (e si
      aggiunge chi manca), poi si generano le squadre. Quelle della bozza
      restano raggiungibili con «Rivedi le squadre». */
@@ -12999,7 +13114,7 @@ function renderTeamMakerRow(){
 /* ---------- chi gioca / ospiti ---------- */
 function csToggle(k){
   if(csOff.has(k)) csOff.delete(k); else csOff.add(k);
-  csTeams=null; csAlts=[]; csSaveDraft(); renderTeamMaker();
+  csTeams=null; csAlts=[]; csUnpublish(); csSaveDraft(); renderTeamMaker();
 }
 /* 5.6 — cambiare voto o ruolo aggiorna solo i tasti e la riga sotto: prima
    ridisegnava tutto il pannello e il nome appena scritto spariva. */
@@ -13040,12 +13155,12 @@ function csAddGuest(){
     csGuests.push({k:'g'+(csSeq++), name:nome, vote:csGVote, role:csGRole});
     toast(nome+' aggiunto per stasera');
   }
-  csTeams=null; csAlts=[]; csGVote=6; csGName=''; csGRole=''; csEditK=null; csSaveDraft();
+  csTeams=null; csAlts=[]; csGVote=6; csGName=''; csGRole=''; csEditK=null; csUnpublish(); csSaveDraft();
   csGo('setup');
 }
 function csDelGuest(k){
   csGuests=csGuests.filter(g=>g.k!==k);
-  csOff.delete(k); csTeams=null; csAlts=[]; csSaveDraft(); renderTeamMaker();
+  csOff.delete(k); csTeams=null; csAlts=[]; csUnpublish(); csSaveDraft(); renderTeamMaker();
 }
 
 /* ---------- lo scambio a mano ----------
@@ -13061,9 +13176,53 @@ function csTap(k){
   if(s1===s2){ csSel=k; renderTeamMaker(); return; }
   const i=csTeams[s1].indexOf(csSel), j=csTeams[s2].indexOf(k);
   csTeams[s1][i]=k; csTeams[s2][j]=csSel;
-  csSel=null; csHand=true; csSaveDraft();
+  csSel=null; csHand=true; csSaveDraft(); csRepublishSoon();
   if(navigator.vibrate){ try{navigator.vibrate(8);}catch(_){} }
   renderTeamMaker();
+}
+
+/* ---------- 7.x — pubblicazione agli allenatori ----------
+   «Pubblica squadre» manda le due squadre al database: gli allenatori le
+   vedono in Schiera formazione. Dopo, ogni Rigenera o scambio le aggiorna da
+   solo; se cambia chi gioca (presenti, ospiti) le squadre non valgono piu' e
+   vengono tolte, finche' l'admin non le pubblica di nuovo. */
+function csCanPublish(){ return !!(currentMd && currentMd.status!=='closed' && Number(currentMd.id)>=0 && csTeams); }
+function csPayload(keys){
+  return keys.map(k=>{
+    if(k.charAt(0)==='p') return {p:Number(k.slice(1))};
+    const g=csGuests.filter(x=>x.k===k)[0];
+    return g?{g:String(g.name||'Ospite').slice(0,18), r:g.role||''}:null;
+  }).filter(Boolean);
+}
+let _csPubBusy=false, _csPubTimer=null;
+async function csPublish(silent){
+  if(!csCanPublish()||_csPubBusy) return;
+  _csPubBusy=true;
+  try{
+    const {error}=await sb.rpc('publish_md_teams',{p_md:currentMd.id, p_a:csPayload(csTeams.a), p_b:csPayload(csTeams.b),
+                                                   p_fa:csSum(csTeams.a), p_fb:csSum(csTeams.b)});
+    if(error) throw error;
+    csPub=true; csSaveDraft();
+    _mdtFor=null;   // l'anteprima dell'admin si rilegge
+    toast(silent?'Squadre aggiornate per tutti':'Squadre pubblicate: gli allenatori le vedono in Schiera formazione');
+  }catch(_){
+    toast('Pubblicazione non riuscita, riprova');
+  }finally{ _csPubBusy=false; }
+  if(csView==='teams') renderTeamMaker();
+}
+function csRepublishSoon(){
+  if(!csPub) return;
+  clearTimeout(_csPubTimer);
+  _csPubTimer=setTimeout(()=>csPublish(true),900);   // piu' scambi di fila = un solo invio
+}
+function csUnpublish(){
+  if(!csPub) return;
+  csPub=false; clearTimeout(_csPubTimer);
+  const md=currentMd;
+  if(md && Number(md.id)>=0){
+    sb.rpc('unpublish_md_teams',{p_md:md.id}).then(()=>{ _mdtFor=null; },()=>{});
+    toast('Squadre tolte dall’anteprima: pubblicale di nuovo quando sono pronte');
+  }
 }
 
 /* ---------- condivisione ---------- */
@@ -13152,6 +13311,9 @@ function renderTeamMaker(){
     foot.innerHTML='<div class="cs-mini" style="margin-top:0">'
         +'<button onclick="csRegen()">🔄 Rigenera</button>'
         +'<button onclick="csShare()">📤 Condividi</button></div>'
+      +(!csCanPublish() ? '<div class="cs-pubok off">Si possono pubblicare agli allenatori quando la giornata è aperta</div>'
+        : csPub ? '<div class="cs-pubok">✓ Pubblicate · gli allenatori le vedono in Schiera formazione</div>'
+        : '<button class="cs-pub" onclick="csPublish()">📣 Pubblica squadre</button>')
       +'<button class="ls-cta" style="margin-top:9px" onclick="closeTeamMaker()">✓ Fatto</button>';
     return;
   }
@@ -14919,6 +15081,7 @@ document.addEventListener('pointerdown',e=>{
    tabella non e' leggibile direttamente. */
 const CHAT_STAFF='Assistenza FantaCalcetto';
 let chatMode=null, chatUser=null, chatInbox=[], chatMsgs=[], _chatKey='', chatTimer=null, chatUnread=0, chatSending=false;
+let chatUserName='', _chatReplyTo=null;   // 15/11/2026 — nome della persona (vista assistenza) e messaggio a cui si risponde
 function chatRole(){
   if(!profile) return null;
   return isSuperAdmin() ? 'super' : 'user';
@@ -14953,7 +15116,7 @@ function openChat(){
 function closeChat(){
   chatStopPoll(); chatMode=null;
   const ta=chatEl('chatIn'); if(ta) ta.blur();
-  chatKbBind(false); chatAnchor(false); chatSelClear();
+  chatKbBind(false); chatAnchor(false); chatSelClear(); chatReplyClear();
   chatEl('chatOv').classList.remove('open');
   refreshChatUnread();
 }
@@ -14988,7 +15151,7 @@ function chatAgo(v){
 }
 /* --- super-admin: elenco delle persone che hanno scritto --- */
 async function chatShowInbox(){
-  chatMode='inbox'; chatUser=null; _chatKey='';
+  chatMode='inbox'; chatUser=null; _chatKey=''; chatReplyClear();
   chatHead('Assistenza','Messaggi degli utenti','✕');
   chatEl('chatFoot').style.display='none';
   chatEl('chatBody').innerHTML='<div class="empty-note">Carico…</div>';
@@ -15028,7 +15191,8 @@ function chatOpenUser(i){
 /* --- conversazione --- */
 async function chatShowThread(userId, name, sub){
   chatMode = userId ? 'thread' : 'mine';
-  chatUser = userId||null; chatMsgs=[]; _chatKey=''; chatSelClear();
+  chatUser = userId||null; chatMsgs=[]; _chatKey=''; chatSelClear(); chatReplyClear();
+  chatUserName = userId ? (name||'Utente') : '';
   if(chatMode==='thread') chatHead(name||'Utente', sub||('Rispondi come '+CHAT_STAFF), '‹');
   else chatHead(CHAT_STAFF,'Ti rispondiamo qui, il prima possibile','✕');
   chatEl('chatFoot').style.display='flex';
@@ -15041,7 +15205,19 @@ async function chatShowThread(userId, name, sub){
    quando l'altra parte ha letto il messaggio. Finche' l'SQL non e' lanciato si usano
    quelle di prima e le spunte restano a una (consegnato). */
 let _chatSeenRpc=true;
+/* 15/11/2026 — le *_v2 (43_chat_rispondi_elimina.sql) aggiungono reply_to e deleted.
+   Finche' l'SQL non e' lanciato si usano quelle di prima e Rispondi/Elimina non compaiono. */
+let _chatV2=true;
+function _chatNoFn(r){
+  const c=String((r.error&&(r.error.code||''))||''), m=String((r.error&&r.error.message)||'');
+  return !!r.error && (c==='PGRST202' || c==='42883' || /could not find the function|does not exist/i.test(m));
+}
 async function _chatThreadRpc(mode, uid){
+  if(_chatV2){
+    const r = mode==='thread' ? await sb.rpc('sa_support_thread_v2',{p_user:uid}) : await sb.rpc('support_thread_v2');
+    if(!_chatNoFn(r)) return r;
+    _chatV2=false;
+  }
   if(_chatSeenRpc){
     const r = mode==='thread' ? await sb.rpc('sa_support_thread_seen',{p_user:uid}) : await sb.rpc('support_thread_seen');
     const c=String((r.error&&(r.error.code||''))||''), m=String((r.error&&r.error.message)||'');
@@ -15062,7 +15238,7 @@ async function chatLoad(toEnd){
     return;
   }
   const rows=r.data||[];
-  const key=rows.map(m=>m.id+(m.seen_at?'v':'')).join(',');   // anche «visualizzato» conta come novita'
+  const key=rows.map(m=>m.id+(m.seen_at?'v':'')+(m.deleted?'d':'')).join(',');   // anche «visualizzato» ed «eliminato» contano come novita'
   if(key && key===_chatKey) return;                    // niente di nuovo: lo scroll resta dov'e'
   const atEnd = body.scrollHeight - body.scrollTop - body.clientHeight < 80;
   _chatKey=key; chatMsgs=rows;
@@ -15071,6 +15247,18 @@ async function chatLoad(toEnd){
   if(mode==='mine'){ chatUnread=0; syncChatFab(); }
 }
 function chatIsMe(m){ return chatMode==='thread' ? !!m.from_staff : !m.from_staff; }
+/* 15/11/2026 — chi ha scritto un messaggio, visto da chi legge */
+function chatWho(m){ return chatIsMe(m) ? 'Tu' : (chatMode==='thread' ? (chatUserName||'Utente') : CHAT_STAFF); }
+function chatQuoteHTML(id){
+  const o=chatMsgs.find(x=>Number(x.id)===Number(id));
+  const who=o?chatWho(o):'Messaggio', tx=!o?'non più disponibile':(o.deleted?'Messaggio eliminato':String(o.body||''));
+  return '<span class="cm-q" data-q="'+Number(id)+'"><b>'+esc(who)+'</b><span>'+esc(tx.slice(0,160))+'</span></span>';
+}
+function chatJumpTo(id){
+  const el=document.querySelector('#chatBody .chat-msg[data-id="'+Number(id)+'"]'); if(!el) return;
+  el.scrollIntoView({block:'center',behavior:'smooth'});
+  el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1200);
+}
 function chatRender(){
   const body=chatEl('chatBody');
   if(!chatMsgs.length){
@@ -15085,8 +15273,10 @@ function chatRender(){
   chatMsgs.forEach((m,i)=>{
     const day=chatDay(m.created_at);
     if(day!==lastDay){ html+=`<div class="chat-day">${esc(day)}</div>`; lastDay=day; }
-    const me=chatIsMe(m);
-    html+=`<div class="chat-msg ${me?'me':'them'}${_chatSel.has(i)?' sel':''}" data-i="${i}">${esc(m.body)}<time>${chatWhen(m.created_at)}${me?chatTick(m.seen_at?'seen':'sent'):''}</time></div>`;
+    const me=chatIsMe(m), del=!!m.deleted;
+    const inner = del ? (me?'🚫 Hai eliminato questo messaggio':'🚫 Messaggio eliminato')
+                      : (m.reply_to?chatQuoteHTML(m.reply_to):'')+esc(m.body);
+    html+=`<div class="chat-msg ${me?'me':'them'}${del?' del':''}${_chatSel.has(i)?' sel':''}" data-i="${i}" data-id="${m.id}">${inner}<time>${chatWhen(m.created_at)}${me&&!del?chatTick(m.seen_at?'seen':'sent'):''}</time></div>`;
   });
   body.innerHTML=html;
 }
@@ -15121,7 +15311,15 @@ async function chatSendMsg(){
   { const tm=document.createElement('time'); tm.innerHTML=chatWhen(new Date().toISOString())+chatTick('wait'); tmp.appendChild(tm); }
   body.appendChild(tmp); chatToEnd();
   let r;
-  try{ r = mode==='thread' ? await sb.rpc('sa_support_reply',{p_user:uid,p_body:txt}) : await sb.rpc('support_send',{p_body:txt}); }
+  const rto=_chatReplyTo;
+  try{
+    if(_chatV2) r = mode==='thread' ? await sb.rpc('sa_support_reply_v2',{p_user:uid,p_body:txt,p_reply_to:rto})
+                                    : await sb.rpc('support_send_v2',{p_body:txt,p_reply_to:rto});
+    if(!_chatV2 || _chatNoFn(r)){
+      _chatV2=false;
+      r = mode==='thread' ? await sb.rpc('sa_support_reply',{p_user:uid,p_body:txt}) : await sb.rpc('support_send',{p_body:txt});
+    }
+  }
   catch(e){ r={error:e}; }
   chatSending=false;
   if(r.error){
@@ -15130,7 +15328,7 @@ async function chatSendMsg(){
     toast(m.includes('too_many') ? 'Troppi messaggi ravvicinati: riprova tra qualche minuto' : 'Messaggio non inviato: '+errText(r.error));
     chatGrow(); return;
   }
-  ta.value=''; chatGrow();
+  ta.value=''; chatReplyClear(); chatGrow();
   _chatKey=''; await chatLoad(true);
   // la push la manda il server, rileggendo il messaggio appena salvato
   chatNotify(mode==='thread'?uid:null);
@@ -15224,7 +15422,7 @@ function chatAnchor(on){
     b.removeEventListener('click',_chatClick); b.removeEventListener('contextmenu',_chatCtx);
   }
 }
-function _chatMsgOf(t){ const m=t && t.closest && t.closest('.chat-msg[data-i]'); return (m && !m.classList.contains('pending')) ? m : null; }
+function _chatMsgOf(t){ const m=t && t.closest && t.closest('.chat-msg[data-i]'); return (m && !m.classList.contains('pending') && !m.classList.contains('del')) ? m : null; }
 function _chatKbDown(){ const ta=chatEl('chatIn'); if(ta && document.activeElement===ta) ta.blur(); }
 function _chatTs(e){
   const t=e.touches&&e.touches[0]; if(!t) return;
@@ -15251,6 +15449,8 @@ function _chatClick(e){
   _chatTouch=null;
   const m=_chatMsgOf(e.target);
   if(_chatSel.size){ if(m) chatSelToggle(m); return; }
+  const q=e.target.closest && e.target.closest('.cm-q');
+  if(q){ chatJumpTo(q.getAttribute('data-q')); return; }
   if(!e.target.closest('button')) _chatKbDown();  // tocco sui messaggi: la tastiera scende
 }
 function _chatCtx(e){ const m=_chatMsgOf(e.target); if(!m) return; e.preventDefault(); if(!_chatSel.size) chatSelToggle(m); }   // computer: tasto destro
@@ -15264,6 +15464,37 @@ function _chatSelSync(){
   if(o) o.classList.toggle('selmode',n>0);
   if(b) b.classList.toggle('selmode',n>0);
   const l=chatEl('chatSelN'); if(l) l.textContent=n===1?'1 messaggio':n+' messaggi';
+  const sel=[..._chatSel].map(i=>chatMsgs[i]).filter(Boolean);
+  const rb=chatEl('chatSelReply'); if(rb) rb.classList.toggle('on', _chatV2 && n===1);
+  const db=chatEl('chatSelDel'); if(db) db.classList.toggle('on', _chatV2 && n>0 && sel.length===n && sel.every(m=>chatIsMe(m)&&!m.deleted));
+}
+/* 15/11/2026 — RISPONDI: il messaggio scelto compare sopra il campo di testo e parte insieme alla risposta */
+function chatSelReply(){
+  const i=[..._chatSel][0], m=chatMsgs[i]; if(!m || m.deleted) return;
+  chatSelClear();
+  _chatReplyTo=m.id;
+  const q=chatEl('chatReplyQ'); if(q) q.innerHTML='<b>↩ '+esc(chatWho(m))+'</b><span>'+esc(String(m.body||'').slice(0,160))+'</span>';
+  const bar=chatEl('chatReply'); if(bar) bar.classList.add('on');
+  const ta=chatEl('chatIn'); if(ta) ta.focus();
+}
+function chatReplyClear(){
+  _chatReplyTo=null;
+  const bar=chatEl('chatReply'); if(bar) bar.classList.remove('on');
+}
+/* 15/11/2026 — ELIMINA: solo i propri messaggi; al posto del testo resta «Messaggio eliminato» */
+async function chatSelDelete(){
+  const ids=[..._chatSel].map(i=>chatMsgs[i]).filter(m=>m&&chatIsMe(m)&&!m.deleted).map(m=>m.id);
+  if(!ids.length) return;
+  if(!confirm(ids.length>1?'Eliminare '+ids.length+' messaggi? Spariscono anche per chi li ha ricevuti.':'Eliminare il messaggio? Sparisce anche per chi l’ha ricevuto.')) return;
+  const fn = chatMode==='thread' ? 'sa_support_delete' : 'support_delete';
+  chatSelClear();
+  let ko=0;
+  for(const id of ids){
+    try{ const r=await sb.rpc(fn,{p_id:id}); if(r.error) ko++; }catch(_){ ko++; }
+  }
+  if(_chatReplyTo && ids.indexOf(_chatReplyTo)>=0) chatReplyClear();
+  toast(ko ? 'Eliminazione non riuscita, riprova' : (ids.length>1?'Messaggi eliminati':'Messaggio eliminato'));
+  _chatKey=''; await chatLoad(false);
 }
 function chatSelClear(){
   _chatSel.clear();
@@ -15334,20 +15565,34 @@ function fcReviewMaybe(n){
    Per un avviso nuovo: cambia `id` (altrimenti chi ha gia' visto il vecchio non lo
    vede), `until`, titolo e testo. Per non mostrare niente: `NEWS=null`.
    Solo per le cose importanti: per le piccole non serve. */
-const NEWS=null;   // 13/11/2026: tolto l'avviso «fantavoto medio» (compariva anche a chi installa ora l'app dagli store)
-function maybeShowNews(){
-  if(!NEWS) return;
-  const key='fc_news_'+NEWS.id;
+/* 15/11/2026 — avviso «squadre in anteprima». Ora vale PER ACCOUNT (non per dispositivo):
+   chi l'ha visto non lo rivede, un altro account sullo stesso telefono si'. Non compare a
+   chi si e' iscritto dopo `from` (scopre la funzione da solo), ne' durante il tutorial o
+   sopra gli avvisi App Store / Play Store: in quel caso riprova dopo qualche secondo.
+   `adminHtml` si aggiunge per admin e vice. */
+const NEWS={
+  id:'squadre_anteprima', from:'2026-11-16T00:00:00+01:00', until:'2026-12-06T00:00:00+01:00',
+  title:'Squadre in anteprima ⚽',
+  html:'Prima di schierare la formazione ora vedi <b style="color:#eaf1fb">chi gioca con chi</b>: nella pagina <b style="color:#eaf1fb">Campo</b>, sopra il campo, compaiono le squadre della partita quando l’admin le pubblica.',
+  adminHtml:'<br><br>Sei admin: in <b style="color:#eaf1fb">Crea le squadre</b> tocca <b style="color:#eaf1fb">📣 Pubblica squadre</b> e le vedono tutti.'
+};
+function maybeShowNews(n){
+  if(!NEWS || !profile || !user) return;
+  const key='fc_news_'+NEWS.id+'_'+user.id;
   try{
     if(Date.now() > Date.parse(NEWS.until)) return;            // scaduto: non appare piu'
-    if(localStorage.getItem(key)) return;                      // gia' visto su questo dispositivo
+    if(localStorage.getItem(key)) return;                      // gia' visto da questo account
+    if(NEWS.from && profile.created_at && Date.parse(profile.created_at) > Date.parse(NEWS.from)) return;   // iscritto dopo: non serve
   }catch(_){ return; }                                         // memoria non leggibile: meglio niente che a ogni apertura
+  const busy=(typeof TUT!=='undefined' && TUT) || document.getElementById('fcGate') || (typeof _bioPending!=='undefined' && _bioPending);
+  if(busy){ if((n||0)<10) setTimeout(()=>maybeShowNews((n||0)+1),5000); return; }
+  if(document.getElementById('lnOk')) return;                  // gia' aperto
   const o=document.createElement('div');
   o.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(5,12,24,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px';
   o.innerHTML='<div style="max-width:340px;background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:20px;padding:22px;text-align:center;box-shadow:0 24px 60px -20px rgba(0,0,0,.7)">'
     +'<img src="/icon-512.png?v=3" alt="" style="width:74px;height:74px;border-radius:18px;display:block;margin:0 auto 14px">'
     +'<div style="font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px;color:#eaf1fb">'+NEWS.title+'</div>'
-    +'<p style="color:#8aa3c2;font-size:14px;line-height:1.55;margin:0 0 18px">'+NEWS.html+'</p>'
+    +'<p style="color:#8aa3c2;font-size:14px;line-height:1.55;margin:0 0 18px">'+NEWS.html+((NEWS.adminHtml&&canOp())?NEWS.adminHtml:'')+'</p>'
     +'<button id="lnOk" style="width:100%;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;border:none;padding:14px;border-radius:13px;cursor:pointer">Ho capito 👍</button></div>';
   document.body.appendChild(o);
   o.querySelector('#lnOk').onclick=()=>{ try{localStorage.setItem(key,'1');}catch(_){ } o.remove(); };
