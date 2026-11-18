@@ -529,7 +529,11 @@
         <span class="sub">su <span class="num" id="fTot">20</span> occupati &middot; <b id="fFree">&ndash;</b> liberi</span>
       </div>
       <div class="slots" id="fSlots"></div>
-      <p class="note">Le prime venti leghe hanno Pro per sempre, per patto. Se una viene riportata a gratis perde lo status e lo slot torna libero per la prossima lega che si crea.</p>
+      <div class="row" style="margin-top:14px;align-items:flex-end">
+        <div style="flex:1;min-width:0"><label class="lab" for="inSlots">Posti totali per le fondatrici</label><input id="inSlots" inputmode="numeric" placeholder="15"></div>
+        <button class="btn ghost sm" onclick="saveFounderSlots()">Salva</button>
+      </div>
+      <p class="note">Le fondatrici hanno Pro per sempre, per patto. Finch&eacute; ci sono posti liberi, ogni nuova lega creata diventa fondatrice da sola. Se abbassi il numero nessuna lega perde Pro: semplicemente non se ne aggiungono altre. Se una fondatrice viene riportata a gratis perde lo status e il suo posto torna libero.</p>
     </div>
 
     <div class="card">
@@ -846,7 +850,7 @@ function paintMoney(ov){
   const set=(id,t)=>{ const e=document.getElementById(id); if(e) e.textContent=t; };
   set('rPaying',String(paying)); set('rPrice',eur2(price)); set('rYear',eur2(rev));
   document.getElementById('revNote').innerHTML='<b>'+paying+'</b> '+(paying===1?'lega Pro che paga':'leghe Pro che pagano')
-    +' × '+eur2(price)+' all’anno. Le <b>'+leagues.filter(l=>l._founder).length+'</b> fondatrici (le prime 20) sono escluse: hanno Pro per sempre.';
+    +' × '+eur2(price)+' all’anno. Le <b>'+leagues.filter(l=>l._founder).length+'</b> fondatrici sono escluse: hanno Pro per sempre.';
 
   const warn=document.getElementById('costWarn'), list=document.getElementById('costList');
   let tot=null, once=0, rec=0;
@@ -878,6 +882,8 @@ function paintMoney(ov){
   document.getElementById('fFree').textContent = Math.max(0,ft-used);
   let sl=''; for(let i=0;i<ft;i++) sl+='<i class="'+(i<used?'used':'')+'"></i>';
   document.getElementById('fSlots').innerHTML=sl;
+  { const is=document.getElementById('inSlots');
+    if(is && plans && plans.founder_slots!=null && document.activeElement!==is) is.value=String(plans.founder_slots); }
 }
 
 /* ---------- LE RIGHE DI «OGGI» SI APRONO ----------
@@ -1990,6 +1996,25 @@ async function savePrice(){
     toast('Prezzo salvato');
     await refreshAfter();
   }catch(e){ toast('Errore: '+((e&&e.message)||e)); }
+}
+async function saveFounderSlots(){
+  const raw=String(document.getElementById('inSlots').value||'').trim();
+  const n=Number(raw);
+  if(raw===''||!Number.isInteger(n)||n<0||n>1000){ toast('Numero non valido'); return; }
+  const used=leagues.filter(l=>l._founder).length;
+  const msg = n<used
+    ? 'Metti '+n+' posti, ma le fondatrici sono gi\u00e0 '+used+'.\n\nNessuna perde Pro: semplicemente non se ne aggiungono altre. Confermi?'
+    : 'Metti '+n+' posti fondatrice in tutto.\n\nLe prossime '+(n-used)+' leghe create avranno Pro gratis per sempre. Confermi?';
+  if(!confirm(msg)) return;
+  try{
+    const { error } = await sb.rpc('sa_set_founder_slots',{ p_slots:n });
+    if(error) throw error;
+    toast('Posti fondatrice salvati');
+    await refreshAfter();
+  }catch(e){
+    const m=(e&&e.message)||String(e);
+    toast(m.includes('sa_set_founder_slots')||m.includes('does not exist')?'Manca la SQL 45: eseguila prima':'Errore: '+m);
+  }
 }
 async function addCost(){
   const label=(document.getElementById('cLabel').value||'').trim();
