@@ -6332,6 +6332,14 @@ async function afterLogin(){
   document.getElementById('gate').classList.add('hidden');
   document.getElementById('welcome').classList.add('hidden');
   if(!profile){
+    /* 20/11/2026 — IN ATTESA: la lega era piena, aspetta il suo turno (SQL 49) */
+    { const _w=await fcWaitStatus();
+      if(_w && _w.status==='waiting'){ fcShowWaiting(_w); return; }
+      if(_w && _w.status==='none' && fcWaitFlagGet()){   // tolto dalla lista mentre l'app era chiusa
+        fcWaitFlagClear(); showLeague();
+        lgStatus('Non sei pi\u00f9 nella lista d\u2019attesa. Puoi riprovare a entrare o scegliere un\u2019altra lega.');
+        return;
+      } }
     /* 7.3 — uscito dalla lega (l'ha fatto uscire l'amministratore): non e' una
        lega sparita. Resta collegato e gli si apre il rientro nella sua lega. */
     { const _rem=await fcMyRemoval(); if(_rem){ fcShowRemoved(_rem); return; } }
@@ -6392,6 +6400,7 @@ async function afterLogin(){
     maybeShowLogoIntro();    // novità loghi: chiede di scegliere il logo a chi non ce l'ha ancora
     maybeAskPassword();      // chi c'era prima del login a password: gliela chiedo una volta sola
     maybePlanFullNotice();   // lega arrivata al tetto: una volta sola, e solo all'admin
+    fcWaitWelcome();         // 20/11/2026 — appena entrato dalla lista d'attesa: benvenuto
     fcProStartup();          // 7.3 — Pro: acquisti in attesa, scelta della stagione, pausa sopra i 15, scadenza
     const _qs=new URLSearchParams(location.search);
     /* 7.1 — dalla push della chat: si apre la chat e si toglie ?chat dall'indirizzo,
@@ -9701,8 +9710,8 @@ async function obCreate(btn){
            messaggio non lo colpevolizza e non gli propone di pagare: il
            passaggio a Pro lo fa l'admin, che intanto viene avvisato per nome. */
         if(_cd.indexOf('FC015')>=0 || m.indexOf('FC015')>=0 || _cd.indexOf('league_full')>=0 || /raggiunto i \d+ membri/.test(m)){
-          obErr('obStatusTeam','La lega è al completo: senza Pro il massimo è 15 persone. Abbiamo avvisato l\u2019amministratore: per farti entrare deve passare a Pro.');
-          try{ await sb.rpc('log_join_attempt',{p_league:pendingLeague.id,p_name:pname}); }catch(_){ }
+          /* 20/11/2026 — non piu' solo il muro: si puo' entrare in attesa (Annulla = muro di prima) */
+          fcWaitOffer({ team:team, player:pname, role:myRole, avatar:isCampo?obAvatar:'', is_player:isCampo, solo:soloPlayer, btn:btn });
           return;
         }
         const _box = soloPlayer ? 'obStatusChar' : 'obStatusTeam';
@@ -10829,7 +10838,7 @@ async function renderMembers(){
   const intro=document.getElementById('membriIntro');
   if(intro) intro.textContent = isPro()
     ? 'Con FantaCalcetto Pro non c’è un numero massimo di partecipanti.'
-    : 'Senza Pro il massimo è '+cap+'. Chi esce non perde i suoi dati e può rientrare se c’è posto.';
+    : 'Senza Pro il massimo è '+cap+'. Chi esce non perde i suoi dati e può rientrare se c’è posto. Chi entra quando siete al completo resta in lista d’attesa.';
   box.innerHTML='<div class="vs" style="color:var(--muted)">Carico…</div>';
   try{
     const {data,error}=await sb.rpc('list_league_members'); if(error) throw error;
@@ -10844,7 +10853,8 @@ async function renderMembers(){
           +(sub?'<small style="color:var(--muted)">'+sub+'</small>':'')+'</span>'
           +(m.is_owner?'':'<button class="set-btn" style="width:auto;padding:8px 12px;font-size:12.5px" onclick="removeMember(\''+m.id+'\',this)" data-nm="'+nm+'">Fai uscire</button>')
           +'</div>';
-      }).join('');
+      }).join('')
+      +(isPro()?'':await fcWaitAdminBox());   // 20/11/2026 — lista d'attesa
   }catch(e){ box.innerHTML='<div class="vs" style="color:var(--red)">Errore nel caricamento.</div>'; }
 }
 async function removeMember(uid, btn){
@@ -10890,8 +10900,7 @@ async function fcRejoin(btn){
   if(error){
     const m=String(error.message||''), cd=String(error.code||'')+' '+String(error.hint||'');
     if(/FC015|league_full/.test(cd) || /raggiunto i \d+ membri/.test(m)){
-      lgStatus('La lega è al completo: senza Pro il massimo è 15 persone. Abbiamo avvisato l’amministratore: per farti rientrare deve passare a Pro.');
-      try{ await sb.rpc('log_join_attempt',{ p_league:pl.id, p_name:'' }); }catch(_){ }
+      fcWaitOffer({ rejoin:true, team:'', player:'', role:'', avatar:'', is_player:false, solo:false });   // 20/11/2026
     } else if(/password/i.test(m)) lgStatus('Password errata.');
     else lgStatus(errText(error));
     return;
@@ -10899,6 +10908,180 @@ async function fcRejoin(btn){
   _fcRemoval=null;
   toast('Bentornato nella lega 👋');
   fcReload();
+}
+
+/* ==========================================================================
+   20/11/2026 — MEMBRI IN ATTESA (dal 16° in poi, solo leghe gratis)
+   Chi trova la lega piena può mettersi in attesa. NON è un membro: niente
+   profilo, non conta nel massimo, non gioca. Entra da solo, in ordine di
+   arrivo, quando la lega passa a Pro o si libera un posto (SQL file 49).
+   ========================================================================== */
+const FC_WAIT_FLAG='fc_wait_pending';   // questo telefono ha messo l'account in attesa
+let _fcWaitT=null;
+function fcWaitFlagSet(){ try{ localStorage.setItem(FC_WAIT_FLAG,'1'); }catch(_){ } }
+function fcWaitFlagClear(){ try{ localStorage.removeItem(FC_WAIT_FLAG); }catch(_){ } }
+function fcWaitFlagGet(){ try{ return !!localStorage.getItem(FC_WAIT_FLAG); }catch(_){ return false; } }
+async function fcWaitStatus(){
+  try{ const {data,error}=await sb.rpc('waitlist_status'); if(error) return null; return data||null; }
+  catch(_){ return null; }
+}
+/* lega piena: proposta di entrare in attesa (al posto del vecchio muro) */
+function fcWaitOffer(o){
+  const pl=pendingLeague; if(!pl) return;
+  const tick=t=>'<div style="display:flex;gap:8px;margin:4px 0"><span style="color:#3fd17a;font-weight:800">✓</span><span>'+t+'</span></div>';
+  const m=fcModal(
+     '<div style="font-size:34px;text-align:center;margin-bottom:6px">👥</div>'
+    +'<div style="'+FC_MT+'">La lega è al completo</div>'
+    +'<p style="'+FC_MP+';text-align:center">«'+esc(pl.name||'La lega')+'» ha raggiunto il massimo di membri senza Pro. Puoi entrare in attesa: il tuo posto resta prenotato.</p>'
+    +'<div style="background:rgba(10,22,38,.55);border:1px solid rgba(120,160,210,.18);border-radius:14px;padding:10px 14px;font-size:13.5px;line-height:1.45;color:#dbe7f7;margin-bottom:16px">'
+    +tick(o.rejoin?'Ritrovi tutti i tuoi dati':'Squadra e giocatore restano salvati')
+    +tick('Entri da solo quando la lega passa a Pro o si libera un posto')
+    +tick('L’amministratore sa che sei in attesa')
+    +'</div>'
+    +'<div id="fcWaitErr" style="color:#ff8a8a;font-size:13px;line-height:1.45;margin:-6px 0 10px;text-align:center"></div>'
+    +'<button id="fcWaitGo" style="'+FC_MB+'">Entra in attesa</button>'
+    +'<button id="fcWaitNo" style="'+FC_MB2+'">Annulla</button>');
+  const go=m.querySelector('#fcWaitGo'), err=m.querySelector('#fcWaitErr');
+  m.querySelector('#fcWaitNo').onclick=async()=>{
+    m.remove();
+    const t='La lega è al completo: senza Pro il massimo è 15 persone. Abbiamo avvisato l’amministratore.';
+    if(o.rejoin) lgStatus(t); else obErr('obStatusTeam',t);
+    try{ await sb.rpc('log_join_attempt',{p_league:pl.id,p_name:o.player||''}); }catch(_){ }
+  };
+  go.onclick=async()=>{
+    go.disabled=true; go.textContent='Un attimo…'; err.textContent='';
+    let r={}, e='';
+    try{
+      const res=await sb.rpc('waitlist_join',{
+        p_league:pl.id, p_password:pl.password, p_team:o.team||'', p_player:o.player||'',
+        p_role:o.role||'', p_avatar:o.avatar||'', p_is_player:!!o.is_player, p_solo:!!o.solo });
+      if(res.error) e='errore'; else { r=res.data||{}; if(!r.ok) e=String(r.error||'errore'); }
+    }catch(_){ e='errore'; }
+    if(e==='not_full'){   // nel frattempo si è liberato un posto: ingresso normale
+      m.remove(); toast('Si è liberato un posto: entri adesso');
+      if(o.rejoin) fcRejoin(null); else obCreate(o.btn);
+      return;
+    }
+    if(e==='team_taken'){ m.remove(); obErr('obStatusTeam','Questo nome squadra è già in uso in questa lega, anche tra chi è in attesa.','teamInput'); return; }
+    if(e==='player_taken'){ m.remove(); obErr('obStatusChar','Questo nome giocatore è già in uso in questa lega, anche tra chi è in attesa.','playerInput'); obGo(1); return; }
+    if(e){
+      err.textContent = e==='waitlist_full' ? 'Anche la lista d’attesa di questa lega è piena. Riprova più avanti.'
+                      : e==='removed_other_league' ? 'Questo account è uscito da un’altra lega e può rientrare solo lì.'
+                      : e==='bad_password' ? 'Password della lega errata.'
+                      : 'Non è stato possibile entrare in attesa. Riprova.';
+      go.disabled=false; go.textContent='Entra in attesa';
+      return;
+    }
+    fcWaitFlagSet();
+    m.remove();
+    const st=await fcWaitStatus();
+    fcShowWaiting(st && st.status==='waiting' ? st : { league_name:pl.name, position:r.position });
+  };
+}
+/* SALA D'ATTESA: schermata intera, stesso sfondo dell'app */
+function fcShowWaiting(w){
+  hideSplash();
+  ['welcome','gate','onboard','league'].forEach(id=>{ const e=document.getElementById(id); if(e) e.classList.add('hidden'); });
+  fcRenderWaiting(w);
+  clearInterval(_fcWaitT);
+  _fcWaitT=setInterval(fcWaitCheck, 30000);   // si accorge da solo quando entra
+}
+function fcRenderWaiting(w){
+  let o=document.getElementById('fcWait');
+  if(!o){
+    o=document.createElement('div'); o.id='fcWait';
+    o.style.cssText='position:fixed;inset:0;z-index:9000;overflow-y:auto;color:#eaf1fb;'
+      +'background:radial-gradient(120% 60% at 50% -10%, rgba(63,151,255,.18), transparent 60%),var(--bg);'
+      +'padding:calc(env(safe-area-inset-top,0px) + 34px) 22px calc(var(--sab) + 28px)';
+    document.body.appendChild(o);
+  }
+  const pos=Number(w.position)||1;
+  const full=(w.members!=null && w.cap!=null) ? ' · '+w.members+'/'+w.cap+' membri' : '';
+  const who=[w.player_name, w.team_name].filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i).map(esc).join(' · ');
+  const card='background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:18px;padding:16px 16px 14px;margin-top:14px';
+  let push='';
+  try{ if(pushSupported()) push='<button style="'+FC_MB2+';margin-top:14px" onclick="fcWaitPush()">🔔 Avvisami quando entro</button>'; }catch(_){ }
+  o.innerHTML='<div style="max-width:420px;margin:0 auto">'
+    +'<div style="color:#8aa3c2;font-size:13px;font-weight:700">'+esc(w.league_name||'')+'</div>'
+    +'<div style="font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:27px;margin:4px 0 10px">Sei in attesa</div>'
+    +'<span style="display:inline-block;background:rgba(255,196,0,.14);color:#ffcf4a;font-weight:800;font-size:12.5px;padding:5px 10px;border-radius:9px">'+pos+'° in lista'+full+'</span>'
+    +(who?'<p style="'+FC_MP+';margin:14px 0 0">Il tuo posto: <b style="color:#eaf1fb">'+who+'</b></p>':'')
+    +'<div style="'+card+'"><div style="font-weight:800;font-size:15.5px;margin-bottom:5px">Come entri</div>'
+    +'<p style="'+FC_MP+';margin:0">Entri da solo appena l’amministratore passa a Pro o si libera un posto, in ordine di arrivo. Non devi fare niente.</p></div>'
+    +'<div style="'+card+'"><div style="font-weight:800;font-size:15.5px;margin-bottom:5px">Intanto</div>'
+    +'<p style="'+FC_MP+';margin:0">Finché sei in attesa non giochi e non conti nei membri della lega. Quando entri trovi la tua squadra pronta.</p></div>'
+    +push
+    +'<button style="'+FC_ML+';margin-top:26px" onclick="fcWaitLeave(this)">Esci dalla lista d’attesa</button>'
+    +'<button style="'+FC_ML+'" onclick="fcWaitLogout()">Esci dall’account</button>'
+    +'</div>';
+}
+async function fcWaitCheck(){
+  const o=document.getElementById('fcWait');
+  if(!o){ clearInterval(_fcWaitT); return; }
+  if(document.hidden) return;
+  const w=await fcWaitStatus(); if(!w) return;
+  if(w.status==='entered'){ clearInterval(_fcWaitT); fcReload(); return; }   // al riavvio trova il profilo
+  if(w.status==='waiting'){ fcRenderWaiting(w); return; }
+  // tolto dalla lista dall'amministratore
+  clearInterval(_fcWaitT); fcWaitFlagClear(); o.remove();
+  showLeague();
+  lgStatus('Non sei più nella lista d’attesa. Puoi riprovare a entrare o scegliere un’altra lega.');
+}
+async function fcWaitPush(){ try{ await enablePush(); }catch(_){ toast('Notifiche non attivate'); } }
+async function fcWaitLeave(btn){
+  if(!confirm('Vuoi uscire dalla lista d’attesa? Perdi il tuo posto in coda.')) return;
+  if(btn) btn.disabled=true;
+  try{ await sb.rpc('waitlist_leave'); }catch(_){ }
+  clearInterval(_fcWaitT); fcWaitFlagClear();
+  const o=document.getElementById('fcWait'); if(o) o.remove();
+  showLeague();
+}
+async function fcWaitLogout(){
+  if(!confirm('Vuoi uscire dall’account? Il tuo posto in lista d’attesa resta prenotato.')) return;
+  clearInterval(_fcWaitT);
+  try{ await pushForget(); }catch(_){ }
+  try{ if(user) accRemove(user.id); }catch(_){ }
+  try{ await fcSignOut(); }catch(_){ }
+  fcReload();
+}
+/* appena entrato dalla lista d'attesa: benvenuto, una volta sola */
+async function fcWaitWelcome(){
+  if(!fcWaitFlagGet()) return;
+  const w=await fcWaitStatus();
+  fcWaitFlagClear();
+  if(!w || w.status!=='entered' || w.seen) return;
+  try{ await sb.rpc('waitlist_ack'); }catch(_){ }
+  const m=fcModal('<div style="font-size:34px;text-align:center;margin-bottom:6px">🎉</div>'
+    +'<div style="'+FC_MT+'">Sei dentro!</div>'
+    +'<p style="'+FC_MP+';text-align:center">Da adesso fai parte di «'+esc(w.league_name||'')+'»: schiera la formazione, vota e scala la classifica.</p>'
+    +'<button style="'+FC_MB+'">Andiamo</button>');
+  m.querySelector('button').onclick=()=>m.remove();
+}
+/* lista d'attesa vista dall'amministratore (Impostazioni › Partecipanti) */
+async function fcWaitAdminBox(){
+  let rows=[];
+  try{ const {data,error}=await sb.rpc('waitlist_admin_list'); if(!error && Array.isArray(data)) rows=data; }catch(_){ }
+  if(!rows.length) return '';
+  return '<div class="presbar" style="margin-top:16px"><span><b>In attesa</b> ('+rows.length+') · entrano in ordine quando passi a Pro</span></div>'
+    +rows.map((w,i)=>{
+      const nm=esc(w.player_name||w.team_name||'Persona');
+      const sub=(w.team_name && w.player_name && !w.solo) ? esc(w.team_name) : '';
+      return '<div style="display:flex;align-items:center;gap:10px;padding:9px 2px;border-top:1px solid var(--line)">'
+        +'<span style="width:28px;text-align:center;color:var(--muted);font-weight:800">'+(i+1)+'</span>'
+        +'<span style="flex:1;min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+nm+'</b>'
+        +(sub?'<small style="color:var(--muted)">'+sub+'</small>':'')+'</span>'
+        +'<button class="set-btn" style="width:auto;padding:8px 12px;font-size:12.5px" data-nm="'+nm+'" onclick="fcWaitAdminRemove(\''+w.user_id+'\',this)">Togli</button>'
+        +'</div>';
+    }).join('');
+}
+async function fcWaitAdminRemove(uid, btn){
+  const nm=(btn&&btn.dataset.nm)||'questa persona';
+  if(!confirm('Togliere '+nm+' dalla lista d’attesa?')) return;
+  if(btn){ btn.disabled=true; btn.style.opacity='.5'; }
+  try{ const {data,error}=await sb.rpc('waitlist_admin_remove',{p_user:uid}); if(error||data!=='ok') throw error||new Error(data); }
+  catch(e){ if(btn){ btn.disabled=false; btn.style.opacity=''; } toast('Non riuscito, riprova'); return; }
+  toast(nm+' tolto dalla lista d’attesa');
+  renderMembers();
 }
 
 /* ---------- QUELLO CHE IL PIANO CAMBIA A SCHERMO ---------- */
@@ -10926,7 +11109,7 @@ function renderPlanUI(){
         return;
       }
       b.innerHTML='<b>Rosa: '+n+' di '+cap+'</b><span>'
-        +(full ? 'Numero massimo raggiunto: chi prova a entrare adesso resta fuori. Passa a Pro per non avere limiti.'
+        +(full ? 'Numero massimo raggiunto: chi entra adesso va in lista d\u2019attesa ed entra da solo quando passi a Pro.'
                : (left===1?'Resta un posto.':'Restano '+left+' posti.')+(IOS_APP?'':' Il piano gratuito arriva a '+cap+' persone.'))
         +'</span>'+(IOS_APP?'':'<button onclick="openPro(\''+(full?'muro':'tetto')+'\')">Passa a Pro \u203a</button>');
     }
@@ -10941,19 +11124,19 @@ function maybePlanFullNotice(){
   if(isPro() || !myPlan.loaded) return;
   if(!(profile && profile.is_admin)) return;
   if(myPlan.seats_left>0) return;
-  const k='fc_plan_full_'+((profile&&profile.league_id)||0);
+  /* 20/11/2026 — testo nuovo (lista d'attesa): chiave nuova, cosi' chi e' gia' al massimo lo vede una volta */
+  const k='fc_plan_full2_'+((profile&&profile.league_id)||0);
   try{ if(localStorage.getItem(k)) return; localStorage.setItem(k,'1'); }catch(_){ return; }
-  const o=document.createElement('div');
-  o.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(5,12,24,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px';
-  o.innerHTML='<div style="max-width:340px;background:#102742;border:1px solid rgba(120,160,210,.25);border-radius:20px;padding:22px;text-align:center;box-shadow:0 24px 60px -20px rgba(0,0,0,.7)">'
-    +'<div style="font-size:34px;margin-bottom:10px">\u26a0\ufe0f</div>'
-    +'<div style="font-family:\'Bricolage Grotesque\',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px;color:#eaf1fb">La lega \u00e8 al completo</div>'
-    +'<p style="color:#8aa3c2;font-size:14px;line-height:1.55;margin:0 0 18px">Siete <b>'+myPlan.members+'</b>, il massimo '+(IOS_APP?'consentito':'senza Pro')+': chi prova a entrare adesso resta fuori.'+(IOS_APP?'':' Passa a Pro per avere partecipanti illimitati.')+'</p>'
-    +(IOS_APP?'':'<button id="pfPro" style="width:100%;background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;border:none;padding:14px;border-radius:13px;cursor:pointer">Passa a Pro</button>')
-    +'<button id="pfOk" style="width:100%;'+(IOS_APP?'background:linear-gradient(135deg,#3f97ff,#1c6ff2);color:#fff;font-weight:800;font-size:15px;padding:14px;border-radius:13px':'margin-top:9px;background:none;color:#8aa3c2;font-weight:700;font-size:13.5px;padding:8px')+';border:none;cursor:pointer">'+(IOS_APP?'Ho capito':'Più tardi')+'</button></div>';
-  document.body.appendChild(o);
+  const o=fcModal(
+     '<div style="font-size:34px;text-align:center;margin-bottom:6px">\ud83d\udc65</div>'
+    +'<div style="'+FC_MT+'">Siete in '+myPlan.members+'</div>'
+    +'<p style="'+FC_MP+';text-align:center">\u00c8 il massimo senza Pro, ma puoi gi\u00e0 invitare altre persone: entrano in lista d\u2019attesa e passano dentro da sole quando la lega diventa Pro. Con Pro entrano subito.</p>'
+    +'<button id="pfInv" style="'+FC_MB+'">Invita altri amici</button>'
+    +'<button id="pfPro" style="'+FC_MB2+'">Vedi Pro</button>'
+    +'<button id="pfOk" style="'+FC_ML+'">Chiudi</button>');
   o.querySelector('#pfOk').onclick=()=>o.remove();
-  const _pf=o.querySelector('#pfPro'); if(_pf) _pf.onclick=()=>{ o.remove(); openPro('muro'); };
+  o.querySelector('#pfPro').onclick=()=>{ o.remove(); openPro('muro'); };
+  o.querySelector('#pfInv').onclick=()=>{ o.remove(); try{ go('settings'); setNav('page-invita'); }catch(_){ } };
 }
 
 /* ==========================================================================
