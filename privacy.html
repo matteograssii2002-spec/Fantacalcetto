@@ -51,7 +51,7 @@ if(/[?&]app=1(&|$)/.test(location.search)) document.documentElement.classList.ad
     <p class="lead">Informativa resa ai sensi dell'art. 13 del Regolamento (UE) 2016/679 (GDPR) agli utenti del servizio FantaCalcetto, disponibile all'indirizzo www.fantacalcettoitalia.it.</p>
 
     <div class="note">
-      <b>Sintesi.</b> Il Servizio tratta i soli dati necessari al proprio funzionamento: dati identificativi dell'account e dati di gioco. Non è prevista alcuna cessione a terzi per finalità commerciali, non sono presenti inserzioni pubblicitarie né strumenti di statistica di terze parti. La banca dati è ospitata su infrastruttura situata nell'Unione Europea. L'acquisto facoltativo del piano Pro avviene nell'app tramite App Store o Google Play ed è verificato con il servizio RevenueCat: il Titolare non ha accesso ai dati di pagamento. Nelle app per Android e iPhone le notifiche sono recapitate tramite Firebase Cloud Messaging di Google. L'account può essere cancellato in autonomia e subito dall'applicazione (punto 6).
+      <b>Sintesi.</b> Il Servizio tratta i soli dati necessari al proprio funzionamento: dati identificativi dell'account e dati di gioco. Non è prevista alcuna cessione a terzi per finalità commerciali e non sono presenti strumenti di statistica di terze parti. Nelle app per Android e iPhone, per le leghe senza piano Pro, sono mostrati annunci pubblicitari tramite Google AdMob (punto 2). La banca dati è ospitata su infrastruttura situata nell'Unione Europea. L'acquisto facoltativo del piano Pro avviene nell'app tramite App Store o Google Play ed è verificato con il servizio RevenueCat: il Titolare non ha accesso ai dati di pagamento. Nelle app per Android e iPhone le notifiche sono recapitate tramite Firebase Cloud Messaging di Google. L'account può essere cancellato in autonomia e subito dall'applicazione (punto 6).
     </div>
 
     <h2>1. Titolare del trattamento</h2>
@@ -78,17 +78,20 @@ if(/[?&]app=1(&|$)/.test(location.search)) document.documentElement.classList.ad
         <tr><td><b>Data dell'ultimo accesso</b></td><td>Individuazione delle leghe inattive ai fini della cancellazione periodica</td><td>Legittimo interesse (art. 6.1.f)</td></tr>
         <tr><td><b>Dati dell'acquisto del piano Pro</b><br><small>store utilizzato (App Store o Google Play), prodotto, identificativo della transazione, importo e valuta, stato (attivo, scaduto o rimborsato), data, lega e account che ha effettuato l'acquisto</small></td><td>Attivazione e gestione del piano Pro; ripristino degli acquisti; gestione di rimborsi e contestazioni</td><td>Esecuzione del contratto (art. 6.1.b)</td></tr>
         <tr><td><b>Dati tecnici di registro</b><br><small>conservati dai fornitori: indirizzo IP, errori applicativi, orario delle richieste</small></td><td>Sicurezza dell'infrastruttura, diagnosi dei malfunzionamenti, prevenzione degli abusi</td><td>Legittimo interesse (art. 6.1.f)</td></tr>
+        <tr><td><b>Dati per gli annunci</b> (solo app per Android e iPhone, leghe senza Pro)<br><small>identificativo pubblicitario del dispositivo, indirizzo IP, dati tecnici del dispositivo, scelte di consenso; per i video facoltativi delle FC coins: conferma di visione, identificativo utente e codice del video</small></td><td>Visualizzazione e misurazione degli annunci; personalizzazione degli annunci solo previo consenso; accredito delle FC coins alla lega</td><td>Consenso (art. 6.1.a) per gli annunci personalizzati e l'identificativo pubblicitario; legittimo interesse (art. 6.1.f) per gli annunci non personalizzati e la prevenzione delle frodi; esecuzione del contratto (art. 6.1.b) per l'accredito delle FC coins</td></tr>
       </tbody>
     </table>
 
     <p>Il conferimento dei dati necessari all'esecuzione del contratto è obbligatorio ai fini della fruizione del Servizio: in loro assenza non è possibile costituire un account. Il conferimento dei dati fondati sul consenso è facoltativo e revocabile in qualsiasi momento, senza pregiudizio per le altre funzionalità.</p>
 
+    <h3>Pubblicità (Google AdMob)</h3>
+    <p>Nelle app per Android e iPhone, per le leghe senza piano Pro, vengono mostrati annunci tramite <b>Google AdMob</b> (Google Ireland Ltd). Per mostrare e misurare gli annunci Google può trattare l'identificativo pubblicitario del dispositivo, l'indirizzo IP e dati tecnici del dispositivo. Al primo avvio è richiesto il consenso agli annunci personalizzati (e, su iPhone, il permesso di tracciamento): in assenza di consenso sono comunque mostrati annunci, ma non personalizzati. La scelta può essere modificata in qualsiasi momento da <b>Impostazioni › Privacy e annunci</b> nell'app e, su iPhone, anche da Impostazioni › Privacy › Tracciamento. Per i video facoltativi delle FC coins Google comunica al Titolare che il video è stato completato, insieme all'identificativo utente e a un codice del video, al solo fine di accreditare le monete alla lega. Le leghe con piano Pro non vedono annunci. Informativa di Google: <b>policies.google.com/privacy</b>.</p>
+
     <h3>Trattamenti non effettuati</h3>
     <ul>
       <li>I dati non sono oggetto di cessione, vendita o comunicazione a terzi per finalità commerciali.</li>
-      <li>Il Servizio non ospita inserzioni pubblicitarie.</li>
-      <li>Non sono impiegati strumenti di analisi statistica o di tracciamento di terze parti.</li>
-      <li>Non sono effettuate profilazioni a fini commerciali né processi decisionali automatizzati che producano effetti giuridici sull'interessato.</li>
+      <li>Non sono impiegati strumenti di analisi statistica di terze parti; il tracciamento a fini pubblicitari avviene soltanto nelle app, tramite Google AdMob e previo consenso dell'utente.</li>
+      <li>Il Titolare non effettua profilazioni a fini commerciali (fatta salva la personalizzazione degli annunci da parte di Google, se l'utente vi acconsente) né processi decisionali automatizzati che producano effetti giuridici sull'interessato.</li>
       <li>Non sono trattati dati di geolocalizzazione.</li>
       <li>Non sono trattati dati biometrici: l'accesso con impronta o volto, se attivato, è verificato interamente dal sistema del telefono e il Servizio ne riceve soltanto l'esito.</li>
     </ul>
@@ -113,6 +116,7 @@ if(/[?&]app=1(&|$)/.test(location.search)) document.documentElement.classList.ad
         <tr><td><b>Resend</b></td><td>Recapito delle comunicazioni email</td><td>Stati Uniti</td></tr>
         <tr><td><b>Google (Firebase Cloud Messaging)</b></td><td>Recapito delle notifiche alle app per Android e iPhone (su iPhone attraverso il servizio notifiche di Apple)</td><td>Stati Uniti</td></tr>
         <tr><td><b>RevenueCat</b></td><td>Verifica degli acquisti effettuati nell'app presso App Store e Google Play e loro ripristino</td><td>Stati Uniti</td></tr>
+        <tr><td><b>Google (AdMob)</b></td><td>Annunci nelle app per le leghe senza Pro e verifica dei video delle FC coins; per gli annunci personalizzati Google opera come titolare autonomo</td><td>Irlanda (UE) e Stati Uniti</td></tr>
         <tr><td><b>Aruba</b></td><td>Registrazione del dominio e gestione dei relativi record</td><td>Italia (UE)</td></tr>
       </tbody>
     </table>
@@ -166,7 +170,7 @@ if(/[?&]app=1(&|$)/.test(location.search)) document.documentElement.classList.ad
     <p>Ove venga segnalata o rilevata la presenza di un account riferibile a un minore di 14 anni, si procede alla sua cancellazione.</p>
 
     <h2>10. Cookie e archiviazione locale</h2>
-    <p><b>Il Servizio non utilizza cookie di profilazione né strumenti analoghi soggetti a consenso preventivo</b>; per tale ragione non è presente alcun banner di raccolta del consenso.</p>
+    <p><b>Il sito e la versione web non utilizzano cookie di profilazione né strumenti analoghi soggetti a consenso preventivo</b>; per tale ragione non è presente alcun banner di raccolta del consenso. Nelle app per Android e iPhone, per le leghe senza Pro, il componente di Google AdMob può archiviare sul dispositivo identificativi e informazioni necessari agli annunci: il relativo consenso è raccolto al primo avvio ed è modificabile da Impostazioni › Privacy e annunci (punto 2).</p>
     <p>Sono impiegati esclusivamente strumenti di archiviazione tecnica, necessari all'erogazione del servizio richiesto dall'utente:</p>
     <ul>
       <li>il <b>token di sessione</b>, che mantiene l'autenticazione tra un accesso e l'altro;</li>
@@ -183,7 +187,7 @@ if(/[?&]app=1(&|$)/.test(location.search)) document.documentElement.classList.ad
     <h2>12. Modifiche alla presente informativa</h2>
     <p>La presente informativa può essere aggiornata, in particolare in caso di introduzione di nuovi fornitori o di variazione delle finalità del trattamento. Le modifiche sostanziali sono segnalate all'interno dell'applicazione. La data indicata in calce riporta l'ultima revisione.</p>
 
-    <p style="margin-top:34px;color:var(--muted);font-size:14px">Ultimo aggiornamento: 27 ottobre 2026 · Titolare del trattamento: Matteo Grassi · <a href="termini.html">Termini di servizio</a></p>
+    <p style="margin-top:34px;color:var(--muted);font-size:14px">Ultimo aggiornamento: 23 novembre 2026 · Titolare del trattamento: Matteo Grassi · <a href="termini.html">Termini di servizio</a></p>
   </div>
 </section>
 </main>
